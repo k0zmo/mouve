@@ -1,0 +1,8 @@
+*Debug*
+*Release*
+*.sdf
+*.opensdf
+ipch
+*.suo
+*.user
+*GeneratedFiles*
