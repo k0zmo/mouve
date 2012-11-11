@@ -8,7 +8,7 @@
 
 #include <QHash>
 
-static bool DEBUG_LINKS = true;
+static bool DEBUG_LINKS = false;
 
 class NodeController : 
 	public QObject,
@@ -41,6 +41,7 @@ public slots:
 	void draggingLinkStarted(QGraphicsWidget* from);
 	void draggingLinkStopped(QGraphicsWidget* from);
 	void contextMenu(const QPoint& globalPos, const QPointF& scenePos);
+	void keyPress(QKeyEvent* event);
 
 private:
 	QList<NodeLinkView*> mLinkViews;

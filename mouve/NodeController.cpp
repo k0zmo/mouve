@@ -32,6 +32,8 @@ NodeController::NodeController(QObject* parent)
 	mView->setGeometry(100, 50, 1200, 800);
 	connect(mView, SIGNAL(contextMenu(QPoint,QPointF)),
 		this, SLOT(contextMenu(QPoint,QPointF)));
+	connect(mView, SIGNAL(keyPress(QKeyEvent*)),
+		this, SLOT(keyPress(QKeyEvent*)));
 	mView->show();
 
 	for(int i = 0; i < sizeof(registeredNodeTypes)/sizeof(QString); ++i)
@@ -190,6 +192,52 @@ void NodeController::contextMenu(const QPoint& globalPos,
 				return;
 			}
 		}
+	}
+}
+
+bool NodeController::unlinkNodeViews(NodeSocketView* from, NodeSocketView* to)
+{
+	for(int i = 0; i < mLinkViews.size(); ++i)
+	{
+		if(mLinkViews[i]->connects(from, to))
+		{
+			NodeLinkView* link = mLinkViews[i];
+			mScene->removeItem(link);
+			mLinkViews.removeAt(i);
+			delete link;			
+			return true;
+		}
+	}
+
+	return false;
+}
+
+bool NodeController::unlinkNodeViews(NodeLinkView* link)
+{
+	if(mLinkViews.removeOne(link))
+	{
+		mScene->removeItem(link);
+		delete link;
+		return true;
+	}
+	return false;
+}
+
+void NodeController::keyPress(QKeyEvent* event)
+{
+	if(event->key() == Qt::Key_Delete)
+	{
+		QList<QGraphicsItem*> items = mScene->selectedItems();
+		for(int i = 0; i < items.size(); ++i)
+		{
+			if(items[i]->type() == NodeLinkView::Type)
+			{
+				NodeLinkView* link = static_cast<NodeLinkView*>(items[i]);
+				unlinkNodeViews(link);
+			}
+		}
+
+		event->accept();
 	}
 }
 

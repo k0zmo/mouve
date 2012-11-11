@@ -40,3 +40,8 @@ void NodeEditorView::contextMenuEvent(QContextMenuEvent* event)
 {
 	emit contextMenu(event->globalPos(), mapToScene(event->pos()));
 }
+
+void NodeEditorView::keyPressEvent(QKeyEvent* event)
+{
+	emit keyPress(event);
+}

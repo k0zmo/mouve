@@ -14,10 +14,12 @@ public:
 protected:
 	virtual void wheelEvent(QWheelEvent* event);
 	virtual void contextMenuEvent(QContextMenuEvent* event);
+	virtual void keyPressEvent(QKeyEvent* event);
 
 private:
 	float mZoom;
 
 signals:
 	void contextMenu(const QPoint& globalPos, const QPointF& scenePos);
+	void keyPress(QKeyEvent* event);
 };
