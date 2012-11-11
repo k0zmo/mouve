@@ -6,7 +6,7 @@
 NodeView::NodeView(const QString& title, QGraphicsItem* parent)
 	: QGraphicsWidget(parent)
 	, mLabel(new QGraphicsSimpleTextItem(this))
-	, mDropShadowEffect(new QGraphicsDropShadowEffect)
+	, mDropShadowEffect(new QGraphicsDropShadowEffect(this))
 {
 	setFlag(QGraphicsItem::ItemIsMovable);
 	setFlag(QGraphicsItem::ItemIsSelectable);

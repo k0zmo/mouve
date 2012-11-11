@@ -26,6 +26,8 @@ NodeController::NodeController(QObject* parent)
 {
 	// !TODO: Temporary
 	mScene->setSceneRect(-200,-200,1000,600);
+	// Qt bug concering scene->removeItem ?? Seems to fixed it
+	mScene->setItemIndexMethod(QGraphicsScene::NoIndex);
 
 	// !TODO: Move to some initialize method
 	mView->setScene(mScene);
@@ -73,7 +75,76 @@ NodeView* NodeController::addNodeView(quint32 nodeKey, const QString& title)
 
 bool NodeController::deleteNodeView(quint32 nodeKey)
 {
-	qDebug() << "deleting node with key:" << nodeKey;
+	qDebug() << "deleting node view with nodeKey:" << nodeKey;
+
+	auto it = mNodeViews.find(nodeKey);
+	if(it != mNodeViews.end())
+	{
+		NodeView* node = *it;
+
+		// Remove incoming and outgoing links
+		QMutableListIterator<NodeLinkView*> itl(mLinkViews);
+		while(itl.hasNext())
+		{
+			itl.next();
+			NodeLinkView* link = itl.value();
+
+			if(link->inputConnecting(node)
+				|| link->outputConnecting(node))
+			{
+				mScene->removeItem(link);
+				itl.remove();
+				delete link;
+			}
+		}
+
+		// Remove from the scene
+		mScene->removeItem(node);
+		// Remove from container
+		mNodeViews.erase(it);
+		// Remove at last node view itself
+		node->deleteLater();
+		return true;
+	}
+	return false;
+}
+
+bool NodeController::deleteNodeView(NodeView* nodeView)
+{
+	qDebug() << "deleting node view with nodeKey:"
+		<< nodeView->data(NodeDataIndex::NodeKey).toInt();
+	QMutableHashIterator<quint32, NodeView*> it(mNodeViews);
+	while(it.hasNext())
+	{
+		it.next();
+		NodeView* node = it.value();
+		if(node == nodeView)
+		{
+			// Remove incoming and outgoing links
+			QMutableListIterator<NodeLinkView*> itl(mLinkViews);
+			while(itl.hasNext())
+			{
+				itl.next();
+				NodeLinkView* link = itl.value();
+
+				if(link->inputConnecting(nodeView)
+				        || link->outputConnecting(nodeView))
+				{
+					mScene->removeItem(link);
+					itl.remove();
+					delete link;
+				}
+			}
+
+			// Remove from the scene
+			mScene->removeItem(node);
+			// Remove from container
+			it.remove();
+			// Remove at last node view itself
+			node->deleteLater();
+			return true;
+		}
+	}
 	return false;
 }
 
@@ -97,6 +168,34 @@ void NodeController::linkNodeViews(NodeSocketView* from, NodeSocketView* to)
 	to->addLink(link);
 	mLinkViews.push_back(link);
 	mScene->addItem(link);
+}
+
+bool NodeController::unlinkNodeViews(NodeSocketView* from, NodeSocketView* to)
+{
+	for(int i = 0; i < mLinkViews.size(); ++i)
+	{
+		if(mLinkViews[i]->connects(from, to))
+		{
+			NodeLinkView* link = mLinkViews[i];
+			mScene->removeItem(link);
+			mLinkViews.removeAt(i);
+			delete link;			
+			return true;
+		}
+	}
+
+	return false;
+}
+
+bool NodeController::unlinkNodeViews(NodeLinkView* link)
+{
+	if(mLinkViews.removeOne(link))
+	{
+		mScene->removeItem(link);
+		delete link;
+		return true;
+	}
+	return false;
 }
 
 void NodeController::addNode(quint32 nodeTypeId, const QPointF& scenePos)
@@ -190,52 +289,44 @@ void NodeController::contextMenu(const QPoint& globalPos,
 				menu.addAction(&action);
 				QAction* ret = menu.exec(globalPos);
 				if(ret != nullptr)
-					;//deleteNodeView(items[i]->nodeKey());
+				{
+					NodeView* node = static_cast<NodeView*>(items[i]);
+					deleteNodeView(node->nodeKey());
+				}
 				return;
 			}
 		}
 	}
 }
 
-bool NodeController::unlinkNodeViews(NodeSocketView* from, NodeSocketView* to)
-{
-	for(int i = 0; i < mLinkViews.size(); ++i)
-	{
-		if(mLinkViews[i]->connects(from, to))
-		{
-			NodeLinkView* link = mLinkViews[i];
-			mScene->removeItem(link);
-			mLinkViews.removeAt(i);
-			delete link;			
-			return true;
-		}
-	}
-
-	return false;
-}
-
-bool NodeController::unlinkNodeViews(NodeLinkView* link)
-{
-	if(mLinkViews.removeOne(link))
-	{
-		mScene->removeItem(link);
-		delete link;
-		return true;
-	}
-	return false;
-}
-
 void NodeController::keyPress(QKeyEvent* event)
 {
 	if(event->key() == Qt::Key_Delete)
 	{
-		QList<QGraphicsItem*> items = mScene->selectedItems();
-		for(int i = 0; i < items.size(); ++i)
+		QList<QGraphicsItem*> itemsPing = mScene->selectedItems();
+		QList<QGraphicsItem*> itemsPong;
+		mScene->clearSelection();
+
+		for(int i = 0; i < itemsPing.size(); ++i)
 		{
-			if(items[i]->type() == NodeLinkView::Type)
+			if(itemsPing[i]->type() == NodeLinkView::Type)
 			{
-				NodeLinkView* link = static_cast<NodeLinkView*>(items[i]);
+				NodeLinkView* link = static_cast<NodeLinkView*>(itemsPing[i]);
 				unlinkNodeViews(link);
+			}
+			else
+			{
+				itemsPong.append(itemsPing[i]);
+			}
+		}
+		itemsPing.clear();
+
+		for(int i = 0; i < itemsPong.size(); ++i)
+		{
+			if(itemsPong[i]->type() == NodeView::Type)
+			{
+				NodeView* node = static_cast<NodeView*>(itemsPong[i]);
+				deleteNodeView(node);
 			}
 		}
 

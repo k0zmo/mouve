@@ -33,3 +33,10 @@ void NodeScene::mouseMoveEvent(QGraphicsSceneMouseEvent* event)
 	}
 	QGraphicsScene::mouseMoveEvent(event);
 }
+
+void NodeScene::removeItem(QGraphicsItem* item)
+{
+	mHovered = nullptr;
+	QGraphicsScene::removeItem(item);
+}
+

@@ -10,6 +10,8 @@ public:
 	NodeScene(QObject* parent = nullptr);
 	void setDragging(bool dragging);
 
+	virtual void removeItem(QGraphicsItem* item);
+
 protected:
 	virtual void mouseMoveEvent(QGraphicsSceneMouseEvent* event);
 

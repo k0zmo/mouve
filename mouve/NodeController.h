@@ -25,6 +25,7 @@ public:
 	NodeView* addNodeView(quint32 nodeKey, const QString& title);
 	// Usuwa widok wezla o podanym kluczu ID
 	bool deleteNodeView(quint32 nodeKey);
+	bool deleteNodeView(NodeView* nodeView);
 
 	// Tworzy nowe (wizualne) polaczenie miedzy danymi gniazdami
 	void linkNodeViews(NodeSocketView* from, NodeSocketView* to);
