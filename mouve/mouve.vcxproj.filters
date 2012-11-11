@@ -52,6 +52,12 @@
     <ClCompile Include="GeneratedFiles\Release\moc_NodeEditorView.cpp">
       <Filter>Generated Files\Release</Filter>
     </ClCompile>
+    <ClCompile Include="NodeTemporaryLinkView.cpp">
+      <Filter>_View</Filter>
+    </ClCompile>
+    <ClCompile Include="NodeStyle.cpp">
+      <Filter>_View</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Precomp.h" />
@@ -64,9 +70,15 @@
     <ClInclude Include="Prerequisites.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="NodeStyle.h">
+      <Filter>_View</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="NodeEditorView.h">
+      <Filter>_View</Filter>
+    </CustomBuild>
+    <CustomBuild Include="NodeTemporaryLinkView.h">
       <Filter>_View</Filter>
     </CustomBuild>
   </ItemGroup>

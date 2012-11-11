@@ -8,4 +8,7 @@ using std::string;
 using std::vector;
 using std::unordered_map;
 
+class NodeEditorView;
 class NodeConnectorView;
+class NodeTemporaryLinkView;
+class NodeSocketView;
