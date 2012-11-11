@@ -10,7 +10,7 @@ static QString FontName = "DejaVu Sans";
 QColor NodeStyle::SceneBackground = QColor(64, 64, 64);
 
 // Link NodeStyle
-QPen NodeStyle::LinkPen = QPen(QColor(222, 222, 222), 1.5, Qt::SolidLine);
+QPen NodeStyle::LinkPen = QPen(QColor(222, 222, 222), 2.0, Qt::SolidLine);
 
 // Node NodeStyle
 QFont NodeStyle::NodeTitleFont = QFont(FontName, 12, QFont::Bold);
