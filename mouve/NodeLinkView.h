@@ -14,7 +14,7 @@ public:
 	virtual void paint(QPainter *painter, 
 		const QStyleOptionGraphicsItem* option, QWidget* widget);
 	virtual int type() const;
-	// !TODO: virtual QPainterPath shape() const;
+	virtual QPainterPath shape() const;
 	virtual QRectF boundingRect() const;
 
 	// Uaktualnia ksztlat i pozycje na podstawie gniazd do ktorych wchodzi/wychodzi
@@ -51,7 +51,7 @@ private:
 
 private:
 	// Buduje i zwraca QPainterPath 
-	QPainterPath _shape() const;
+	QPainterPath _shape(bool thicken) const;
 };
 
 inline int NodeLinkView::type() const
