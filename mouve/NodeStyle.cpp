@@ -22,7 +22,7 @@ QPen NodeStyle::NodeBorderSelectedPen = QPen(QColor(128, 128, 128), 2.5, Qt::Sol
 int NodeStyle::NodeRoundArc = 15;
 float NodeStyle::NodeTitleSize = 5.0;
 float NodeStyle::NodeTitleHorizontalMargin = 30.0;
-float NodeStyle::NodeSocketHorizontalMargin = 5.0;
+float NodeStyle::NodeSocketHorizontalMargin = -7.5;
 float NodeStyle::NodeSocketVerticalMargin = 8.0;
 float NodeStyle::NodeSocketsMargin = 20.0;
 
@@ -37,7 +37,7 @@ QBrush NodeStyle::SocketTitleInactiveBrush = QBrush(QColor(119, 119, 119));
 
 QFont NodeStyle::SocketFont = QFont(FontName, 11);
 
-int NodeStyle::ZValueNode = 0;
-int NodeStyle::ZValueNodeHovered = 2000;
-int NodeStyle::ZValueLink = 3000;
-int NodeStyle::ZValueTemporaryLink = 4000;
+int NodeStyle::ZValueNode = 100;
+int NodeStyle::ZValueNodeHovered = 200;
+int NodeStyle::ZValueLink = 0;
+int NodeStyle::ZValueTemporaryLink = 400;
