@@ -1,0 +1,1 @@
+C:\Python27\python.exe C:\Python27\Scripts\cxfreeze nodes.py --target-dir dist --base-name Win32GUI --include-modules atexit
