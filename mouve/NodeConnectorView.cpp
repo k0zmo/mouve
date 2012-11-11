@@ -6,11 +6,11 @@
 
 NodeConnectorView::NodeConnectorView(bool isOutput, QGraphicsItem* parent)
 	: QGraphicsWidget(parent, 0)
-	, mIsOutput(isOutput)
 	, mRect(NodeStyle::SocketSize)
 	, mPen(NodeStyle::SocketPen)
 	, mAnimation(this, "penWidth")
 	, mTemporaryLink(nullptr)
+	, mIsOutput(isOutput)
 {
 	QLinearGradient gradient(0, mRect.y(), 0, mRect.height());
 	gradient.setColorAt(0, NodeStyle::SocketGradientStart);
@@ -43,13 +43,17 @@ void NodeConnectorView::setHighlight(bool highlight)
 {
 	if(highlight)
 	{
-		mAnimation.setStartValue(mAnimation.currentValue());
+		mAnimation.stop();
+		qreal start = qMax(qreal(1.0), mAnimation.currentValue().toReal());
+		mAnimation.setStartValue(start);
 		mAnimation.setEndValue(2.0); // !TODO: Use style
 		mAnimation.start();
 	}
 	else
 	{
-		mAnimation.setStartValue(mAnimation.currentValue());
+		mAnimation.stop();
+		qreal start = qMin(qreal(2.0), mAnimation.currentValue().toReal());
+		mAnimation.setStartValue(start);
 		mAnimation.setEndValue(1.0); // !TODO: Use style
 		mAnimation.start();
 	}

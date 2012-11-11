@@ -10,7 +10,7 @@
 class NodeConnectorView : public QGraphicsWidget
 {
 	Q_OBJECT
-	Q_PROPERTY(float penWidth READ penWidth WRITE setPenWidth USER false)
+	Q_PROPERTY(float penWidth READ penWidth WRITE setPenWidth)
 public:
 	NodeConnectorView(bool isOutput, QGraphicsItem* parent = nullptr);
 	
@@ -42,12 +42,12 @@ protected:
 	virtual void mouseReleaseEvent(QGraphicsSceneMouseEvent* event);
 
 private:
-	bool mIsOutput;
 	QRect mRect;
 	QPen mPen;
 	QBrush mBrush;
 	QPropertyAnimation mAnimation;
 	NodeTemporaryLinkView* mTemporaryLink;
+	bool mIsOutput;
 
 private:
 	NodeConnectorView* canDrop(const QPointF& scenePos);
