@@ -58,6 +58,24 @@
     <ClCompile Include="NodeStyle.cpp">
       <Filter>_View</Filter>
     </ClCompile>
+    <ClCompile Include="NodeSocketView.cpp">
+      <Filter>_View</Filter>
+    </ClCompile>
+    <ClCompile Include="NodeConnectorView.cpp">
+      <Filter>_View</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Debug\moc_NodeConnectorView.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Release\moc_NodeConnectorView.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Debug\moc_NodeSocketView.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Release\moc_NodeSocketView.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Precomp.h" />
@@ -79,6 +97,12 @@
       <Filter>_View</Filter>
     </CustomBuild>
     <CustomBuild Include="NodeTemporaryLinkView.h">
+      <Filter>_View</Filter>
+    </CustomBuild>
+    <CustomBuild Include="NodeConnectorView.h">
+      <Filter>_View</Filter>
+    </CustomBuild>
+    <CustomBuild Include="NodeSocketView.h">
       <Filter>_View</Filter>
     </CustomBuild>
   </ItemGroup>

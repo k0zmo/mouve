@@ -1,0 +1,77 @@
+#pragma  once
+
+#include "Prerequisites.h"
+
+#include <QGraphicsWidget>
+#include <QPropertyAnimation>
+
+#include "NodeSocketView.h"
+
+class NodeConnectorView : public QGraphicsWidget
+{
+	Q_OBJECT
+	Q_PROPERTY(float penWidth READ penWidth WRITE setPenWidth USER true)
+public:
+	NodeConnectorView(bool isOutput, QGraphicsItem* parent = nullptr);
+	
+	virtual void paint(QPainter* painter, 
+		const QStyleOptionGraphicsItem* option, QWidget *widget);
+	virtual QRectF boundingRect() const;
+	// !TODO virtual QPainterPath shape() const;
+	virtual int type() const;
+
+	float penWidth() const;
+	void setPenWidth(float penWidth);
+
+	void setHighlight(bool highlight);
+	QPointF centerPos() const;
+	NodeSocketView* socketView() const;
+
+	bool isOutput() const;
+
+	enum 
+	{
+		Type = QGraphicsItem::UserType + 4
+	};
+
+protected:
+	virtual void hoverEnterEvent(QGraphicsSceneHoverEvent* event);
+	virtual void hoverLeaveEvent(QGraphicsSceneHoverEvent* event);
+	virtual void mousePressEvent(QGraphicsSceneMouseEvent* event);
+	virtual void mouseMoveEvent(QGraphicsSceneMouseEvent* event);
+	virtual void mouseReleaseEvent(QGraphicsSceneMouseEvent* event);
+
+private:
+	bool mIsOutput;
+	QRect mRect;
+	QPen mPen;
+	QBrush mBrush;
+	QPropertyAnimation mAnimation;
+	NodeTemporaryLinkView* mTemporaryLink;
+
+private:
+	NodeConnectorView* canDrop(const QPointF& scenePos);
+
+signals:
+	void draggingLinkDropped(QGraphicsWidget*, QGraphicsWidget*);
+	void draggingLinkStarted(QGraphicsWidget*);
+	void draggingLinkStopped(QGraphicsWidget*);
+};
+
+inline float NodeConnectorView::penWidth() const 
+{ return mPen.widthF(); }
+
+inline QRectF NodeConnectorView::boundingRect() const
+{ return mRect; }
+
+inline int NodeConnectorView::type() const
+{ return NodeConnectorView::Type; }
+
+inline bool NodeConnectorView::isOutput() const
+{ return mIsOutput; }
+
+inline QPointF NodeConnectorView::centerPos() const
+{ return QPointF(mRect.width() * 0.5, mRect.height() * 0.5); }
+
+inline NodeSocketView* NodeConnectorView::socketView() const
+{ return static_cast<NodeSocketView*>(parentObject()); }
