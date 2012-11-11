@@ -27,11 +27,12 @@ public:
 	void setDrawDebug(bool drawDebug);
 
 private:
+	QPen mPen;
+	QPointF mEndPosition;
+
 	bool mDrawDebug;
 	//! TODO: Make it enum
 	int mDrawMode;
-	QPen mPen;
-	QPointF mEndPosition;
 
 private:
 	QPainterPath _shape() const;

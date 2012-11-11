@@ -9,8 +9,8 @@
 
 NodeScene::NodeScene(QObject* parent)
 	: QGraphicsScene(parent)
-	, mDragging(false)
 	, mHovered(nullptr)
+	, mDragging(false)
 {
 	setBackgroundBrush(NodeStyle::SceneBackground);
 }

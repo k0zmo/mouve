@@ -40,13 +40,14 @@ protected:
 	virtual QVariant itemChange(GraphicsItemChange change, const QVariant& value);
 
 private:
-	bool mDrawDebug;
-	//! TODO: Make it enum
-	int mDrawMode;
 	QPen mPen;
 	QPointF mEndPosition;
 	NodeSocketView* mFromSocketView;
 	NodeSocketView* mToSocketView;
+
+	bool mDrawDebug;
+	//! TODO: Make it enum
+	int mDrawMode;
 
 private:
 	// Buduje i zwraca QPainterPath 

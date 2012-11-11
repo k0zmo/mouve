@@ -6,7 +6,9 @@
 #include "NodeView.h"
 #include "NodeLinkView.h"
 
-static bool DEBUG_LINKS = false;
+#include <QHash>
+
+static bool DEBUG_LINKS = true;
 
 class NodeController : 
 	public QObject,
@@ -41,13 +43,13 @@ public slots:
 	void contextMenu(const QPoint& globalPos, const QPointF& scenePos);
 
 private:
-	vector<NodeLinkView*> mLinkViews;
-	unordered_map<quint32, NodeView*> mNodeViews;
+	QList<NodeLinkView*> mLinkViews;
+	QHash<quint32, NodeView*> mNodeViews;
 
 	NodeScene* mScene;
 	NodeEditorView* mView;
 
-	vector<QAction*> mAddNodesActions;
+	QList<QAction*> mAddNodesActions;
 };
 
 #define nC NodeController::instancePtr()

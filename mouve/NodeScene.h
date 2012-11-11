@@ -14,8 +14,8 @@ protected:
 	virtual void mouseMoveEvent(QGraphicsSceneMouseEvent* event);
 
 private:
-	bool mDragging;
 	NodeConnectorView* mHovered;
+	bool mDragging;
 };
 
 inline void NodeScene::setDragging(bool dragging)

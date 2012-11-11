@@ -2,6 +2,7 @@
 
 #include "Prerequisites.h"
 #include <QGraphicsDropShadowEffect>
+#include <QHash>
 
 class NodeView : public QGraphicsWidget
 {
@@ -31,8 +32,8 @@ private:
 	QGraphicsDropShadowEffect* mDropShadowEffect;
 	QPainterPath mShape1;
 	QPainterPath mShape2;
-	unordered_map<quint32, NodeSocketView*> mInputSocketViews;
-	unordered_map<quint32, NodeSocketView*> mOutputSocketViews;
+	QHash<quint32, NodeSocketView*> mInputSocketViews;
+	QHash<quint32, NodeSocketView*> mOutputSocketViews;
 
 private:
 	QPainterPath shape1(qreal titleHeight) const;

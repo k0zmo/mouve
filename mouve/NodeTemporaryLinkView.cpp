@@ -4,10 +4,10 @@
 NodeTemporaryLinkView::NodeTemporaryLinkView(const QPointF& startPosition,
 	const QPointF& endPosition, QGraphicsItem* parent)
 	: QGraphicsItem(parent)
-	, mDrawDebug(false)
-	, mDrawMode(1)
 	, mPen(NodeStyle::LinkPen)
 	, mEndPosition(mapFromScene(endPosition))
+	, mDrawDebug(false)
+	, mDrawMode(1)
 {
 	setPos(startPosition);
 	setZValue(NodeStyle::ZValueTemporaryLink);

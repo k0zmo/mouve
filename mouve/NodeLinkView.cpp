@@ -5,11 +5,11 @@
 NodeLinkView::NodeLinkView(NodeSocketView* fromSocketView, 
 	NodeSocketView* toSocketView, QGraphicsItem* parent)
 	: QGraphicsItem(parent)
-	, mDrawDebug(false)
-	, mDrawMode(1)
 	, mPen(NodeStyle::LinkPen)
 	, mFromSocketView(fromSocketView)
 	, mToSocketView(toSocketView)
+	, mDrawDebug(false)
+	, mDrawMode(1)
 {
 	// !TODO: Dla usuwania wezlow potrzebna jest mozliwosc ich zaznaczenia
 	//        Na razie jednak kolizja dziala w oparciu o boundingRect 

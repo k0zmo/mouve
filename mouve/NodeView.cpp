@@ -134,9 +134,8 @@ void NodeView::updateLayout()
 	qreal outputsWidth = 0.0;
 
 	// First pass
-	for(auto it = mInputSocketViews.begin(); it != mInputSocketViews.end(); ++it)
+	foreach(NodeSocketView* sv, mInputSocketViews.values())
 	{
-		auto sv = it->second;
 		if(!sv->isVisible())
 			continue;
 		sv->updateLayout();
@@ -145,9 +144,9 @@ void NodeView::updateLayout()
 		inputsWidth = qMax(inputsWidth,
 			NodeStyle::NodeSocketHorizontalMargin + sv->boundingRect().width());
 	}
-	for(auto it = mOutputSocketViews.begin(); it != mOutputSocketViews.end(); ++it)
+
+	foreach(NodeSocketView* sv, mOutputSocketViews.values())
 	{
-		auto sv = it->second;
 		if(!sv->isVisible())
 			continue;
 		sv->updateLayout();
@@ -162,9 +161,8 @@ void NodeView::updateLayout()
 	qreal inputsHeight = qMax(yPos, titleHeight * 1.5); // if node is trivial
 	yPos = titleHeight;
 
-	for(auto it = mOutputSocketViews.begin(); it != mOutputSocketViews.end(); ++it)
+	foreach(NodeSocketView* sv, mOutputSocketViews.values())
 	{
-		auto sv = it->second;
 		if(!sv->isVisible())
 			continue;
 		QRectF b = sv->boundingRect();

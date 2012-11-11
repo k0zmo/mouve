@@ -2,7 +2,6 @@
 #include "NodeScene.h"
 #include "NodeEditorView.h"
 #include "NodeSocketView.h"
-#include "StlUtils.h"
 
 #include <QMenu>
 #include <QAction> 
@@ -39,18 +38,18 @@ NodeController::NodeController(QObject* parent)
 	{
 		QAction* a = new QAction(registeredNodeTypes[i], this);
 		a->setData(i);
-		mAddNodesActions.push_back(a);
+		mAddNodesActions.append(a);
 	}
 }
 
 NodeController::~NodeController()
 {
-	for(auto it = mLinkViews.begin(); it != mLinkViews.end(); ++it)
-		delete *it;
+	foreach(NodeLinkView* link, mLinkViews)
+		delete link;
 	mLinkViews.clear();
 
-	for(auto it = mNodeViews.begin(); it != mNodeViews.end(); ++it)
-		delete it->second;
+	foreach(NodeView* node, mNodeViews.values())
+		delete node;
 	mNodeViews.clear();
 }
 
@@ -169,9 +168,8 @@ void NodeController::contextMenu(const QPoint& globalPos,
 	{
 		QMenu menu;
 		QMenu* menuAddNode = menu.addMenu("Add node");
-		stlu::for_each(mAddNodesActions, [&](QAction* a) {
+		foreach(QAction* a, mAddNodesActions)
 			menuAddNode->addAction(a);
-		});
 		QAction* ret = menu.exec(globalPos);
 		if(ret != nullptr)
 			addNode(ret->data().toInt(), scenePos);
