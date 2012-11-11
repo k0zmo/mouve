@@ -10,7 +10,7 @@
 class NodeConnectorView : public QGraphicsWidget
 {
 	Q_OBJECT
-	Q_PROPERTY(float penWidth READ penWidth WRITE setPenWidth USER true)
+	Q_PROPERTY(float penWidth READ penWidth WRITE setPenWidth USER false)
 public:
 	NodeConnectorView(bool isOutput, QGraphicsItem* parent = nullptr);
 	

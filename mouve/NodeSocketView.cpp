@@ -1,6 +1,8 @@
 #include "NodeSocketView.h"
 #include "NodeStyle.h"
 #include "NodeConnectorView.h"
+#include "NodeView.h"
+#include "NodeLinkView.h"
 
 NodeSocketView::NodeSocketView(const QString& title, bool isOutput,
 	QGraphicsItem* parent)
@@ -15,8 +17,6 @@ NodeSocketView::NodeSocketView(const QString& title, bool isOutput,
 	mLabel->setBrush(NodeStyle::SocketTitleBrush);
 	mLabel->setText(title);
 	mLabel->setFont(NodeStyle::SocketFont);
-
-	// self._links = []
 
 	// Send the signals from connector elsewhere
 	connect(mConnector, SIGNAL(draggingLinkDropped(QGraphicsWidget*, QGraphicsWidget*)),
@@ -66,15 +66,24 @@ QVariant NodeSocketView::itemChange(GraphicsItemChange change,
 	// Update link views connecting this socket view
 	if (change == QGraphicsItem::ItemScenePositionHasChanged)
 	{
-		//for linkView in self._links:
-		//	linkView.updateFromSocketViews()
+		foreach(NodeLinkView* link, mLinks)
+			link->updateFromSocketViews();
 	}
 	// Default implementation does nothing and return 'value'
 	return value;
 }
 
-//def addLink(self, nodeLinkView):
-//self._links.append(nodeLinkView)
-//
-//	def removeLink(self, nodeLinkView):
-//self._links.remove(nodeLinkView)
+void NodeSocketView::addLink(NodeLinkView* link)
+{
+	mLinks.append(link);
+}
+
+void NodeSocketView::removeLink(NodeLinkView* link)
+{
+	mLinks.removeOne(link);
+}
+
+NodeView* NodeSocketView::nodeView() const
+{ 
+	return static_cast<NodeView*>(parentObject());
+}

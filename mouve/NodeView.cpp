@@ -1,11 +1,12 @@
 #include "NodeView.h"
 #include "NodeStyle.h"
 #include "NodeSocketView.h"
-#include <QGraphicsDropShadowEffect>
+#include "NodeController.h"
 
 NodeView::NodeView(const QString& title, QGraphicsItem* parent)
 	: QGraphicsWidget(parent)
 	, mLabel(new QGraphicsSimpleTextItem(this))
+	, mDropShadowEffect(new QGraphicsDropShadowEffect)
 {
 	setFlag(QGraphicsItem::ItemIsMovable);
 	setFlag(QGraphicsItem::ItemIsSelectable);
@@ -20,11 +21,10 @@ NodeView::NodeView(const QString& title, QGraphicsItem* parent)
 	setToolTip("ToolTip");
 
 	// Additional visual effect
-	static QGraphicsDropShadowEffect dropShadowEffect;
-	dropShadowEffect.setOffset(5.0, 5.0);
-	dropShadowEffect.setBlurRadius(12.0);
-	dropShadowEffect.setColor(QColor(0, 0, 0, 50));
-	setGraphicsEffect(&dropShadowEffect);
+	mDropShadowEffect->setOffset(5.0, 5.0);
+	mDropShadowEffect->setBlurRadius(12.0);
+	mDropShadowEffect->setColor(QColor(0, 0, 0, 50));
+	setGraphicsEffect(mDropShadowEffect);
 
 	// To alter Z value on moouse hover
 	setAcceptHoverEvents(true);
@@ -72,11 +72,14 @@ NodeSocketView* NodeView::addSocketView(quint32 socketKey,
 	const QString& title, bool isOutput)
 {
 	NodeSocketView* socketView = new NodeSocketView(title, isOutput, this);
-	//socketView->setData(NodeDataIndex::SocketKey, socketKey)
+	socketView->setData(NodeDataIndex::SocketKey, socketKey);
 
-	//socketView.draggingLinkDropped.connect(NodeController.controller.draggingLinkDropped);
-	//socketView.draggingLinkStarted.connect(NodeController.controller.draggingLinkStarted);
-	//socketView.draggingLinkStopped.connect(NodeController.controller.draggingLinkStopped);
+	connect(socketView, SIGNAL(draggingLinkDropped(QGraphicsWidget*, QGraphicsWidget*)), 
+		nC, SLOT(draggingLinkDropped(QGraphicsWidget*, QGraphicsWidget*)));
+	connect(socketView, SIGNAL(draggingLinkStarted(QGraphicsWidget*)), 
+		nC, SLOT(draggingLinkStarted(QGraphicsWidget*)));
+	connect(socketView, SIGNAL(draggingLinkStopped(QGraphicsWidget*)), 
+		nC, SLOT(draggingLinkStopped(QGraphicsWidget*)));
 
 	// Add socket view to the map
 	auto& views = isOutput
@@ -114,7 +117,8 @@ void NodeView::hoverLeaveEvent(QGraphicsSceneHoverEvent* event)
 void NodeView::updateLayout()
 {
 	qreal titleWidth = mLabel->boundingRect().width();
-	qreal titleHeight = mLabel->boundingRect().bottom() + 3 * NodeStyle::NodeTitleSize;
+	qreal titleHeight = mLabel->boundingRect().bottom()
+		+ 3 * NodeStyle::NodeTitleSize;
 
 	// During first pass we layout input slots and calculate
 	// required spacing between them and output slots.
@@ -122,7 +126,8 @@ void NodeView::updateLayout()
 	// title label and output slots
 
 	// Make some minimum size
-	qreal totalWidth = qMax(qreal(10.0), qreal(titleWidth + 2 * NodeStyle::NodeTitleHorizontalMargin));
+	qreal totalWidth = qMax(qreal(10.0),
+		qreal(titleWidth + 2 * NodeStyle::NodeTitleHorizontalMargin));
 
 	qreal yPos = titleHeight;
 	qreal inputsWidth = 0.0;
@@ -134,12 +139,11 @@ void NodeView::updateLayout()
 		auto sv = it->second;
 		if(!sv->isVisible())
 			continue;
-		QRectF b = sv->boundingRect();
 		sv->updateLayout();
 		sv->setPos(NodeStyle::NodeSocketHorizontalMargin, yPos);
-		yPos += b.height() + NodeStyle::NodeSocketVerticalMargin;
+		yPos += sv->boundingRect().height() + NodeStyle::NodeSocketVerticalMargin;
 		inputsWidth = qMax(inputsWidth,
-			NodeStyle::NodeSocketHorizontalMargin + b.width());
+			NodeStyle::NodeSocketHorizontalMargin + sv->boundingRect().width());
 	}
 	for(auto it = mOutputSocketViews.begin(); it != mOutputSocketViews.end(); ++it)
 	{
@@ -151,7 +155,8 @@ void NodeView::updateLayout()
 			NodeStyle::NodeSocketHorizontalMargin + sv->boundingRect().width());
 	}
 
-	totalWidth = qMax(totalWidth, outputsWidth + inputsWidth + NodeStyle::NodeSocketsMargin);
+	totalWidth = qMax(totalWidth, 
+		outputsWidth + inputsWidth + NodeStyle::NodeSocketsMargin);
 
 	// Second pass
 	qreal inputsHeight = qMax(yPos, titleHeight * 1.5); // if node is trivial
@@ -169,8 +174,9 @@ void NodeView::updateLayout()
 	}
 
 	// Center title
-	mLabel->setPos((totalWidth - titleWidth) / 2.0, NodeStyle::NodeTitleSize);
-	resize(totalWidth, qMax(yPos, inputsHeight)); // Does it call prepareGeometryChange?
+	mLabel->setPos((totalWidth - titleWidth) / 2.0,
+		NodeStyle::NodeTitleSize);
+	resize(totalWidth, qMax(yPos, inputsHeight));
 
 	// Generate painter paths
 	qreal yy = mLabel->boundingRect().bottom() + 2 * NodeStyle::NodeTitleSize;

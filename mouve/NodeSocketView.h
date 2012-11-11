@@ -20,18 +20,19 @@ public:
 	void setActive(bool active);
 
 	// Zwraca widok wezla do ktorego nalezy gniazdo
-	//NodeView* nodeView() const;
-	//{ return static_cast<NodeView*>(parentObject()); }
+	NodeView* nodeView() const;
 
 	// Zwraca klucz gniazda
-	// !TODO: SocketId socketKey();
-	//{ return data(NodeDataIndex::SocketKey); }
+	SocketId socketKey() const;
 
 	// Zwraca pozycje srodka widoku gniazda
 	QPointF connectorCenterPos() const;
 
 	bool isOutput() const;
 	const QString& title() const;
+
+	void addLink(NodeLinkView* link);
+	void removeLink(NodeLinkView* link);
 
 	enum 
 	{
@@ -48,6 +49,7 @@ private:
 
 	QGraphicsSimpleTextItem* mLabel;
 	NodeConnectorView* mConnector;
+	QList<NodeLinkView*> mLinks;
 
 signals:
 	void draggingLinkDropped(QGraphicsWidget*, QGraphicsWidget*);
@@ -57,7 +59,12 @@ signals:
 
 inline int NodeSocketView::type() const
 { return NodeSocketView::Type; }
+
 inline bool NodeSocketView::isOutput() const
 { return mIsOutput; }
+
 inline const QString& NodeSocketView::title() const
 { return mTitle; }
+
+inline SocketId NodeSocketView::socketKey() const
+{ return data(NodeDataIndex::SocketKey).toInt(); }

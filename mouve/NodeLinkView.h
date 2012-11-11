@@ -7,8 +7,8 @@
 class NodeLinkView :  public QGraphicsItem
 {
 public:
-	NodeLinkView(const NodeSocketView* fromSocketView, 
-		const NodeSocketView* toSocketView, QGraphicsItem* parent = nullptr);
+	NodeLinkView(NodeSocketView* fromSocketView, 
+		NodeSocketView* toSocketView, QGraphicsItem* parent = nullptr);
 	virtual ~NodeLinkView();
 
 	virtual void paint(QPainter *painter, 
@@ -19,6 +19,13 @@ public:
 
 	// Uaktualnia ksztlat i pozycje na podstawie gniazd do ktorych wchodzi/wychodzi
 	void updateFromSocketViews();
+
+	// Zwraca true jesli obiekt laczy podane gniazda
+	bool connects(NodeSocketView* from, NodeSocketView* to) const;
+	// Zwraca true jesli obiekt wychodzi z podanego wezla 
+	bool outputConnecting(NodeView* from) const;
+	// Zwraca true jesli obiektu wchodzi do podanego wezla
+	bool inputConnecting(NodeView* to) const;
 
 	enum
 	{
@@ -38,8 +45,8 @@ private:
 	int mDrawMode;
 	QPen mPen;
 	QPointF mEndPosition;
-	const NodeSocketView* mFromSocketView;
-	const NodeSocketView* mToSocketView;
+	NodeSocketView* mFromSocketView;
+	NodeSocketView* mToSocketView;
 
 private:
 	// Buduje i zwraca QPainterPath 

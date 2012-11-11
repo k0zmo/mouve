@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Prerequisites.h"
+#include <QGraphicsDropShadowEffect>
 
 class NodeView : public QGraphicsWidget
 {
@@ -11,12 +12,9 @@ public:
 	virtual void paint(QPainter* painter,
 		const QStyleOptionGraphicsItem* option, QWidget* widget);
 
-	//NodeId nodeKey() const
-	//{ return data(NodeDataIndex::NodeKey) }
-
+	NodeId nodeKey() const;
 	NodeSocketView* addSocketView(quint32 socketKey, 
 		const QString& title, bool isOutput = false);
-
 	void updateLayout();
 
 	enum 
@@ -30,10 +28,11 @@ protected:
 
 private:
 	QGraphicsSimpleTextItem* mLabel;
-	unordered_map<quint32, NodeSocketView*> mInputSocketViews;
-	unordered_map<quint32, NodeSocketView*> mOutputSocketViews;
+	QGraphicsDropShadowEffect* mDropShadowEffect;
 	QPainterPath mShape1;
 	QPainterPath mShape2;
+	unordered_map<quint32, NodeSocketView*> mInputSocketViews;
+	unordered_map<quint32, NodeSocketView*> mOutputSocketViews;
 
 private:
 	QPainterPath shape1(qreal titleHeight) const;
@@ -42,3 +41,6 @@ private:
 
 inline int NodeView::type() const
 { return NodeView::Type; }
+
+inline NodeId NodeView::nodeKey() const
+{ return data(NodeDataIndex::NodeKey).toInt(); }

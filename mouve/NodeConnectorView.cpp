@@ -91,10 +91,8 @@ void NodeConnectorView::mouseReleaseEvent( QGraphicsSceneMouseEvent* event)
 		emit draggingLinkStopped(socketView());
 		NodeConnectorView* itemColliding = canDrop(event->scenePos());
 		if(itemColliding != nullptr)
-		{
 			emit draggingLinkDropped(socketView(), itemColliding->socketView());
-			scene()->removeItem(mTemporaryLink);
-		}
+		scene()->removeItem(mTemporaryLink);
 		delete mTemporaryLink;
 		mTemporaryLink = nullptr;
 	}
@@ -113,10 +111,12 @@ NodeConnectorView* NodeConnectorView::canDrop(const QPointF& scenePos)
 			NodeConnectorView* citem = static_cast<NodeConnectorView*>(item);
 			if(citem->isOutput() != isOutput())
 			{
-				// !TODO: Protect from constructing algebraic loops
-				//if(item->socketView()->nodeView() != socketView()->nodeView()) {
+				// Protect from constructing algebraic loops
+				// !TODO: move to logic
+				if(citem->socketView()->nodeView() != socketView()->nodeView())
+				{
 					return citem;
-				//}
+				}
 			}
 		}
 	}

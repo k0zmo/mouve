@@ -6,3 +6,6 @@
 #include <QPropertyAnimation>
 #include <QGraphicsSimpleTextItem>
 #include <QGraphicsDropShadowEffect>
+#include <QMenu>
+#include <QAction> 
+#include <QDebug>

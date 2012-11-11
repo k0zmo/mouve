@@ -85,6 +85,15 @@
     <ClCompile Include="NodeView.cpp">
       <Filter>_View</Filter>
     </ClCompile>
+    <ClCompile Include="NodeController.cpp">
+      <Filter>_View</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Debug\moc_NodeController.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Release\moc_NodeController.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Precomp.h" />
@@ -121,6 +130,9 @@
       <Filter>_View</Filter>
     </CustomBuild>
     <CustomBuild Include="NodeSocketView.h">
+      <Filter>_View</Filter>
+    </CustomBuild>
+    <CustomBuild Include="NodeController.h">
       <Filter>_View</Filter>
     </CustomBuild>
   </ItemGroup>

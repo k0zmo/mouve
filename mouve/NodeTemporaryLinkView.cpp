@@ -30,12 +30,10 @@ void NodeTemporaryLinkView::paint(QPainter *painter,
 
 QRectF NodeTemporaryLinkView::boundingRect() const
 {
-	// !TODO: zbadac to
-	float d = 0.0f;
-	float x1 = qMin(qreal(0), mEndPosition.x()) - d;
-	float y1 = qMin(qreal(0), mEndPosition.y()) - d;
-	float x2 = qMax(qreal(0), mEndPosition.x()) + d;
-	float y2 = qMax(qreal(0), mEndPosition.y()) + d;
+	float x1 = qMin(qreal(0), mEndPosition.x());
+	float y1 = qMin(qreal(0), mEndPosition.y());
+	float x2 = qMax(qreal(0), mEndPosition.x());
+	float y2 = qMax(qreal(0), mEndPosition.y());
 	return QRectF(QPointF(x1, y1), QPointF(x2, y2));
 }
 

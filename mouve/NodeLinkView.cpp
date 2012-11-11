@@ -2,8 +2,8 @@
 #include "NodeStyle.h"
 #include "NodeSocketView.h"
 
-NodeLinkView::NodeLinkView(const NodeSocketView* fromSocketView, 
-	const NodeSocketView* toSocketView, QGraphicsItem* parent)
+NodeLinkView::NodeLinkView(NodeSocketView* fromSocketView, 
+	NodeSocketView* toSocketView, QGraphicsItem* parent)
 	: QGraphicsItem(parent)
 	, mDrawDebug(false)
 	, mDrawMode(1)
@@ -22,11 +22,11 @@ NodeLinkView::NodeLinkView(const NodeSocketView* fromSocketView,
 
 NodeLinkView::~NodeLinkView()
 {
-	//// Remove the references so we socket views won't point to no man's land
-	//if(mFromSocketView)
-	//	mFromSocketView.removeLink(this);
-	//if(mToSocketView)
-	//	mToSocketView.removeLink(this);
+	// Remove the references so we socket views won't point to the no man's land
+	if(mFromSocketView)
+		mFromSocketView->removeLink(this);
+	if(mToSocketView)
+		mToSocketView->removeLink(this);
 }
 
 void NodeLinkView::paint(QPainter *painter,
@@ -106,7 +106,7 @@ QVariant NodeLinkView::itemChange(GraphicsItemChange change, const QVariant& val
 	{
 		if(value.toBool())
 		{
-			mPen.setStyle(Qt::DashLine);
+			mPen.setStyle(Qt::DotLine);
 			update();
 		}
 		else
@@ -127,4 +127,23 @@ void NodeLinkView::updateFromSocketViews()
 		setPos(mFromSocketView->scenePos() + mFromSocketView->connectorCenterPos());
 		mEndPosition = mapFromScene(mToSocketView->scenePos() + mToSocketView->connectorCenterPos());
 	}
+}
+
+bool NodeLinkView::connects(NodeSocketView* from, NodeSocketView* to) const
+{
+	return from == mFromSocketView && to == mToSocketView;
+}
+
+bool NodeLinkView::outputConnecting(NodeView* from) const
+{
+	if(mFromSocketView)
+		return from == mFromSocketView->nodeView();
+	return false;
+}
+
+bool NodeLinkView::inputConnecting(NodeView* to) const
+{
+	if(mToSocketView)
+		return to == mToSocketView->nodeView();
+	return false;
 }

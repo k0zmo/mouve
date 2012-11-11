@@ -8,7 +8,7 @@ class NodeScene : public QGraphicsScene
 {
 public:
 	NodeScene(QObject* parent = nullptr);
-	bool setDragging(bool dragging);
+	void setDragging(bool dragging);
 
 protected:
 	virtual void mouseMoveEvent(QGraphicsSceneMouseEvent* event);
@@ -18,5 +18,5 @@ private:
 	NodeConnectorView* mHovered;
 };
 
-inline bool NodeScene::setDragging(bool dragging)
+inline void NodeScene::setDragging(bool dragging)
 { mDragging = dragging; }
