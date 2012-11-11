@@ -76,6 +76,9 @@
     <ClCompile Include="GeneratedFiles\Release\moc_NodeSocketView.cpp">
       <Filter>Generated Files\Release</Filter>
     </ClCompile>
+    <ClCompile Include="NodeScene.cpp">
+      <Filter>_View</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Precomp.h" />
@@ -89,6 +92,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="NodeStyle.h">
+      <Filter>_View</Filter>
+    </ClInclude>
+    <ClInclude Include="NodeScene.h">
       <Filter>_View</Filter>
     </ClInclude>
   </ItemGroup>
