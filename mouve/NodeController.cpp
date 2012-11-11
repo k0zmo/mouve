@@ -53,6 +53,8 @@ NodeController::~NodeController()
 	foreach(NodeView* node, mNodeViews.values())
 		delete node;
 	mNodeViews.clear();
+
+	delete mView;
 }
 
 NodeView* NodeController::nodeView(quint32 nodeKey)
