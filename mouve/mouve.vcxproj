@@ -109,6 +109,7 @@
     <ClCompile Include="NodeSocketView.cpp" />
     <ClCompile Include="NodeStyle.cpp" />
     <ClCompile Include="NodeTemporaryLinkView.cpp" />
+    <ClCompile Include="NodeView.cpp" />
     <ClCompile Include="Precomp.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
@@ -164,6 +165,7 @@
     <ClInclude Include="NodeLinkView.h" />
     <ClInclude Include="NodeScene.h" />
     <ClInclude Include="NodeStyle.h" />
+    <ClInclude Include="NodeView.h" />
     <ClInclude Include="Precomp.h" />
     <ClInclude Include="Prerequisites.h" />
     <ClInclude Include="Singleton.h" />

@@ -5,3 +5,4 @@
 #include <QGraphicsWidget>
 #include <QPropertyAnimation>
 #include <QGraphicsSimpleTextItem>
+#include <QGraphicsDropShadowEffect>

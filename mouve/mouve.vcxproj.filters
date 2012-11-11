@@ -82,6 +82,9 @@
     <ClCompile Include="NodeLinkView.cpp">
       <Filter>_View</Filter>
     </ClCompile>
+    <ClCompile Include="NodeView.cpp">
+      <Filter>_View</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Precomp.h" />
@@ -101,6 +104,9 @@
       <Filter>_View</Filter>
     </ClInclude>
     <ClInclude Include="NodeLinkView.h">
+      <Filter>_View</Filter>
+    </ClInclude>
+    <ClInclude Include="NodeView.h">
       <Filter>_View</Filter>
     </ClInclude>
   </ItemGroup>
