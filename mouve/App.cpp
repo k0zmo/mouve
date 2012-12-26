@@ -1,8 +1,5 @@
-#include <QtGui/QApplication>
-
+#include <QApplication>
 #include "NodeController.h"
-
-#include <windows.h>
 
 int main(int argc, char* argv[])
 {
