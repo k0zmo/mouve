@@ -54,5 +54,6 @@ struct NodeLink
 class NodeLinkIterator
 {
 public:
-	virtual bool next(NodeLink& link) = 0;
+	virtual ~NodeLinkIterator() {}
+	virtual bool next(NodeLink& nodeLink) = 0;
 };

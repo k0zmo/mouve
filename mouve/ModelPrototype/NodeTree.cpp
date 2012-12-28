@@ -361,36 +361,38 @@ void NodeTree::deallocateNodeID(NodeID id)
 
 // -----------------------------------------------------------------------------
 
-//class NodeTree::NodeIterator : public ::NodeIterator
-//{
-//public:
-//	NodeIterator(NodeTree* parent)
-//		: _parent(parent)
-//		, _iter(parent->mNodeNameToTypeId.begin())
-//	{ }
-//
-//	virtual INodeInternal* next(TNodeId& id)
-//	{
-//		INodeInternal* out = nullptr;
-//
-//		if(iter != parent->mNodeNameToTypeId.end())
-//		{
-//			id = iter->second;
-//			out = &parent->mNodeInternals[id];
-//			++iter;
-//		}
-//
-//		return out;
-//	}
-//
-//private:
-//	NodeTree* parent;
-//	unordered_map<string, TNodeId>::iterator iter;
-//};
-//
-//std::unique_ptr<NodeIterator> NodeTree::createNodeIterator()
-//{
-//}
+class NodeTree::NodeIterator : public ::NodeIterator
+{
+public:
+	NodeIterator(NodeTree* parent)
+		: _parent(parent)
+		, _iter(parent->_nodeNameToNodeID.begin())
+	{}
+
+	virtual const Node* next(NodeID& nodeID)
+	{
+		Node* out = nullptr;
+		nodeID = InvalidNodeID;
+
+		if(_iter != _parent->_nodeNameToNodeID.end())
+		{
+			nodeID = _iter->second;
+			out = &_parent->_nodes[nodeID];
+			++_iter;
+		}
+
+		return out;
+	}
+
+private:
+	NodeTree* _parent;
+	std::unordered_map<std::string, NodeID>::iterator _iter;
+};
+
+std::unique_ptr<NodeIterator> NodeTree::createNodeIterator()
+{
+	return std::unique_ptr<::NodeIterator>(new NodeIterator(this));
+}
 
 class NodeTree::NodeLinkIterator : public ::NodeLinkIterator
 {
@@ -398,20 +400,22 @@ public:
 	NodeLinkIterator(NodeTree* parent)
 		: _parent(parent)
 		, _iter(parent->_links.begin())
-	{ }
+	{}
 
-	virtual bool next(NodeLink& link) // this is not NodeTree::Link
+	virtual bool next(NodeLink& nodeLink)
 	{
-		if(_iter == _parent->_links.end())
-			return false;
+		if(_parent)
+		{
+			if(_iter == _parent->_links.end())
+				return false;
 
-		link.fromNode = _iter->fromNode;
-		link.fromSocket = _iter->fromSocket;
-		link.toNode = _iter->toNode;
-		link.toSocket = _iter->toSocket;
+			nodeLink.fromNode = _iter->fromNode;
+			nodeLink.fromSocket = _iter->fromSocket;
+			nodeLink.toNode = _iter->toNode;
+			nodeLink.toSocket = _iter->toSocket;
 
-		++_iter;
-
+			++_iter;
+		}
 		return true;
 	}
 

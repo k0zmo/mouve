@@ -2,12 +2,6 @@
 
 #include "Prerequisites.h"
 
-class NodeIterator
-{
-public:
-	virtual bool next(NodeID& node) = 0;
-};
-
 class Node
 {
 public:
@@ -51,6 +45,13 @@ private:
 	std::string _nodeName;
 	SocketID _numInputs;
 	SocketID _numOutputs;
+};
+
+class NodeIterator
+{
+public:
+	virtual ~NodeIterator() {}
+	virtual const Node* next(NodeID& nodeID) = 0;
 };
 
 inline bool Node::isValid() const

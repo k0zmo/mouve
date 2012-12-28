@@ -51,7 +51,7 @@ public:
 	bool isInputSocketConnected(NodeID nodeID, SocketID socketID) const;
 	bool isOutputSocketConnected(NodeID nodeID, SocketID socketID) const;
 
-	//std::unique_ptr<NodeIterator> createNodeIterator();
+	std::unique_ptr<NodeIterator> createNodeIterator();
     std::unique_ptr<NodeLinkIterator> createNodeLinkIterator();
 
 private:
