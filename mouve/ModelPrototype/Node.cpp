@@ -31,7 +31,9 @@ Node& Node::operator=(Node&& rhs)
 { 
 	_outputSockets = std::move(rhs._outputSockets);
 	_nodeType = std::move(rhs._nodeType);
-
+	_nodeName = std::move(rhs._nodeName);
+	_numInputs = rhs._numInputs;
+	_numOutputs = rhs._numOutputs;
 	return *this;
 }
 

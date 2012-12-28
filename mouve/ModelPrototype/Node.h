@@ -45,6 +45,7 @@ private:
 	Node& operator=(const Node& rhs);
 
 private:
+	// NOTE: If you add any new fields be sure to also handle them in move constructor/operator
 	std::unique_ptr<NodeType> _nodeType;
 	std::vector<cv::Mat> _outputSockets;
 	std::string _nodeName;
