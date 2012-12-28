@@ -5,6 +5,8 @@ Node::Node()
 	: _nodeType(nullptr)
 	, _outputSockets(0)
 	, _nodeName()
+	, _numInputs(0)
+	, _numOutputs(0)
 {
 }
 
@@ -14,7 +16,10 @@ Node::Node(std::unique_ptr<NodeType> nodeType,
 	, _nodeName(nodeName)
 {
 	/// xXx: Temporary - NodeConfiguration
-	_outputSockets.resize(_nodeType->numOutputSockets());
+	_numInputs = _nodeType->numInputSockets();
+	_numOutputs = _nodeType->numOutputSockets();
+
+	_outputSockets.resize(_numOutputs);
 }
 
 Node::Node(Node&& rhs)
@@ -44,18 +49,6 @@ const cv::Mat& Node::outputSocket(SocketID socketID) const
 
 	/// xXx: To throw or not to throw ?
 	return _outputSockets[socketID];
-}
-
-SocketID Node::numOutputSockets() const
-{
-	/// xXx: rely this on cached result from NodeConfiguration
-	return _nodeType->numOutputSockets();
-}
-
-SocketID Node::numInputSockets() const
-{
-	/// xXx: rely this on cached result from NodeConfiguration
-	return _nodeType->numInputSockets();
 }
 
 void Node::execute(NodeSocketReader* reader, NodeSocketWriter* writer)

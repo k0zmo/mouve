@@ -33,10 +33,10 @@ public:
 	const std::string& nodeName() const;
 	void setNodeName(const std::string& nodeName);
 
-	// Below methods are thin wrapper for held NodeType interface
-	/// xXx: should be different meaning but same effect (based on NodeConfiguration, not yet another method)
-	SocketID numOutputSockets() const;
 	SocketID numInputSockets() const;
+	SocketID numOutputSockets() const;
+
+	// Below methods are thin wrapper for held NodeType interface
 	void execute(NodeSocketReader* reader, NodeSocketWriter* writer);
 
 private:
@@ -48,6 +48,8 @@ private:
 	std::unique_ptr<NodeType> _nodeType;
 	std::vector<cv::Mat> _outputSockets;
 	std::string _nodeName;
+	SocketID _numInputs;
+	SocketID _numOutputs;
 };
 
 inline bool Node::isValid() const
@@ -64,3 +66,9 @@ inline const std::string& Node::nodeName() const
 
 inline void Node::setNodeName(const std::string& nodeName)
 { _nodeName = nodeName; }
+
+inline SocketID Node::numInputSockets() const
+{ return _numInputs; }
+
+inline SocketID Node::numOutputSockets() const
+{ return _numOutputs; }
