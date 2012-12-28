@@ -29,6 +29,18 @@ public:
 	bool linkNodes(SocketAddress from, SocketAddress to);
 	bool unlinkNodes(SocketAddress from, SocketAddress to);
 
+	// Set a new name for a given node
+	void setNodeName(NodeID nodeID, const std::string& newNodeName);
+	// Returns the current node name for a given node
+	const std::string& nodeName(NodeID nodeID) const;
+
+	// For a given a nodeName returns NodeID
+	//NodeID resolveNode(const std::string& nodeName) const;
+	// For a given NodeID returns its type ID
+	//NodeTypeID nodeTypeID(NodeID nodeID) const;
+	// For a given NodeID returns its type name as string
+	//const std::string& nodeTypeName(NodeID nodeID) const;	
+
 	bool validateLink(SocketAddress from, SocketAddress to);
 
 	// Zwraca socket wyjsciowy do ktorego podlaczony jest podany adres
@@ -54,10 +66,8 @@ private:
 	std::vector<Node> _nodes;
 	std::vector<NodeID> _recycledIDs;
 	std::vector<NodeID> _taggedNodesID;
-
-	//std::unordered_map<std::string, NodeID> _nodeNameToNodeID;
-
 	std::vector<NodeLink> _links;
+	std::unordered_map<std::string, NodeID> _nodeNameToNodeID;
 
 private:
 	// Interfaces implementations

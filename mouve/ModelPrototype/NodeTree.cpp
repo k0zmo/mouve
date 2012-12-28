@@ -22,8 +22,8 @@ void NodeTree::clear()
 	_nodes.clear();
 	_recycledIDs.clear();
 	_taggedNodesID.clear();
-	//_nodeNameToNodeID.clear();
 	_links.clear();
+	_nodeNameToNodeID.clear();
 }
 
 size_t NodeTree::firstOutputLink(NodeID fromNode,
@@ -173,6 +173,10 @@ std::unique_ptr<NodeType> createNodeType(NodeTypeID typeID)
 
 NodeID NodeTree::createNode(NodeTypeID typeID, const std::string& name)
 {
+	// Check if the given name is unique
+	if(_nodeNameToNodeID.find(name) != _nodeNameToNodeID.end())
+		return InvalidNodeID;
+
 	// Allocate NodeID
 	NodeID id = allocateNodeID();
 	if(id == InvalidNodeID)
@@ -188,6 +192,8 @@ NodeID NodeTree::createNode(NodeTypeID typeID, const std::string& name)
 
 	// Create actual node object
 	_nodes[id] = Node(std::move(nodeType), name);
+	// Add the pair <node name, node ID> to hash map
+	_nodeNameToNodeID.insert(std::make_pair(name, id));
 	return id;
 }
 
@@ -213,6 +219,40 @@ bool NodeTree::unlinkNodes(SocketAddress from, SocketAddress to)
 
 	// TODO
 	return false;
+}
+
+void NodeTree::setNodeName(NodeID nodeID, const std::string& newNodeName)
+{
+	if(nodeID < _nodes.size())
+	{
+		auto& node = _nodes[nodeID];
+		if(node.isValid() && node.nodeName() != newNodeName)
+		{
+			// Remove old mapping
+			_nodeNameToNodeID.erase(node.nodeName());
+
+			// Change a name and and new mapping
+			node.setNodeName(newNodeName);
+			_nodeNameToNodeID.insert(std::make_pair(newNodeName, nodeID));
+		}
+	}
+}
+
+const std::string& NodeTree::nodeName(NodeID nodeID) const
+{
+	static const std::string InvalidNodeStr("InvalidNode");
+	static const std::string InvalidNodeIDStr("InvalidNodeID");
+
+	if(nodeID < _nodes.size())
+	{
+		auto& node = _nodes[nodeID];
+		if(node.isValid())
+		{
+			return node.nodeName();
+		}
+		return InvalidNodeStr;
+	}
+	return InvalidNodeIDStr;
 }
 
 bool NodeTree::validateLink(SocketAddress from, SocketAddress to)
@@ -308,6 +348,9 @@ void NodeTree::deallocateNodeID(NodeID id)
 {
 //	if(!validateNode(id))
 //		return;
+
+	// Remove mapping from node name to node ID
+	_nodeNameToNodeID.erase(_nodes[id].nodeName());
 
 	// Invalidate node
 	_nodes[id] = Node();
