@@ -104,3 +104,41 @@ NodeSystem::NodeTypeInfo& NodeSystem::NodeTypeInfo::operator=(NodeSystem::NodeTy
 
 	return *this;
 }
+
+// -----------------------------------------------------------------------------
+
+class NodeSystem::NodeTypeIterator : public ::NodeTypeIterator
+{
+public:
+	NodeTypeIterator(const std::vector<NodeSystem::NodeTypeInfo>& registeredNodeTypes)
+		: _nodeTypeID(InvalidNodeTypeID)
+		, _registeredNodeTypes(registeredNodeTypes)
+		, _iterator(registeredNodeTypes.cbegin())
+	{
+		// Iterator points to first valid type info
+		if(_iterator != _registeredNodeTypes.cend())
+			++_iterator;
+	}
+
+	virtual bool next(NodeTypeIterator::NodeTypeInfo& nodeType)
+	{
+		if(_iterator == _registeredNodeTypes.cend())
+			return false;
+
+		nodeType.typeID = ++_nodeTypeID;
+		nodeType.typeName = _iterator->nodeTypeName;
+
+		++_iterator;
+		return true;
+	}
+
+private:
+	int _nodeTypeID;
+	const std::vector<NodeSystem::NodeTypeInfo>& _registeredNodeTypes;
+	std::vector<NodeSystem::NodeTypeInfo>::const_iterator _iterator;
+};
+
+std::unique_ptr<NodeTypeIterator> NodeSystem::createNodeTypeIterator() const
+{
+	return std::unique_ptr<::NodeTypeIterator>(new NodeTypeIterator(_registeredNodeTypes));
+}

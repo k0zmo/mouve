@@ -17,6 +17,8 @@ public:
 	const std::string& nodeTypeName(NodeTypeID nodeTypeID) const;
 	NodeTypeID nodeTypeID(const std::string& nodeTypeName) const;
 
+	std::unique_ptr<NodeTypeIterator> createNodeTypeIterator() const;
+
 private:
 	// That is all that NodeSystem needs for handling registered node types
 	struct NodeTypeInfo
@@ -46,5 +48,8 @@ private:
 	// Disallows copying/cloning of NodeSystem
 	NodeSystem(const NodeSystem&);
 	NodeSystem& operator=(const NodeSystem&);
+
+private:
+	class NodeTypeIterator;
 };
 

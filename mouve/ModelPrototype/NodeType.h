@@ -60,3 +60,16 @@ public:
 	virtual SocketID numInputSockets() const = 0;
 	virtual SocketID numOutputSockets() const = 0;
 };
+
+class NodeTypeIterator
+{
+public:
+	struct NodeTypeInfo
+	{
+		NodeTypeID typeID;
+		std::string typeName;
+	};
+
+	virtual ~NodeTypeIterator() {} 
+	virtual bool next(NodeTypeInfo& nodeTypeInfo) = 0;
+};

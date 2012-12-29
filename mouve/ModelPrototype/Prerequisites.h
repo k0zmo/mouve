@@ -49,5 +49,7 @@ class NodeSystem;
 
 struct NodeLink;
 struct SocketAddress;
+
 class NodeIterator;
 class NodeLinkIterator;
+class NodeTypeIterator;
