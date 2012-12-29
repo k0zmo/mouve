@@ -17,13 +17,13 @@ NodeLink::NodeLink(NodeID fromNode, SocketID fromSocket,
 {
 }
 
-//bool NodeLink::operator==(const NodeLink& rhs) const
-//{
-//	return fromNode   == rhs.fromNode &&
-//		   fromSocket == rhs.fromSocket &&
-//		   toNode     == rhs.toNode &&
-//		   toSocket   == rhs.toSocket;
-//}
+bool NodeLink::operator==(const NodeLink& rhs) const
+{
+	return fromNode   == rhs.fromNode &&
+		   fromSocket == rhs.fromSocket &&
+		   toNode     == rhs.toNode &&
+		   toSocket   == rhs.toSocket;
+}
 
 bool NodeLink::operator<(const NodeLink& rhs) const
 {

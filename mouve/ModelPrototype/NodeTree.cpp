@@ -119,22 +119,48 @@ bool NodeTree::removeNode(NodeID)
 	return false;
 }
 
-//bool NodeTree::removeNode(const std::string& nodeName);
+bool NodeTree::removeNode(const std::string& nodeName)
+{
+	auto iter = _nodeNameToNodeID.find(nodeName);
+	if(iter == _nodeNameToNodeID.end())
+		return false;
+
+	return removeNode(iter->second);
+}
 
 bool NodeTree::linkNodes(SocketAddress from, SocketAddress to)
 {
 	if(!validateLink(from, to))
 		return false;
 	_links.emplace_back(NodeLink(from, to));
+
+	/// xXx: tag affected nodes?
+
 	return true;
 }
 
 bool NodeTree::unlinkNodes(SocketAddress from, SocketAddress to)
 {
-	(void) from;
-	(void) to;
+	if(!validateLink(from, to))
+		return false;
 
-	// TODO
+	// lower_bound requires container to be sorted
+	std::stable_sort(std::begin(_links), std::end(_links));
+
+	// look for given node link
+	NodeLink nodeLinkToFind(from, to);
+	auto iter = std::lower_bound(std::begin(_links), 
+		std::end(_links), nodeLinkToFind);
+
+	if(iter != std::end(_links))
+	{
+		_links.erase(iter);
+
+		/// xXx: tag affected nodes?
+
+		return true;
+	}
+
 	return false;
 }
 

@@ -42,7 +42,7 @@ struct NodeLink
 	NodeLink(NodeID fromNode, SocketID fromSocket,
 		NodeID toNode, SocketID toSocket);
 
-	//bool operator==(const NodeLink& rhs) const;
+	bool operator==(const NodeLink& rhs) const;
 	bool operator<(const NodeLink& rhs) const;
 
 	NodeID fromNode;

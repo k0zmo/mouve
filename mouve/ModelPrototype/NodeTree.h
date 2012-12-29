@@ -24,7 +24,7 @@ public:
 
 	NodeID createNode(NodeTypeID typeID, const std::string& name);
 	bool removeNode(NodeID);
-	//bool removeNode(const std::string& nodeName);
+	bool removeNode(const std::string& nodeName);
 
 	bool linkNodes(SocketAddress from, SocketAddress to);
 	bool unlinkNodes(SocketAddress from, SocketAddress to);
