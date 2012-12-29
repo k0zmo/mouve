@@ -437,10 +437,10 @@ bool NodeTree::validateNode(NodeID nodeID) const
 
 // -----------------------------------------------------------------------------
 
-class NodeTree::NodeIterator : public ::NodeIterator
+class NodeTree::NodeIteratorImpl : public NodeIterator
 {
 public:
-	NodeIterator(NodeTree* parent)
+	NodeIteratorImpl(NodeTree* parent)
 		: _parent(parent)
 		, _iter(parent->_nodeNameToNodeID.begin())
 	{}
@@ -467,13 +467,13 @@ private:
 
 std::unique_ptr<NodeIterator> NodeTree::createNodeIterator()
 {
-	return std::unique_ptr<::NodeIterator>(new NodeIterator(this));
+	return std::unique_ptr<NodeIterator>(new NodeIteratorImpl(this));
 }
 
-class NodeTree::NodeLinkIterator : public ::NodeLinkIterator
+class NodeTree::NodeLinkIteratorImpl : public NodeLinkIterator
 {
 public:
-	NodeLinkIterator(NodeTree* parent)
+	NodeLinkIteratorImpl(NodeTree* parent)
 		: _parent(parent)
 		, _iter(parent->_links.begin())
 	{}
@@ -502,5 +502,5 @@ private:
 
 std::unique_ptr<NodeLinkIterator> NodeTree::createNodeLinkIterator()
 {
-	return std::unique_ptr<::NodeLinkIterator>(new NodeLinkIterator(this));
+	return std::unique_ptr<NodeLinkIterator>(new NodeLinkIteratorImpl(this));
 }

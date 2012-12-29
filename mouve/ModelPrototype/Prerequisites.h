@@ -6,6 +6,7 @@
 #include <cassert>
 #include <cstdint>
 #include <cstddef>
+#include <stdexcept>
 
 // STL
 #include <string>
@@ -34,9 +35,9 @@ static const SocketID InvalidSocketID     = ~SocketID(0);
 static const NodeTypeID InvalidNodeTypeID = NodeTypeID(0);
 
 // Forward declarations
-struct InputSocketConfig;
-struct OutputSocketConfig;
-struct NodeConfig;
+//struct InputSocketConfig;
+//struct OutputSocketConfig;
+//struct NodeConfig;
 
 class Node;
 class NodeType;
@@ -53,3 +54,6 @@ struct SocketAddress;
 class NodeIterator;
 class NodeLinkIterator;
 class NodeTypeIterator;
+
+// Temporary here
+namespace cv { class Mat; }

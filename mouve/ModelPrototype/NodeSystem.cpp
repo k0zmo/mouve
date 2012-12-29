@@ -144,10 +144,10 @@ NodeSystem::NodeTypeInfo& NodeSystem::NodeTypeInfo::operator=(NodeSystem::NodeTy
 
 // -----------------------------------------------------------------------------
 
-class NodeSystem::NodeTypeIterator : public ::NodeTypeIterator
+class NodeSystem::NodeTypeIteratorImpl : public NodeTypeIterator
 {
 public:
-	NodeTypeIterator(const std::vector<NodeSystem::NodeTypeInfo>& registeredNodeTypes)
+	NodeTypeIteratorImpl(const std::vector<NodeSystem::NodeTypeInfo>& registeredNodeTypes)
 		: _nodeTypeID(InvalidNodeTypeID)
 		, _registeredNodeTypes(registeredNodeTypes)
 		, _iterator(registeredNodeTypes.cbegin())
@@ -177,5 +177,5 @@ private:
 
 std::unique_ptr<NodeTypeIterator> NodeSystem::createNodeTypeIterator() const
 {
-	return std::unique_ptr<::NodeTypeIterator>(new NodeTypeIterator(_registeredNodeTypes));
+	return std::unique_ptr<NodeTypeIterator>(new NodeTypeIteratorImpl(_registeredNodeTypes));
 }

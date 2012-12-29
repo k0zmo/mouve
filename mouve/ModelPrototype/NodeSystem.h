@@ -41,10 +41,6 @@ private:
 		// Mandatory when using unique_ptr
 		NodeTypeInfo(NodeTypeInfo&& rhs);
 		NodeTypeInfo& operator=(NodeTypeInfo&& rhs);
-
-	private:
-		NodeTypeInfo(const NodeTypeInfo&);
-		NodeTypeInfo& operator=(const NodeTypeInfo&);
 	};
 
 	std::vector<NodeTypeInfo> _registeredNodeTypes;
@@ -56,7 +52,7 @@ private:
 	NodeSystem& operator=(const NodeSystem&);
 
 private:
-	class NodeTypeIterator;
+	class NodeTypeIteratorImpl;
 
 private:
 	// This makes it easy for nodes to be registered automatically

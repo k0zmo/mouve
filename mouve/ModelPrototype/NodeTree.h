@@ -73,6 +73,6 @@ private:
 
 private:
 	// Interfaces implementations
-	class NodeIterator;
-	class NodeLinkIterator;
+	class NodeIteratorImpl;
+	class NodeLinkIteratorImpl;
 };
