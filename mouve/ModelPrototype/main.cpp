@@ -8,6 +8,7 @@
 #include "NodeType.h"
 #include "NodeTree.h"
 #include "NodeLink.h"
+#include "NodeSystem.h"
 
 #include "BuiltinNodeTypes.h"
 
@@ -46,19 +47,37 @@ void dependencyCheck()
 
 int main()
 {
-	NodeTree tree;
+	NodeSystem sys;
 
-	NodeID fs = tree.createNode(1, "ImageFromDisk");
-	NodeID gb = tree.createNode(2, "GaussianBlur");
-	NodeID ca = tree.createNode(3, "CannyEdgeDetector");
+	std::unique_ptr<NodeFactory> factoryPtr0 = std::unique_ptr<NodeFactory>(new DefaultNodeFactory<ImageFromFileNodeType>());
+	NodeTypeID ImageFromDiskTypeID = sys.registerNodeType("ImageFromDisk", std::move(factoryPtr0));
 
-	tree.linkNodes(SocketAddress(fs, 0, true), SocketAddress(gb, 0, false));
-	tree.linkNodes(SocketAddress(gb, 0, true), SocketAddress(ca, 0, false));
+	std::unique_ptr<NodeFactory> factoryPtr1 = std::unique_ptr<NodeFactory>(new DefaultNodeFactory<GaussianBlurNodeType>());
+	NodeTypeID GaussianBlurTypeID = sys.registerNodeType("GaussianBlur", std::move(factoryPtr1));
+
+	std::unique_ptr<NodeFactory> factoryPtr2 = std::unique_ptr<NodeFactory>(new DefaultNodeFactory<CannyEdgeDetector>());
+	NodeTypeID CannyEdgeDetectorTypeID = sys.registerNodeType("CannyEdgeDetector", std::move(factoryPtr2));
+
+	auto nti = sys.createNodeTypeIterator();
+	NodeTypeIterator::NodeTypeInfo info;
+	while(nti->next(info))
+	{
+		std::cout << info.typeID << " = " << info.typeName << "\n";
+	}
+
+	auto tree = sys.createNodeTree();
+
+	NodeID fs = tree->createNode(ImageFromDiskTypeID, "Image from disk");
+	NodeID gb = tree->createNode(GaussianBlurTypeID, "Gaussian blur");
+	NodeID ca = tree->createNode(CannyEdgeDetectorTypeID, "Canny edge detector");
+
+	tree->linkNodes(SocketAddress(fs, 0, true), SocketAddress(gb, 0, false));
+	tree->linkNodes(SocketAddress(gb, 0, true), SocketAddress(ca, 0, false));
 
 	// Lista wezlow
 	NodeID nodeID;
 	const Node* node;
-	auto ni = tree.createNodeIterator();
+	auto ni = tree->createNodeIterator();
 	while((node = ni->next(nodeID)) != nullptr)
 	{
 		std::cout << node->nodeName() << 
@@ -71,16 +90,16 @@ int main()
 
 	// Lista polaczen
 	NodeLink nodeLink;
-	auto nli = tree.createNodeLinkIterator();
+	auto nli = tree->createNodeLinkIterator();
 	while(nli->next(nodeLink))
 	{
 		std::cout << int(nodeLink.fromNode) << "." << int(nodeLink.fromSocket) << " -> " << 
 			int(nodeLink.toNode) << "." << int(nodeLink.toSocket) << "\n";
 	}
 
-	tree.tagNode(fs);
-	tree.step();
+	tree->tagNode(fs);
+	tree->step();
 
-	cv::imshow("", tree.outputSocket(ca, 0));
+	cv::imshow("", tree->outputSocket(ca, 0));
 	cv::waitKey(0);
 }

@@ -1,5 +1,6 @@
 #include "NodeSystem.h"
 #include "NodeType.h"
+#include "NodeTree.h"
 
 /// xXx: Change this to some neat logging system
 #include <iostream>
@@ -67,6 +68,11 @@ std::unique_ptr<NodeType> NodeSystem::createNode(NodeTypeID nodeTypeID) const
 	{
 		return nullptr;
 	}
+}
+
+std::unique_ptr<NodeTree> NodeSystem::createNodeTree()
+{
+	return std::unique_ptr<NodeTree>(new NodeTree(this));
 }
 
 const std::string& NodeSystem::nodeTypeName(NodeTypeID nodeTypeID) const

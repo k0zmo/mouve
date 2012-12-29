@@ -2,11 +2,13 @@
 #include "Node.h"
 #include "NodeType.h"
 #include "NodeLink.h"
+#include "NodeSystem.h"
 
 /// xXx: Change this to some neat logging system
 #include <iostream>
 
-NodeTree::NodeTree(/*std::shared_ptr<NodeSystem> nodeSyst*/)
+NodeTree::NodeTree(NodeSystem* nodeSystem)
+	: _nodeSystem(nodeSystem)
 {
 }
 
@@ -143,38 +145,13 @@ void NodeTree::tagNode(NodeID nodeID, ETagReason reason)
 	}
 }
 
-// MOCK
-#include "BuiltinNodeTypes.h"
-std::unique_ptr<NodeType> createNodeType(NodeTypeID typeID)
-{
-	switch(typeID)
-	{
-	case 1:
-		return std::unique_ptr<NodeType>(new ImageFromFileNodeType());
-	case 2:
-		return std::unique_ptr<NodeType>(new GaussianBlurNodeType());
-	case 3:
-		return std::unique_ptr<NodeType>(new CannyEdgeDetector());
-	default:
-		return std::unique_ptr<NodeType>(nullptr);
-	}
-
-	//switch(typeID)
-	//{
-	//case 1:  return std::unique_ptr<NodeType>(new ZeroInputOneOutputNodeType());
-	//case 2:  return std::unique_ptr<NodeType>(new ZeroInputTwoOutputNodeType());
-	//case 3:  return std::unique_ptr<NodeType>(new OneInputOneOutputNodeType());
-	//case 4:  return std::unique_ptr<NodeType>(new OneInputTwoOutputNodeType());
-	//case 5:  return std::unique_ptr<NodeType>(new TwoInputOneOutputNodeType());
-	//case 6:  return std::unique_ptr<NodeType>(new TwoInputZeroOutputNodeType());
-	//default: return std::unique_ptr<NodeType>(nullptr);
-	//}
-}
-
 NodeID NodeTree::createNode(NodeTypeID typeID, const std::string& name)
 {
 	// Check if the given name is unique
 	if(_nodeNameToNodeID.find(name) != _nodeNameToNodeID.end())
+		return InvalidNodeID;
+
+	if(!_nodeSystem)
 		return InvalidNodeID;
 
 	// Allocate NodeID
@@ -183,7 +160,7 @@ NodeID NodeTree::createNode(NodeTypeID typeID, const std::string& name)
 		return id;
 
 	// Create node (type) of a given type
-	std::unique_ptr<NodeType> nodeType = createNodeType(typeID);
+	std::unique_ptr<NodeType> nodeType = _nodeSystem->createNode(typeID);
 	if(nodeType == nullptr)
 	{
 		deallocateNodeID(id);
@@ -277,9 +254,17 @@ NodeTypeID NodeTree::nodeTypeID(NodeID nodeID) const
 
 const std::string& NodeTree::nodeTypeName(NodeID nodeID) const
 {
-	/// xXx: Need NodeSystem first
-	const static std::string temp;
-	return temp;
+	if(_nodeSystem != nullptr)
+	{
+		if(nodeID < _nodes.size())
+		{
+			NodeTypeID nodeTypeID = _nodes[nodeID].nodeTypeID();
+			return _nodeSystem->nodeTypeName(nodeTypeID);
+		}
+	}
+
+	static const std::string EmptyString = "";
+	return EmptyString;
 }
 
 bool NodeTree::validateLink(SocketAddress from, SocketAddress to)

@@ -14,7 +14,7 @@ enum ETagReason
 class NodeTree
 {
 public:
-	NodeTree(/*std::shared_ptr<NodeSystem> nodeSyst*/);
+	NodeTree(NodeSystem* nodeSystem);
 	~NodeTree();
 
 	void clear();
@@ -68,6 +68,7 @@ private:
 	std::vector<NodeID> _taggedNodesID;
 	std::vector<NodeLink> _links;
 	std::unordered_map<std::string, NodeID> _nodeNameToNodeID;
+	NodeSystem* _nodeSystem;
 
 private:
 	// Interfaces implementations

@@ -13,6 +13,8 @@ public:
 	                            std::unique_ptr<NodeFactory> nodeFactory);
 	std::unique_ptr<NodeType> createNode(NodeTypeID nodeTypeID) const;
 
+	std::unique_ptr<NodeTree> createNodeTree();
+
 	// Complementary method for NodeTypeID <---> NodeTypeName conversion
 	const std::string& nodeTypeName(NodeTypeID nodeTypeID) const;
 	NodeTypeID nodeTypeID(const std::string& nodeTypeName) const;
