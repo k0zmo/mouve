@@ -84,6 +84,7 @@
     <ClCompile Include="Node.cpp" />
     <ClCompile Include="NodeFactory.cpp" />
     <ClCompile Include="NodeLink.cpp" />
+    <ClCompile Include="NodeSystem.cpp" />
     <ClCompile Include="NodeTree.cpp" />
     <ClCompile Include="NodeType.cpp" />
     <ClCompile Include="Precomp.cpp">
@@ -96,6 +97,7 @@
     <ClInclude Include="Node.h" />
     <ClInclude Include="NodeFactory.h" />
     <ClInclude Include="NodeLink.h" />
+    <ClInclude Include="NodeSystem.h" />
     <ClInclude Include="NodeTree.h" />
     <ClInclude Include="NodeType.h" />
     <ClInclude Include="Precomp.h" />

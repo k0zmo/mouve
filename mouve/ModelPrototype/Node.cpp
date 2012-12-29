@@ -27,7 +27,7 @@ Node::Node(std::unique_ptr<NodeType> nodeType,
 
 Node::Node(Node&& rhs)
 {
-	operator=(std::move(rhs));
+	operator=(std::forward<Node>(rhs));
 }
 
 Node& Node::operator=(Node&& rhs)
