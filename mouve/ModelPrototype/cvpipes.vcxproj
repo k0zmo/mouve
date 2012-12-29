@@ -82,6 +82,7 @@
   <ItemGroup>
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Node.cpp" />
+    <ClCompile Include="NodeFactory.cpp" />
     <ClCompile Include="NodeLink.cpp" />
     <ClCompile Include="NodeTree.cpp" />
     <ClCompile Include="NodeType.cpp" />
@@ -93,6 +94,7 @@
   <ItemGroup>
     <ClInclude Include="BuiltinNodeTypes.h" />
     <ClInclude Include="Node.h" />
+    <ClInclude Include="NodeFactory.h" />
     <ClInclude Include="NodeLink.h" />
     <ClInclude Include="NodeTree.h" />
     <ClInclude Include="NodeType.h" />

@@ -44,6 +44,7 @@ class NodeSocket;
 class NodeSocketReader;
 class NodeSocketWriter;
 class NodeTree;
+class NodeFactory;
 class NodeSystem;
 
 struct NodeLink;
