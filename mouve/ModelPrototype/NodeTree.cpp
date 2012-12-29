@@ -191,7 +191,7 @@ NodeID NodeTree::createNode(NodeTypeID typeID, const std::string& name)
 	}
 
 	// Create actual node object
-	_nodes[id] = Node(std::move(nodeType), name);
+	_nodes[id] = Node(std::move(nodeType), name, typeID);
 	// Add the pair <node name, node ID> to hash map
 	_nodeNameToNodeID.insert(std::make_pair(name, id));
 	return id;
@@ -253,6 +253,33 @@ const std::string& NodeTree::nodeName(NodeID nodeID) const
 		return InvalidNodeStr;
 	}
 	return InvalidNodeIDStr;
+}
+
+NodeID NodeTree::resolveNode(const std::string& nodeName) const
+{
+	auto iter = _nodeNameToNodeID.find(nodeName);
+	if(iter != _nodeNameToNodeID.end())
+	{
+		return iter->second;
+	}
+	else
+	{
+		return InvalidNodeID;
+	}
+}
+
+NodeTypeID NodeTree::nodeTypeID(NodeID nodeID) const
+{
+	//if(!validateNode(nodeID))
+	//	return InvalidNodeTypeID;
+	return _nodes[nodeID].nodeTypeID();
+}
+
+const std::string& NodeTree::nodeTypeName(NodeID nodeID) const
+{
+	/// xXx: Need NodeSystem first
+	const static std::string temp;
+	return temp;
 }
 
 bool NodeTree::validateLink(SocketAddress from, SocketAddress to)

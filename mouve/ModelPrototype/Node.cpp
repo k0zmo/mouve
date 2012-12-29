@@ -7,13 +7,16 @@ Node::Node()
 	, _nodeName()
 	, _numInputs(0)
 	, _numOutputs(0)
+	, _nodeTypeID(InvalidNodeTypeID)
 {
 }
 
 Node::Node(std::unique_ptr<NodeType> nodeType,
-           const std::string& nodeName)
+           const std::string& nodeName,
+           NodeTypeID nodeTypeID)
 	: _nodeType(std::move(nodeType))
 	, _nodeName(nodeName)
+	, _nodeTypeID(nodeTypeID)
 {
 	/// xXx: Temporary - NodeConfiguration
 	_numInputs = _nodeType->numInputSockets();
@@ -34,6 +37,7 @@ Node& Node::operator=(Node&& rhs)
 	_nodeName = std::move(rhs._nodeName);
 	_numInputs = rhs._numInputs;
 	_numOutputs = rhs._numOutputs;
+	_nodeTypeID = rhs._nodeTypeID;
 	return *this;
 }
 

@@ -35,11 +35,11 @@ public:
 	const std::string& nodeName(NodeID nodeID) const;
 
 	// For a given a nodeName returns NodeID
-	//NodeID resolveNode(const std::string& nodeName) const;
+	NodeID resolveNode(const std::string& nodeName) const;
 	// For a given NodeID returns its type ID
-	//NodeTypeID nodeTypeID(NodeID nodeID) const;
+	NodeTypeID nodeTypeID(NodeID nodeID) const;
 	// For a given NodeID returns its type name as string
-	//const std::string& nodeTypeName(NodeID nodeID) const;	
+	const std::string& nodeTypeName(NodeID nodeID) const;	
 
 	bool validateLink(SocketAddress from, SocketAddress to);
 

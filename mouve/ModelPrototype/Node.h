@@ -7,7 +7,8 @@ class Node
 public:
 	Node();
 	Node(std::unique_ptr<NodeType> nodeType,
-	     const std::string& nodeName);
+	     const std::string& nodeName,
+	     NodeTypeID nodeTypeID);
 
 	// Move operators
 	Node(Node&& rhs);
@@ -29,6 +30,7 @@ public:
 
 	SocketID numInputSockets() const;
 	SocketID numOutputSockets() const;
+	NodeTypeID nodeTypeID() const;
 
 	// Below methods are thin wrapper for held NodeType interface
 	void execute(NodeSocketReader* reader, NodeSocketWriter* writer);
@@ -45,6 +47,7 @@ private:
 	std::string _nodeName;
 	SocketID _numInputs;
 	SocketID _numOutputs;
+	NodeTypeID _nodeTypeID;
 };
 
 class NodeIterator
@@ -74,3 +77,6 @@ inline SocketID Node::numInputSockets() const
 
 inline SocketID Node::numOutputSockets() const
 { return _numOutputs; }
+
+inline NodeTypeID Node::nodeTypeID() const
+{ return _nodeTypeID; }

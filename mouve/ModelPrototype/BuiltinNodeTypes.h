@@ -145,6 +145,6 @@ public:
 		cv::Canny(input, output, 3, 90);
 	}
 
-	virtual SocketID numInputSockets() const { return 2; }
+	virtual SocketID numInputSockets() const { return 1; }
 	virtual SocketID numOutputSockets() const { return 1; }
 };

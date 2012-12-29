@@ -55,11 +55,32 @@ int main()
 	tree.linkNodes(SocketAddress(fs, 0, true), SocketAddress(gb, 0, false));
 	tree.linkNodes(SocketAddress(gb, 0, true), SocketAddress(ca, 0, false));
 
-	tree.tagNode(fs);
+	// Lista wezlow
+	NodeID nodeID;
+	const Node* node;
+	auto ni = tree.createNodeIterator();
+	while((node = ni->next(nodeID)) != nullptr)
+	{
+		std::cout << node->nodeName() << 
+			" (NodeID: " << nodeID << 
+			", NodeTypeID: " <<	node->nodeTypeID() << 
+			") [Inputs:" << int(node->numInputSockets()) << 
+			" , Outputs:" << int(node->numOutputSockets()) <<
+			"]\n";
+	}
 
+	// Lista polaczen
+	NodeLink nodeLink;
+	auto nli = tree.createNodeLinkIterator();
+	while(nli->next(nodeLink))
+	{
+		std::cout << int(nodeLink.fromNode) << "." << int(nodeLink.fromSocket) << " -> " << 
+			int(nodeLink.toNode) << "." << int(nodeLink.toSocket) << "\n";
+	}
+
+	tree.tagNode(fs);
 	tree.step();
 
-	const cv::Mat& output = tree.outputSocket(ca, 0);
-	cv::imshow("", output);
+	cv::imshow("", tree.outputSocket(ca, 0));
 	cv::waitKey(0);
 }
