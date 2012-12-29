@@ -41,8 +41,6 @@ public:
 	// For a given NodeID returns its type name as string
 	const std::string& nodeTypeName(NodeID nodeID) const;	
 
-	bool validateLink(SocketAddress from, SocketAddress to);
-
 	// Zwraca socket wyjsciowy do ktorego podlaczony jest podany adres
 	SocketAddress connectedFrom(SocketAddress iSocketAddress) const;
 	const cv::Mat& outputSocket(NodeID nodeID, SocketID socketID) const;
@@ -61,6 +59,9 @@ private:
 	size_t firstOutputLink(NodeID fromNode, SocketID fromSocket, size_t start = 0) const;
 	void addToExecuteList(std::vector<NodeID>& execList, NodeID nodeID);
 	void traverseRecurs(std::vector<NodeID>& execList, NodeID nodeID);
+
+	bool validateLink(SocketAddress& from, SocketAddress& to);
+	bool validateNode(NodeID nodeID) const;
 
 private:
 	std::vector<Node> _nodes;

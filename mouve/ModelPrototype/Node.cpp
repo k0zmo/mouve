@@ -44,16 +44,18 @@ Node& Node::operator=(Node&& rhs)
 cv::Mat& Node::outputSocket(SocketID socketID)
 {
 	ASSERT(socketID < numOutputSockets());
+	if(!validateSocket(socketID, true))
+		throw std::runtime_error("bad socketID");
 
-	/// xXx: To throw or not to throw ?
 	return _outputSockets[socketID];
 }
 
 const cv::Mat& Node::outputSocket(SocketID socketID) const
 {
 	ASSERT(socketID < numOutputSockets());
+	if(!validateSocket(socketID, true))
+		throw std::runtime_error("bad socketID");
 
-	/// xXx: To throw or not to throw ?
 	return _outputSockets[socketID];
 }
 

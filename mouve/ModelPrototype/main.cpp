@@ -47,54 +47,62 @@ void dependencyCheck()
 
 int main()
 {
-	NodeSystem sys;
-
-	auto nti = sys.createNodeTypeIterator();
-	NodeTypeIterator::NodeTypeInfo info;
-	std::cout << "Registered node type list:\n";
-	while(nti->next(info))
-		std::cout << "NodeTypeID: " << info.typeID << ", NodeTypeName: " << info.typeName << "\n";
-	std::cout << "\n";
-
-	auto tree = sys.createNodeTree();
-
-	NodeID fs = tree->createNode(sys.nodeTypeID("ImageFromFile"), "Image from disk");
-	NodeID gb = tree->createNode(sys.nodeTypeID("GaussianBlur"), "Gaussian blur");
-	NodeID ca = tree->createNode(sys.nodeTypeID("CannyEdgeDetector"), "Canny edge detector");
-
-	tree->linkNodes(SocketAddress(fs, 0, true), SocketAddress(gb, 0, false));
-	tree->linkNodes(SocketAddress(gb, 0, true), SocketAddress(ca, 0, false));
-
-	// Lista wezlow
-	std::cout << "Node list:\n";
-	NodeID nodeID;
-	const Node* node;
-	auto ni = tree->createNodeIterator();
-	while((node = ni->next(nodeID)) != nullptr)
+	try
 	{
-		std::cout << node->nodeName() << 
-			" (NodeID: " << nodeID << 
-			", NodeTypeID: " <<	node->nodeTypeID() << 
-			") [Inputs:" << int(node->numInputSockets()) << 
-			" , Outputs:" << int(node->numOutputSockets()) <<
-			"]\n";
-	}
-	std::cout << "\n";
+		NodeSystem sys;
 
-	// Lista polaczen
-	std::cout << "Node link list:\n";
-	NodeLink nodeLink;
-	auto nli = tree->createNodeLinkIterator();
-	while(nli->next(nodeLink))
+		auto nti = sys.createNodeTypeIterator();
+		NodeTypeIterator::NodeTypeInfo info;
+		std::cout << "Registered node type list:\n";
+		while(nti->next(info))
+			std::cout << "NodeTypeID: " << info.typeID << ", NodeTypeName: " << info.typeName << "\n";
+		std::cout << "\n";
+
+		auto tree = sys.createNodeTree();
+
+		NodeID fs = tree->createNode(sys.nodeTypeID("ImageFromFile"), "Image from disk");
+		NodeID gb = tree->createNode(sys.nodeTypeID("GaussianBlur"), "Gaussian blur");
+		NodeID ca = tree->createNode(sys.nodeTypeID("CannyEdgeDetector"), "Canny edge detector");
+
+		tree->linkNodes(SocketAddress(fs, 0, true), SocketAddress(gb, 0, false));
+		tree->linkNodes(SocketAddress(gb, 0, true), SocketAddress(ca, 0, false));
+
+		// Lista wezlow
+		std::cout << "Node list:\n";
+		NodeID nodeID;
+		const Node* node;
+		auto ni = tree->createNodeIterator();
+		while((node = ni->next(nodeID)) != nullptr)
+		{
+			std::cout << node->nodeName() << 
+				" (NodeID: " << nodeID << 
+				", NodeTypeID: " <<	node->nodeTypeID() << 
+				") [Inputs:" << int(node->numInputSockets()) << 
+				" , Outputs:" << int(node->numOutputSockets()) <<
+				"]\n";
+		}
+		std::cout << "\n";
+
+		// Lista polaczen
+		std::cout << "Node link list:\n";
+		NodeLink nodeLink;
+		auto nli = tree->createNodeLinkIterator();
+		while(nli->next(nodeLink))
+		{
+			std::cout << int(nodeLink.fromNode) << "." << int(nodeLink.fromSocket) << " -> " << 
+				int(nodeLink.toNode) << "." << int(nodeLink.toSocket) << "\n";
+		}
+		std::cout << "\n";
+
+		tree->tagNode(fs);
+		tree->step();
+
+		cv::imshow("", tree->outputSocket(ca, 0));
+		cv::waitKey(0);
+	}
+	catch(std::runtime_error& ex)
 	{
-		std::cout << int(nodeLink.fromNode) << "." << int(nodeLink.fromSocket) << " -> " << 
-			int(nodeLink.toNode) << "." << int(nodeLink.toSocket) << "\n";
+		std::cout << ex.what() << std::endl;
+		std::exit(-1);
 	}
-	std::cout << "\n";
-
-	tree->tagNode(fs);
-	tree->step();
-
-	cv::imshow("", tree->outputSocket(ca, 0));
-	cv::waitKey(0);
 }

@@ -28,67 +28,6 @@ void NodeTree::clear()
 	_nodeNameToNodeID.clear();
 }
 
-size_t NodeTree::firstOutputLink(NodeID fromNode,
-	SocketID fromSocket, size_t start) const
-{
-	for(size_t i = start; i < _links.size(); ++i)
-	{
-		auto& link = _links[i];
-
-		if(link.fromNode == fromNode &&
-		   link.fromSocket == fromSocket)
-		{
-			return i;
-		}
-	}
-	return size_t(-1);
-}
-
-void NodeTree::addToExecuteList(std::vector<NodeID>& execList, NodeID nodeID)
-{
-	// Check if the given nodeID is already on the list
-	for(auto iter = execList.begin(); iter != execList.end(); ++iter)
-	{
-		if(*iter == nodeID)
-		{
-			// If so, we need to "move it" to last position
-			execList.erase(iter);
-			break;
-		}
-	}
-
-	// If not, just append it at the end of the list
-	execList.push_back(nodeID);
-}
-
-void NodeTree::traverseRecurs(std::vector<NodeID>& execList, NodeID nodeID)
-{
-	SocketID numOutputSockets = _nodes[nodeID].numOutputSockets();
-	SocketID lastSocketID = 0;
-
-	for(SocketID socketID = 0; socketID < numOutputSockets; ++socketID)
-	{
-		// Find first output link from this node and socket (can be more than 1)
-		size_t firstOutputLinkIndex = firstOutputLink
-			(nodeID, socketID, lastSocketID);
-		if(firstOutputLinkIndex == size_t(-1))
-			continue;
-		lastSocketID = firstOutputLinkIndex;
-
-		auto iter    = std::begin(_links) + firstOutputLinkIndex;
-		auto iterEnd = std::end(_links);
-
-		while(iter != iterEnd &&
-			  iter->fromNode == nodeID &&
-			  iter->fromSocket == socketID)
-		{
-			addToExecuteList(execList, iter->toNode);
-			traverseRecurs(execList, iter->toNode);
-			++iter;
-		}
-	}
-}
-
 void NodeTree::step()
 {
 	// stable_sort doesn't touch already sorted items (?)
@@ -248,8 +187,8 @@ NodeID NodeTree::resolveNode(const std::string& nodeName) const
 
 NodeTypeID NodeTree::nodeTypeID(NodeID nodeID) const
 {
-	//if(!validateNode(nodeID))
-	//	return InvalidNodeTypeID;
+	if(!validateNode(nodeID))
+		return InvalidNodeTypeID;
 	return _nodes[nodeID].nodeTypeID();
 }
 
@@ -266,14 +205,6 @@ const std::string& NodeTree::nodeTypeName(NodeID nodeID) const
 
 	static const std::string EmptyString = "";
 	return EmptyString;
-}
-
-bool NodeTree::validateLink(SocketAddress from, SocketAddress to)
-{
-	(void) from;
-	(void) to;
-
-	return true;
 }
 
 SocketAddress NodeTree::connectedFrom(SocketAddress iSocketAddr) const
@@ -302,20 +233,19 @@ SocketAddress NodeTree::connectedFrom(SocketAddress iSocketAddr) const
 
 const cv::Mat& NodeTree::outputSocket(NodeID nodeID, SocketID socketID) const
 {
-	//if(!validateNode(nodeID))
-	//	return nullptr;
+	if(!validateNode(nodeID))
+		/// xXx: To throw or not to throw ?
+		throw std::runtime_error("node validation failed");
 
-	const Node& nodeRef = _nodes[nodeID];
-	//if(ref.validateSocket(socket, true))
-	//	return nullptr;
-
-	return nodeRef.outputSocket(socketID);
+	// outputSocket verifies socketID
+	return _nodes[nodeID].outputSocket(socketID);
 }
 
 const cv::Mat& NodeTree::inputSocket(NodeID nodeID, SocketID socketID) const
 {
-	//if(!validateNode(nodeID))
-	//	return nullptr;
+	if(!validateNode(nodeID))
+		/// xXx: To throw or not to throw ?
+		throw std::runtime_error("node validation failed");
 
 	SocketAddress outputAddr = connectedFrom(
 		SocketAddress(nodeID, socketID, false));
@@ -359,8 +289,8 @@ NodeID NodeTree::allocateNodeID()
 
 void NodeTree::deallocateNodeID(NodeID id)
 {
-//	if(!validateNode(id))
-//		return;
+	if(!validateNode(id))
+		return;
 
 	// Remove mapping from node name to node ID
 	_nodeNameToNodeID.erase(_nodes[id].nodeName());
@@ -370,6 +300,94 @@ void NodeTree::deallocateNodeID(NodeID id)
 
 	// Add NodeID to recycled ones
 	_recycledIDs.push_back(id);
+}
+
+size_t NodeTree::firstOutputLink(NodeID fromNode,
+	SocketID fromSocket, size_t start) const
+{
+	for(size_t i = start; i < _links.size(); ++i)
+	{
+		auto& link = _links[i];
+
+		if(link.fromNode == fromNode &&
+		   link.fromSocket == fromSocket)
+		{
+			return i;
+		}
+	}
+	return size_t(-1);
+}
+
+void NodeTree::addToExecuteList(std::vector<NodeID>& execList, NodeID nodeID)
+{
+	// Check if the given nodeID is already on the list
+	for(auto iter = execList.begin(); iter != execList.end(); ++iter)
+	{
+		if(*iter == nodeID)
+		{
+			// If so, we need to "move it" to last position
+			execList.erase(iter);
+			break;
+		}
+	}
+
+	// If not, just append it at the end of the list
+	execList.push_back(nodeID);
+}
+
+void NodeTree::traverseRecurs(std::vector<NodeID>& execList, NodeID nodeID)
+{
+	SocketID numOutputSockets = _nodes[nodeID].numOutputSockets();
+	SocketID lastSocketID = 0;
+
+	for(SocketID socketID = 0; socketID < numOutputSockets; ++socketID)
+	{
+		// Find first output link from this node and socket (can be more than 1)
+		size_t firstOutputLinkIndex = firstOutputLink
+			(nodeID, socketID, lastSocketID);
+		if(firstOutputLinkIndex == size_t(-1))
+			continue;
+		lastSocketID = firstOutputLinkIndex;
+
+		auto iter    = std::begin(_links) + firstOutputLinkIndex;
+		auto iterEnd = std::end(_links);
+
+		while(iter != iterEnd &&
+			  iter->fromNode == nodeID &&
+			  iter->fromSocket == socketID)
+		{
+			addToExecuteList(execList, iter->toNode);
+			traverseRecurs(execList, iter->toNode);
+			++iter;
+		}
+	}
+}
+
+bool NodeTree::validateLink(SocketAddress& from, SocketAddress& to)
+{
+	if(from.isOutput == to.isOutput)
+		return false;
+
+	// A little correction
+	if(!from.isOutput)
+		std::swap(from, to);
+
+	if(!validateNode(from.node) || 
+	   !_nodes[from.node].validateSocket(from.socket, from.isOutput))
+		return false;
+
+	if(!validateNode(to.node) ||
+	   !_nodes[to.node].validateSocket(to.socket, to.isOutput))
+		return false;
+
+	return true;
+}
+
+bool NodeTree::validateNode(NodeID nodeID) const
+{
+	if(nodeID >= _nodes.size() || nodeID == InvalidNodeID)
+		return false;
+	return _nodes[nodeID].isValid();
 }
 
 // -----------------------------------------------------------------------------
