@@ -41,6 +41,9 @@ void NodeTree::step()
 
 	for(NodeID nodeID : _taggedNodesID)
 	{
+		if(!validateNode(nodeID))
+			continue;
+
 		if(std::find(execList.begin(), execList.end(), nodeID) == execList.end())
 		{
 			addToExecuteList(execList, nodeID);
@@ -114,8 +117,24 @@ NodeID NodeTree::createNode(NodeTypeID typeID, const std::string& name)
 	return id;
 }
 
-bool NodeTree::removeNode(NodeID)
+bool NodeTree::removeNode(NodeID nodeID)
 {
+	if(!validateNode(nodeID))
+		return false;
+
+	// Remove any referring links
+	auto removeFirstNodeLink = std::remove_if(
+		std::begin(_links), std::end(_links),
+		[&](const NodeLink& nodeLink)
+		{
+			return nodeLink.fromNode == nodeID ||
+			       nodeLink.toNode   == nodeID;
+		});
+	/// xXx: tag affected nodes?
+	_links.erase(removeFirstNodeLink, std::end(_links));
+
+	deallocateNodeID(nodeID);
+
 	return false;
 }
 
