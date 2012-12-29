@@ -29,10 +29,14 @@ private:
 		             std::unique_ptr<NodeFactory> nodeFactory)
 			: nodeTypeName(nodeTypeName)
 			, nodeFactory(std::move(nodeFactory))
+			, automaticallyRegistered(false)
 		{}
+
+		~NodeTypeInfo();
 
 		std::string nodeTypeName;
 		std::unique_ptr<NodeFactory> nodeFactory;
+		bool automaticallyRegistered;
 
 		// Mandatory when using unique_ptr
 		NodeTypeInfo(NodeTypeInfo&& rhs);
@@ -53,5 +57,9 @@ private:
 
 private:
 	class NodeTypeIterator;
+
+private:
+	// This makes it easy for nodes to be registered automatically
+	void registerAutoTypes();
 };
 

@@ -2,6 +2,7 @@
 
 #include "Prerequisites.h"
 #include "NodeType.h"
+#include "NodeFactory.h"
 
 #include <opencv2/core/core.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
@@ -134,7 +135,7 @@ public:
 	virtual SocketID numOutputSockets() const { return 1; }
 };
 
-class CannyEdgeDetector : public NodeType
+class CannyEdgeDetectorNodeType : public NodeType
 {
 public:
 	virtual void execute(NodeSocketReader* reader, NodeSocketWriter* writer)
@@ -148,3 +149,7 @@ public:
 	virtual SocketID numInputSockets() const { return 1; }
 	virtual SocketID numOutputSockets() const { return 1; }
 };
+
+REGISTER_NODE("ImageFromFile", ImageFromFileNodeType)
+REGISTER_NODE("GaussianBlur", GaussianBlurNodeType)
+REGISTER_NODE("CannyEdgeDetector", CannyEdgeDetectorNodeType)

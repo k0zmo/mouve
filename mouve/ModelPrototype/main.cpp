@@ -49,32 +49,24 @@ int main()
 {
 	NodeSystem sys;
 
-	std::unique_ptr<NodeFactory> factoryPtr0 = std::unique_ptr<NodeFactory>(new DefaultNodeFactory<ImageFromFileNodeType>());
-	NodeTypeID ImageFromDiskTypeID = sys.registerNodeType("ImageFromDisk", std::move(factoryPtr0));
-
-	std::unique_ptr<NodeFactory> factoryPtr1 = std::unique_ptr<NodeFactory>(new DefaultNodeFactory<GaussianBlurNodeType>());
-	NodeTypeID GaussianBlurTypeID = sys.registerNodeType("GaussianBlur", std::move(factoryPtr1));
-
-	std::unique_ptr<NodeFactory> factoryPtr2 = std::unique_ptr<NodeFactory>(new DefaultNodeFactory<CannyEdgeDetector>());
-	NodeTypeID CannyEdgeDetectorTypeID = sys.registerNodeType("CannyEdgeDetector", std::move(factoryPtr2));
-
 	auto nti = sys.createNodeTypeIterator();
 	NodeTypeIterator::NodeTypeInfo info;
+	std::cout << "Registered node type list:\n";
 	while(nti->next(info))
-	{
-		std::cout << info.typeID << " = " << info.typeName << "\n";
-	}
+		std::cout << "NodeTypeID: " << info.typeID << ", NodeTypeName: " << info.typeName << "\n";
+	std::cout << "\n";
 
 	auto tree = sys.createNodeTree();
 
-	NodeID fs = tree->createNode(ImageFromDiskTypeID, "Image from disk");
-	NodeID gb = tree->createNode(GaussianBlurTypeID, "Gaussian blur");
-	NodeID ca = tree->createNode(CannyEdgeDetectorTypeID, "Canny edge detector");
+	NodeID fs = tree->createNode(sys.nodeTypeID("ImageFromFile"), "Image from disk");
+	NodeID gb = tree->createNode(sys.nodeTypeID("GaussianBlur"), "Gaussian blur");
+	NodeID ca = tree->createNode(sys.nodeTypeID("CannyEdgeDetector"), "Canny edge detector");
 
 	tree->linkNodes(SocketAddress(fs, 0, true), SocketAddress(gb, 0, false));
 	tree->linkNodes(SocketAddress(gb, 0, true), SocketAddress(ca, 0, false));
 
 	// Lista wezlow
+	std::cout << "Node list:\n";
 	NodeID nodeID;
 	const Node* node;
 	auto ni = tree->createNodeIterator();
@@ -87,8 +79,10 @@ int main()
 			" , Outputs:" << int(node->numOutputSockets()) <<
 			"]\n";
 	}
+	std::cout << "\n";
 
 	// Lista polaczen
+	std::cout << "Node link list:\n";
 	NodeLink nodeLink;
 	auto nli = tree->createNodeLinkIterator();
 	while(nli->next(nodeLink))
@@ -96,6 +90,7 @@ int main()
 		std::cout << int(nodeLink.fromNode) << "." << int(nodeLink.fromSocket) << " -> " << 
 			int(nodeLink.toNode) << "." << int(nodeLink.toSocket) << "\n";
 	}
+	std::cout << "\n";
 
 	tree->tagNode(fs);
 	tree->step();

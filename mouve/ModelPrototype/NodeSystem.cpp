@@ -12,6 +12,7 @@ NodeSystem::NodeSystem()
 	// Register InvalidNodeTypeID
 	NodeTypeID invalidNodeTypeID = registerNodeType(InvalidType, nullptr);
 	ASSERT(invalidNodeTypeID == InvalidNodeTypeID);
+	registerAutoTypes();
 }
 
 NodeSystem::~NodeSystem()
@@ -96,7 +97,36 @@ NodeTypeID NodeSystem::nodeTypeID(const std::string& nodeTypeName) const
 	}
 }
 
+void NodeSystem::registerAutoTypes()
+{
+	AutoRegisterNodeBase* autoFactory = AutoRegisterNodeBase::head;
+	while(autoFactory)
+	{
+		auto nodeFactory = std::unique_ptr<NodeFactory>(autoFactory);
+		NodeTypeID nodeTypeID = registerNodeType(autoFactory->typeName, std::move(nodeFactory));
+		autoFactory = autoFactory->next;
+
+		// We need empty deleter as autoFactory
+		// are allocated on (global) stack.
+		// We could get rid of unique_ptr at all
+		// but that would lead to less friendly
+		// interface for manually registered node types.
+		// Unfortunately, we can't mixed unique_ptrs with 
+		// default deleters and overridden by us
+		_registeredNodeTypes[nodeTypeID].automaticallyRegistered = true;
+	}
+}
+
 // -----------------------------------------------------------------------------
+
+NodeSystem::NodeTypeInfo::~NodeTypeInfo()
+{
+	if(automaticallyRegistered)
+	{
+		// This should stop unique_ptr from calling deleter
+		(void) nodeFactory.release();
+	}
+}
 
 NodeSystem::NodeTypeInfo::NodeTypeInfo(NodeSystem::NodeTypeInfo&& rhs)
 {
@@ -107,6 +137,7 @@ NodeSystem::NodeTypeInfo& NodeSystem::NodeTypeInfo::operator=(NodeSystem::NodeTy
 {
 	nodeTypeName = std::move(rhs.nodeTypeName);
 	nodeFactory = std::move(rhs.nodeFactory);
+	automaticallyRegistered = rhs.automaticallyRegistered;
 
 	return *this;
 }
