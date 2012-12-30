@@ -39,8 +39,11 @@ void NodeTree::step()
 	// Build execution list
 	std::vector<NodeID> execList;
 
-	for(NodeID nodeID : _taggedNodesID)
+	//for(NodeID nodeID : _taggedNodesID)
+	for(auto it = _taggedNodesID.begin(); it != _taggedNodesID.end(); ++it)
 	{
+		NodeID nodeID = *it;
+
 		if(!validateNode(nodeID))
 			continue;
 
@@ -53,8 +56,10 @@ void NodeTree::step()
 
 	// DEBUG
 	std::cout << "NodeID execution list:\n";
-	for(NodeID nodeID : execList)
+	//for(NodeID nodeID : execList)
+	for(auto it = execList.begin(); it != execList.end(); ++it)
 	{
+		NodeID nodeID = *it;
 		std::cout << nodeID << " ";
 	}
 	std::cout << "\n";
@@ -63,8 +68,10 @@ void NodeTree::step()
 	NodeSocketWriter writer;
 
 	// Traverse through just-built exec list and process each node
-	for(NodeID nodeID : execList)
+	//for(NodeID nodeID : execList)
+	for(auto it = execList.begin(); it != execList.end(); ++it)
 	{
+		NodeID nodeID = *it;
 		auto& nodeRef = _nodes[nodeID];
 
 		reader.setNode(nodeID, nodeRef.numInputSockets());
@@ -261,8 +268,11 @@ SocketAddress NodeTree::connectedFrom(SocketAddress iSocketAddr) const
 	if(iSocketAddr.isOutput)
 		return ret;
 
-	for(const NodeLink& link: _links)
+	//for(const NodeLink& link: _links)
+	for(auto it = _links.cbegin(); it != _links.cend(); ++it)
 	{
+		const NodeLink& link = *it;
+
 		if(link.toNode == iSocketAddr.node &&
 		   link.toSocket == iSocketAddr.socket)
 		{
