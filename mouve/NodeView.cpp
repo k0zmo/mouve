@@ -71,24 +71,33 @@ QPainterPath NodeView::shape2(qreal titleHeight) const
 NodeSocketView* NodeView::addSocketView(quint32 socketKey,
 	const QString& title, bool isOutput)
 {
-	NodeSocketView* socketView = new NodeSocketView(title, isOutput, this);
-	socketView->setData(NodeDataIndex::SocketKey, socketKey);
-
-	connect(socketView, SIGNAL(draggingLinkDropped(QGraphicsWidget*, QGraphicsWidget*)), 
-		nC, SLOT(draggingLinkDropped(QGraphicsWidget*, QGraphicsWidget*)));
-	connect(socketView, SIGNAL(draggingLinkStarted(QGraphicsWidget*)), 
-		nC, SLOT(draggingLinkStarted(QGraphicsWidget*)));
-	connect(socketView, SIGNAL(draggingLinkStopped(QGraphicsWidget*)), 
-		nC, SLOT(draggingLinkStopped(QGraphicsWidget*)));
-
-	// Add socket view to the map
+	// Check if the socketKey hasn't been added already
 	auto& views = isOutput
 		? mOutputSocketViews 
 		: mInputSocketViews;
-	views[socketKey] = socketView;
 
-	updateLayout();
-	return socketView;
+	if(!views.contains(socketKey))
+	{
+		NodeSocketView* socketView = new NodeSocketView(title, isOutput, this);
+		socketView->setData(NodeDataIndex::SocketKey, socketKey);
+
+		connect(socketView, SIGNAL(draggingLinkDropped(QGraphicsWidget*, QGraphicsWidget*)), 
+			nC, SLOT(draggingLinkDropped(QGraphicsWidget*, QGraphicsWidget*)));
+		connect(socketView, SIGNAL(draggingLinkStarted(QGraphicsWidget*)), 
+			nC, SLOT(draggingLinkStarted(QGraphicsWidget*)));
+		connect(socketView, SIGNAL(draggingLinkStopped(QGraphicsWidget*)), 
+			nC, SLOT(draggingLinkStopped(QGraphicsWidget*)));
+
+		views.insert(socketKey, socketView);
+
+		updateLayout();
+		return socketView;
+	}
+	else
+	{
+		qWarning() << "SocketView with socketKey =" << socketKey << "already exists";
+		return nullptr;
+	}
 }
 
 void NodeView::paint(QPainter* painter, 

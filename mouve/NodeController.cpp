@@ -86,11 +86,10 @@ bool NodeController::deleteNodeView(quint32 nodeKey)
 		QMutableListIterator<NodeLinkView*> itl(mLinkViews);
 		while(itl.hasNext())
 		{
-			itl.next();
-			NodeLinkView* link = itl.value();
+			NodeLinkView* link = itl.next();
 
-			if(link->inputConnecting(node)
-				|| link->outputConnecting(node))
+			if(link->inputConnecting(node) ||
+			   link->outputConnecting(node))
 			{
 				mScene->removeItem(link);
 				itl.remove();
@@ -111,41 +110,8 @@ bool NodeController::deleteNodeView(quint32 nodeKey)
 
 bool NodeController::deleteNodeView(NodeView* nodeView)
 {
-	qDebug() << "deleting node view with nodeKey:"
-		<< nodeView->data(NodeDataIndex::NodeKey).toInt();
-	QMutableHashIterator<quint32, NodeView*> it(mNodeViews);
-	while(it.hasNext())
-	{
-		it.next();
-		NodeView* node = it.value();
-		if(node == nodeView)
-		{
-			// Remove incoming and outgoing links
-			QMutableListIterator<NodeLinkView*> itl(mLinkViews);
-			while(itl.hasNext())
-			{
-				itl.next();
-				NodeLinkView* link = itl.value();
-
-				if(link->inputConnecting(nodeView)
-				        || link->outputConnecting(nodeView))
-				{
-					mScene->removeItem(link);
-					itl.remove();
-					delete link;
-				}
-			}
-
-			// Remove from the scene
-			mScene->removeItem(node);
-			// Remove from container
-			it.remove();
-			// Remove at last node view itself
-			node->deleteLater();
-			return true;
-		}
-	}
-	return false;
+	return deleteNodeView(
+		quint32(nodeView->data(NodeDataIndex::NodeKey).toInt()));
 }
 
 void NodeController::linkNodeViews(NodeSocketView* from, NodeSocketView* to)

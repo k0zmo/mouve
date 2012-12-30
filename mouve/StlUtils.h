@@ -4,8 +4,6 @@
 
 namespace stlu
 {
-	using std::remove_if;
-
 	// Comes pretty handy when `for range loops` are missing (VC10)
 	template <class Iteratable, class Pred>
 	inline void for_each(Iteratable& iterable, Pred pred)
@@ -18,14 +16,14 @@ namespace stlu
 	inline void remove_pred(Container* container, Predicate pred)
 	{
 		container->erase(
-			remove_if(container->begin(), container->end(), pred),
+			std::remove_if(container->begin(), container->end(), pred),
 			container->end());
 	}
 
 	// Removes (all) items of given value from a container
 	template <class Container>
 	inline void remove_value(Container* container,
-							 const typename Container::value_type& vt)
+	                         const typename Container::value_type& vt)
 	{
 		remove_pred(container,
 			[&](decltype(vt) it)
@@ -53,7 +51,7 @@ namespace stlu
 	// Removes first item of a given value from a container
 	template <class Container>
 	inline bool remove_first_value(Container* container,
-								   const typename Container::value_type& vt)
+	                               const typename Container::value_type& vt)
 	{
 		return remove_first_pred(container,
 			[&](decltype(vt) it)
@@ -66,7 +64,7 @@ namespace stlu
 	// given predicate from a generic container
 	template <class Container, class Predicate, class DeleteFunc>
 	inline void remove_delete(Container* container,
-							  Predicate pred, DeleteFunc deleteFunc)
+	                          Predicate pred, DeleteFunc deleteFunc)
 	{
 		for(auto it = container->begin(); it != container->end(); )
 		{
@@ -95,7 +93,7 @@ namespace stlu
 	// Removes items of given value from a container
 	template <class Container>
 	inline void remove_value_delete(Container* container,
-									typename Container::value_type& vt)
+	                                typename Container::value_type& vt)
 	{
 		remove_delete(container,
 			[&](decltype(vt) it) { return vt == it; }
@@ -130,7 +128,7 @@ namespace stlu
 	// Adds unique value to the given container
 	template <class Container>
 	inline bool push_back_unique(Container* container,
-								 const typename Container::value_type& vt)
+	                             const typename Container::value_type& vt)
 	{
 		for(auto it = container->begin() ; it != container->end(); ++it)
 		{
