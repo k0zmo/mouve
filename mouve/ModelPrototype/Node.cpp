@@ -1,6 +1,9 @@
 #include "Node.h"
 #include "NodeType.h"
 
+/// xXx: Temporary here
+#include <opencv2/core/core.hpp>
+
 Node::Node()
 	: _nodeType(nullptr)
 	, _outputSockets(0)
@@ -23,6 +26,10 @@ Node::Node(std::unique_ptr<NodeType> nodeType,
 	_numOutputs = _nodeType->numOutputSockets();
 
 	_outputSockets.resize(_numOutputs);
+}
+
+Node::~Node()
+{
 }
 
 Node::Node(Node&& rhs)

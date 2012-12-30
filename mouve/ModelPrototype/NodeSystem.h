@@ -41,6 +41,16 @@ private:
 		// Mandatory when using unique_ptr
 		NodeTypeInfo(NodeTypeInfo&& rhs);
 		NodeTypeInfo& operator=(NodeTypeInfo&& rhs);
+
+		// gcc 4.7 doesn't play nice with this anymore, you need to use c++11 features
+	#if defined(_MSC_VER)
+	private:
+		NodeTypeInfo(const NodeTypeInfo&);
+		NodeTypeInfo& operator=(const NodeTypeInfo&);
+	#else
+		NodeTypeInfo(const NodeTypeInfo&) = delete;
+		NodeTypeInfo& operator=(const NodeTypeInfo&) = delete;
+	#endif
 	};
 
 	std::vector<NodeTypeInfo> _registeredNodeTypes;

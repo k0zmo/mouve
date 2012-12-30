@@ -2,6 +2,9 @@
 #include "NodeTree.h"
 #include "NodeLink.h"
 
+/// xXx: Temporary here
+#include <opencv2/core/core.hpp>
+
 void NodeSocketReader::setNode(NodeID nodeID, SocketID numInputSockets)
 {
 	ASSERT(nodeID != InvalidNodeID);

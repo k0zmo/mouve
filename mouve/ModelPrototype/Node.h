@@ -9,6 +9,7 @@ public:
 	Node(std::unique_ptr<NodeType> nodeType,
 	     const std::string& nodeName,
 	     NodeTypeID nodeTypeID);
+	~Node();
 
 	// Move operators
 	Node(Node&& rhs);
@@ -43,6 +44,17 @@ private:
 	SocketID _numInputs;
 	SocketID _numOutputs;
 	NodeTypeID _nodeTypeID;
+
+// gcc 4.7 doesn't play nice with this anymore, you need to use c++11 features
+#if defined(_MSC_VER)
+private:
+	Node(const Node&);
+	Node& operator=(const Node&);
+#else
+public:
+	Node(const Node&) = delete;
+	Node& operator=(const Node&) = delete;
+#endif
 };
 
 class NodeIterator
