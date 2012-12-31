@@ -30,6 +30,9 @@ private slots:
 	void contextMenu(const QPoint& globalPos, const QPointF& scenePos);
 	void keyPress(QKeyEvent* event);
 
+	void executeClicked();
+	void nodeSceneSelectionChanged();
+
 private:
 	QList<NodeLinkView*> mLinkViews;
 	QHash<NodeID, NodeView*> mNodeViews;

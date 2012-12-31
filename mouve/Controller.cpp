@@ -11,7 +11,7 @@
 #include "NodeTree.h"
 #include "NodeType.h"
 #include "NodeLink.h"
-
+#include "Node.h"
 #include <QMessageBox>
 
 static bool DEBUG_LINKS = false;
@@ -30,6 +30,10 @@ Controller::Controller(QWidget* parent, Qt::WFlags flags)
 	mNodeScene->setSceneRect(-200,-200,1000,600);
 	// Qt bug concering scene->removeItem ?? Seems to fixed it
 	mNodeScene->setItemIndexMethod(QGraphicsScene::NoIndex);
+
+	connect(mNodeScene, SIGNAL(selectionChanged()),
+		this, SLOT(nodeSceneSelectionChanged()));
+
 	mGraphicsView->setScene(mNodeScene);
 
 	// Context menu from node graphics view
@@ -52,6 +56,10 @@ Controller::Controller(QWidget* parent, Qt::WFlags flags)
 		action->setData(info.typeID);
 		mAddNodesActions.append(action);
 	}
+
+	/// xXx: Only temporary solution
+	connect(mExecute, SIGNAL(clicked()),
+		this, SLOT(executeClicked()));
 }
 
 Controller::~Controller()
@@ -214,4 +222,37 @@ void Controller::contextMenu(const QPoint& globalPos,
 
 void Controller::keyPress(QKeyEvent* event)
 {
+}
+
+void Controller::executeClicked()
+{
+	// Not a nice hack
+	auto ni = mNodeTree->createNodeIterator();
+	NodeID nodeID;
+	while(ni->next(nodeID))
+		mNodeTree->tagNode(nodeID);
+	mNodeTree->step();
+}
+
+void Controller::nodeSceneSelectionChanged()
+{
+	/// xXx: Temporary solution
+	QList<QGraphicsItem*> selectedItems = mNodeScene->selectedItems();
+	if(selectedItems.count() == 1)
+	{
+		QGraphicsItem* selectedItem = selectedItems[0];
+		if(selectedItem->type() == NodeView::Type)
+		{
+			NodeView* nodeView = static_cast<NodeView*>(selectedItem);
+			qDebug() << nodeView->nodeKey();
+
+			const cv::Mat& mat = mNodeTree->outputSocket(nodeView->nodeKey(), 0);
+
+			QImage image = QImage(
+				reinterpret_cast<const quint8*>(mat.data),
+				mat.cols, mat.rows, mat.step, 
+				QImage::Format_Indexed8);
+			mOutputPreview->setPixmap(QPixmap::fromImage(image));
+		}
+	}
 }

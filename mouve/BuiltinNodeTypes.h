@@ -70,6 +70,12 @@ public:
 		const cv::Mat& input = reader->readSocket(0);
 		cv::Mat& output = writer->lockSocket(0);
 
+		if(input.rows == 0 || input.cols == 0)
+		{
+			output = cv::Mat();
+			return;
+		}
+
 		cv::Canny(input, output, 3, 90);
 	}
 
@@ -90,6 +96,6 @@ public:
 	}
 };
 
-REGISTER_NODE("ImageFromFile", ImageFromFileNodeType)
-REGISTER_NODE("GaussianBlur", GaussianBlurNodeType)
 REGISTER_NODE("CannyEdgeDetector", CannyEdgeDetectorNodeType)
+REGISTER_NODE("GaussianBlur", GaussianBlurNodeType)
+REGISTER_NODE("ImageFromFile", ImageFromFileNodeType)
