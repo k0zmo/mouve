@@ -35,6 +35,9 @@
     <Filter Include="_View">
       <UniqueIdentifier>{eb00ad1c-bf8f-40f0-a600-47eec6e675f2}</UniqueIdentifier>
     </Filter>
+    <Filter Include="_Model">
+      <UniqueIdentifier>{e15f20e9-d570-4861-9128-1480e5cb5832}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Precomp.cpp" />
@@ -88,6 +91,24 @@
       <Filter>Generated Files\Release</Filter>
     </ClCompile>
     <ClCompile Include="Controller.cpp" />
+    <ClCompile Include="Node.cpp">
+      <Filter>_Model</Filter>
+    </ClCompile>
+    <ClCompile Include="NodeFactory.cpp">
+      <Filter>_Model</Filter>
+    </ClCompile>
+    <ClCompile Include="NodeLink.cpp">
+      <Filter>_Model</Filter>
+    </ClCompile>
+    <ClCompile Include="NodeSystem.cpp">
+      <Filter>_Model</Filter>
+    </ClCompile>
+    <ClCompile Include="NodeTree.cpp">
+      <Filter>_Model</Filter>
+    </ClCompile>
+    <ClCompile Include="NodeType.cpp">
+      <Filter>_Model</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Precomp.h" />
@@ -114,6 +135,27 @@
     </ClInclude>
     <ClInclude Include="GeneratedFiles\ui_MainWindow.h">
       <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="BuiltinNodeTypes.h">
+      <Filter>_Model</Filter>
+    </ClInclude>
+    <ClInclude Include="Node.h">
+      <Filter>_Model</Filter>
+    </ClInclude>
+    <ClInclude Include="NodeFactory.h">
+      <Filter>_Model</Filter>
+    </ClInclude>
+    <ClInclude Include="NodeLink.h">
+      <Filter>_Model</Filter>
+    </ClInclude>
+    <ClInclude Include="NodeSystem.h">
+      <Filter>_Model</Filter>
+    </ClInclude>
+    <ClInclude Include="NodeTree.h">
+      <Filter>_Model</Filter>
+    </ClInclude>
+    <ClInclude Include="NodeType.h">
+      <Filter>_Model</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

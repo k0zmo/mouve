@@ -6,10 +6,10 @@
 template<> Controller* Singleton<Controller>::_singleton = nullptr;
 
 Controller::Controller(QWidget* parent, Qt::WFlags flags)
-    : QMainWindow(parent, flags)
-    , mNodeScene(new NodeScene(this))
+	: QMainWindow(parent, flags)
+	, mNodeScene(new NodeScene(this))
 {
-    setupUi(this);
+	setupUi(this);
 
 	// Set up a node scene
 	/// xXx: Temporary

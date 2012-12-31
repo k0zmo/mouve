@@ -9,20 +9,20 @@
 //static bool DEBUG_LINKS = false;
 
 class Controller
-        : public QMainWindow
-        , public Singleton<Controller>
-        , private Ui::Controller
+	: public QMainWindow
+	, public Singleton<Controller>
+	, private Ui::Controller
 {
-    Q_OBJECT    
+	Q_OBJECT    
 public:
-    explicit Controller(QWidget* parent = nullptr, Qt::WFlags flags = 0);
-    virtual ~Controller();
+	explicit Controller(QWidget* parent = nullptr, Qt::WFlags flags = 0);
+	virtual ~Controller();
 
 private:
-    QList<NodeLinkView*> mLinkViews;
-    QHash<NodeID, NodeView*> mNodeViews;
+	QList<NodeLinkView*> mLinkViews;
+	QHash<NodeID, NodeView*> mNodeViews;
 
-    NodeScene* mNodeScene;
+	NodeScene* mNodeScene;
 };
 
 #define gC Controller::instancePtr()

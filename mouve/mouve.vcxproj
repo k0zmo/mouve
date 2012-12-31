@@ -26,9 +26,11 @@
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="..\OpenCV_Debug.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="..\OpenCV_Release.props" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup>
@@ -109,13 +111,19 @@
     <ClCompile Include="GeneratedFiles\Release\moc_NodeSocketView.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
     </ClCompile>
+    <ClCompile Include="Node.cpp" />
     <ClCompile Include="NodeConnectorView.cpp" />
     <ClCompile Include="NodeEditorView.cpp" />
+    <ClCompile Include="NodeFactory.cpp" />
+    <ClCompile Include="NodeLink.cpp" />
     <ClCompile Include="NodeLinkView.cpp" />
     <ClCompile Include="NodeScene.cpp" />
     <ClCompile Include="NodeSocketView.cpp" />
     <ClCompile Include="NodeStyle.cpp" />
+    <ClCompile Include="NodeSystem.cpp" />
     <ClCompile Include="NodeTemporaryLinkView.cpp" />
+    <ClCompile Include="NodeTree.cpp" />
+    <ClCompile Include="NodeType.cpp" />
     <ClCompile Include="NodeView.cpp" />
     <ClCompile Include="Precomp.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
@@ -179,10 +187,17 @@
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">.\GeneratedFiles\$(ConfigurationName)\moc_%(Filename).cpp</Outputs>
       <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">"$(QTDIR)\bin\moc.exe"  "%(FullPath)" -o ".\GeneratedFiles\$(ConfigurationName)\moc_%(Filename).cpp" "-fPrecomp.h" "-f../../Controller.h"  -DUNICODE -DWIN32 -DQT_LARGEFILE_SUPPORT -DQT_DLL -DQT_NO_DEBUG -DNDEBUG -DQT_CORE_LIB -DQT_GUI_LIB "-I.\GeneratedFiles" "-I." "-I$(QTDIR)\include" "-I.\GeneratedFiles\$(ConfigurationName)\." "-I$(QTDIR)\include\QtCore" "-I$(QTDIR)\include\QtGui"</Command>
     </CustomBuild>
+    <ClInclude Include="BuiltinNodeTypes.h" />
     <ClInclude Include="GeneratedFiles\ui_MainWindow.h" />
+    <ClInclude Include="Node.h" />
+    <ClInclude Include="NodeFactory.h" />
+    <ClInclude Include="NodeLink.h" />
     <ClInclude Include="NodeLinkView.h" />
     <ClInclude Include="NodeScene.h" />
     <ClInclude Include="NodeStyle.h" />
+    <ClInclude Include="NodeSystem.h" />
+    <ClInclude Include="NodeTree.h" />
+    <ClInclude Include="NodeType.h" />
     <ClInclude Include="NodeView.h" />
     <ClInclude Include="Precomp.h" />
     <ClInclude Include="Prerequisites.h" />
