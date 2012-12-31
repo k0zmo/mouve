@@ -20,6 +20,8 @@ public:
 
 private:
 	void addNode(NodeTypeID nodeTypeID, const QPointF& scenePos);
+	void addNodeView(const QString& nodeTitle,
+		NodeID nodeID, const QPointF& scenePos);
 
 private slots:
 	void draggingLinkDropped(QGraphicsWidget* from, QGraphicsWidget* to);

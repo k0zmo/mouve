@@ -87,13 +87,58 @@ void Controller::addNode(NodeTypeID nodeTypeID, const QPointF& scenePos)
 		return;
 	}
 
-	// Create new view
-	NodeView* nodeView = new NodeView(QString::fromStdString(nodeTitle));
+	// Create new view associated with the model
+	addNodeView(QString::fromStdString(nodeTitle), nodeID, scenePos);
+}
+
+void Controller::addNodeView(const QString& nodeTitle,
+	NodeID nodeID, const QPointF& scenePos)
+{
+	NodeView* nodeView = new NodeView(nodeTitle);
 	nodeView->setData(NodeDataIndex::NodeKey, nodeID);
 	nodeView->setPos(scenePos);
 
-	//nodeView->addSocketView(0, "QWE", false);
-	//nodeView->addSocketView(0, "QWE", true);
+	NodeConfig nodeConfig;
+	if(!mNodeTree->nodeConfiguration(nodeID, nodeConfig))
+	{
+		QMessageBox::critical
+			(nullptr, "mouve", "[NodeSystem] Error during querying node configuration");
+		return;
+	}
+
+	// Add input sockets views to node view
+	SocketID socketID = 0;
+	if(nodeConfig.pInputSockets)
+	{
+		while(nodeConfig.pInputSockets[socketID].name.length() > 0)
+		{
+			auto& name = nodeConfig.pInputSockets[socketID].name;
+			auto& humanName = nodeConfig.pInputSockets[socketID].humanName;
+
+			QString socketTitle = humanName.length() > 0
+				? QString::fromStdString(humanName)
+				: QString::fromStdString(name);
+			nodeView->addSocketView(socketID, socketTitle, false);
+			++socketID;
+		}
+	}
+
+	socketID = 0;
+	// Add input sockets views 
+	if(nodeConfig.pOutputSockets)
+	{
+		while(nodeConfig.pOutputSockets[socketID].name.length() > 0)
+		{
+			auto& name = nodeConfig.pOutputSockets[socketID].name;
+			auto& humanName = nodeConfig.pOutputSockets[socketID].humanName;
+
+			QString socketTitle = humanName.length() > 0
+				? QString::fromStdString(humanName)
+				: QString::fromStdString(name);
+			nodeView->addSocketView(socketID, socketTitle, true);
+			++socketID;
+		}
+	}
 
 	mNodeViews[nodeID] = nodeView;
 	mNodeScene->addItem(nodeView);
