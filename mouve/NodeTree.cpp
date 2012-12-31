@@ -158,6 +158,28 @@ bool NodeTree::linkNodes(SocketAddress from, SocketAddress to)
 {
 	if(!validateLink(from, to))
 		return false;
+
+	// Check if the given connection hasn't been created already
+	size_t linkIndex = firstOutputLink(from.node, from.socket);
+	if(linkIndex != -1)
+	{
+		auto iter    = std::begin(_links) + linkIndex;
+		auto iterEnd = std::end(_links);
+
+		while(iter != iterEnd &&
+		      iter->fromNode == from.node &&
+		      iter->fromSocket == from.socket)
+		{
+			if(iter->toNode == to.node &&
+			   iter->toSocket == to.socket)
+			{
+				return false;
+			}
+
+			++iter;
+		}
+	}
+
 	_links.emplace_back(NodeLink(from, to));
 
 	/// xXx: tag affected nodes?

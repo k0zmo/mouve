@@ -6,8 +6,6 @@
 // UI
 #include "ui_MainWindow.h"
 
-//static bool DEBUG_LINKS = false;
-
 class Controller
 	: public QMainWindow
 	, public Singleton<Controller>
@@ -22,6 +20,8 @@ private:
 	void addNode(NodeTypeID nodeTypeID, const QPointF& scenePos);
 	void addNodeView(const QString& nodeTitle,
 		NodeID nodeID, const QPointF& scenePos);
+
+	void linkNodeViews(NodeSocketView* from, NodeSocketView* to);
 
 private slots:
 	void draggingLinkDropped(QGraphicsWidget* from, QGraphicsWidget* to);

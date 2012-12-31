@@ -2,6 +2,7 @@
 #include "NodeScene.h"
 #include "NodeView.h"
 #include "NodeLinkView.h"
+#include "NodeSocketView.h"
 
 /// xXx: This is needed here for now
 #include "BuiltinNodeTypes.h"
@@ -9,8 +10,11 @@
 #include "NodeSystem.h"
 #include "NodeTree.h"
 #include "NodeType.h"
+#include "NodeLink.h"
 
 #include <QMessageBox>
+
+static bool DEBUG_LINKS = false;
 
 template<> Controller* Singleton<Controller>::_singleton = nullptr;
 
@@ -83,7 +87,7 @@ void Controller::addNode(NodeTypeID nodeTypeID, const QPointF& scenePos)
 	if(nodeID == InvalidNodeID)
 	{
 		QMessageBox::critical
-			(nullptr, "mouve", "[NodeSystem] Couldn't create given node");
+			(nullptr, "mouve", "[NodeTree] Couldn't create given node");
 		return;
 	}
 
@@ -102,7 +106,7 @@ void Controller::addNodeView(const QString& nodeTitle,
 	if(!mNodeTree->nodeConfiguration(nodeID, nodeConfig))
 	{
 		QMessageBox::critical
-			(nullptr, "mouve", "[NodeSystem] Error during querying node configuration");
+			(nullptr, "mouve", "[NodeTree] Error during querying node configuration");
 		return;
 	}
 
@@ -144,19 +148,49 @@ void Controller::addNodeView(const QString& nodeTitle,
 	mNodeScene->addItem(nodeView);
 }
 
+void Controller::linkNodeViews(NodeSocketView* from, NodeSocketView* to)
+{
+	Q_ASSERT(from);
+	Q_ASSERT(from->nodeView());
+	Q_ASSERT(to);
+	Q_ASSERT(to->nodeView());
+	/// xXx: Add some checking to release
+
+	SocketAddress addrFrom(from->nodeView()->nodeKey(), from->socketKey(), true);
+	SocketAddress addrTo(to->nodeView()->nodeKey(), to->socketKey(), false);
+
+	/// xXx: give a reason
+	if(!mNodeTree->linkNodes(addrFrom, addrTo))
+	{
+		QMessageBox::critical
+			(nullptr, "mouve", "[NodeTree] Couldn't link given sockets");
+		return;
+	}
+
+	// Create new link view 
+	NodeLinkView* link = new NodeLinkView(from, to, nullptr);
+	link->setDrawDebug(DEBUG_LINKS);
+	from->addLink(link);
+	to->addLink(link);
+
+	mLinkViews.append(link);
+	mNodeScene->addItem(link);
+}
+
 void Controller::draggingLinkDropped(QGraphicsWidget* from, QGraphicsWidget* to)
 {
-
+	linkNodeViews(static_cast<NodeSocketView*>(from),
+	              static_cast<NodeSocketView*>(to));
 }
 
 void Controller::draggingLinkStarted(QGraphicsWidget* from)
 {
-
+	mNodeScene->setDragging(true);
 }
 
 void Controller::draggingLinkStopped(QGraphicsWidget* from)
 {
-
+	mNodeScene->setDragging(false);
 }
 
 void Controller::contextMenu(const QPoint& globalPos,
