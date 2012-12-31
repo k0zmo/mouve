@@ -1,10 +1,10 @@
 #include <QApplication>
-#include "NodeController.h"
+#include "Controller.h"
 
 int main(int argc, char* argv[])
 {
 	QApplication a(argc, argv);
-	NodeController controller;
-	controller.initSampleScene();
+	Controller controller;
+	controller.show();
 	return a.exec();
 }

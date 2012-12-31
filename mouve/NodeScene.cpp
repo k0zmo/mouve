@@ -5,8 +5,6 @@
 #include <QGraphicsSceneMouseEvent>
 #include <QGraphicsItem>
 
-#include <QDebug>
-
 NodeScene::NodeScene(QObject* parent)
 	: QGraphicsScene(parent)
 	, mHovered(nullptr)

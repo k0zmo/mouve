@@ -1,7 +1,7 @@
 #include "NodeView.h"
 #include "NodeStyle.h"
 #include "NodeSocketView.h"
-#include "NodeController.h"
+#include "Controller.h"
 
 NodeView::NodeView(const QString& title, QGraphicsItem* parent)
 	: QGraphicsWidget(parent)
@@ -82,11 +82,11 @@ NodeSocketView* NodeView::addSocketView(NodeID socketKey,
 		socketView->setData(NodeDataIndex::SocketKey, socketKey);
 
 		connect(socketView, SIGNAL(draggingLinkDropped(QGraphicsWidget*, QGraphicsWidget*)),
-			nC, SLOT(draggingLinkDropped(QGraphicsWidget*, QGraphicsWidget*)));
+			gC, SLOT(draggingLinkDropped(QGraphicsWidget*, QGraphicsWidget*)));
 		connect(socketView, SIGNAL(draggingLinkStarted(QGraphicsWidget*)),
-			nC, SLOT(draggingLinkStarted(QGraphicsWidget*)));
+			gC, SLOT(draggingLinkStarted(QGraphicsWidget*)));
 		connect(socketView, SIGNAL(draggingLinkStopped(QGraphicsWidget*)),
-			nC, SLOT(draggingLinkStopped(QGraphicsWidget*)));
+			gC, SLOT(draggingLinkStopped(QGraphicsWidget*)));
 
 		views.insert(socketKey, socketView);
 

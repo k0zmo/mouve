@@ -3,6 +3,7 @@
 #include <QString>
 #include <QList>
 #include <QHash>
+#include <QDebug>
 
 class NodeEditorView;
 class NodeConnectorView;
