@@ -19,11 +19,26 @@ Node::Node(std::unique_ptr<NodeType> nodeType,
            NodeTypeID nodeTypeID)
 	: _nodeType(std::move(nodeType))
 	, _nodeName(nodeName)
+	, _numInputs(0)
+	, _numOutputs(0)
 	, _nodeTypeID(nodeTypeID)
 {
-	/// xXx: Temporary - NodeConfiguration
-	_numInputs = _nodeType->numInputSockets();
-	_numOutputs = _nodeType->numOutputSockets();
+	NodeConfig config;
+	_nodeType->configuration(config);
+
+	// Count number of input sockets
+	if(config.pInputSockets)
+	{
+		while(config.pInputSockets[_numInputs].name.length() > 0)
+			_numInputs++;
+	}
+
+	// Count number of output sockets
+	if(config.pOutputSockets)
+	{
+		while(config.pOutputSockets[_numOutputs].name.length() > 0)
+			_numOutputs++;
+	} 
 
 	_outputSockets.resize(_numOutputs);
 }
@@ -70,4 +85,9 @@ void Node::execute(NodeSocketReader* reader, NodeSocketWriter* writer)
 {
 	writer->setOutputSockets(_outputSockets);
 	_nodeType->execute(reader, writer);
+}
+
+void Node::configuration(NodeConfig& nodeConfig) const
+{
+	_nodeType->configuration(nodeConfig);
 }

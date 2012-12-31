@@ -320,6 +320,15 @@ bool NodeTree::isOutputSocketConnected(NodeID nodeID, SocketID socketID) const
 	return firstOutputLink(nodeID, socketID) != size_t(-1);
 }
 
+bool NodeTree::nodeConfiguration(NodeID nodeID, NodeConfig& nodeConfig) const
+{
+	if(!validateNode(nodeID))
+		return false;
+
+	_nodes[nodeID].configuration(nodeConfig);
+	return true;
+}
+
 NodeID NodeTree::allocateNodeID()
 {
 	NodeID id = InvalidNodeID;

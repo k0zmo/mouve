@@ -20,8 +20,18 @@ public:
 		output = cv::imread(filePath, CV_LOAD_IMAGE_GRAYSCALE);
 	}
 
-	virtual SocketID numInputSockets() const { return 0; }
-	virtual SocketID numOutputSockets() const { return 1; }
+	virtual void configuration(NodeConfig& nodeConfig) const
+	{
+		static const InputSocketConfig* in_config = nullptr;
+		static const OutputSocketConfig out_config[] = {
+			{ "output", "Output", "" },
+			{ "", "", "" }
+		};
+
+		nodeConfig.description = "Loads image from a given location";
+		nodeConfig.pInputSockets = in_config;
+		nodeConfig.pOutputSockets = out_config;
+	}
 };
 
 class GaussianBlurNodeType : public NodeType
@@ -35,8 +45,21 @@ public:
 		cv::GaussianBlur(input, output, cv::Size(5,5), 10.0);
 	}
 
-	virtual SocketID numInputSockets() const { return 1; }
-	virtual SocketID numOutputSockets() const { return 1; }
+	virtual void configuration(NodeConfig& nodeConfig) const
+	{
+		static const InputSocketConfig in_config[] = {
+			{ "input", "Input", "" },
+			{ "", "", "" }
+		};
+		static const OutputSocketConfig out_config[] = {
+			{ "output", "Output", "" },
+			{ "", "", "" }
+		};
+
+		nodeConfig.description = "Performs Gaussian blur on input image";
+		nodeConfig.pInputSockets = in_config;
+		nodeConfig.pOutputSockets = out_config;
+	}
 };
 
 class CannyEdgeDetectorNodeType : public NodeType
@@ -50,8 +73,21 @@ public:
 		cv::Canny(input, output, 3, 90);
 	}
 
-	virtual SocketID numInputSockets() const { return 1; }
-	virtual SocketID numOutputSockets() const { return 1; }
+	virtual void configuration(NodeConfig& nodeConfig) const
+	{
+		static const InputSocketConfig in_config[] = {
+			{ "input", "Input", "" },
+			{ "", "", "" }
+		};
+		static const OutputSocketConfig out_config[] = {
+			{ "output", "Output", "" },
+			{ "", "", "" }
+		};
+
+		nodeConfig.description = "Detects edges in input image using Canny detector";
+		nodeConfig.pInputSockets = in_config;
+		nodeConfig.pOutputSockets = out_config;
+	}
 };
 
 REGISTER_NODE("ImageFromFile", ImageFromFileNodeType)

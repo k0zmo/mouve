@@ -35,6 +35,7 @@ public:
 
 	// Below methods are thin wrapper for held NodeType interface
 	void execute(NodeSocketReader* reader, NodeSocketWriter* writer);
+	void configuration(NodeConfig& nodeConfig) const;
 
 private:
 	// NOTE: If you add any new fields be sure to also handle them in move constructor/operator

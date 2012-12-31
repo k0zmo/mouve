@@ -40,9 +40,9 @@ static const NodeTypeID InvalidNodeTypeID = NodeTypeID(0);
 class Controller;
 
 // Forward declarations
-//struct InputSocketConfig;
-//struct OutputSocketConfig;
-//struct NodeConfig;
+struct InputSocketConfig;
+struct OutputSocketConfig;
+struct NodeConfig;
 
 // Model part
 class Node;

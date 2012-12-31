@@ -48,17 +48,37 @@ private:
 	NodeSocketWriter& operator=(const NodeSocketWriter&);
 };
 
+struct InputSocketConfig
+{
+	std::string name;
+	std::string humanName;
+	std::string description;
+	//NodeSocketData defaultData;
+};
+
+struct OutputSocketConfig
+{
+	std::string name;
+	std::string humanName;
+	std::string description;
+	//int type;
+};
+
+struct NodeConfig
+{
+	const InputSocketConfig* pInputSockets;
+	const OutputSocketConfig* pOutputSockets;
+	std::string description;
+};
+
 class NodeType
 {
 public:
 	virtual ~NodeType() {}
 	// virtual void initialize();
 	virtual void execute(NodeSocketReader* reader, NodeSocketWriter* writer) = 0;
+	virtual void configuration(NodeConfig& nodeConfig) const = 0;
 	// void registerUpdateInterval();
-
-	// temporary - should be gone when Configuration is introduced
-	virtual SocketID numInputSockets() const = 0;
-	virtual SocketID numOutputSockets() const = 0;
 };
 
 class NodeTypeIterator
