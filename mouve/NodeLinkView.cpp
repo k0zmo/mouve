@@ -11,9 +11,6 @@ NodeLinkView::NodeLinkView(NodeSocketView* fromSocketView,
 	, mDrawDebug(false)
 	, mDrawMode(1)
 {
-	// !TODO: Dla usuwania wezlow potrzebna jest mozliwosc ich zaznaczenia
-	//        Na razie jednak kolizja dziala w oparciu o boundingRect 
-	//        co nie bardzo nas zadowola dla cienkich linii
 	setFlag(QGraphicsItem::ItemIsSelectable);
 	setFlag(QGraphicsItem::ItemIsFocusable);
 	setZValue(NodeStyle::ZValueLink);
@@ -22,7 +19,7 @@ NodeLinkView::NodeLinkView(NodeSocketView* fromSocketView,
 
 NodeLinkView::~NodeLinkView()
 {
-	// Remove the references so we socket views won't point to the no man's land
+	// Remove the references so the socket views won't point to the no man's land
 	if(mFromSocketView)
 		mFromSocketView->removeLink(this);
 	if(mToSocketView)
@@ -32,9 +29,13 @@ NodeLinkView::~NodeLinkView()
 void NodeLinkView::paint(QPainter *painter,
 	const QStyleOptionGraphicsItem* option, QWidget* widget)
 {
+	Q_UNUSED(option);
+	Q_UNUSED(widget);
+
 	painter->setBrush(Qt::NoBrush);
 	painter->setPen(mPen);
 	painter->drawPath(_shape(false));
+
 	// Draw debugging red-ish rectangle
 	if(mDrawDebug)
 	{

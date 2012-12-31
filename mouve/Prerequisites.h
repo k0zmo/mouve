@@ -2,6 +2,7 @@
 
 #include <QString>
 #include <QList>
+#include <QHash>
 
 class NodeEditorView;
 class NodeConnectorView;
@@ -17,6 +18,6 @@ struct NodeDataIndex
 	static const int SocketKey = 0;
 };
 
-typedef quint32 NodeId;
-typedef quint32 NodeTypeId;
-typedef quint32 SocketId;
+typedef quint32 NodeID;
+typedef quint32 NodeTypeID;
+typedef quint32 SocketID;

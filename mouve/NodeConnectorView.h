@@ -1,4 +1,4 @@
-#pragma  once
+#pragma once
 
 #include "Prerequisites.h"
 
@@ -12,12 +12,12 @@ class NodeConnectorView : public QGraphicsWidget
 	Q_OBJECT
 	Q_PROPERTY(float penWidth READ penWidth WRITE setPenWidth)
 public:
-	NodeConnectorView(bool isOutput, QGraphicsItem* parent = nullptr);
+	explicit NodeConnectorView(bool isOutput, QGraphicsItem* parent = nullptr);
 	
 	virtual void paint(QPainter* painter, 
 		const QStyleOptionGraphicsItem* option, QWidget *widget);
 	virtual QRectF boundingRect() const;
-	// !TODO virtual QPainterPath shape() const;
+	/// xXx: virtual QPainterPath shape() const;
 	virtual int type() const;
 
 	float penWidth() const;
@@ -29,10 +29,7 @@ public:
 
 	bool isOutput() const;
 
-	enum 
-	{
-		Type = QGraphicsItem::UserType + 4
-	};
+	enum { Type = QGraphicsItem::UserType + 4 };
 
 protected:
 	virtual void hoverEnterEvent(QGraphicsSceneHoverEvent* event);

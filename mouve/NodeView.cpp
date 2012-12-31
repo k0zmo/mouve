@@ -17,7 +17,7 @@ NodeView::NodeView(const QString& title, QGraphicsItem* parent)
 	mLabel->setFont(NodeStyle::NodeTitleFont);
 	mLabel->setBrush(NodeStyle::NodeTitleFontBrush);
 
-	// !TODO: set this based on model
+	/// xXx: set this based on model
 	setToolTip("ToolTip");
 
 	// Additional visual effect
@@ -68,7 +68,7 @@ QPainterPath NodeView::shape2(qreal titleHeight) const
 	return shape;
 }
 
-NodeSocketView* NodeView::addSocketView(quint32 socketKey,
+NodeSocketView* NodeView::addSocketView(NodeID socketKey,
 	const QString& title, bool isOutput)
 {
 	// Check if the socketKey hasn't been added already
@@ -81,11 +81,11 @@ NodeSocketView* NodeView::addSocketView(quint32 socketKey,
 		NodeSocketView* socketView = new NodeSocketView(title, isOutput, this);
 		socketView->setData(NodeDataIndex::SocketKey, socketKey);
 
-		connect(socketView, SIGNAL(draggingLinkDropped(QGraphicsWidget*, QGraphicsWidget*)), 
+		connect(socketView, SIGNAL(draggingLinkDropped(QGraphicsWidget*, QGraphicsWidget*)),
 			nC, SLOT(draggingLinkDropped(QGraphicsWidget*, QGraphicsWidget*)));
-		connect(socketView, SIGNAL(draggingLinkStarted(QGraphicsWidget*)), 
+		connect(socketView, SIGNAL(draggingLinkStarted(QGraphicsWidget*)),
 			nC, SLOT(draggingLinkStarted(QGraphicsWidget*)));
-		connect(socketView, SIGNAL(draggingLinkStopped(QGraphicsWidget*)), 
+		connect(socketView, SIGNAL(draggingLinkStopped(QGraphicsWidget*)),
 			nC, SLOT(draggingLinkStopped(QGraphicsWidget*)));
 
 		views.insert(socketKey, socketView);
@@ -103,6 +103,9 @@ NodeSocketView* NodeView::addSocketView(quint32 socketKey,
 void NodeView::paint(QPainter* painter, 
 	const QStyleOptionGraphicsItem* option, QWidget* widget)
 {
+	Q_UNUSED(option);
+	Q_UNUSED(widget);
+
 	painter->setPen(isSelected()
 		? NodeStyle::NodeBorderSelectedPen
 		: NodeStyle::NodeBorderPen);
@@ -115,11 +118,13 @@ void NodeView::paint(QPainter* painter,
 
 void NodeView::hoverEnterEvent(QGraphicsSceneHoverEvent* event)
 {
+	Q_UNUSED(event);
 	setZValue(NodeStyle::ZValueNodeHovered);
 }
 
 void NodeView::hoverLeaveEvent(QGraphicsSceneHoverEvent* event)
 {
+	Q_UNUSED(event);
 	setZValue(NodeStyle::ZValueNode);
 }
 

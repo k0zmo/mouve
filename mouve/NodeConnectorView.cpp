@@ -16,7 +16,7 @@ NodeConnectorView::NodeConnectorView(bool isOutput, QGraphicsItem* parent)
 	gradient.setColorAt(0, NodeStyle::SocketGradientStart);
 	gradient.setColorAt(1, NodeStyle::SocketGradientStop);
 	mBrush = QBrush(gradient);
-	mPen.setWidthF(1.0f); // !TODO: Use style
+	mPen.setWidthF(1.0f); /// xXx: Use style
 
 	setAcceptHoverEvents(true);
 
@@ -34,6 +34,9 @@ void NodeConnectorView::setPenWidth(float penWidth)
 void NodeConnectorView::paint(QPainter* painter,
 	const QStyleOptionGraphicsItem* option, QWidget* widget )
 {
+	Q_UNUSED(option);
+	Q_UNUSED(widget);
+
 	painter->setBrush(mBrush);
 	painter->setPen(mPen);
 	painter->drawEllipse(mRect);
@@ -46,7 +49,7 @@ void NodeConnectorView::setHighlight(bool highlight)
 		mAnimation.stop();
 		qreal start = qMax(qreal(1.0), mAnimation.currentValue().toReal());
 		mAnimation.setStartValue(start);
-		mAnimation.setEndValue(2.0); // !TODO: Use style
+		mAnimation.setEndValue(2.0); /// xXx: Use style
 		mAnimation.start();
 	}
 	else
@@ -54,18 +57,20 @@ void NodeConnectorView::setHighlight(bool highlight)
 		mAnimation.stop();
 		qreal start = qMin(qreal(2.0), mAnimation.currentValue().toReal());
 		mAnimation.setStartValue(start);
-		mAnimation.setEndValue(1.0); // !TODO: Use style
+		mAnimation.setEndValue(1.0); /// xXx: Use style
 		mAnimation.start();
 	}
 }
 
 void NodeConnectorView::hoverEnterEvent(QGraphicsSceneHoverEvent* event)
 {
+	Q_UNUSED(event);
 	setHighlight(true);
 }
 
 void NodeConnectorView::hoverLeaveEvent(QGraphicsSceneHoverEvent* event)
 {
+	Q_UNUSED(event);
 	setHighlight(false);
 }
 
@@ -73,7 +78,7 @@ void NodeConnectorView::mousePressEvent(QGraphicsSceneMouseEvent* event)
 {
 	if(event->button() == Qt::LeftButton)
 	{
-		if(isOutput()) // !TODO: or !isOutput()
+		if(isOutput()) /// xXx: or !isOutput()
 		{ 
 			mTemporaryLink = new NodeTemporaryLinkView
 				(centerPos(), event->scenePos(), this);
@@ -116,7 +121,7 @@ NodeConnectorView* NodeConnectorView::canDrop(const QPointF& scenePos)
 			if(citem->isOutput() != isOutput())
 			{
 				// Protect from constructing algebraic loops
-				// !TODO: move to logic
+				/// xXx: move to logic
 				if(citem->socketView()->nodeView() != socketView()->nodeView())
 				{
 					return citem;

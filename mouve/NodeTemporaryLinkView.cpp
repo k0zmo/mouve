@@ -16,6 +16,9 @@ NodeTemporaryLinkView::NodeTemporaryLinkView(const QPointF& startPosition,
 void NodeTemporaryLinkView::paint(QPainter *painter,
 	const QStyleOptionGraphicsItem* option, QWidget* widget)
 {
+	Q_UNUSED(option);
+	Q_UNUSED(widget);
+
 	painter->setBrush(Qt::NoBrush);
 	painter->setPen(mPen);
 	painter->drawPath(_shape());

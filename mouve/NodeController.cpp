@@ -17,7 +17,7 @@ static QString registeredNodeTypes[] = {
 };
 static int nodeId = 0;
 
-template<> NodeController* Singleton<NodeController>::singleton = nullptr;
+template<> NodeController* Singleton<NodeController>::_singleton = nullptr;
 
 NodeController::NodeController(QObject* parent)
 	: QObject(parent)

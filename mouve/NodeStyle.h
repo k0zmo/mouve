@@ -1,3 +1,5 @@
+#pragma once
+
 #include "Prerequisites.h"
 
 #include <QColor>

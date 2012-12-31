@@ -7,21 +7,18 @@
 class NodeTemporaryLinkView :  public QGraphicsItem
 {
 public:
-	NodeTemporaryLinkView(const QPointF& startPosition,
+	explicit NodeTemporaryLinkView(const QPointF& startPosition,
 		const QPointF& endPosition, QGraphicsItem* parent = nullptr);
 
 	virtual void paint(QPainter *painter, 
 		const QStyleOptionGraphicsItem* option, QWidget* widget);
 	virtual int type() const;
-	// !TODO: virtual QPainterPath shape() const;
+	/// xXx: virtual QPainterPath shape() const;
 	virtual QRectF boundingRect() const;
 
 	void updateEndPosition(const QPointF& endPosition);
 
-	enum
-	{
-		Type = QGraphicsItem::UserType + 5
-	};
+	enum { Type = QGraphicsItem::UserType + 5 };
 
 	void setDrawMode(int drawMode);
 	void setDrawDebug(bool drawDebug);
@@ -31,7 +28,7 @@ private:
 	QPointF mEndPosition;
 
 	bool mDrawDebug;
-	//! TODO: Make it enum
+	/// xXx: Make it enum
 	int mDrawMode;
 
 private:

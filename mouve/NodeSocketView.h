@@ -9,7 +9,7 @@ class NodeSocketView : public QGraphicsWidget
 {
 	Q_OBJECT
 public:
-	NodeSocketView(const QString& title, 
+	explicit NodeSocketView(const QString& title,
 		bool isOutput, QGraphicsItem* parent = nullptr);
 	virtual int type() const;
 
@@ -23,7 +23,7 @@ public:
 	NodeView* nodeView() const;
 
 	// Zwraca klucz gniazda
-	SocketId socketKey() const;
+	SocketID socketKey() const;
 
 	// Zwraca pozycje srodka widoku gniazda
 	QPointF connectorCenterPos() const;
@@ -34,10 +34,7 @@ public:
 	void addLink(NodeLinkView* link);
 	void removeLink(NodeLinkView* link);
 
-	enum 
-	{
-		Type = QGraphicsItem::UserType + 3
-	};
+	enum { Type = QGraphicsItem::UserType + 3 };
 
 protected:
 	virtual QVariant itemChange(GraphicsItemChange change,
@@ -66,5 +63,5 @@ inline bool NodeSocketView::isOutput() const
 inline const QString& NodeSocketView::title() const
 { return mTitle; }
 
-inline SocketId NodeSocketView::socketKey() const
+inline SocketID NodeSocketView::socketKey() const
 { return data(NodeDataIndex::SocketKey).toInt(); }

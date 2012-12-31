@@ -7,7 +7,7 @@
 class NodeLinkView :  public QGraphicsItem
 {
 public:
-	NodeLinkView(NodeSocketView* fromSocketView, 
+	explicit NodeLinkView(NodeSocketView* fromSocketView,
 		NodeSocketView* toSocketView, QGraphicsItem* parent = nullptr);
 	virtual ~NodeLinkView();
 
@@ -27,10 +27,7 @@ public:
 	// Zwraca true jesli obiektu wchodzi do podanego wezla
 	bool inputConnecting(NodeView* to) const;
 
-	enum
-	{
-		Type = QGraphicsItem::UserType + 2
-	};
+	enum { Type = QGraphicsItem::UserType + 2 };
 
 	// Zmiana trybu rysowania krzywej
 	void setDrawMode(int drawMode);
@@ -46,7 +43,7 @@ private:
 	NodeSocketView* mToSocketView;
 
 	bool mDrawDebug;
-	//! TODO: Make it enum
+	//! xXx: Make it enum
 	int mDrawMode;
 
 private:

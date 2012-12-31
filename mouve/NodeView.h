@@ -1,27 +1,24 @@
 #pragma once
 
 #include "Prerequisites.h"
+
 #include <QGraphicsDropShadowEffect>
-#include <QHash>
 
 class NodeView : public QGraphicsWidget
 {
 public:
-	NodeView(const QString& title, QGraphicsItem* parent = nullptr);
+	explicit NodeView(const QString& title, QGraphicsItem* parent = nullptr);
 
 	virtual int type() const;
 	virtual void paint(QPainter* painter,
 		const QStyleOptionGraphicsItem* option, QWidget* widget);
 
-	NodeId nodeKey() const;
-	NodeSocketView* addSocketView(quint32 socketKey, 
+	NodeID nodeKey() const;
+	NodeSocketView* addSocketView(NodeID socketKey,
 		const QString& title, bool isOutput = false);
 	void updateLayout();
 
-	enum 
-	{
-		Type = QGraphicsItem::UserType + 1
-	};
+	enum { Type = QGraphicsItem::UserType + 1 };
 
 protected:
 	virtual void hoverEnterEvent(QGraphicsSceneHoverEvent* event);
@@ -32,8 +29,8 @@ private:
 	QGraphicsDropShadowEffect* mDropShadowEffect;
 	QPainterPath mShape1;
 	QPainterPath mShape2;
-	QHash<quint32, NodeSocketView*> mInputSocketViews;
-	QHash<quint32, NodeSocketView*> mOutputSocketViews;
+	QHash<NodeID, NodeSocketView*> mInputSocketViews;
+	QHash<NodeID, NodeSocketView*> mOutputSocketViews;
 
 private:
 	QPainterPath shape1(qreal titleHeight) const;
@@ -43,5 +40,5 @@ private:
 inline int NodeView::type() const
 { return NodeView::Type; }
 
-inline NodeId NodeView::nodeKey() const
+inline NodeID NodeView::nodeKey() const
 { return data(NodeDataIndex::NodeKey).toInt(); }

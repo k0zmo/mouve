@@ -1,6 +1,6 @@
 #include "NodeStyle.h"
 
-#if defined(Q_WS_WIN)
+#if defined(Q_OS_WIN)
 static QString FontName = "Segoe UI";
 #else
 static QString FontName = "DejaVu Sans";
