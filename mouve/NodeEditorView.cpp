@@ -10,9 +10,6 @@ NodeEditorView::NodeEditorView(QWidget* parent)
 	setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
 	setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
 	setFocusPolicy(Qt::ClickFocus);
-
-	// !TODO: Make scroll wheel change it
-	// setDragMode(QGraphicsView::ScrollHandDrag);
 	setDragMode(QGraphicsView::RubberBandDrag);
 }
 
@@ -21,8 +18,33 @@ void NodeEditorView::setZoom(float zoom)
 	if(scene() != nullptr)
 	{
 		QTransform transformation;
-		transformation.scale(mZoom, mZoom);
+		transformation.scale(zoom, zoom);
 		setTransform(transformation);
+	}
+}
+
+void NodeEditorView::mousePressEvent(QMouseEvent* event)
+{
+	/// xXx: For now this works not entirely like desired
+	if(event->button() == Qt::MiddleButton)
+	{
+		setDragMode(QGraphicsView::ScrollHandDrag);
+	}
+	else
+	{
+		QGraphicsView::mousePressEvent(event);
+	}
+}
+
+void NodeEditorView::mouseReleaseEvent(QMouseEvent* event)
+{
+	if(event->button() == Qt::MiddleButton)
+	{
+		setDragMode(QGraphicsView::RubberBandDrag);
+	}
+	else
+	{
+		QGraphicsView::mouseReleaseEvent(event);
 	}
 }
 
