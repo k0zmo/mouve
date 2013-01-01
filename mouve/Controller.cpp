@@ -243,7 +243,7 @@ void Controller::deleteNodeView(NodeView* nodeView)
 	Q_ASSERT(nodeView);
 
 	// Try to remove the model first
-	NodeID nodeID = NodeID(nodeView->data(NodeDataIndex::NodeKey).toInt());
+	NodeID nodeID = NodeID(nodeView->nodeKey());
 
 	if(!mNodeTree->removeNode(nodeID))
 	{
@@ -266,6 +266,12 @@ void Controller::deleteNodeView(NodeView* nodeView)
 		if(linkView->inputConnecting(nodeView) ||
 		   linkView->outputConnecting(nodeView))
 		{
+			// tag affected node
+			Q_ASSERT(linkView->toSocketView());
+			Q_ASSERT(linkView->toSocketView()->nodeView());
+			mNodeTree->tagNode(linkView->toSocketView()->nodeView()->nodeKey());
+
+			// remove link view
 			mNodeScene->removeItem(linkView);
 			it.remove();
 			delete linkView;
@@ -278,6 +284,8 @@ void Controller::deleteNodeView(NodeView* nodeView)
 	mNodeViews.remove(nodeID);
 	// Finally remove the node view itself
 	nodeView->deleteLater();
+
+	mNodeTree->step();
 }
 
 void Controller::refreshSelectedNode(NodeView* nodeView)
