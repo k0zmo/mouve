@@ -33,6 +33,9 @@ public:
 	void setDrawMode(int drawMode);
 	void setDrawDebug(bool drawDebug);
 
+	const NodeSocketView* fromSocketView() const;
+	const NodeSocketView* toSocketView() const;
+
 protected:
 	virtual QVariant itemChange(GraphicsItemChange change, const QVariant& value);
 
@@ -53,3 +56,9 @@ private:
 
 inline int NodeLinkView::type() const
 { return NodeLinkView::Type; }
+
+inline const NodeSocketView* NodeLinkView::fromSocketView() const
+{ return mFromSocketView; }
+
+inline const NodeSocketView* NodeLinkView::toSocketView() const
+{ return mToSocketView; }

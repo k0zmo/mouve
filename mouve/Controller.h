@@ -22,6 +22,11 @@ private:
 		NodeID nodeID, const QPointF& scenePos);
 
 	void linkNodeViews(NodeSocketView* from, NodeSocketView* to);
+	void unlinkNodeViews(NodeLinkView* linkView);
+
+	void deleteNodeView(NodeView* nodeView);
+
+	void refreshSelectedNode(NodeView* nodeView);
 
 private slots:
 	void draggingLinkDropped(QGraphicsWidget* from, QGraphicsWidget* to);

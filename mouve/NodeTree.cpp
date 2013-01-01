@@ -140,7 +140,7 @@ bool NodeTree::removeNode(NodeID nodeID)
 
 	deallocateNodeID(nodeID);
 
-	return false;
+	return true;
 }
 
 bool NodeTree::removeNode(const std::string& nodeName)

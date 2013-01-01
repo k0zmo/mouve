@@ -175,7 +175,7 @@ void Controller::linkNodeViews(NodeSocketView* from, NodeSocketView* to)
 	if(!mNodeTree->linkNodes(addrFrom, addrTo))
 	{
 		QMessageBox::critical
-			(nullptr, "mouve", "[NodeTree] Couldn't link given sockets");
+			(nullptr, "mouve", "[NodeTree] Couldn't linked given sockets");
 		return;
 	}
 
@@ -192,9 +192,99 @@ void Controller::linkNodeViews(NodeSocketView* from, NodeSocketView* to)
 	// Tag and execute
 	mNodeTree->tagNode(addrTo.node);
 	mNodeTree->step();
+	refreshSelectedNode(to->nodeView());
+}
+
+void Controller::unlinkNodeViews(NodeLinkView* linkView)
+{
+	Q_ASSERT(linkView);
+	Q_ASSERT(linkView->fromSocketView());
+	Q_ASSERT(linkView->toSocketView());
+	/// xXx: Add some checking to release
+
+	const NodeSocketView* from = linkView->fromSocketView();
+	const NodeSocketView* to = linkView->toSocketView();
+
+	SocketAddress addrFrom(from->nodeView()->nodeKey(),
+	                       from->socketKey(), true);
+	SocketAddress addrTo(to->nodeView()->nodeKey(), 
+	                     to->socketKey(), false);
+
+	/// xXx: give a reason
+	if(!mNodeTree->unlinkNodes(addrFrom, addrTo))
+	{
+		QMessageBox::critical
+			(nullptr, "mouve", "[NodeTree] Couldn't unlinked given sockets");
+		return;
+	}
+
+	// Remove link view
+	if(!mLinkViews.removeOne(linkView))
+	{
+		QMessageBox::critical
+			(nullptr, "mouve", "[Controller] Couldn't removed link view");
+		return;
+	}
+
+	// Tag and execute
+	mNodeTree->tagNode(addrTo.node);
+	mNodeTree->step();
+
+	/// xXx: doesn't work because we clear selection before
+	refreshSelectedNode(to->nodeView());
+
+	mNodeScene->removeItem(linkView);
+	delete linkView;
+}
+
+
+void Controller::deleteNodeView(NodeView* nodeView)
+{
+	Q_ASSERT(nodeView);
+
+	// Try to remove the model first
+	NodeID nodeID = NodeID(nodeView->data(NodeDataIndex::NodeKey).toInt());
+
+	if(!mNodeTree->removeNode(nodeID))
+	{
+		QMessageBox::critical
+			(nullptr, "mouve", "[NodeTree] Couldn't removed given node");
+		return;
+	}
+
+	// Remove incoming and outgoing links
+	// This should be done in cooperation with model but it would probably make the case harder
+	/// xXx: Mark this as minor TODO
+	///      We could retrieve the list of all removed links from NodeTree::removeNode 
+	///      We would also need a method:
+	///      NodeLinkView* resolveLinkView(const NodeLink& nodeLink);
+	QMutableListIterator<NodeLinkView*> it(mLinkViews);
+	while(it.hasNext())
+	{
+		NodeLinkView* linkView = it.next();
+
+		if(linkView->inputConnecting(nodeView) ||
+		   linkView->outputConnecting(nodeView))
+		{
+			mNodeScene->removeItem(linkView);
+			it.remove();
+			delete linkView;
+		}
+	}
+
+	// Remove node view from the scene
+	mNodeScene->removeItem(nodeView);
+	// Remove from the container
+	mNodeViews.remove(nodeID);
+	// Finally remove the node view itself
+	nodeView->deleteLater();
+}
+
+void Controller::refreshSelectedNode(NodeView* nodeView)
+{
 	QList<QGraphicsItem*> selectedItems = mNodeScene->selectedItems();
 	if(selectedItems.count() == 1 && 
-	   selectedItems[0] == to->nodeView())
+		selectedItems[0] == nodeView)
 	{
 		nodeSceneSelectionChanged();
 	}
@@ -237,6 +327,40 @@ void Controller::contextMenu(const QPoint& globalPos,
 
 void Controller::keyPress(QKeyEvent* event)
 {
+	if(event->key() == Qt::Key_Delete)
+	{
+		QList<QGraphicsItem*> selectedItems = mNodeScene->selectedItems();
+		QList<QGraphicsItem*> selectedNodeViews;
+		mNodeScene->clearSelection();
+
+		for(int i = 0; i < selectedItems.size(); ++i)
+		{
+			auto item = selectedItems[i];
+
+			if(item->type() == NodeLinkView::Type)
+			{
+				NodeLinkView* linkView = static_cast<NodeLinkView*>(item);
+				unlinkNodeViews(linkView);
+			}
+			else
+			{
+				selectedNodeViews.append(item);
+			}
+		}
+
+		for(int i = 0; i < selectedNodeViews.size(); ++i)
+		{
+			auto item = selectedNodeViews[i];
+
+			if(item->type() == NodeView::Type)
+			{
+				NodeView* nodeView = static_cast<NodeView*>(item);
+				deleteNodeView(nodeView);
+			}
+		}
+
+		event->accept();
+	}
 }
 
 void Controller::executeClicked()
@@ -261,8 +385,6 @@ void Controller::nodeSceneSelectionChanged()
 		if(selectedItem->type() == NodeView::Type)
 		{
 			NodeView* nodeView = static_cast<NodeView*>(selectedItem);
-			qDebug() << nodeView->nodeKey();
-
 			const cv::Mat& mat = mNodeTree->outputSocket(nodeView->nodeKey(), 0);
 
 			QImage image = QImage(
