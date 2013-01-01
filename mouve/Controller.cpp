@@ -323,6 +323,27 @@ void Controller::contextMenu(const QPoint& globalPos,
 		if(ret != nullptr)
 			addNode(ret->data().toInt(), scenePos);
 	}
+	else
+	{
+		for(int i = 0; i < items.size(); ++i)
+		{
+			auto item = items[i];
+
+			if(item->type() == NodeView::Type)
+			{
+				QAction action("Remove node", nullptr);
+				QMenu menu;
+				menu.addAction(&action);
+				QAction* ret = menu.exec(globalPos);
+				if(ret != nullptr)
+				{
+					NodeView* nodeView = static_cast<NodeView*>(item);
+					deleteNodeView(nodeView);
+				}
+				return;
+			}
+		}
+	}
 }
 
 void Controller::keyPress(QKeyEvent* event)
