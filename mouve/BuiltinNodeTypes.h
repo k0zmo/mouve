@@ -177,8 +177,39 @@ public:
 	}
 };
 
+class NegateNodeType : public NodeType
+{
+public:
+	virtual void execute(NodeSocketReader* reader, NodeSocketWriter* writer)
+	{
+		qDebug() << "NegateNodeType";
+		const cv::Mat& src = reader->readSocket(0);
+		cv::Mat& dst = writer->lockSocket(0);
+
+		if(dst.type() == CV_8U)
+			dst = 255 - src;
+	}
+
+	virtual void configuration(NodeConfig& nodeConfig) const
+	{
+		static const InputSocketConfig in_config[] = {
+			{ "source", "Source", "" },
+			{ "", "", "" }
+		};
+		static const OutputSocketConfig out_config[] = {
+			{ "output", "Output", "" },
+			{ "", "", "" }
+		};
+
+		nodeConfig.description = "Negates image";
+		nodeConfig.pInputSockets = in_config;
+		nodeConfig.pOutputSockets = out_config;
+	}
+};
+
+REGISTER_NODE("Negate", NegateNodeType)
 REGISTER_NODE("Subtract", SubtractNodeType)
 REGISTER_NODE("Add", AddNodeType)
-REGISTER_NODE("CannyEdgeDetector", CannyEdgeDetectorNodeType)
-REGISTER_NODE("GaussianBlur", GaussianBlurNodeType)
-REGISTER_NODE("ImageFromFile", ImageFromFileNodeType)
+REGISTER_NODE("Canny edge detector", CannyEdgeDetectorNodeType)
+REGISTER_NODE("Gaussian blur", GaussianBlurNodeType)
+REGISTER_NODE("Image from file", ImageFromFileNodeType)
