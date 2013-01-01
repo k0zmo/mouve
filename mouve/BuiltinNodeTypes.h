@@ -8,12 +8,15 @@
 #include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/highgui/highgui.hpp>
 
+#include <qglobal.h>
+
 class ImageFromFileNodeType : public NodeType
 {
 public: 
 	virtual void execute(NodeSocketReader* reader, NodeSocketWriter* writer)
 	{
-		(void) reader;
+		qDebug() << "ImageFromFileNodeType";
+		Q_UNUSED(reader);
 		const std::string filePath = "lena.jpg";
 		cv::Mat& output = writer->lockSocket(0);
 
@@ -39,6 +42,7 @@ class GaussianBlurNodeType : public NodeType
 public:
 	virtual void execute(NodeSocketReader* reader, NodeSocketWriter* writer)
 	{
+		qDebug() << "GaussianBlur";
 		const cv::Mat& input = reader->readSocket(0);
 		cv::Mat& output = writer->lockSocket(0);
 
@@ -67,6 +71,7 @@ class CannyEdgeDetectorNodeType : public NodeType
 public:
 	virtual void execute(NodeSocketReader* reader, NodeSocketWriter* writer)
 	{
+		qDebug() << "CannyEdgeDetectorNodeType";
 		const cv::Mat& input = reader->readSocket(0);
 		cv::Mat& output = writer->lockSocket(0);
 
@@ -96,6 +101,84 @@ public:
 	}
 };
 
+class AddNodeType : public NodeType
+{
+public:
+	virtual void execute(NodeSocketReader* reader, NodeSocketWriter* writer)
+	{
+		qDebug() << "AddNodeType";
+		const cv::Mat& src1 = reader->readSocket(0);
+		const cv::Mat& src2 = reader->readSocket(1);
+		cv::Mat& dst = writer->lockSocket(0);
+
+		if((src1.rows == 0 || src1.cols == 0) ||
+			(src2.rows == 0 || src2.cols == 0))
+		{
+			dst = cv::Mat();
+			return;
+		}
+
+		cv::add(src1, src2, dst);
+	}
+
+	virtual void configuration(NodeConfig& nodeConfig) const
+	{
+		static const InputSocketConfig in_config[] = {
+			{ "source1", "Source 1", "" },
+			{ "source2", "Source 2", "" },
+			{ "", "", "" }
+		};
+		static const OutputSocketConfig out_config[] = {
+			{ "output", "Output", "" },
+			{ "", "", "" }
+		};
+
+		nodeConfig.description = "Adds one image from another";
+		nodeConfig.pInputSockets = in_config;
+		nodeConfig.pOutputSockets = out_config;
+	}
+};
+
+class SubtractNodeType : public NodeType
+{
+public:
+	virtual void execute(NodeSocketReader* reader, NodeSocketWriter* writer)
+	{
+		qDebug() << "SubtractNodeType";
+		const cv::Mat& src1 = reader->readSocket(0);
+		const cv::Mat& src2 = reader->readSocket(1);
+		cv::Mat& dst = writer->lockSocket(0);
+
+		if((src1.rows == 0 || src1.cols == 0) ||
+		   (src2.rows == 0 || src2.cols == 0))
+		{
+			dst = cv::Mat();
+			return;
+		}
+
+		cv::subtract(src1, src2, dst);
+	}
+
+	virtual void configuration(NodeConfig& nodeConfig) const
+	{
+		static const InputSocketConfig in_config[] = {
+			{ "source1", "Source 1", "" },
+			{ "source2", "Source 2", "" },
+			{ "", "", "" }
+		};
+		static const OutputSocketConfig out_config[] = {
+			{ "output", "Output", "" },
+			{ "", "", "" }
+		};
+
+		nodeConfig.description = "Subtracts one image from another";
+		nodeConfig.pInputSockets = in_config;
+		nodeConfig.pOutputSockets = out_config;
+	}
+};
+
+REGISTER_NODE("Subtract", SubtractNodeType)
+REGISTER_NODE("Add", AddNodeType)
 REGISTER_NODE("CannyEdgeDetector", CannyEdgeDetectorNodeType)
 REGISTER_NODE("GaussianBlur", GaussianBlurNodeType)
 REGISTER_NODE("ImageFromFile", ImageFromFileNodeType)
