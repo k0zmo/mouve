@@ -77,6 +77,8 @@ void NodeTree::step()
 		reader.setNode(nodeID, nodeRef.numInputSockets());
 		nodeRef.execute(&reader, &writer);
 	}
+
+	_taggedNodesID.clear();
 }
 
 void NodeTree::tagNode(NodeID nodeID, ETagReason reason)
@@ -88,10 +90,6 @@ void NodeTree::tagNode(NodeID nodeID, ETagReason reason)
 	        _taggedNodesID.end(), nodeID) == _taggedNodesID.end())
 	{
 		_taggedNodesID.push_back(nodeID);
-	}
-	else
-	{
-		std::cout << "Node " << nodeID << " already tagged, skipping\n";
 	}
 }
 
