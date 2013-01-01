@@ -12,6 +12,7 @@
 #include "NodeType.h"
 #include "NodeLink.h"
 #include "Node.h"
+
 #include <QMessageBox>
 
 static bool DEBUG_LINKS = false;
@@ -154,6 +155,9 @@ void Controller::addNodeView(const QString& nodeTitle,
 
 	mNodeViews[nodeID] = nodeView;
 	mNodeScene->addItem(nodeView);
+
+	mNodeTree->tagNode(nodeID);
+	mNodeTree->step();
 }
 
 void Controller::linkNodeViews(NodeSocketView* from, NodeSocketView* to)
@@ -181,8 +185,19 @@ void Controller::linkNodeViews(NodeSocketView* from, NodeSocketView* to)
 	from->addLink(link);
 	to->addLink(link);
 
+	// Add it to a scene
 	mLinkViews.append(link);
 	mNodeScene->addItem(link);
+
+	// Tag and execute
+	mNodeTree->tagNode(addrTo.node);
+	mNodeTree->step();
+	QList<QGraphicsItem*> selectedItems = mNodeScene->selectedItems();
+	if(selectedItems.count() == 1 && 
+	   selectedItems[0] == to->nodeView())
+	{
+		nodeSceneSelectionChanged();
+	}
 }
 
 void Controller::draggingLinkDropped(QGraphicsWidget* from, QGraphicsWidget* to)
@@ -226,12 +241,14 @@ void Controller::keyPress(QKeyEvent* event)
 
 void Controller::executeClicked()
 {
-	// Not a nice hack
+	// Tag everything - only for debugging
 	auto ni = mNodeTree->createNodeIterator();
 	NodeID nodeID;
 	while(ni->next(nodeID))
 		mNodeTree->tagNode(nodeID);
+
 	mNodeTree->step();
+	nodeSceneSelectionChanged();
 }
 
 void Controller::nodeSceneSelectionChanged()
