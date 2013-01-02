@@ -133,6 +133,7 @@ void NodeView::hoverLeaveEvent(QGraphicsSceneHoverEvent* event)
 
 void NodeView::mouseDoubleClickEvent(QGraphicsSceneMouseEvent* event)
 {
+	Q_UNUSED(event);
 	emit mouseDoubleClicked(this);
 }
 

@@ -266,7 +266,6 @@ void Controller::deleteNodeView(NodeView* nodeView)
 	///      We could retrieve the list of all removed links from NodeTree::removeNode 
 	///      We would also need a method:
 	///      NodeLinkView* resolveLinkView(const NodeLink& nodeLink);
-	bool needPreviewUpdate = false;
 	QMutableListIterator<NodeLinkView*> it(_linkViews);
 	while(it.hasNext())
 	{
@@ -308,11 +307,13 @@ void Controller::draggingLinkDrop(QGraphicsWidget* from, QGraphicsWidget* to)
 
 void Controller::draggingLinkStart(QGraphicsWidget* from)
 {
+	Q_UNUSED(from);
 	_nodeScene->setDragging(true);
 }
 
 void Controller::draggingLinkStop(QGraphicsWidget* from)
 {
+	Q_UNUSED(from);
 	_nodeScene->setDragging(false);
 }
 
@@ -451,8 +452,8 @@ void Controller::updatePreview(const std::vector<NodeID>& executedNodes)
 			
 		// Scale it up nicely
 		/// xXx: In future we should use OpenGL and got free scaling
-		static const int maxImageWidth = 256;
-		static const int maxImageHeight = 256;
+		static const int maxImageWidth = 400;
+		static const int maxImageHeight = 400;
 
 		if(mat.rows > maxImageHeight || 
 		   mat.cols > maxImageWidth)

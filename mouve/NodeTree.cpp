@@ -159,24 +159,15 @@ bool NodeTree::linkNodes(SocketAddress from, SocketAddress to)
 	if(!validateLink(from, to))
 		return false;
 
-	// Check if the given connection hasn't been created already
-	size_t linkIndex = firstOutputLink(from.node, from.socket);
-	if(linkIndex != -1)
+	// Check if we don't try to link input socket with more than one output
+	for(size_t i = 0; i < _links.size(); ++i)
 	{
-		auto iter    = std::begin(_links) + linkIndex;
-		auto iterEnd = std::end(_links);
+		auto& link = _links[i];
 
-		while(iter != iterEnd &&
-		      iter->fromNode == from.node &&
-		      iter->fromSocket == from.socket)
+		if(link.toNode == to.node &&
+		   link.toSocket == to.socket)
 		{
-			if(iter->toNode == to.node &&
-			   iter->toSocket == to.socket)
-			{
-				return false;
-			}
-
-			++iter;
+			return false;
 		}
 	}
 
