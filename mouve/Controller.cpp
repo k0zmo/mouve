@@ -59,7 +59,7 @@ Controller::Controller(QWidget* parent, Qt::WFlags flags)
 		_addNodesActions.append(action);
 	}
 
-	/// xXx: Only temporary solution
+	/// xXx: Only temporary, debugging solution
 	connect(_ui->execute, SIGNAL(clicked()),
 		this, SLOT(executeClicked()));
 }
@@ -105,6 +105,12 @@ void Controller::addNode(NodeTypeID nodeTypeID, const QPointF& scenePos)
 
 	// Create new view associated with the model
 	addNodeView(QString::fromStdString(nodeTitle), nodeID, scenePos);
+
+	// Tag and execute
+	_nodeTree->tagNode(nodeID);
+	std::vector<NodeID> execList = _nodeTree->step();
+
+	updatePreview(execList);
 }
 
 void Controller::addNodeView(const QString& nodeTitle,
@@ -161,9 +167,6 @@ void Controller::addNodeView(const QString& nodeTitle,
 
 	_nodeViews[nodeID] = nodeView;
 	_nodeScene->addItem(nodeView);
-
-	_nodeTree->tagNode(nodeID);
-	_nodeTree->step();
 }
 
 void Controller::linkNodeViews(NodeSocketView* from, NodeSocketView* to)
@@ -197,10 +200,9 @@ void Controller::linkNodeViews(NodeSocketView* from, NodeSocketView* to)
 
 	// Tag and execute
 	_nodeTree->tagNode(addrTo.node);
-	_nodeTree->step();
+	std::vector<NodeID> execList = _nodeTree->step();
 
-	if(_previewSelectedNodeView == to->nodeView())
-		updatePreview();
+	updatePreview(execList);
 }
 
 void Controller::unlinkNodeViews(NodeLinkView* linkView)
@@ -233,16 +235,14 @@ void Controller::unlinkNodeViews(NodeLinkView* linkView)
 			(nullptr, "mouve", "[Controller] Couldn't removed link view");
 		return;
 	}
+	_nodeScene->removeItem(linkView);
+	delete linkView;
 
 	// Tag and execute
 	_nodeTree->tagNode(addrTo.node);
-	_nodeTree->step();
+	std::vector<NodeID> execList = _nodeTree->step();
 
-	if(to->nodeView() && _previewSelectedNodeView == to->nodeView())
-		updatePreview();
-
-	_nodeScene->removeItem(linkView);
-	delete linkView;
+	updatePreview(execList);	
 }
 
 
@@ -282,13 +282,6 @@ void Controller::deleteNodeView(NodeView* nodeView)
 			// tag affected node
 			_nodeTree->tagNode(sv->nodeView()->nodeKey());
 
-			// Check if we need an update on preview window
-			if(!needPreviewUpdate && 
-			   sv->nodeView() == _previewSelectedNodeView)
-			{
-				needPreviewUpdate = true;
-			}
-
 			// remove link view
 			_nodeScene->removeItem(linkView);
 			it.remove();
@@ -296,26 +289,15 @@ void Controller::deleteNodeView(NodeView* nodeView)
 		}
 	}
 
-	// Remove node view from the scene
+	// Remove node view 
 	_nodeScene->removeItem(nodeView);
-	// Remove from the container
 	_nodeViews.remove(nodeID);
-
-	_nodeTree->step();
-
-	// update preview window
-	if(nodeView == _previewSelectedNodeView)
-	{
+	if(_previewSelectedNodeView == nodeView)
 		_previewSelectedNodeView = nullptr;
-		updatePreview();
-	}
-	else if(needPreviewUpdate)
-	{
-		updatePreview();
-	}
-
-	// Finally remove the node view itself
 	nodeView->deleteLater();
+
+	std::vector<NodeID> execList = _nodeTree->step();
+	updatePreview(execList);	
 }
 
 void Controller::draggingLinkDrop(QGraphicsWidget* from, QGraphicsWidget* to)
@@ -420,8 +402,8 @@ void Controller::executeClicked()
 	while(ni->next(nodeID))
 		_nodeTree->tagNode(nodeID);
 
-	_nodeTree->step();
-	updatePreview();
+	std::vector<NodeID> execList = _nodeTree->step();
+	updatePreview(execList);
 }
 
 void Controller::mouseDoubleClickNodeView(NodeView* nodeView)
@@ -436,15 +418,32 @@ void Controller::mouseDoubleClickNodeView(NodeView* nodeView)
 		if(_previewSelectedNodeView != nullptr)
 		{
 			_previewSelectedNodeView->selectPreview(true);
-			updatePreview();
+			// Construct an artificial execList
+			std::vector<NodeID> execList(1);
+			execList[0] = _previewSelectedNodeView->nodeKey();
+			updatePreview(execList);
 		}
 	}
 }
 
-void Controller::updatePreview()
+void Controller::updatePreview(const std::vector<NodeID>& executedNodes)
 {
 	if(_previewSelectedNodeView != nullptr)
 	{
+		bool doUpdate = false;
+
+		for(auto it = executedNodes.begin(); it != executedNodes.end(); ++it)
+		{
+			if(*it == _previewSelectedNodeView->nodeKey())
+			{
+				doUpdate = true;
+				break;
+			}
+		}
+
+		if(!doUpdate)
+			return;
+
 		/// xXx: For now we preview only first output socket
 		///      This shouldn't be much a problem
 		const cv::Mat& mat = _nodeTree->outputSocket(_previewSelectedNodeView->nodeKey(), 0);

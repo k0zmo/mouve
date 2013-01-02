@@ -18,7 +18,7 @@ public:
 	~NodeTree();
 
 	void clear();
-	void step();
+	std::vector<NodeID> step();
 
 	void tagNode(NodeID nodeID, ETagReason reason = Reason_Unspecified);
 

@@ -28,7 +28,7 @@ void NodeTree::clear()
 	_nodeNameToNodeID.clear();
 }
 
-void NodeTree::step()
+std::vector<NodeID> NodeTree::step()
 {
 	// stable_sort doesn't touch already sorted items (?)
 	//std::sort(std::begin(links), std::end(links));
@@ -79,6 +79,8 @@ void NodeTree::step()
 	}
 
 	_taggedNodesID.clear();
+
+	return execList;
 }
 
 void NodeTree::tagNode(NodeID nodeID, ETagReason reason)

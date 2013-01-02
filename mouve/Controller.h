@@ -56,7 +56,7 @@ private:
 	Ui::MainWindow* _ui;
 
 private:
-	void updatePreview();
+	void updatePreview(const std::vector<NodeID>& executedNodes);
 };
 
 #define gC Controller::instancePtr()
