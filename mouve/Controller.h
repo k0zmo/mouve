@@ -28,21 +28,22 @@ private:
 
 	void deleteNodeView(NodeView* nodeView);
 
-	void refreshSelectedNode(NodeView* nodeView);
-
 private slots:
-	void draggingLinkDropped(QGraphicsWidget* from, QGraphicsWidget* to);
-	void draggingLinkStarted(QGraphicsWidget* from);
-	void draggingLinkStopped(QGraphicsWidget* from);
+	void draggingLinkDrop(QGraphicsWidget* from, QGraphicsWidget* to);
+	void draggingLinkStart(QGraphicsWidget* from);
+	void draggingLinkStop(QGraphicsWidget* from);
+
 	void contextMenu(const QPoint& globalPos, const QPointF& scenePos);
 	void keyPress(QKeyEvent* event);
 
 	void executeClicked();
-	void nodeSceneSelectionChanged();
+	void mouseDoubleClickNodeView(NodeView* nodeView);
 
 private:
 	QList<NodeLinkView*> _linkViews;
 	QHash<NodeID, NodeView*> _nodeViews;
+
+	NodeView* _previewSelectedNodeView;
 
 	NodeScene* _nodeScene;
 
@@ -53,6 +54,9 @@ private:
 	QList<QAction*> _addNodesActions;
 
 	Ui::MainWindow* _ui;
+
+private:
+	void updatePreview();
 };
 
 #define gC Controller::instancePtr()

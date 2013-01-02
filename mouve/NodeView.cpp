@@ -7,6 +7,7 @@ NodeView::NodeView(const QString& title, QGraphicsItem* parent)
 	: QGraphicsWidget(parent)
 	, mLabel(new QGraphicsSimpleTextItem(this))
 	, mDropShadowEffect(new QGraphicsDropShadowEffect(this))
+	, mPreviewSelected(false)
 {
 	setFlag(QGraphicsItem::ItemIsMovable);
 	setFlag(QGraphicsItem::ItemIsSelectable);
@@ -82,11 +83,11 @@ NodeSocketView* NodeView::addSocketView(NodeID socketKey,
 		socketView->setData(NodeDataIndex::SocketKey, socketKey);
 
 		connect(socketView, SIGNAL(draggingLinkDropped(QGraphicsWidget*, QGraphicsWidget*)),
-			gC, SLOT(draggingLinkDropped(QGraphicsWidget*, QGraphicsWidget*)));
+			gC, SLOT(draggingLinkDrop(QGraphicsWidget*, QGraphicsWidget*)));
 		connect(socketView, SIGNAL(draggingLinkStarted(QGraphicsWidget*)),
-			gC, SLOT(draggingLinkStarted(QGraphicsWidget*)));
+			gC, SLOT(draggingLinkStart(QGraphicsWidget*)));
 		connect(socketView, SIGNAL(draggingLinkStopped(QGraphicsWidget*)),
-			gC, SLOT(draggingLinkStopped(QGraphicsWidget*)));
+			gC, SLOT(draggingLinkStop(QGraphicsWidget*)));
 
 		views.insert(socketKey, socketView);
 
@@ -106,7 +107,9 @@ void NodeView::paint(QPainter* painter,
 	Q_UNUSED(option);
 	Q_UNUSED(widget);
 
-	painter->setPen(isSelected()
+	painter->setPen(mPreviewSelected
+		? NodeStyle::NodeBorderPreviewSelectedPen 
+		: isSelected()
 		? NodeStyle::NodeBorderSelectedPen
 		: NodeStyle::NodeBorderPen);
 	painter->setBrush(NodeStyle::NodeTitleBrush);
@@ -126,6 +129,17 @@ void NodeView::hoverLeaveEvent(QGraphicsSceneHoverEvent* event)
 {
 	Q_UNUSED(event);
 	setZValue(NodeStyle::ZValueNode);
+}
+
+void NodeView::mouseDoubleClickEvent(QGraphicsSceneMouseEvent* event)
+{
+	emit mouseDoubleClicked(this);
+}
+
+void NodeView::selectPreview(bool selected)
+{
+	mPreviewSelected = selected;
+	update();
 }
 
 void NodeView::updateLayout()

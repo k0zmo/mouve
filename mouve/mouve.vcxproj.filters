@@ -78,9 +78,6 @@
     <ClCompile Include="NodeLinkView.cpp">
       <Filter>_View</Filter>
     </ClCompile>
-    <ClCompile Include="NodeView.cpp">
-      <Filter>_View</Filter>
-    </ClCompile>
     <ClCompile Include="GeneratedFiles\Debug\moc_Controller.cpp">
       <Filter>Generated Files\Debug</Filter>
     </ClCompile>
@@ -106,6 +103,15 @@
     <ClCompile Include="NodeType.cpp">
       <Filter>_Model</Filter>
     </ClCompile>
+    <ClCompile Include="NodeView.cpp">
+      <Filter>_View</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Debug\moc_NodeView.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Release\moc_NodeView.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Precomp.h" />
@@ -125,9 +131,6 @@
       <Filter>_View</Filter>
     </ClInclude>
     <ClInclude Include="NodeLinkView.h">
-      <Filter>_View</Filter>
-    </ClInclude>
-    <ClInclude Include="NodeView.h">
       <Filter>_View</Filter>
     </ClInclude>
     <ClInclude Include="GeneratedFiles\ui_MainWindow.h">
@@ -171,6 +174,9 @@
     <CustomBuild Include="Controller.h" />
     <CustomBuild Include="MainWindow.ui">
       <Filter>UI</Filter>
+    </CustomBuild>
+    <CustomBuild Include="NodeView.h">
+      <Filter>_View</Filter>
     </CustomBuild>
   </ItemGroup>
 </Project>

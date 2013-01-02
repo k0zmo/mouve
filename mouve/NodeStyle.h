@@ -22,6 +22,7 @@ struct NodeStyle
 	static QBrush NodeBrush;
 	static QPen NodeBorderPen;
 	static QPen NodeBorderSelectedPen;
+	static QPen NodeBorderPreviewSelectedPen;
 	static int NodeRoundArc;
 	static float NodeTitleSize;
 	static float NodeTitleHorizontalMargin;

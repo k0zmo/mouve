@@ -23,6 +23,7 @@ template<> Controller* Singleton<Controller>::_singleton = nullptr;
 
 Controller::Controller(QWidget* parent, Qt::WFlags flags)
 	: QMainWindow(parent, flags)
+	, _previewSelectedNodeView(nullptr)
 	, _nodeScene(new NodeScene(this))
 	, _nodeSystem(new NodeSystem())
 	, _ui(new Ui::MainWindow())
@@ -34,9 +35,6 @@ Controller::Controller(QWidget* parent, Qt::WFlags flags)
 	_nodeScene->setSceneRect(-200,-200,1000,600);
 	// Qt bug concering scene->removeItem ?? Seems to fixed it
 	_nodeScene->setItemIndexMethod(QGraphicsScene::NoIndex);
-
-	connect(_nodeScene, SIGNAL(selectionChanged()),
-		this, SLOT(nodeSceneSelectionChanged()));
 
 	_ui->graphicsView->setScene(_nodeScene);
 
@@ -158,6 +156,9 @@ void Controller::addNodeView(const QString& nodeTitle,
 		}
 	}
 
+	connect(nodeView, SIGNAL(mouseDoubleClicked(NodeView*)),
+		this, SLOT(mouseDoubleClickNodeView(NodeView*)));
+
 	_nodeViews[nodeID] = nodeView;
 	_nodeScene->addItem(nodeView);
 
@@ -197,7 +198,9 @@ void Controller::linkNodeViews(NodeSocketView* from, NodeSocketView* to)
 	// Tag and execute
 	_nodeTree->tagNode(addrTo.node);
 	_nodeTree->step();
-	refreshSelectedNode(to->nodeView());
+
+	if(_previewSelectedNodeView == to->nodeView())
+		updatePreview();
 }
 
 void Controller::unlinkNodeViews(NodeLinkView* linkView)
@@ -235,8 +238,8 @@ void Controller::unlinkNodeViews(NodeLinkView* linkView)
 	_nodeTree->tagNode(addrTo.node);
 	_nodeTree->step();
 
-	/// xXx: doesn't work because we clear selection before
-	refreshSelectedNode(to->nodeView());
+	if(to->nodeView() && _previewSelectedNodeView == to->nodeView())
+		updatePreview();
 
 	_nodeScene->removeItem(linkView);
 	delete linkView;
@@ -263,6 +266,7 @@ void Controller::deleteNodeView(NodeView* nodeView)
 	///      We could retrieve the list of all removed links from NodeTree::removeNode 
 	///      We would also need a method:
 	///      NodeLinkView* resolveLinkView(const NodeLink& nodeLink);
+	bool needPreviewUpdate = false;
 	QMutableListIterator<NodeLinkView*> it(_linkViews);
 	while(it.hasNext())
 	{
@@ -271,10 +275,19 @@ void Controller::deleteNodeView(NodeView* nodeView)
 		if(linkView->inputConnecting(nodeView) ||
 		   linkView->outputConnecting(nodeView))
 		{
+			auto sv = linkView->toSocketView();
+			Q_ASSERT(sv);
+			Q_ASSERT(sv->nodeView());
+
 			// tag affected node
-			Q_ASSERT(linkView->toSocketView());
-			Q_ASSERT(linkView->toSocketView()->nodeView());
-			_nodeTree->tagNode(linkView->toSocketView()->nodeView()->nodeKey());
+			_nodeTree->tagNode(sv->nodeView()->nodeKey());
+
+			// Check if we need an update on preview window
+			if(!needPreviewUpdate && 
+			   sv->nodeView() == _previewSelectedNodeView)
+			{
+				needPreviewUpdate = true;
+			}
 
 			// remove link view
 			_nodeScene->removeItem(linkView);
@@ -287,34 +300,36 @@ void Controller::deleteNodeView(NodeView* nodeView)
 	_nodeScene->removeItem(nodeView);
 	// Remove from the container
 	_nodeViews.remove(nodeID);
-	// Finally remove the node view itself
-	nodeView->deleteLater();
 
 	_nodeTree->step();
-}
 
-void Controller::refreshSelectedNode(NodeView* nodeView)
-{
-	QList<QGraphicsItem*> selectedItems = _nodeScene->selectedItems();
-	if(selectedItems.count() == 1 && 
-		selectedItems[0] == nodeView)
+	// update preview window
+	if(nodeView == _previewSelectedNodeView)
 	{
-		nodeSceneSelectionChanged();
+		_previewSelectedNodeView = nullptr;
+		updatePreview();
 	}
+	else if(needPreviewUpdate)
+	{
+		updatePreview();
+	}
+
+	// Finally remove the node view itself
+	nodeView->deleteLater();
 }
 
-void Controller::draggingLinkDropped(QGraphicsWidget* from, QGraphicsWidget* to)
+void Controller::draggingLinkDrop(QGraphicsWidget* from, QGraphicsWidget* to)
 {
 	linkNodeViews(static_cast<NodeSocketView*>(from),
 	              static_cast<NodeSocketView*>(to));
 }
 
-void Controller::draggingLinkStarted(QGraphicsWidget* from)
+void Controller::draggingLinkStart(QGraphicsWidget* from)
 {
 	_nodeScene->setDragging(true);
 }
 
-void Controller::draggingLinkStopped(QGraphicsWidget* from)
+void Controller::draggingLinkStop(QGraphicsWidget* from)
 {
 	_nodeScene->setDragging(false);
 }
@@ -406,45 +421,63 @@ void Controller::executeClicked()
 		_nodeTree->tagNode(nodeID);
 
 	_nodeTree->step();
-	nodeSceneSelectionChanged();
+	updatePreview();
 }
 
-void Controller::nodeSceneSelectionChanged()
+void Controller::mouseDoubleClickNodeView(NodeView* nodeView)
 {
-	/// xXx: Temporary solution
-	QList<QGraphicsItem*> selectedItems = _nodeScene->selectedItems();
-	if(selectedItems.count() == 1)
+	if(_previewSelectedNodeView != nodeView)
 	{
-		QGraphicsItem* selectedItem = selectedItems[0];
-		if(selectedItem->type() == NodeView::Type)
+		if(_previewSelectedNodeView != nullptr)
+			_previewSelectedNodeView->selectPreview(false);
+
+		_previewSelectedNodeView = nodeView;
+
+		if(_previewSelectedNodeView != nullptr)
 		{
-			NodeView* nodeView = static_cast<NodeView*>(selectedItem);
-			const cv::Mat& mat = _nodeTree->outputSocket(nodeView->nodeKey(), 0);
-			cv::Mat mat_;
-			
-			static const int maxImageWidth = 256;
-			static const int maxImageHeight = 256;
-
-			if(mat.rows > maxImageHeight || 
-			   mat.cols > maxImageWidth)
-			{
-				double fx;
-				if(mat.rows > mat.cols)
-					fx = static_cast<double>(maxImageHeight) / mat.rows;
-				else
-					fx = static_cast<double>(maxImageWidth) / mat.cols;
-				cv::resize(mat, mat_, cv::Size(0,0), fx, fx, cv::INTER_LINEAR);
-			}
-			else
-			{
-				mat_ = mat;
-			}
-
-			QImage image = QImage(
-				reinterpret_cast<const quint8*>(mat_.data),
-				mat_.cols, mat_.rows, mat_.step, 
-				QImage::Format_Indexed8);
-			_ui->outputPreview->setPixmap(QPixmap::fromImage(image));
+			_previewSelectedNodeView->selectPreview(true);
+			updatePreview();
 		}
+	}
+}
+
+void Controller::updatePreview()
+{
+	if(_previewSelectedNodeView != nullptr)
+	{
+		/// xXx: For now we preview only first output socket
+		///      This shouldn't be much a problem
+		const cv::Mat& mat = _nodeTree->outputSocket(_previewSelectedNodeView->nodeKey(), 0);
+		cv::Mat mat_;
+			
+		// Scale it up nicely
+		/// xXx: In future we should use OpenGL and got free scaling
+		static const int maxImageWidth = 256;
+		static const int maxImageHeight = 256;
+
+		if(mat.rows > maxImageHeight || 
+		   mat.cols > maxImageWidth)
+		{
+			double fx;
+			if(mat.rows > mat.cols)
+				fx = static_cast<double>(maxImageHeight) / mat.rows;
+			else
+				fx = static_cast<double>(maxImageWidth) / mat.cols;
+			cv::resize(mat, mat_, cv::Size(0,0), fx, fx, cv::INTER_LINEAR);
+		}
+		else
+		{
+			mat_ = mat;
+		}
+
+		QImage image = QImage(
+			reinterpret_cast<const quint8*>(mat_.data),
+			mat_.cols, mat_.rows, mat_.step, 
+			QImage::Format_Indexed8);
+		_ui->outputPreview->setPixmap(QPixmap::fromImage(image));
+	}
+	else
+	{
+		_ui->outputPreview->setPixmap(QPixmap());
 	}
 }
