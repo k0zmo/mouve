@@ -15,8 +15,10 @@ class ImageFromFileNodeType : public NodeType
 public: 
 	virtual void execute(NodeSocketReader* reader, NodeSocketWriter* writer)
 	{
-		qDebug() << "ImageFromFileNodeType";
 		Q_UNUSED(reader);
+
+		qDebug() << "Executing `Image from file` node";		
+
 		const std::string filePath = "lena.jpg";
 		cv::Mat& output = writer->lockSocket(0);
 
@@ -42,7 +44,8 @@ class GaussianBlurNodeType : public NodeType
 public:
 	virtual void execute(NodeSocketReader* reader, NodeSocketWriter* writer)
 	{
-		qDebug() << "GaussianBlur";
+		qDebug() << "Executing `Gaussian blur` node";
+
 		const cv::Mat& input = reader->readSocket(0);
 		cv::Mat& output = writer->lockSocket(0);
 
@@ -71,7 +74,8 @@ class CannyEdgeDetectorNodeType : public NodeType
 public:
 	virtual void execute(NodeSocketReader* reader, NodeSocketWriter* writer)
 	{
-		qDebug() << "CannyEdgeDetectorNodeType";
+		qDebug() << "Executing `Canny edge detector` node";
+
 		const cv::Mat& input = reader->readSocket(0);
 		cv::Mat& output = writer->lockSocket(0);
 
@@ -106,7 +110,7 @@ class AddNodeType : public NodeType
 public:
 	virtual void execute(NodeSocketReader* reader, NodeSocketWriter* writer)
 	{
-		qDebug() << "AddNodeType";
+		qDebug() << "Executing `Add` node";
 		const cv::Mat& src1 = reader->readSocket(0);
 		const cv::Mat& src2 = reader->readSocket(1);
 		cv::Mat& dst = writer->lockSocket(0);
@@ -144,7 +148,7 @@ class SubtractNodeType : public NodeType
 public:
 	virtual void execute(NodeSocketReader* reader, NodeSocketWriter* writer)
 	{
-		qDebug() << "SubtractNodeType";
+		qDebug() << "Executing `Subtract` node";
 		const cv::Mat& src1 = reader->readSocket(0);
 		const cv::Mat& src2 = reader->readSocket(1);
 		cv::Mat& dst = writer->lockSocket(0);
@@ -182,7 +186,7 @@ class NegateNodeType : public NodeType
 public:
 	virtual void execute(NodeSocketReader* reader, NodeSocketWriter* writer)
 	{
-		qDebug() << "NegateNodeType";
+		qDebug() << "Executing `Negate` node";
 		const cv::Mat& src = reader->readSocket(0);
 		cv::Mat& dst = writer->lockSocket(0);
 

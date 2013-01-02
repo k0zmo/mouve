@@ -3,13 +3,15 @@
 #include "Prerequisites.h"
 #include "Singleton.h"
 
-// UI
-#include "ui_MainWindow.h"
+#include <QMainWindow>
+
+namespace Ui {
+	class MainWindow;
+}
 
 class Controller
 	: public QMainWindow
 	, public Singleton<Controller>
-	, private Ui::MainWindow
 {
 	Q_OBJECT    
 public:
@@ -39,16 +41,18 @@ private slots:
 	void nodeSceneSelectionChanged();
 
 private:
-	QList<NodeLinkView*> mLinkViews;
-	QHash<NodeID, NodeView*> mNodeViews;
+	QList<NodeLinkView*> _linkViews;
+	QHash<NodeID, NodeView*> _nodeViews;
 
-	NodeScene* mNodeScene;
+	NodeScene* _nodeScene;
 
-	std::unique_ptr<NodeSystem> mNodeSystem;
-	std::unique_ptr<NodeTree> mNodeTree;
-	/// xXx: QList< std::unique_ptr<NodeTree> > mNodeTrees;
+	std::unique_ptr<NodeSystem> _nodeSystem;
+	std::unique_ptr<NodeTree> _nodeTree;
+	/// xXx: QList< std::unique_ptr<NodeTree> > _nodeTrees;
 
-	QList<QAction*> mAddNodesActions;
+	QList<QAction*> _addNodesActions;
+
+	Ui::MainWindow* _ui;
 };
 
 #define gC Controller::instancePtr()

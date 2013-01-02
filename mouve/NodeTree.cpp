@@ -55,7 +55,7 @@ void NodeTree::step()
 	}
 
 	// DEBUG
-	std::cout << "NodeID execution list:\n";
+	std::cout << "[NodeTree:] NodeID execution list: ";
 	//for(NodeID nodeID : execList)
 	for(auto it = execList.begin(); it != execList.end(); ++it)
 	{

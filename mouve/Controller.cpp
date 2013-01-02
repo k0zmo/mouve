@@ -15,75 +15,80 @@
 
 #include <QMessageBox>
 
+#include "ui_MainWindow.h"
+
 static bool DEBUG_LINKS = false;
 
 template<> Controller* Singleton<Controller>::_singleton = nullptr;
 
 Controller::Controller(QWidget* parent, Qt::WFlags flags)
 	: QMainWindow(parent, flags)
-	, mNodeScene(new NodeScene(this))
-	, mNodeSystem(new NodeSystem())
+	, _nodeScene(new NodeScene(this))
+	, _nodeSystem(new NodeSystem())
+	, _ui(new Ui::MainWindow())
 {
-	setupUi(this);
+	_ui->setupUi(this);
 
 	// Set up a node scene
 	/// xXx: Temporary
-	mNodeScene->setSceneRect(-200,-200,1000,600);
+	_nodeScene->setSceneRect(-200,-200,1000,600);
 	// Qt bug concering scene->removeItem ?? Seems to fixed it
-	mNodeScene->setItemIndexMethod(QGraphicsScene::NoIndex);
+	_nodeScene->setItemIndexMethod(QGraphicsScene::NoIndex);
 
-	connect(mNodeScene, SIGNAL(selectionChanged()),
+	connect(_nodeScene, SIGNAL(selectionChanged()),
 		this, SLOT(nodeSceneSelectionChanged()));
 
-	mGraphicsView->setScene(mNodeScene);
+	_ui->graphicsView->setScene(_nodeScene);
 
 	// Context menu from node graphics view
-	connect(mGraphicsView, SIGNAL(contextMenu(QPoint,QPointF)),
+	connect(_ui->graphicsView, SIGNAL(contextMenu(QPoint,QPointF)),
 		this, SLOT(contextMenu(QPoint,QPointF)));
 	// Key handler from node graphics view
-	connect(mGraphicsView, SIGNAL(keyPress(QKeyEvent*)),
+	connect(_ui->graphicsView, SIGNAL(keyPress(QKeyEvent*)),
 		this, SLOT(keyPress(QKeyEvent*)));
 
 	/// xXx: Create our node tree
-	mNodeTree = mNodeSystem->createNodeTree();
+	_nodeTree = _nodeSystem->createNodeTree();
 
 	// Get available nodes and and them to Add Node context menu
-	auto nodeTypeIterator = mNodeSystem->createNodeTypeIterator();
+	auto nodeTypeIterator = _nodeSystem->createNodeTypeIterator();
 	NodeTypeIterator::NodeTypeInfo info;
 	while(nodeTypeIterator->next(info))
 	{
 		QAction* action = new QAction(
 			QString::fromStdString(info.typeName), this);
 		action->setData(info.typeID);
-		mAddNodesActions.append(action);
+		_addNodesActions.append(action);
 	}
 
 	/// xXx: Only temporary solution
-	connect(mExecute, SIGNAL(clicked()),
+	connect(_ui->execute, SIGNAL(clicked()),
 		this, SLOT(executeClicked()));
 }
 
 Controller::~Controller()
 {
-	foreach(NodeLinkView* link, mLinkViews)
+	foreach(NodeLinkView* link, _linkViews)
 		delete link;
-	mLinkViews.clear();
+	_linkViews.clear();
 
-	foreach(NodeView* node, mNodeViews.values())
+	foreach(NodeView* node, _nodeViews.values())
 		delete node;
-	mNodeViews.clear();
+	_nodeViews.clear();
+
+	delete _ui;
 }
 
 void Controller::addNode(NodeTypeID nodeTypeID, const QPointF& scenePos)
 {
 	// Create new model
 	/// xXx: Get a title from a class name or a default name field
-	std::string defaultNodeTitle = mNodeSystem->nodeTypeName(nodeTypeID);
+	std::string defaultNodeTitle = _nodeSystem->nodeTypeName(nodeTypeID);
 
 	// Generate unique name
 	std::string nodeTitle = defaultNodeTitle;
 	int num = 1;
-	while(mNodeTree->resolveNode(nodeTitle) != InvalidNodeID)
+	while(_nodeTree->resolveNode(nodeTitle) != InvalidNodeID)
 	{
 		QString newName = QString(QString::fromStdString(defaultNodeTitle) + 
 			" " + QString::number(num));
@@ -92,7 +97,7 @@ void Controller::addNode(NodeTypeID nodeTypeID, const QPointF& scenePos)
 	}
 
 	// Try to create new node 
-	NodeID nodeID = mNodeTree->createNode(nodeTypeID, nodeTitle);
+	NodeID nodeID = _nodeTree->createNode(nodeTypeID, nodeTitle);
 	if(nodeID == InvalidNodeID)
 	{
 		QMessageBox::critical
@@ -112,7 +117,7 @@ void Controller::addNodeView(const QString& nodeTitle,
 	nodeView->setPos(scenePos);
 
 	NodeConfig nodeConfig;
-	if(!mNodeTree->nodeConfiguration(nodeID, nodeConfig))
+	if(!_nodeTree->nodeConfiguration(nodeID, nodeConfig))
 	{
 		QMessageBox::critical
 			(nullptr, "mouve", "[NodeTree] Error during querying node configuration");
@@ -153,11 +158,11 @@ void Controller::addNodeView(const QString& nodeTitle,
 		}
 	}
 
-	mNodeViews[nodeID] = nodeView;
-	mNodeScene->addItem(nodeView);
+	_nodeViews[nodeID] = nodeView;
+	_nodeScene->addItem(nodeView);
 
-	mNodeTree->tagNode(nodeID);
-	mNodeTree->step();
+	_nodeTree->tagNode(nodeID);
+	_nodeTree->step();
 }
 
 void Controller::linkNodeViews(NodeSocketView* from, NodeSocketView* to)
@@ -172,7 +177,7 @@ void Controller::linkNodeViews(NodeSocketView* from, NodeSocketView* to)
 	SocketAddress addrTo(to->nodeView()->nodeKey(), to->socketKey(), false);
 
 	/// xXx: give a reason
-	if(!mNodeTree->linkNodes(addrFrom, addrTo))
+	if(!_nodeTree->linkNodes(addrFrom, addrTo))
 	{
 		QMessageBox::critical
 			(nullptr, "mouve", "[NodeTree] Couldn't linked given sockets");
@@ -186,12 +191,12 @@ void Controller::linkNodeViews(NodeSocketView* from, NodeSocketView* to)
 	to->addLink(link);
 
 	// Add it to a scene
-	mLinkViews.append(link);
-	mNodeScene->addItem(link);
+	_linkViews.append(link);
+	_nodeScene->addItem(link);
 
 	// Tag and execute
-	mNodeTree->tagNode(addrTo.node);
-	mNodeTree->step();
+	_nodeTree->tagNode(addrTo.node);
+	_nodeTree->step();
 	refreshSelectedNode(to->nodeView());
 }
 
@@ -211,7 +216,7 @@ void Controller::unlinkNodeViews(NodeLinkView* linkView)
 	                     to->socketKey(), false);
 
 	/// xXx: give a reason
-	if(!mNodeTree->unlinkNodes(addrFrom, addrTo))
+	if(!_nodeTree->unlinkNodes(addrFrom, addrTo))
 	{
 		QMessageBox::critical
 			(nullptr, "mouve", "[NodeTree] Couldn't unlinked given sockets");
@@ -219,7 +224,7 @@ void Controller::unlinkNodeViews(NodeLinkView* linkView)
 	}
 
 	// Remove link view
-	if(!mLinkViews.removeOne(linkView))
+	if(!_linkViews.removeOne(linkView))
 	{
 		QMessageBox::critical
 			(nullptr, "mouve", "[Controller] Couldn't removed link view");
@@ -227,13 +232,13 @@ void Controller::unlinkNodeViews(NodeLinkView* linkView)
 	}
 
 	// Tag and execute
-	mNodeTree->tagNode(addrTo.node);
-	mNodeTree->step();
+	_nodeTree->tagNode(addrTo.node);
+	_nodeTree->step();
 
 	/// xXx: doesn't work because we clear selection before
 	refreshSelectedNode(to->nodeView());
 
-	mNodeScene->removeItem(linkView);
+	_nodeScene->removeItem(linkView);
 	delete linkView;
 }
 
@@ -245,7 +250,7 @@ void Controller::deleteNodeView(NodeView* nodeView)
 	// Try to remove the model first
 	NodeID nodeID = NodeID(nodeView->nodeKey());
 
-	if(!mNodeTree->removeNode(nodeID))
+	if(!_nodeTree->removeNode(nodeID))
 	{
 		QMessageBox::critical
 			(nullptr, "mouve", "[NodeTree] Couldn't removed given node");
@@ -258,7 +263,7 @@ void Controller::deleteNodeView(NodeView* nodeView)
 	///      We could retrieve the list of all removed links from NodeTree::removeNode 
 	///      We would also need a method:
 	///      NodeLinkView* resolveLinkView(const NodeLink& nodeLink);
-	QMutableListIterator<NodeLinkView*> it(mLinkViews);
+	QMutableListIterator<NodeLinkView*> it(_linkViews);
 	while(it.hasNext())
 	{
 		NodeLinkView* linkView = it.next();
@@ -269,28 +274,28 @@ void Controller::deleteNodeView(NodeView* nodeView)
 			// tag affected node
 			Q_ASSERT(linkView->toSocketView());
 			Q_ASSERT(linkView->toSocketView()->nodeView());
-			mNodeTree->tagNode(linkView->toSocketView()->nodeView()->nodeKey());
+			_nodeTree->tagNode(linkView->toSocketView()->nodeView()->nodeKey());
 
 			// remove link view
-			mNodeScene->removeItem(linkView);
+			_nodeScene->removeItem(linkView);
 			it.remove();
 			delete linkView;
 		}
 	}
 
 	// Remove node view from the scene
-	mNodeScene->removeItem(nodeView);
+	_nodeScene->removeItem(nodeView);
 	// Remove from the container
-	mNodeViews.remove(nodeID);
+	_nodeViews.remove(nodeID);
 	// Finally remove the node view itself
 	nodeView->deleteLater();
 
-	mNodeTree->step();
+	_nodeTree->step();
 }
 
 void Controller::refreshSelectedNode(NodeView* nodeView)
 {
-	QList<QGraphicsItem*> selectedItems = mNodeScene->selectedItems();
+	QList<QGraphicsItem*> selectedItems = _nodeScene->selectedItems();
 	if(selectedItems.count() == 1 && 
 		selectedItems[0] == nodeView)
 	{
@@ -306,18 +311,18 @@ void Controller::draggingLinkDropped(QGraphicsWidget* from, QGraphicsWidget* to)
 
 void Controller::draggingLinkStarted(QGraphicsWidget* from)
 {
-	mNodeScene->setDragging(true);
+	_nodeScene->setDragging(true);
 }
 
 void Controller::draggingLinkStopped(QGraphicsWidget* from)
 {
-	mNodeScene->setDragging(false);
+	_nodeScene->setDragging(false);
 }
 
 void Controller::contextMenu(const QPoint& globalPos,
 	const QPointF& scenePos)
 {
-	QList<QGraphicsItem*> items = mNodeScene->items(scenePos, 
+	QList<QGraphicsItem*> items = _nodeScene->items(scenePos, 
 		Qt::ContainsItemShape, Qt::AscendingOrder);
 
 	//If we clicked onto empty space
@@ -325,7 +330,7 @@ void Controller::contextMenu(const QPoint& globalPos,
 	{
 		QMenu menu;
 		QMenu* menuAddNode = menu.addMenu("Add node");
-		foreach(QAction* a, mAddNodesActions)
+		foreach(QAction* a, _addNodesActions)
 			menuAddNode->addAction(a);
 		QAction* ret = menu.exec(globalPos);
 		if(ret != nullptr)
@@ -358,9 +363,9 @@ void Controller::keyPress(QKeyEvent* event)
 {
 	if(event->key() == Qt::Key_Delete)
 	{
-		QList<QGraphicsItem*> selectedItems = mNodeScene->selectedItems();
+		QList<QGraphicsItem*> selectedItems = _nodeScene->selectedItems();
 		QList<QGraphicsItem*> selectedNodeViews;
-		mNodeScene->clearSelection();
+		_nodeScene->clearSelection();
 
 		for(int i = 0; i < selectedItems.size(); ++i)
 		{
@@ -395,32 +400,51 @@ void Controller::keyPress(QKeyEvent* event)
 void Controller::executeClicked()
 {
 	// Tag everything - only for debugging
-	auto ni = mNodeTree->createNodeIterator();
+	auto ni = _nodeTree->createNodeIterator();
 	NodeID nodeID;
 	while(ni->next(nodeID))
-		mNodeTree->tagNode(nodeID);
+		_nodeTree->tagNode(nodeID);
 
-	mNodeTree->step();
+	_nodeTree->step();
 	nodeSceneSelectionChanged();
 }
 
 void Controller::nodeSceneSelectionChanged()
 {
 	/// xXx: Temporary solution
-	QList<QGraphicsItem*> selectedItems = mNodeScene->selectedItems();
+	QList<QGraphicsItem*> selectedItems = _nodeScene->selectedItems();
 	if(selectedItems.count() == 1)
 	{
 		QGraphicsItem* selectedItem = selectedItems[0];
 		if(selectedItem->type() == NodeView::Type)
 		{
 			NodeView* nodeView = static_cast<NodeView*>(selectedItem);
-			const cv::Mat& mat = mNodeTree->outputSocket(nodeView->nodeKey(), 0);
+			const cv::Mat& mat = _nodeTree->outputSocket(nodeView->nodeKey(), 0);
+			cv::Mat mat_;
+			
+			static const int maxImageWidth = 256;
+			static const int maxImageHeight = 256;
+
+			if(mat.rows > maxImageHeight || 
+			   mat.cols > maxImageWidth)
+			{
+				double fx;
+				if(mat.rows > mat.cols)
+					fx = static_cast<double>(maxImageHeight) / mat.rows;
+				else
+					fx = static_cast<double>(maxImageWidth) / mat.cols;
+				cv::resize(mat, mat_, cv::Size(0,0), fx, fx, cv::INTER_LINEAR);
+			}
+			else
+			{
+				mat_ = mat;
+			}
 
 			QImage image = QImage(
-				reinterpret_cast<const quint8*>(mat.data),
-				mat.cols, mat.rows, mat.step, 
+				reinterpret_cast<const quint8*>(mat_.data),
+				mat_.cols, mat_.rows, mat_.step, 
 				QImage::Format_Indexed8);
-			mOutputPreview->setPixmap(QPixmap::fromImage(image));
+			_ui->outputPreview->setPixmap(QPixmap::fromImage(image));
 		}
 	}
 }

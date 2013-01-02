@@ -33,6 +33,7 @@
 #include <QMenu>
 #include <QAction> 
 #include <QDebug>
+#include <QMessageBox>
 
 // OpenCV
 #include <opencv2/core/core.hpp>
