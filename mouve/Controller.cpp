@@ -80,7 +80,6 @@ Controller::~Controller()
 void Controller::addNode(NodeTypeID nodeTypeID, const QPointF& scenePos)
 {
 	// Create new model
-	/// xXx: Get a title from a class name or a default name field
 	std::string defaultNodeTitle = _nodeSystem->nodeTypeName(nodeTypeID);
 
 	// Generate unique name
@@ -88,8 +87,9 @@ void Controller::addNode(NodeTypeID nodeTypeID, const QPointF& scenePos)
 	int num = 1;
 	while(_nodeTree->resolveNode(nodeTitle) != InvalidNodeID)
 	{
-		QString newName = QString(QString::fromStdString(defaultNodeTitle) + 
-			" " + QString::number(num));
+		QString newName = QString("%1 %2")
+			.arg(QString::fromStdString(defaultNodeTitle))
+			.arg(num);
 		nodeTitle = newName.toStdString();
 		++num;
 	}
@@ -98,8 +98,7 @@ void Controller::addNode(NodeTypeID nodeTypeID, const QPointF& scenePos)
 	NodeID nodeID = _nodeTree->createNode(nodeTypeID, nodeTitle);
 	if(nodeID == InvalidNodeID)
 	{
-		QMessageBox::critical
-			(nullptr, "mouve", "[NodeTree] Couldn't create given node");
+		showErrorMessage("[NodeTree] Couldn't create given node");
 		return;
 	}
 
@@ -123,8 +122,7 @@ void Controller::addNodeView(const QString& nodeTitle,
 	NodeConfig nodeConfig;
 	if(!_nodeTree->nodeConfiguration(nodeID, nodeConfig))
 	{
-		QMessageBox::critical
-			(nullptr, "mouve", "[NodeTree] Error during querying node configuration");
+		showErrorMessage("[NodeTree] Error during querying node configuration");
 		return;
 	}
 
@@ -145,8 +143,8 @@ void Controller::addNodeView(const QString& nodeTitle,
 		}
 	}
 
+	// Add output sockets views to node view
 	socketID = 0;
-	// Add input sockets views 
 	if(nodeConfig.pOutputSockets)
 	{
 		while(nodeConfig.pOutputSockets[socketID].name.length() > 0)
@@ -165,11 +163,12 @@ void Controller::addNodeView(const QString& nodeTitle,
 	connect(nodeView, SIGNAL(mouseDoubleClicked(NodeView*)),
 		this, SLOT(mouseDoubleClickNodeView(NodeView*)));
 
+	// Cache node view and add it to a scene
 	_nodeViews[nodeID] = nodeView;
 	_nodeScene->addItem(nodeView);
 }
 
-void Controller::linkNodeViews(NodeSocketView* from, NodeSocketView* to)
+void Controller::linkNodes(NodeSocketView* from, NodeSocketView* to)
 {
 	Q_ASSERT(from);
 	Q_ASSERT(from->nodeView());
@@ -183,8 +182,7 @@ void Controller::linkNodeViews(NodeSocketView* from, NodeSocketView* to)
 	/// xXx: give a reason
 	if(!_nodeTree->linkNodes(addrFrom, addrTo))
 	{
-		QMessageBox::critical
-			(nullptr, "mouve", "[NodeTree] Couldn't linked given sockets");
+		showErrorMessage("[NodeTree] Couldn't linked given sockets");
 		return;
 	}
 
@@ -194,7 +192,7 @@ void Controller::linkNodeViews(NodeSocketView* from, NodeSocketView* to)
 	from->addLink(link);
 	to->addLink(link);
 
-	// Add it to a scene
+	// Cache it and add it to a scene
 	_linkViews.append(link);
 	_nodeScene->addItem(link);
 
@@ -205,7 +203,7 @@ void Controller::linkNodeViews(NodeSocketView* from, NodeSocketView* to)
 	updatePreview(execList);
 }
 
-void Controller::unlinkNodeViews(NodeLinkView* linkView)
+void Controller::unlinkNodes(NodeLinkView* linkView)
 {
 	Q_ASSERT(linkView);
 	Q_ASSERT(linkView->fromSocketView());
@@ -223,16 +221,14 @@ void Controller::unlinkNodeViews(NodeLinkView* linkView)
 	/// xXx: give a reason
 	if(!_nodeTree->unlinkNodes(addrFrom, addrTo))
 	{
-		QMessageBox::critical
-			(nullptr, "mouve", "[NodeTree] Couldn't unlinked given sockets");
+		showErrorMessage("[NodeTree] Couldn't unlinked given sockets");
 		return;
 	}
 
 	// Remove link view
 	if(!_linkViews.removeOne(linkView))
 	{
-		QMessageBox::critical
-			(nullptr, "mouve", "[Controller] Couldn't removed link view");
+		showErrorMessage("[Controller] Couldn't removed link view");
 		return;
 	}
 	_nodeScene->removeItem(linkView);
@@ -246,7 +242,7 @@ void Controller::unlinkNodeViews(NodeLinkView* linkView)
 }
 
 
-void Controller::deleteNodeView(NodeView* nodeView)
+void Controller::deleteNode(NodeView* nodeView)
 {
 	Q_ASSERT(nodeView);
 
@@ -255,8 +251,7 @@ void Controller::deleteNodeView(NodeView* nodeView)
 
 	if(!_nodeTree->removeNode(nodeID))
 	{
-		QMessageBox::critical
-			(nullptr, "mouve", "[NodeTree] Couldn't removed given node");
+		showErrorMessage("[NodeTree] Couldn't removed given node");
 		return;
 	}
 
@@ -270,16 +265,17 @@ void Controller::deleteNodeView(NodeView* nodeView)
 	while(it.hasNext())
 	{
 		NodeLinkView* linkView = it.next();
+		Q_ASSERT(linkView);
 
 		if(linkView->inputConnecting(nodeView) ||
 		   linkView->outputConnecting(nodeView))
 		{
-			auto sv = linkView->toSocketView();
-			Q_ASSERT(sv);
-			Q_ASSERT(sv->nodeView());
+			auto socketView = linkView->toSocketView();
+			Q_ASSERT(socketView);
+			Q_ASSERT(socketView->nodeView());
 
 			// tag affected node
-			_nodeTree->tagNode(sv->nodeView()->nodeKey());
+			_nodeTree->tagNode(socketView->nodeView()->nodeKey());
 
 			// remove link view
 			_nodeScene->removeItem(linkView);
@@ -301,8 +297,8 @@ void Controller::deleteNodeView(NodeView* nodeView)
 
 void Controller::draggingLinkDrop(QGraphicsWidget* from, QGraphicsWidget* to)
 {
-	linkNodeViews(static_cast<NodeSocketView*>(from),
-	              static_cast<NodeSocketView*>(to));
+	linkNodes(static_cast<NodeSocketView*>(from),
+	          static_cast<NodeSocketView*>(to));
 }
 
 void Controller::draggingLinkStart(QGraphicsWidget* from)
@@ -323,7 +319,7 @@ void Controller::contextMenu(const QPoint& globalPos,
 	QList<QGraphicsItem*> items = _nodeScene->items(scenePos, 
 		Qt::ContainsItemShape, Qt::AscendingOrder);
 
-	//If we clicked onto empty space
+	// If the user clicked onto empty space
 	if(items.isEmpty())
 	{
 		QMenu menu;
@@ -349,7 +345,7 @@ void Controller::contextMenu(const QPoint& globalPos,
 				if(ret != nullptr)
 				{
 					NodeView* nodeView = static_cast<NodeView*>(item);
-					deleteNodeView(nodeView);
+					deleteNode(nodeView);
 				}
 				return;
 			}
@@ -365,6 +361,7 @@ void Controller::keyPress(QKeyEvent* event)
 		QList<QGraphicsItem*> selectedNodeViews;
 		_nodeScene->clearSelection();
 
+		// First remove all selected link
 		for(int i = 0; i < selectedItems.size(); ++i)
 		{
 			auto item = selectedItems[i];
@@ -372,7 +369,7 @@ void Controller::keyPress(QKeyEvent* event)
 			if(item->type() == NodeLinkView::Type)
 			{
 				NodeLinkView* linkView = static_cast<NodeLinkView*>(item);
-				unlinkNodeViews(linkView);
+				unlinkNodes(linkView);
 			}
 			else
 			{
@@ -380,6 +377,7 @@ void Controller::keyPress(QKeyEvent* event)
 			}
 		}
 
+		// Then remove all selected nodes
 		for(int i = 0; i < selectedNodeViews.size(); ++i)
 		{
 			auto item = selectedNodeViews[i];
@@ -387,7 +385,7 @@ void Controller::keyPress(QKeyEvent* event)
 			if(item->type() == NodeView::Type)
 			{
 				NodeView* nodeView = static_cast<NodeView*>(item);
-				deleteNodeView(nodeView);
+				deleteNode(nodeView);
 			}
 		}
 
@@ -411,14 +409,15 @@ void Controller::mouseDoubleClickNodeView(NodeView* nodeView)
 {
 	if(_previewSelectedNodeView != nodeView)
 	{
+		// Deselect previous one
 		if(_previewSelectedNodeView != nullptr)
 			_previewSelectedNodeView->selectPreview(false);
-
 		_previewSelectedNodeView = nodeView;
 
 		if(_previewSelectedNodeView != nullptr)
 		{
 			_previewSelectedNodeView->selectPreview(true);
+
 			// Construct an artificial execList
 			std::vector<NodeID> execList(1);
 			execList[0] = _previewSelectedNodeView->nodeKey();
@@ -480,4 +479,9 @@ void Controller::updatePreview(const std::vector<NodeID>& executedNodes)
 	{
 		_ui->outputPreview->setPixmap(QPixmap());
 	}
+}
+
+void Controller::showErrorMessage(const QString& message)
+{
+	QMessageBox::critical(nullptr, "mouve", message);
 }

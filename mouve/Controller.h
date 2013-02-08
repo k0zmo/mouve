@@ -13,7 +13,7 @@ class Controller
 	: public QMainWindow
 	, public Singleton<Controller>
 {
-	Q_OBJECT    
+	Q_OBJECT
 public:
 	explicit Controller(QWidget* parent = nullptr, Qt::WFlags flags = 0);
 	virtual ~Controller();
@@ -23,10 +23,10 @@ private:
 	void addNodeView(const QString& nodeTitle,
 		NodeID nodeID, const QPointF& scenePos);
 
-	void linkNodeViews(NodeSocketView* from, NodeSocketView* to);
-	void unlinkNodeViews(NodeLinkView* linkView);
+	void linkNodes(NodeSocketView* from, NodeSocketView* to);
+	void unlinkNodes(NodeLinkView* linkView);
 
-	void deleteNodeView(NodeView* nodeView);
+	void deleteNode(NodeView* nodeView);
 
 private slots:
 	void draggingLinkDrop(QGraphicsWidget* from, QGraphicsWidget* to);
@@ -56,6 +56,7 @@ private:
 	Ui::MainWindow* _ui;
 
 private:
+	void showErrorMessage(const QString& message);
 	void updatePreview(const std::vector<NodeID>& executedNodes);
 };
 

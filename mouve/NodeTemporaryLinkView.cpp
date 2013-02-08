@@ -21,7 +21,7 @@ void NodeTemporaryLinkView::paint(QPainter *painter,
 
 	painter->setBrush(Qt::NoBrush);
 	painter->setPen(mPen);
-	painter->drawPath(_shape());
+	painter->drawPath(shapeImpl());
 	// Draw debugging red-ish rectangle
 	if(mDrawDebug)
 	{
@@ -61,7 +61,7 @@ void NodeTemporaryLinkView::setDrawDebug(bool drawDebug)
 	update();
 }
 
-QPainterPath NodeTemporaryLinkView::_shape() const
+QPainterPath NodeTemporaryLinkView::shapeImpl() const
 {
 	// Default bezier drawing NodeStyle
 	if(mDrawMode == 1)

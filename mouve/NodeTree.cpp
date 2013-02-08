@@ -213,7 +213,7 @@ void NodeTree::setNodeName(NodeID nodeID, const std::string& newNodeName)
 			// Remove old mapping
 			_nodeNameToNodeID.erase(node.nodeName());
 
-			// Change a name and and new mapping
+			// Change a name and add a new mapping
 			node.setNodeName(newNodeName);
 			_nodeNameToNodeID.insert(std::make_pair(newNodeName, nodeID));
 		}

@@ -34,7 +34,7 @@ void NodeLinkView::paint(QPainter *painter,
 
 	painter->setBrush(Qt::NoBrush);
 	painter->setPen(mPen);
-	painter->drawPath(_shape(false));
+	painter->drawPath(shapeImpl(false));
 
 	// Draw debugging red-ish rectangle
 	if(mDrawDebug)
@@ -116,10 +116,10 @@ bool NodeLinkView::inputConnecting(NodeView* to) const
 
 QPainterPath NodeLinkView::shape() const
 {
-	return _shape(true);
+	return shapeImpl(true);
 }
 
-QPainterPath NodeLinkView::_shape(bool thicken) const
+QPainterPath NodeLinkView::shapeImpl(bool thicken) const
 {
 	qreal thick = 5.0;
 

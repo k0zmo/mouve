@@ -32,7 +32,7 @@ private:
 	int mDrawMode;
 
 private:
-	QPainterPath _shape() const;
+	QPainterPath shapeImpl() const;
 };
 
 inline int NodeTemporaryLinkView::type() const

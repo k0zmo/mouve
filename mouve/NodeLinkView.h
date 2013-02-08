@@ -51,7 +51,7 @@ private:
 
 private:
 	// Buduje i zwraca QPainterPath 
-	QPainterPath _shape(bool thicken) const;
+	QPainterPath shapeImpl(bool thicken) const;
 };
 
 inline int NodeLinkView::type() const

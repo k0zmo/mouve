@@ -1,10 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <Filter Include="Header Files">
-      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
-      <Extensions>h</Extensions>
-    </Filter>
     <Filter Include="Resource Files">
       <UniqueIdentifier>{D9D6E242-F8AF-46E4-B9FD-80ECBC20BA3E}</UniqueIdentifier>
       <Extensions>qrc;*</Extensions>
@@ -34,6 +30,10 @@
     </Filter>
     <Filter Include="_Model">
       <UniqueIdentifier>{e15f20e9-d570-4861-9128-1480e5cb5832}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Common Files">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h</Extensions>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -116,13 +116,13 @@
   <ItemGroup>
     <ClInclude Include="Precomp.h" />
     <ClInclude Include="StlUtils.h">
-      <Filter>Header Files</Filter>
+      <Filter>Common Files</Filter>
     </ClInclude>
     <ClInclude Include="Singleton.h">
-      <Filter>Header Files</Filter>
+      <Filter>Common Files</Filter>
     </ClInclude>
     <ClInclude Include="Prerequisites.h">
-      <Filter>Header Files</Filter>
+      <Filter>Common Files</Filter>
     </ClInclude>
     <ClInclude Include="NodeStyle.h">
       <Filter>_View</Filter>

@@ -25,15 +25,15 @@ void NodeEditorView::setZoom(float zoom)
 
 void NodeEditorView::mousePressEvent(QMouseEvent* event)
 {
-	/// xXx: For now this works not entirely like desired
-	if(event->button() == Qt::MiddleButton)
-	{
-		setDragMode(QGraphicsView::ScrollHandDrag);
-	}
-	else
-	{
+	/// xXx: For now this works not entirely like desired :)
+	//if(event->button() == Qt::MiddleButton)
+	//{
+	//	setDragMode(QGraphicsView::ScrollHandDrag);
+	//}
+	//else
+	//{
 		QGraphicsView::mousePressEvent(event);
-	}
+	//}
 }
 
 void NodeEditorView::mouseReleaseEvent(QMouseEvent* event)

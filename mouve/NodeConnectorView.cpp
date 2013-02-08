@@ -93,7 +93,7 @@ void NodeConnectorView::mouseMoveEvent(QGraphicsSceneMouseEvent* event)
 		mTemporaryLink->updateEndPosition(event->scenePos());
 }
 
-void NodeConnectorView::mouseReleaseEvent( QGraphicsSceneMouseEvent* event)
+void NodeConnectorView::mouseReleaseEvent(QGraphicsSceneMouseEvent* event)
 {
 	if(mTemporaryLink != nullptr)
 	{
