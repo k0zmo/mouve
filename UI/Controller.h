@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Prerequisites.h"
-#include "Singleton.h"
+#include "Common/Singleton.h"
 
 #include <QMainWindow>
 

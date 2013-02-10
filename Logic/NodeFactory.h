@@ -5,6 +5,7 @@
 class NodeFactory
 {
 public:
+	virtual ~NodeFactory() {}
 	virtual std::unique_ptr<NodeType> create() = 0;
 };
 
@@ -15,7 +16,7 @@ public:
 	virtual std::unique_ptr<NodeType> create();
 };
 
-class AutoRegisterNodeBase : public NodeFactory
+class MOUVE_LOGIC_EXPORT AutoRegisterNodeBase : public NodeFactory
 {
 public:
 	AutoRegisterNodeBase(const std::string& typeName)

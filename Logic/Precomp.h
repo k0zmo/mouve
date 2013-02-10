@@ -21,20 +21,6 @@
 #include <QHash>
 #include <QDebug>
 
-// Rest of Qt
-#include <QApplication>
-#include <QGraphicsView>
-#include <QWheelEvent>
-#include <QGraphicsSceneMouseEvent>
-#include <QGraphicsWidget>
-#include <QPropertyAnimation>
-#include <QGraphicsSimpleTextItem>
-#include <QGraphicsDropShadowEffect>
-#include <QMenu>
-#include <QAction> 
-#include <QDebug>
-#include <QMessageBox>
-
 // OpenCV
 #include <opencv2/core/core.hpp>
 #include <opencv2/imgproc/imgproc.hpp>

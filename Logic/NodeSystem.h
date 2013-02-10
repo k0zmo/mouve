@@ -3,8 +3,9 @@
 #include "Prerequisites.h"
 #include "NodeFactory.h"
 
-class NodeSystem
+class MOUVE_LOGIC_EXPORT NodeSystem
 {
+	Q_DISABLE_COPY(NodeSystem)
 public:
 	NodeSystem();
 	~NodeSystem();
@@ -23,8 +24,10 @@ public:
 
 private:
 	// That is all that NodeSystem needs for handling registered node types
-	struct NodeTypeInfo
+	class NodeTypeInfo
 	{
+		Q_DISABLE_COPY(NodeTypeInfo)
+	public:
 		NodeTypeInfo(const std::string& nodeTypeName,
 		             std::unique_ptr<NodeFactory> nodeFactory)
 			: nodeTypeName(nodeTypeName)
@@ -41,25 +44,10 @@ private:
 		// Mandatory when using unique_ptr
 		NodeTypeInfo(NodeTypeInfo&& rhs);
 		NodeTypeInfo& operator=(NodeTypeInfo&& rhs);
-
-		// gcc 4.7 doesn't play nice with this anymore, you need to use c++11 features
-	#if defined(_MSC_VER)
-	private:
-		NodeTypeInfo(const NodeTypeInfo&);
-		NodeTypeInfo& operator=(const NodeTypeInfo&);
-	#else
-		NodeTypeInfo(const NodeTypeInfo&) = delete;
-		NodeTypeInfo& operator=(const NodeTypeInfo&) = delete;
-	#endif
 	};
 
 	std::vector<NodeTypeInfo> _registeredNodeTypes;
 	std::unordered_map<std::string, NodeTypeID> _typeNameToTypeID;
-
-private:
-	// Disallows copying/cloning of NodeSystem
-	NodeSystem(const NodeSystem&);
-	NodeSystem& operator=(const NodeSystem&);
 
 private:
 	class NodeTypeIteratorImpl;

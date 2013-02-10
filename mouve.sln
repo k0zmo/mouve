@@ -1,7 +1,18 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 11.00
 # Visual Studio 2010
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "mouve", "mouve\mouve.vcxproj", "{D21BC8CD-D179-4695-8EAA-4FD45DD58CE4}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Mouve.Logic", "Logic\Mouve.Logic.vcxproj", "{DC17726C-68F2-4136-BBC4-25765372976A}"
+	ProjectSection(ProjectDependencies) = postProject
+		{201C0F8F-4B5D-4CA2-A267-1EBED6CD8460} = {201C0F8F-4B5D-4CA2-A267-1EBED6CD8460}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Mouve.UI", "UI\Mouve.UI.vcxproj", "{51F34DAC-D745-438A-88A2-B1F28A174E23}"
+	ProjectSection(ProjectDependencies) = postProject
+		{DC17726C-68F2-4136-BBC4-25765372976A} = {DC17726C-68F2-4136-BBC4-25765372976A}
+		{201C0F8F-4B5D-4CA2-A267-1EBED6CD8460} = {201C0F8F-4B5D-4CA2-A267-1EBED6CD8460}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Mouve.Common", "Common\Mouve.Common.vcxproj", "{201C0F8F-4B5D-4CA2-A267-1EBED6CD8460}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -9,10 +20,18 @@ Global
 		Release|Win32 = Release|Win32
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{D21BC8CD-D179-4695-8EAA-4FD45DD58CE4}.Debug|Win32.ActiveCfg = Debug|Win32
-		{D21BC8CD-D179-4695-8EAA-4FD45DD58CE4}.Debug|Win32.Build.0 = Debug|Win32
-		{D21BC8CD-D179-4695-8EAA-4FD45DD58CE4}.Release|Win32.ActiveCfg = Release|Win32
-		{D21BC8CD-D179-4695-8EAA-4FD45DD58CE4}.Release|Win32.Build.0 = Release|Win32
+		{DC17726C-68F2-4136-BBC4-25765372976A}.Debug|Win32.ActiveCfg = Debug|Win32
+		{DC17726C-68F2-4136-BBC4-25765372976A}.Debug|Win32.Build.0 = Debug|Win32
+		{DC17726C-68F2-4136-BBC4-25765372976A}.Release|Win32.ActiveCfg = Release|Win32
+		{DC17726C-68F2-4136-BBC4-25765372976A}.Release|Win32.Build.0 = Release|Win32
+		{51F34DAC-D745-438A-88A2-B1F28A174E23}.Debug|Win32.ActiveCfg = Debug|Win32
+		{51F34DAC-D745-438A-88A2-B1F28A174E23}.Debug|Win32.Build.0 = Debug|Win32
+		{51F34DAC-D745-438A-88A2-B1F28A174E23}.Release|Win32.ActiveCfg = Release|Win32
+		{51F34DAC-D745-438A-88A2-B1F28A174E23}.Release|Win32.Build.0 = Release|Win32
+		{201C0F8F-4B5D-4CA2-A267-1EBED6CD8460}.Debug|Win32.ActiveCfg = Debug|Win32
+		{201C0F8F-4B5D-4CA2-A267-1EBED6CD8460}.Debug|Win32.Build.0 = Debug|Win32
+		{201C0F8F-4B5D-4CA2-A267-1EBED6CD8460}.Release|Win32.ActiveCfg = Release|Win32
+		{201C0F8F-4B5D-4CA2-A267-1EBED6CD8460}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

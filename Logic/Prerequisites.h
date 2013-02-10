@@ -1,5 +1,13 @@
 #pragma once
 
+#include <QtCore/qglobal.h>
+
+#ifdef MOUVE_LOGIC_LIB
+# define MOUVE_LOGIC_EXPORT Q_DECL_EXPORT
+#else
+# define MOUVE_LOGIC_EXPORT Q_DECL_IMPORT
+#endif
+
 // CRT
 #include <cstdio>
 #include <cstdio>
@@ -37,14 +45,11 @@ static const NodeID InvalidNodeID         = ~NodeID(0);
 static const SocketID InvalidSocketID     = ~SocketID(0);
 static const NodeTypeID InvalidNodeTypeID = NodeTypeID(0);
 
-class Controller;
-
 // Forward declarations
 struct InputSocketConfig;
 struct OutputSocketConfig;
 struct NodeConfig;
 
-// Model part
 class Node;
 class NodeType;
 class NodeSocket;
@@ -63,18 +68,3 @@ class NodeTypeIterator;
 
 /// xXx: Temporary here
 namespace cv { class Mat; }
-
-// View part
-class NodeEditorView;
-class NodeConnectorView;
-class NodeTemporaryLinkView;
-class NodeSocketView;
-class NodeLinkView;
-class NodeScene;
-class NodeView;
-
-struct NodeDataIndex
-{
-	static const int NodeKey = 0;
-	static const int SocketKey = 0;
-};

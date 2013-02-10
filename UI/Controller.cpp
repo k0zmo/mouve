@@ -5,13 +5,13 @@
 #include "NodeSocketView.h"
 
 /// xXx: This is needed here for now
-#include "BuiltinNodeTypes.h"
+#include "Logic/BuiltinNodeTypes.h"
 
-#include "NodeSystem.h"
-#include "NodeTree.h"
-#include "NodeType.h"
-#include "NodeLink.h"
-#include "Node.h"
+#include "Logic/NodeSystem.h"
+#include "Logic/NodeTree.h"
+#include "Logic/NodeType.h"
+#include "Logic/NodeLink.h"
+#include "Logic/Node.h"
 
 #include <QMessageBox>
 

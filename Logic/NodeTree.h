@@ -1,6 +1,8 @@
 #pragma once
 
 #include "Prerequisites.h"
+#include "Node.h"
+#include "NodeLink.h"
 
 // TODO
 enum ETagReason
@@ -11,14 +13,15 @@ enum ETagReason
 	Reason_ConnectionChanged
 };
 
-class NodeTree
+class MOUVE_LOGIC_EXPORT NodeTree
 {
+	Q_DISABLE_COPY(NodeTree)
 public:
 	NodeTree(NodeSystem* nodeSystem);
 	~NodeTree();
 
 	void clear();
-	void step();
+	std::vector<NodeID> step();
 
 	void tagNode(NodeID nodeID, ETagReason reason = Reason_Unspecified);
 
@@ -49,8 +52,10 @@ public:
 	bool isInputSocketConnected(NodeID nodeID, SocketID socketID) const;
 	bool isOutputSocketConnected(NodeID nodeID, SocketID socketID) const;
 
+	bool nodeConfiguration(NodeID nodeID, NodeConfig& nodeConfig) const;
+
 	std::unique_ptr<NodeIterator> createNodeIterator();
-    std::unique_ptr<NodeLinkIterator> createNodeLinkIterator();
+	std::unique_ptr<NodeLinkIterator> createNodeLinkIterator();
 
 private:
 	NodeID allocateNodeID();

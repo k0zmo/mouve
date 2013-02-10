@@ -2,8 +2,9 @@
 
 #include "Prerequisites.h"
 
-class Node
+class MOUVE_LOGIC_EXPORT Node
 {
+	Q_DISABLE_COPY(Node)
 public:
 	Node();
 	Node(std::unique_ptr<NodeType> nodeType,
@@ -35,6 +36,7 @@ public:
 
 	// Below methods are thin wrapper for held NodeType interface
 	void execute(NodeSocketReader* reader, NodeSocketWriter* writer);
+	void configuration(NodeConfig& nodeConfig) const;
 
 private:
 	// NOTE: If you add any new fields be sure to also handle them in move constructor/operator
@@ -44,17 +46,6 @@ private:
 	SocketID _numInputs;
 	SocketID _numOutputs;
 	NodeTypeID _nodeTypeID;
-
-// gcc 4.7 doesn't play nice with this anymore, you need to use c++11 features
-#if defined(_MSC_VER)
-private:
-	Node(const Node&);
-	Node& operator=(const Node&);
-#else
-public:
-	Node(const Node&) = delete;
-	Node& operator=(const Node&) = delete;
-#endif
 };
 
 class NodeIterator

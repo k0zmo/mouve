@@ -8,7 +8,7 @@
 #include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/highgui/highgui.hpp>
 
-#include <qglobal.h>
+#include <QDebug>
 
 class ImageFromFileNodeType : public NodeType
 {
