@@ -17,7 +17,7 @@ void NodeScene::mouseMoveEvent(QGraphicsSceneMouseEvent* event)
 {
 	if(mDragging)
 	{
-		QGraphicsItem* item = itemAt(event->scenePos());
+		QGraphicsItem* item = itemAt(event->scenePos(), QTransform());
 		if(item && item->type() == NodeConnectorView::Type)
 		{
 			mHovered = static_cast<NodeConnectorView*>(item);

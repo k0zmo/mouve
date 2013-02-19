@@ -25,35 +25,6 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Node.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="NodeFactory.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="NodeLink.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="NodeSystem.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="NodeTree.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="NodeType.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Prerequisites.h">
-      <Filter>Common Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Precomp.h">
-      <Filter>Common Files</Filter>
-    </ClInclude>
-    <ClInclude Include="BuiltinNodeTypes.h">
-      <Filter>Common Files</Filter>
-    </ClInclude>
-  </ItemGroup>
-  <ItemGroup>
     <ClCompile Include="Precomp.cpp">
       <Filter>Common Files</Filter>
     </ClCompile>
@@ -75,5 +46,34 @@
     <ClCompile Include="NodeType.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="Node.h">
+      <Filter>Header Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="NodeFactory.h">
+      <Filter>Header Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="NodeLink.h">
+      <Filter>Header Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="NodeSystem.h">
+      <Filter>Header Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="NodeTree.h">
+      <Filter>Header Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="NodeType.h">
+      <Filter>Header Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="BuiltinNodeTypes.h">
+      <Filter>Common Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Precomp.h">
+      <Filter>Common Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Prerequisites.h">
+      <Filter>Common Files</Filter>
+    </CustomBuild>
   </ItemGroup>
 </Project>

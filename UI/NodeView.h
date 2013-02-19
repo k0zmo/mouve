@@ -2,6 +2,7 @@
 
 #include "Prerequisites.h"
 
+#include <QGraphicsWidget>
 #include <QGraphicsDropShadowEffect>
 
 class NodeView : public QGraphicsWidget

@@ -3,6 +3,7 @@
 #include "NodeTemporaryLinkView.h"
 
 #include <QGraphicsSceneMouseEvent>
+#include <QGraphicsScene>
 
 NodeConnectorView::NodeConnectorView(bool isOutput, QGraphicsItem* parent)
 	: QGraphicsWidget(parent, 0)

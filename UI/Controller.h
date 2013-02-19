@@ -4,6 +4,7 @@
 #include "Common/Singleton.h"
 
 #include <QMainWindow>
+#include <QGraphicsWidget>
 
 namespace Ui {
 	class MainWindow;
@@ -15,7 +16,7 @@ class Controller
 {
 	Q_OBJECT
 public:
-	explicit Controller(QWidget* parent = nullptr, Qt::WFlags flags = 0);
+	explicit Controller(QWidget* parent = nullptr, Qt::WindowFlags flags = 0);
 	virtual ~Controller();
 
 private:

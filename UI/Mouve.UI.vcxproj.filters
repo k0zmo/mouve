@@ -103,29 +103,6 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="NodeStyle.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Prerequisites.h">
-      <Filter>Common Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Precomp.h">
-      <Filter>Common Files</Filter>
-    </ClInclude>
-    <ClInclude Include="NodeLinkView.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="NodeScene.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="NodeTemporaryLinkView.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="GeneratedFiles\ui_MainWindow.h">
-      <Filter>Generated Files</Filter>
-    </ClInclude>
-  </ItemGroup>
-  <ItemGroup>
     <CustomBuild Include="Controller.h">
       <Filter>Header Files</Filter>
     </CustomBuild>
@@ -143,6 +120,27 @@
     </CustomBuild>
     <CustomBuild Include="MainWindow.ui">
       <Filter>Form Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="NodeLinkView.h">
+      <Filter>Header Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="NodeScene.h">
+      <Filter>Header Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="NodeTemporaryLinkView.h">
+      <Filter>Header Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="NodeStyle.h">
+      <Filter>Header Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="GeneratedFiles\ui_MainWindow.h">
+      <Filter>Generated Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Precomp.h">
+      <Filter>Common Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Prerequisites.h">
+      <Filter>Common Files</Filter>
     </CustomBuild>
   </ItemGroup>
 </Project>

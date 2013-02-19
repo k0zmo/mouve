@@ -14,6 +14,7 @@
 #include "Logic/Node.h"
 
 #include <QMessageBox>
+#include <QMenu>
 
 #include "ui_MainWindow.h"
 
@@ -21,7 +22,7 @@ static bool DEBUG_LINKS = false;
 
 template<> Controller* Singleton<Controller>::_singleton = nullptr;
 
-Controller::Controller(QWidget* parent, Qt::WFlags flags)
+Controller::Controller(QWidget* parent, Qt::WindowFlags flags)
 	: QMainWindow(parent, flags)
 	, _previewSelectedNodeView(nullptr)
 	, _nodeScene(new NodeScene(this))
@@ -32,7 +33,8 @@ Controller::Controller(QWidget* parent, Qt::WFlags flags)
 
 	// Set up a node scene
 	/// xXx: Temporary
-	_nodeScene->setSceneRect(-200,-200,1000,600);
+	///_nodeScene->setSceneRect(-200,-200,1000,600);
+
 	// Qt bug concering scene->removeItem ?? Seems to fixed it
 	_nodeScene->setItemIndexMethod(QGraphicsScene::NoIndex);
 

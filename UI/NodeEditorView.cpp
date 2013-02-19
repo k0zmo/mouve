@@ -38,11 +38,12 @@ void NodeEditorView::mousePressEvent(QMouseEvent* event)
 
 void NodeEditorView::mouseReleaseEvent(QMouseEvent* event)
 {
-	if(event->button() == Qt::MiddleButton)
-	{
-		setDragMode(QGraphicsView::RubberBandDrag);
-	}
-	else
+	/// xXx: For now this works not entirely like desired :)
+	//if(event->button() == Qt::MiddleButton)
+	//{
+	//	setDragMode(QGraphicsView::RubberBandDrag);
+	//}
+	//else
 	{
 		QGraphicsView::mouseReleaseEvent(event);
 	}

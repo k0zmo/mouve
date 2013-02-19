@@ -13,7 +13,7 @@ QColor NodeStyle::SceneBackground = QColor(64, 64, 64);
 QPen NodeStyle::LinkPen = QPen(QColor(222, 222, 222), 2.0, Qt::SolidLine);
 
 // Node NodeStyle
-QFont NodeStyle::NodeTitleFont = QFont(FontName, 12, QFont::Bold);
+QFont NodeStyle::NodeTitleFont = QFont(FontName, 10, QFont::Bold);
 QBrush NodeStyle::NodeTitleFontBrush = QBrush(QColor(180, 180, 180));
 QBrush NodeStyle::NodeTitleBrush = QBrush(QColor(62, 62, 62));
 QBrush NodeStyle::NodeBrush = QBrush(QColor(37, 37, 37));
@@ -36,7 +36,7 @@ QRect NodeStyle::SocketSize = QRect(0, 0, 15, 15);
 QBrush NodeStyle::SocketTitleBrush = QBrush(QColor(180, 180, 180));
 QBrush NodeStyle::SocketTitleInactiveBrush = QBrush(QColor(119, 119, 119));
 
-QFont NodeStyle::SocketFont = QFont(FontName, 11);
+QFont NodeStyle::SocketFont = QFont(FontName, 9);
 
 int NodeStyle::ZValueNode = 100;
 int NodeStyle::ZValueNodeHovered = 200;

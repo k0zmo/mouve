@@ -3,9 +3,9 @@
 #include <QtCore/qglobal.h>
 
 #ifdef MOUVE_LOGIC_LIB
-# define MOUVE_LOGIC_EXPORT Q_DECL_EXPORT
+#  define MOUVE_LOGIC_EXPORT Q_DECL_EXPORT
 #else
-# define MOUVE_LOGIC_EXPORT Q_DECL_IMPORT
+#  define MOUVE_LOGIC_EXPORT Q_DECL_IMPORT
 #endif
 
 // CRT

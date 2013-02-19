@@ -8,3 +8,4 @@ ipch
 *.user
 *GeneratedFiles*
 *.pyc
+Common/_TODO
