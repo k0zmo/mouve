@@ -19,6 +19,8 @@
 #include "ui_MainWindow.h"
 
 static bool DEBUG_LINKS = false;
+static const int maxImageWidth = 256;
+static const int maxImageHeight = 256;
 
 template<> Controller* Singleton<Controller>::_singleton = nullptr;
 
@@ -30,6 +32,29 @@ Controller::Controller(QWidget* parent, Qt::WindowFlags flags)
 	, _ui(new Ui::MainWindow())
 {
 	_ui->setupUi(this);
+
+	/// TODO: use OpenGL
+	_ui->outputPreview->setMinimumSize(maxImageWidth, maxImageHeight);
+	_ui->outputPreview->setMaximumSize(maxImageWidth, maxImageHeight);
+
+	_ui->actionQuit->setShortcuts(QKeySequence::Quit);
+	connect(_ui->actionQuit, &QAction::triggered, this, &QMainWindow::close);
+
+	/// xXx: Only temporary, debugging solution
+	connect(_ui->actionExecute, &QAction::triggered, this, &Controller::executeClicked);
+
+	QAction* actionProperties = _ui->propertiesDockWidget->toggleViewAction();
+	actionProperties->setShortcut(tr("Ctrl+1"));
+
+	QAction* actionPreview = _ui->previewDockWidget->toggleViewAction();
+	actionPreview->setShortcut(tr("Ctrl+2"));
+
+	/// setCorner(Qt::BottomRightCorner, Qt::RightDockWidgetArea);
+	/// tabifyDockWidget(_ui->propertiesDockWidget, _ui->previewDockWidget);
+
+	// Init menu bar and its 'view' menu
+	_ui->menuView->addAction(actionProperties);
+	_ui->menuView->addAction(actionPreview);
 
 	// Set up a node scene
 	/// xXx: Temporary
@@ -60,10 +85,6 @@ Controller::Controller(QWidget* parent, Qt::WindowFlags flags)
 		action->setData(info.typeID);
 		_addNodesActions.append(action);
 	}
-
-	/// xXx: Only temporary, debugging solution
-	connect(_ui->execute, SIGNAL(clicked()),
-		this, SLOT(executeClicked()));
 }
 
 Controller::~Controller()
@@ -216,9 +237,9 @@ void Controller::unlinkNodes(NodeLinkView* linkView)
 	const NodeSocketView* to = linkView->toSocketView();
 
 	SocketAddress addrFrom(from->nodeView()->nodeKey(),
-	                       from->socketKey(), true);
+						   from->socketKey(), true);
 	SocketAddress addrTo(to->nodeView()->nodeKey(), 
-	                     to->socketKey(), false);
+						 to->socketKey(), false);
 
 	/// xXx: give a reason
 	if(!_nodeTree->unlinkNodes(addrFrom, addrTo))
@@ -300,7 +321,7 @@ void Controller::deleteNode(NodeView* nodeView)
 void Controller::draggingLinkDrop(QGraphicsWidget* from, QGraphicsWidget* to)
 {
 	linkNodes(static_cast<NodeSocketView*>(from),
-	          static_cast<NodeSocketView*>(to));
+			  static_cast<NodeSocketView*>(to));
 }
 
 void Controller::draggingLinkStart(QGraphicsWidget* from)
@@ -453,8 +474,6 @@ void Controller::updatePreview(const std::vector<NodeID>& executedNodes)
 			
 		// Scale it up nicely
 		/// xXx: In future we should use OpenGL and got free scaling
-		static const int maxImageWidth = 400;
-		static const int maxImageHeight = 400;
 
 		if(mat.rows > maxImageHeight || 
 		   mat.cols > maxImageWidth)

@@ -59,7 +59,7 @@ std::vector<NodeID> NodeTree::step()
 		std::cout << nodeID << " ";
 	}
 	std::cout << "\n";
-    /// -------------------------------------------------------
+	/// -------------------------------------------------------
 
 	NodeSocketReader reader(this);
 	NodeSocketWriter writer;
