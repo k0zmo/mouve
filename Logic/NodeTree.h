@@ -4,7 +4,8 @@
 #include "Node.h"
 #include "NodeLink.h"
 
-// TODO
+/// TODO - enum class
+/// TODO - uwzglednic auto/manualny refresh
 enum ETagReason
 {
 	Reason_Unspecified,
