@@ -49,7 +49,8 @@ enum class EPropertyType
 	Integer,
 	Double,
 	Enum,
-	Filepath
+	Filepath,
+	String
 }; 
 
 struct InputSocketConfig

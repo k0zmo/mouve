@@ -3,6 +3,7 @@
 #include "NodeView.h"
 #include "NodeLinkView.h"
 #include "NodeSocketView.h"
+#include "PropertyDelegate.h"
 
 /// xXx: This is needed here for now
 #include "Logic/BuiltinNodeTypes.h"
@@ -56,9 +57,25 @@ Controller::Controller(QWidget* parent, Qt::WindowFlags flags)
 	_ui->menuView->addAction(actionProperties);
 	_ui->menuView->addAction(actionPreview);
 
+	// Init properties window
+	_ui->propertiesTreeView->setItemDelegateForColumn(1, 
+		new PropertyDelegate(this));
+	_ui->propertiesTreeView->setUniformRowHeights(true);
+	_ui->propertiesTreeView->setEditTriggers(
+		QAbstractItemView::AllEditTriggers);
+	_ui->propertiesTreeView->setAnimated(true);
+	_ui->propertiesTreeView->setIndentation(20);
+	_ui->propertiesTreeView->setSortingEnabled(false);
+	_ui->propertiesTreeView->setAlternatingRowColors(true);
+	_ui->propertiesTreeView->header()->setSectionResizeMode(
+		QHeaderView::ResizeToContents);
+
 	// Set up a node scene
 	/// xXx: Temporary
 	///_nodeScene->setSceneRect(-200,-200,1000,600);
+
+	connect(_nodeScene, &QGraphicsScene::selectionChanged,
+		this, &Controller::sceneSelectionChanged);
 
 	// Qt bug concering scene->removeItem ?? Seems to fixed it
 	_nodeScene->setItemIndexMethod(QGraphicsScene::NoIndex);
@@ -191,6 +208,10 @@ void Controller::addNodeView(const QString& nodeTitle,
 			//qDebug() << prop.type << prop.name << prop.initial << prop.uiHint;
 			qDebug() << (int) prop.type << QString::fromStdString(prop.name) << 
 				prop.initial << QString::fromStdString(prop.uiHint);
+
+			/// TODO: Send it to somekind of a PropertyManager to build up a PropertyModel
+			///       associated with nodeID
+
 			++propID;
 		}
 	}
@@ -517,4 +538,19 @@ void Controller::updatePreview(const std::vector<NodeID>& executedNodes)
 void Controller::showErrorMessage(const QString& message)
 {
 	QMessageBox::critical(nullptr, "mouve", message);
+}
+
+void Controller::sceneSelectionChanged()
+{
+	auto items = _nodeScene->selectedItems();
+
+	if(items.count() == 1)
+	{
+		if(items[0]->type() == NodeView::Type)
+		{
+			auto nodeView = static_cast<NodeView*>(items[0]);
+
+			qDebug() << "new node View";
+		}
+	}
 }

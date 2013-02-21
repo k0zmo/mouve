@@ -40,6 +40,9 @@ private slots:
 	void executeClicked();
 	void mouseDoubleClickNodeView(NodeView* nodeView);
 
+	/// NEW
+	void sceneSelectionChanged();
+
 private:
 	QList<NodeLinkView*> _linkViews;
 	QHash<NodeID, NodeView*> _nodeViews;
