@@ -66,11 +66,11 @@ Controller::Controller(QWidget* parent, Qt::WindowFlags flags)
 	_ui->graphicsView->setScene(_nodeScene);
 
 	// Context menu from node graphics view
-	connect(_ui->graphicsView, SIGNAL(contextMenu(QPoint,QPointF)),
-		this, SLOT(contextMenu(QPoint,QPointF)));
+	connect(_ui->graphicsView, &NodeEditorView::contextMenu,
+		this, &Controller::contextMenu);
 	// Key handler from node graphics view
-	connect(_ui->graphicsView, SIGNAL(keyPress(QKeyEvent*)),
-		this, SLOT(keyPress(QKeyEvent*)));
+	connect(_ui->graphicsView, &NodeEditorView::keyPress,
+		this, &Controller::keyPress);
 
 	/// xXx: Create our node tree
 	_nodeTree = _nodeSystem->createNodeTree();
@@ -142,7 +142,7 @@ void Controller::addNodeView(const QString& nodeTitle,
 	nodeView->setData(NodeDataIndex::NodeKey, nodeID);
 	nodeView->setPos(scenePos);
 
-	NodeConfig nodeConfig;
+	NodeConfig nodeConfig = {0};
 	if(!_nodeTree->nodeConfiguration(nodeID, nodeConfig))
 	{
 		showErrorMessage("[NodeTree] Error during querying node configuration");
@@ -155,12 +155,11 @@ void Controller::addNodeView(const QString& nodeTitle,
 	{
 		while(nodeConfig.pInputSockets[socketID].name.length() > 0)
 		{
-			auto& name = nodeConfig.pInputSockets[socketID].name;
-			auto& humanName = nodeConfig.pInputSockets[socketID].humanName;
+			auto& input = nodeConfig.pInputSockets[socketID];
 
-			QString socketTitle = humanName.length() > 0
-				? QString::fromStdString(humanName)
-				: QString::fromStdString(name);
+			QString socketTitle = input.humanName.length() > 0
+				? QString::fromStdString(input.humanName)
+				: QString::fromStdString(input.name);
 			nodeView->addSocketView(socketID, socketTitle, false);
 			++socketID;
 		}
@@ -172,19 +171,32 @@ void Controller::addNodeView(const QString& nodeTitle,
 	{
 		while(nodeConfig.pOutputSockets[socketID].name.length() > 0)
 		{
-			auto& name = nodeConfig.pOutputSockets[socketID].name;
-			auto& humanName = nodeConfig.pOutputSockets[socketID].humanName;
+			auto& output = nodeConfig.pOutputSockets[socketID];
 
-			QString socketTitle = humanName.length() > 0
-				? QString::fromStdString(humanName)
-				: QString::fromStdString(name);
+			QString socketTitle = output.humanName.length() > 0
+				? QString::fromStdString(output.humanName)
+				: QString::fromStdString(output.name);
 			nodeView->addSocketView(socketID, socketTitle, true);
 			++socketID;
 		}
 	}
 
-	connect(nodeView, SIGNAL(mouseDoubleClicked(NodeView*)),
-		this, SLOT(mouseDoubleClickNodeView(NodeView*)));
+	PropertyID propID = 0;
+	if(nodeConfig.pProperties)
+	{
+		while(nodeConfig.pProperties[propID].type != EPropertyType::Unknown)
+		{
+			auto& prop = nodeConfig.pProperties[propID];
+
+			//qDebug() << prop.type << prop.name << prop.initial << prop.uiHint;
+			qDebug() << (int) prop.type << QString::fromStdString(prop.name) << 
+				prop.initial << QString::fromStdString(prop.uiHint);
+			++propID;
+		}
+	}
+
+	connect(nodeView, &NodeView::mouseDoubleClicked,
+		this, &Controller::mouseDoubleClickNodeView);
 
 	// Cache node view and add it to a scene
 	_nodeViews[nodeID] = nodeView;
@@ -193,11 +205,11 @@ void Controller::addNodeView(const QString& nodeTitle,
 
 void Controller::linkNodes(NodeSocketView* from, NodeSocketView* to)
 {
+	/// xXx: Add some checking to release
 	Q_ASSERT(from);
 	Q_ASSERT(from->nodeView());
 	Q_ASSERT(to);
-	Q_ASSERT(to->nodeView());
-	/// xXx: Add some checking to release
+	Q_ASSERT(to->nodeView());	
 
 	SocketAddress addrFrom(from->nodeView()->nodeKey(), from->socketKey(), true);
 	SocketAddress addrTo(to->nodeView()->nodeKey(), to->socketKey(), false);
@@ -228,10 +240,10 @@ void Controller::linkNodes(NodeSocketView* from, NodeSocketView* to)
 
 void Controller::unlinkNodes(NodeLinkView* linkView)
 {
+	/// xXx: Add some checking to release
 	Q_ASSERT(linkView);
 	Q_ASSERT(linkView->fromSocketView());
-	Q_ASSERT(linkView->toSocketView());
-	/// xXx: Add some checking to release
+	Q_ASSERT(linkView->toSocketView());	
 
 	const NodeSocketView* from = linkView->fromSocketView();
 	const NodeSocketView* to = linkView->toSocketView();

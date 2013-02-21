@@ -42,6 +42,16 @@ private:
 	std::vector<cv::Mat>* _outputs;
 };
 
+enum class EPropertyType
+{
+	Unknown,
+	Boolean,
+	Integer,
+	Double,
+	Enum,
+	Filepath
+}; 
+
 struct InputSocketConfig
 {
 	std::string name;
@@ -58,10 +68,19 @@ struct OutputSocketConfig
 	//int type;
 };
 
+struct PropertyConfig
+{
+	EPropertyType type;
+	std::string name; // humanName
+	QVariant initial; // boost::variant??
+	std::string uiHint;
+};
+
 struct NodeConfig
 {
 	const InputSocketConfig* pInputSockets;
 	const OutputSocketConfig* pOutputSockets;
+	const PropertyConfig* pProperties;
 	std::string description;
 };
 
@@ -70,6 +89,7 @@ class NodeType
 public:
 	virtual ~NodeType() {}
 	// virtual void initialize();
+	virtual bool property(PropertyID propId, const QVariant& newValue) { return false; }
 	virtual void execute(NodeSocketReader* reader, NodeSocketWriter* writer) = 0;
 	virtual void configuration(NodeConfig& nodeConfig) const = 0;
 	// void registerUpdateInterval();

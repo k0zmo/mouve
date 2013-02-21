@@ -23,7 +23,7 @@ Node::Node(std::unique_ptr<NodeType> nodeType,
 	, _numOutputs(0)
 	, _nodeTypeID(nodeTypeID)
 {
-	NodeConfig config;
+	NodeConfig config = {0};
 	_nodeType->configuration(config);
 
 	// Count number of input sockets

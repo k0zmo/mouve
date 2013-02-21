@@ -13,46 +13,73 @@
 class ImageFromFileNodeType : public NodeType
 {
 public: 
-	virtual void execute(NodeSocketReader* reader, NodeSocketWriter* writer)
+	ImageFromFileNodeType()
+		: filePath("lena.jpg")
+	{
+	}
+
+	bool property(PropertyID propId, const QVariant& newValue) override
+	{
+		if(propId == 0)
+		{
+			filePath = newValue.toString().toStdString();
+			return true;
+		}
+
+		return false;
+	}
+
+	void execute(NodeSocketReader* reader, NodeSocketWriter* writer) override
 	{
 		Q_UNUSED(reader);
 
 		qDebug() << "Executing `Image from file` node";		
 
-		const std::string filePath = "lena.jpg";
 		cv::Mat& output = writer->lockSocket(0);
 
 		output = cv::imread(filePath, CV_LOAD_IMAGE_GRAYSCALE);
 	}
 
-	virtual void configuration(NodeConfig& nodeConfig) const
+	void configuration(NodeConfig& nodeConfig) const  override
 	{
-		static const InputSocketConfig* in_config = nullptr;
 		static const OutputSocketConfig out_config[] = {
 			{ "output", "Output", "" },
 			{ "", "", "" }
 		};
+		static const PropertyConfig prop_config[] = {
+			{ EPropertyType::Filepath, "File path", QVariant(), "" },
+			{ EPropertyType::Unknown, "", QVariant(), "" }
+		};
 
 		nodeConfig.description = "Loads image from a given location";
-		nodeConfig.pInputSockets = in_config;
 		nodeConfig.pOutputSockets = out_config;
+		nodeConfig.pProperties = prop_config;
 	}
+
+private:
+	std::string filePath;
 };
 
 class GaussianBlurNodeType : public NodeType
 {
 public:
-	virtual void execute(NodeSocketReader* reader, NodeSocketWriter* writer)
+	GaussianBlurNodeType()
+		: kernelSize(5)
+		, sigma(10.0)
+	{
+	}
+
+	void execute(NodeSocketReader* reader, NodeSocketWriter* writer) override
 	{
 		qDebug() << "Executing `Gaussian blur` node";
 
 		const cv::Mat& input = reader->readSocket(0);
 		cv::Mat& output = writer->lockSocket(0);
 
-		cv::GaussianBlur(input, output, cv::Size(5,5), 10.0);
+		cv::GaussianBlur(input, output, cv::Size(kernelSize,kernelSize), sigma, 0);
 	}
 
-	virtual void configuration(NodeConfig& nodeConfig) const
+	void configuration(NodeConfig& nodeConfig) const override
 	{
 		static const InputSocketConfig in_config[] = {
 			{ "input", "Input", "" },
@@ -62,17 +89,31 @@ public:
 			{ "output", "Output", "" },
 			{ "", "", "" }
 		};
+		/// TODO: 
+		static const PropertyConfig* prop_config = nullptr;
 
 		nodeConfig.description = "Performs Gaussian blur on input image";
 		nodeConfig.pInputSockets = in_config;
 		nodeConfig.pOutputSockets = out_config;
+		nodeConfig.pProperties = prop_config;
 	}
+
+private:
+	int kernelSize;
+	double sigma;
 };
 
 class CannyEdgeDetectorNodeType : public NodeType
 {
 public:
-	virtual void execute(NodeSocketReader* reader, NodeSocketWriter* writer)
+	CannyEdgeDetectorNodeType()
+		: threshold(3)
+		, ratio(3)
+		, apertureSize(3)
+	{
+	}
+
+	void execute(NodeSocketReader* reader, NodeSocketWriter* writer) override
 	{
 		qDebug() << "Executing `Canny edge detector` node";
 
@@ -85,10 +126,28 @@ public:
 			return;
 		}
 
-		cv::Canny(input, output, 3, 90);
+		cv::Canny(input, output, threshold, threshold*ratio, apertureSize);
 	}
 
-	virtual void configuration(NodeConfig& nodeConfig) const
+	bool property(PropertyID propId, const QVariant& newValue) override
+	{
+		switch(propId)
+		{
+		case ID_Threshold:
+			threshold = newValue.toDouble();
+			return true;
+		case ID_Ratio:
+			ratio = newValue.toDouble();
+			return true;
+		case ID_ApertureSize:
+			apertureSize = newValue.toInt();
+			return true;
+		}
+
+		return false;
+	}
+
+	void configuration(NodeConfig& nodeConfig) const override
 	{
 		static const InputSocketConfig in_config[] = {
 			{ "input", "Input", "" },
@@ -98,17 +157,37 @@ public:
 			{ "output", "Output", "" },
 			{ "", "", "" }
 		};
+		static const PropertyConfig prop_config[] = {
+			{ EPropertyType::Double, "Threshold", QVariant(0.0), "min=0.0;max=100.0" },
+			{ EPropertyType::Double, "Ratio", QVariant(3.0), "min=0.0" },
+			{ EPropertyType::Integer, "Sobel operator size", QVariant(3), "min=1;step=2" },
+			{ EPropertyType::Unknown, "", QVariant(), "" }
+		};
 
 		nodeConfig.description = "Detects edges in input image using Canny detector";
 		nodeConfig.pInputSockets = in_config;
 		nodeConfig.pOutputSockets = out_config;
+		nodeConfig.pProperties = prop_config;
 	}
+
+private:
+	double threshold;
+	double ratio;
+	int apertureSize;
+
+private:
+	enum EPropertyID
+	{
+		ID_Threshold,
+		ID_Ratio,
+		ID_ApertureSize
+	};
 };
 
 class AddNodeType : public NodeType
 {
 public:
-	virtual void execute(NodeSocketReader* reader, NodeSocketWriter* writer)
+	void execute(NodeSocketReader* reader, NodeSocketWriter* writer) override
 	{
 		qDebug() << "Executing `Add` node";
 		const cv::Mat& src1 = reader->readSocket(0);
@@ -125,7 +204,7 @@ public:
 		cv::add(src1, src2, dst);
 	}
 
-	virtual void configuration(NodeConfig& nodeConfig) const
+	void configuration(NodeConfig& nodeConfig) const override
 	{
 		static const InputSocketConfig in_config[] = {
 			{ "source1", "Source 1", "" },
@@ -146,7 +225,7 @@ public:
 class SubtractNodeType : public NodeType
 {
 public:
-	virtual void execute(NodeSocketReader* reader, NodeSocketWriter* writer)
+	void execute(NodeSocketReader* reader, NodeSocketWriter* writer) override
 	{
 		qDebug() << "Executing `Subtract` node";
 		const cv::Mat& src1 = reader->readSocket(0);
@@ -163,7 +242,7 @@ public:
 		cv::subtract(src1, src2, dst);
 	}
 
-	virtual void configuration(NodeConfig& nodeConfig) const
+	void configuration(NodeConfig& nodeConfig) const override
 	{
 		static const InputSocketConfig in_config[] = {
 			{ "source1", "Source 1", "" },
@@ -184,7 +263,7 @@ public:
 class NegateNodeType : public NodeType
 {
 public:
-	virtual void execute(NodeSocketReader* reader, NodeSocketWriter* writer)
+	void execute(NodeSocketReader* reader, NodeSocketWriter* writer) override
 	{
 		qDebug() << "Executing `Negate` node";
 		const cv::Mat& src = reader->readSocket(0);
@@ -194,7 +273,7 @@ public:
 			dst = 255 - src;
 	}
 
-	virtual void configuration(NodeConfig& nodeConfig) const
+	void configuration(NodeConfig& nodeConfig) const override
 	{
 		static const InputSocketConfig in_config[] = {
 			{ "source", "Source", "" },
