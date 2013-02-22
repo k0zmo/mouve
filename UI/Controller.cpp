@@ -3,7 +3,10 @@
 #include "NodeView.h"
 #include "NodeLinkView.h"
 #include "NodeSocketView.h"
+
 #include "PropertyDelegate.h"
+#include "PropertyManager.h"
+#include "PropertyModel.h"
 
 /// xXx: This is needed here for now
 #include "Logic/BuiltinNodeTypes.h"
@@ -30,6 +33,7 @@ Controller::Controller(QWidget* parent, Qt::WindowFlags flags)
 	, _previewSelectedNodeView(nullptr)
 	, _nodeScene(new NodeScene(this))
 	, _nodeSystem(new NodeSystem())
+	, _propManager(new PropertyManager(this))
 	, _ui(new Ui::MainWindow())
 {
 	_ui->setupUi(this);
@@ -198,6 +202,10 @@ void Controller::addNodeView(const QString& nodeTitle,
 		}
 	}
 
+	// Make a default property - node name
+	_propManager->newProperty(nodeID, -1, EPropertyType::String,
+		"Node name", nodeTitle, QString());
+
 	PropertyID propID = 0;
 	if(nodeConfig.pProperties)
 	{
@@ -205,16 +213,17 @@ void Controller::addNodeView(const QString& nodeTitle,
 		{
 			auto& prop = nodeConfig.pProperties[propID];
 
-			//qDebug() << prop.type << prop.name << prop.initial << prop.uiHint;
-			qDebug() << (int) prop.type << QString::fromStdString(prop.name) << 
-				prop.initial << QString::fromStdString(prop.uiHint);
-
-			/// TODO: Send it to somekind of a PropertyManager to build up a PropertyModel
-			///       associated with nodeID
+			_propManager->newProperty(nodeID, propID, prop.type, 
+				QString::fromStdString(prop.name), prop.initial, 
+				QString::fromStdString(prop.uiHint));
 
 			++propID;
 		}
 	}
+
+	auto* propModel = _propManager->propertyModel(nodeID);
+	connect(propModel, &PropertyModel::propertyChanged,
+		this, &Controller::changeProperty);
 
 	connect(nodeView, &NodeView::mouseDoubleClicked,
 		this, &Controller::mouseDoubleClickNodeView);
@@ -549,8 +558,70 @@ void Controller::sceneSelectionChanged()
 		if(items[0]->type() == NodeView::Type)
 		{
 			auto nodeView = static_cast<NodeView*>(items[0]);
+			//qDebug() << "selected node view:" << nodeView->nodeKey();
+			auto propModel = _propManager->propertyModel(nodeView->nodeKey());
 
-			qDebug() << "new node View";
+			if(propModel)
+			{
+				auto selectionModel = _ui->propertiesTreeView->selectionModel();
+				_ui->propertiesTreeView->setModel(propModel);
+
+				if(selectionModel)
+					selectionModel->deleteLater();
+			}
 		}
+	}
+	// Deselected
+	else if(items.isEmpty())
+	{
+		auto selectionModel = _ui->propertiesTreeView->selectionModel();
+		_ui->propertiesTreeView->setModel(nullptr);
+
+		if(selectionModel)
+			selectionModel->deleteLater();
+	}
+}
+
+void Controller::changeProperty(NodeID nodeID,
+								PropertyID propID, 
+								const QVariant& newValue)
+{
+	//qDebug() << "Property changed," << nodeID << propID << newValue;
+
+	// 'System' property
+	if(propID < 0)
+	{
+		switch(propID)
+		{
+		/// TODO: Use enum
+		case -1:
+			{
+				QString name = newValue.toString();
+				std::string nameStd = name.toStdString();
+
+				if(_nodeTree->resolveNode(nameStd) == InvalidNodeID)
+				{
+					_nodeTree->setNodeName(nodeID, nameStd);
+					_nodeViews[nodeID]->setNodeViewName(name);
+				}
+				else
+				{
+					showErrorMessage("Name already taken");
+				}
+			}
+			return;
+		}
+	}
+
+	if(_nodeTree->nodeProperty(nodeID, propID, newValue))
+	{
+		_nodeTree->tagNode(nodeID);
+		auto exs = _nodeTree->step();
+		updatePreview(exs);
+	}
+	else
+	{
+		qDebug() << "[ERROR] bad value for nodeID:" << nodeID << 
+			", propertyID:" << propID << ", newValue:" << newValue;
 	}
 }

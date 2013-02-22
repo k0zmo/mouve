@@ -4,6 +4,10 @@
 
 // Forward declarations
 class Controller;
+class Property;
+class PropertyManager;
+class PropertyDelegate;
+class PropertyModel;
 class NodeEditorView;
 class NodeConnectorView;
 class NodeTemporaryLinkView;

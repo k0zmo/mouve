@@ -54,6 +54,7 @@ public:
 	bool isOutputSocketConnected(NodeID nodeID, SocketID socketID) const;
 
 	bool nodeConfiguration(NodeID nodeID, NodeConfig& nodeConfig) const;
+	bool nodeProperty(NodeID nodeID, PropertyID propID, const QVariant& value);
 
 	std::unique_ptr<NodeIterator> createNodeIterator();
 	std::unique_ptr<NodeLinkIterator> createNodeLinkIterator();

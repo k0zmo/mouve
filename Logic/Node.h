@@ -37,6 +37,7 @@ public:
 	// Below methods are thin wrapper for held NodeType interface
 	void execute(NodeSocketReader* reader, NodeSocketWriter* writer);
 	void configuration(NodeConfig& nodeConfig) const;
+	bool property(PropertyID propID, const QVariant& value);
 
 private:
 	// NOTE: If you add any new fields be sure to also handle them in move constructor/operator

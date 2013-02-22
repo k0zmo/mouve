@@ -41,7 +41,7 @@ typedef std::uint16_t NodeID;
 // Id of a node type - just unique
 typedef std::uint16_t NodeTypeID;
 // Id of a property - unique in each node
-typedef std::uint8_t  PropertyID;
+typedef std::int8_t  PropertyID;
 
 static const NodeID InvalidNodeID         = ~NodeID(0);
 static const SocketID InvalidSocketID     = ~SocketID(0);

@@ -23,6 +23,8 @@ public:
 
 	enum { Type = QGraphicsItem::UserType + 1 };
 
+	void setNodeViewName(const QString& newName);
+
 protected:
 	virtual void hoverEnterEvent(QGraphicsSceneHoverEvent* event);
 	virtual void hoverLeaveEvent(QGraphicsSceneHoverEvent* event);

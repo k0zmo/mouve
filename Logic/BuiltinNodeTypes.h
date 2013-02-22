@@ -69,6 +69,31 @@ public:
 	{
 	}
 
+	bool property(PropertyID propId, const QVariant& newValue) override
+	{
+		switch(propId)
+		{
+		case ID_KernelSize:
+			{
+				int ksize = newValue.toInt();
+				if(ksize >=3 && (ksize & 1) == 1)
+				{
+					kernelSize = ksize;
+					return true;
+				}
+				else
+				{
+					return false;
+				}
+			}			
+		case ID_Sigma:
+			sigma = newValue.toDouble();
+			return true;
+		}
+
+		return false;
+	}
+
 	void execute(NodeSocketReader* reader, NodeSocketWriter* writer) override
 	{
 		qDebug() << "Executing `Gaussian blur` node";
@@ -89,8 +114,11 @@ public:
 			{ "output", "Output", "" },
 			{ "", "", "" }
 		};
-		/// TODO: 
-		static const PropertyConfig* prop_config = nullptr;
+		static const PropertyConfig prop_config[] = {
+			{ EPropertyType::Integer, "Kernel size", QVariant(5), "min=3;max=21;step=2" },
+			{ EPropertyType::Double, "Sigma", QVariant(10.0), "min=0.0" },
+			{ EPropertyType::Unknown, "", QVariant(), "" }
+		};
 
 		nodeConfig.description = "Performs Gaussian blur on input image";
 		nodeConfig.pInputSockets = in_config;
@@ -101,6 +129,13 @@ public:
 private:
 	int kernelSize;
 	double sigma;
+
+private:
+	enum EPropertyID
+	{
+		ID_KernelSize,
+		ID_Sigma
+	};
 };
 
 class CannyEdgeDetectorNodeType : public NodeType
@@ -109,7 +144,7 @@ public:
 	CannyEdgeDetectorNodeType()
 		: threshold(3)
 		, ratio(3)
-		, apertureSize(3)
+		//, apertureSize(3)
 	{
 	}
 
@@ -126,7 +161,7 @@ public:
 			return;
 		}
 
-		cv::Canny(input, output, threshold, threshold*ratio, apertureSize);
+		cv::Canny(input, output, threshold, threshold*ratio, 3/*apertureSize*/);
 	}
 
 	bool property(PropertyID propId, const QVariant& newValue) override
@@ -138,9 +173,6 @@ public:
 			return true;
 		case ID_Ratio:
 			ratio = newValue.toDouble();
-			return true;
-		case ID_ApertureSize:
-			apertureSize = newValue.toInt();
 			return true;
 		}
 
@@ -158,9 +190,9 @@ public:
 			{ "", "", "" }
 		};
 		static const PropertyConfig prop_config[] = {
-			{ EPropertyType::Double, "Threshold", QVariant(0.0), "min=0.0;max=100.0" },
+			{ EPropertyType::Double, "Threshold", QVariant(3.0), "min=0.0;max=100.0" },
 			{ EPropertyType::Double, "Ratio", QVariant(3.0), "min=0.0" },
-			{ EPropertyType::Integer, "Sobel operator size", QVariant(3), "min=1;step=2" },
+			//{ EPropertyType::Integer, "Sobel operator size", QVariant(3), "min=1;step=2" },
 			{ EPropertyType::Unknown, "", QVariant(), "" }
 		};
 
@@ -173,14 +205,14 @@ public:
 private:
 	double threshold;
 	double ratio;
-	int apertureSize;
+	//int apertureSize;
 
 private:
 	enum EPropertyID
 	{
 		ID_Threshold,
 		ID_Ratio,
-		ID_ApertureSize
+		//ID_ApertureSize
 	};
 };
 

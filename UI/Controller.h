@@ -42,6 +42,8 @@ private slots:
 
 	/// NEW
 	void sceneSelectionChanged();
+	void changeProperty(NodeID nodeID, PropertyID propID, 
+		const QVariant& newValue);
 
 private:
 	QList<NodeLinkView*> _linkViews;
@@ -50,6 +52,8 @@ private:
 	NodeView* _previewSelectedNodeView;
 
 	NodeScene* _nodeScene;
+
+	PropertyManager* _propManager;
 
 	std::unique_ptr<NodeSystem> _nodeSystem;
 	std::unique_ptr<NodeTree> _nodeTree;

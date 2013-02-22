@@ -218,7 +218,7 @@ inline QVariant Property::value(int role) const
 
 inline void Property::setValue(const QVariant& value, int role)
 { Q_UNUSED(role);
-  _value = value; /* emit() ??*/ }
+  _value = value; }
 
 // Type is immutable
 inline EPropertyType Property::type() const

@@ -2,14 +2,27 @@
 #include "Property.h"
 
 
-PropertyModel::PropertyModel(QObject* parent)
+PropertyModel::PropertyModel(NodeID nodeID, QObject* parent)
 	: QAbstractItemModel(parent)
+	, _nodeID(nodeID)
 	, _root(new Property("Name", "Value", EPropertyType::String, nullptr))
 {
 }
 
 PropertyModel::~PropertyModel()
 {
+}
+
+void PropertyModel::addProperty(PropertyID propID, Property* prop)
+{
+	_propIdMap[propID] = prop;
+	_propertyMap[prop] = propID;
+	_root->appendChild(prop);
+}
+
+Property* PropertyModel::property(PropertyID propID)
+{
+	return _propIdMap.value(propID);
 }
 
 int PropertyModel::columnCount(const QModelIndex& parent) const
@@ -95,7 +108,9 @@ bool PropertyModel::setData(const QModelIndex& index,
 		qDebug() << index << value;
 
 		item->setValue(value, role);
+
 		emit dataChanged(index, index);
+		emit propertyChanged(_nodeID, _propertyMap.value(item), item->value());
 		return true;
 	}
 

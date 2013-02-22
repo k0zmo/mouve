@@ -212,3 +212,9 @@ void NodeView::updateLayout()
 
 	update();
 }
+
+void NodeView::setNodeViewName(const QString& newName)
+{
+	mLabel->setText(newName);
+	update();
+}

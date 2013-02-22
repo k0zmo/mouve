@@ -94,3 +94,8 @@ void Node::configuration(NodeConfig& nodeConfig) const
 {
 	_nodeType->configuration(nodeConfig);
 }
+
+bool Node::property(PropertyID propID, const QVariant& value)
+{
+	return _nodeType->property(propID, value);
+}
