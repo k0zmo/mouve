@@ -64,13 +64,6 @@ Controller::Controller(QWidget* parent, Qt::WindowFlags flags)
 	// Init properties window
 	_ui->propertiesTreeView->setItemDelegateForColumn(1, 
 		new PropertyDelegate(this));
-	_ui->propertiesTreeView->setUniformRowHeights(true);
-	_ui->propertiesTreeView->setEditTriggers(
-		QAbstractItemView::AllEditTriggers);
-	_ui->propertiesTreeView->setAnimated(true);
-	_ui->propertiesTreeView->setIndentation(20);
-	_ui->propertiesTreeView->setSortingEnabled(false);
-	_ui->propertiesTreeView->setAlternatingRowColors(true);
 	_ui->propertiesTreeView->header()->setSectionResizeMode(
 		QHeaderView::ResizeToContents);
 
@@ -602,6 +595,10 @@ void Controller::changeProperty(NodeID nodeID,
 			{
 				QString name = newValue.toString();
 				std::string nameStd = name.toStdString();
+
+				if(_nodeTree->nodeName(nodeID) == nameStd)
+					// No change
+					return;
 
 				if(_nodeTree->resolveNode(nameStd) == InvalidNodeID)
 				{
