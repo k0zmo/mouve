@@ -9,16 +9,19 @@ class PropertyManager : public QObject
 {
 	Q_OBJECT
 public:
-	PropertyManager(QObject* parent = nullptr);
+	explicit PropertyManager(QObject* parent = nullptr);
 	~PropertyManager() override;
 
 	void newProperty(NodeID nodeID, PropertyID propID, EPropertyType propType,
 		const QString& propName, const QVariant& value, const QString& uiHint);
+	void newPropertyGroup(NodeID nodeID, const QString& groupName);
 
 	PropertyModel* propertyModel(NodeID nodeID);
 
 private:
 	QHash<NodeID, PropertyModel*> _idPropertyModelHash;
-	QHash<PropertyModel*, NodeID> _propertyModelHash;
+
+private:
+	PropertyModel* propertyModelCreate(NodeID nodeID);
 };
 

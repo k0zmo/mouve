@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Prerequisites.h"
+#include "Property.h"
 
 #include <QAbstractItemModel>
 
@@ -10,12 +11,13 @@ class PropertyModel : public QAbstractItemModel
 {
 	Q_OBJECT
 public:
-	PropertyModel(NodeID nodeID, QObject* parent = nullptr);
+	explicit PropertyModel(NodeID nodeID, QObject* parent = nullptr);
 	~PropertyModel() override;
 
-	/// TODO: make insertRow
-	void addProperty(PropertyID propID, Property* prop);
-	Property* property(PropertyID propID);
+	/// TODO: insertRow
+	void addPropertyGroup(const QString& groupName);
+	void addProperty(PropertyID propID, EPropertyType propType,
+		const QString& propName, const QVariant& value, const QString& uiHint);
 
 	int columnCount(const QModelIndex& parent = QModelIndex()) const override;
 	int rowCount(const QModelIndex& parent = QModelIndex()) const override;
@@ -41,17 +43,17 @@ public:
 	NodeID nodeID() const;
 
 signals:
-	void propertyChanged(NodeID nodeID, PropertyID propID, const QVariant& newValue);
+	void propertyChanged(NodeID nodeID,
+		PropertyID propID, const QVariant& newValue);
 
 private:
 	Property* property(const QModelIndex& index) const;
 
 private:
 	QScopedPointer<Property> _root;
-	NodeID _nodeID;
 	QMap<PropertyID, Property*> _propIdMap;
-	/// TODO: This or let Property hold its ID
-	QMap<Property*, PropertyID> _propertyMap;
+	NodeID _nodeID;
+	Property* _currentGroup;
 };
 
 inline NodeID PropertyModel::nodeID() const

@@ -203,12 +203,15 @@ void Controller::addNodeView(const QString& nodeTitle,
 	}
 
 	// Make a default property - node name
+	_propManager->newPropertyGroup(nodeID, "Common");
 	_propManager->newProperty(nodeID, -1, EPropertyType::String,
 		"Node name", nodeTitle, QString());
 
 	PropertyID propID = 0;
 	if(nodeConfig.pProperties)
 	{
+		_propManager->newPropertyGroup(nodeID, "Specific");
+
 		while(nodeConfig.pProperties[propID].type != EPropertyType::Unknown)
 		{
 			auto& prop = nodeConfig.pProperties[propID];
@@ -222,6 +225,7 @@ void Controller::addNodeView(const QString& nodeTitle,
 	}
 
 	auto* propModel = _propManager->propertyModel(nodeID);
+	Q_ASSERT(propModel);
 	connect(propModel, &PropertyModel::propertyChanged,
 		this, &Controller::changeProperty);
 
@@ -558,21 +562,21 @@ void Controller::sceneSelectionChanged()
 		if(items[0]->type() == NodeView::Type)
 		{
 			auto nodeView = static_cast<NodeView*>(items[0]);
-			//qDebug() << "selected node view:" << nodeView->nodeKey();
 			auto propModel = _propManager->propertyModel(nodeView->nodeKey());
 
 			if(propModel)
 			{
 				auto selectionModel = _ui->propertiesTreeView->selectionModel();
 				_ui->propertiesTreeView->setModel(propModel);
+				_ui->propertiesTreeView->expandToDepth(0);
 
 				if(selectionModel)
 					selectionModel->deleteLater();
 			}
 		}
 	}
-	// Deselected
-	else if(items.isEmpty())
+	// Deselected or selected more than 1
+	else/* if(items.isEmpty()) */
 	{
 		auto selectionModel = _ui->propertiesTreeView->selectionModel();
 		_ui->propertiesTreeView->setModel(nullptr);

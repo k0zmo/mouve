@@ -14,6 +14,7 @@ Property::Property(const QString& name,
 	, _name(name)
 	, _value(value)
 	, _type(type)
+	, _propID(InvalidPropertyID)
 {
 	// Check if type matches
 	switch(type)

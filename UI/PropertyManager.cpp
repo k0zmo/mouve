@@ -3,7 +3,7 @@
 #include "Property.h"
 
 PropertyManager::PropertyManager(QObject* parent)
-    : QObject(parent)
+	: QObject(parent)
 {
 }
 
@@ -18,40 +18,28 @@ void PropertyManager::newProperty(NodeID nodeID,
 								  const QVariant& value,
 								  const QString& uiHint)
 {
+	PropertyModel* propModel = propertyModelCreate(nodeID);
+	propModel->addProperty(propID, propType, propName, value, uiHint);
+}
+
+void PropertyManager::newPropertyGroup(NodeID nodeID, const QString& groupName)
+{
+	PropertyModel* propModel = propertyModelCreate(nodeID);
+	propModel->addPropertyGroup(groupName);
+}
+
+PropertyModel* PropertyManager::propertyModelCreate(NodeID nodeID)
+{
 	auto propModel = _idPropertyModelHash.value(nodeID);
+
 	if(propModel == nullptr)
 	{
+		// Create new model - this is a new node
 		propModel = new PropertyModel(nodeID, this);
 		_idPropertyModelHash.insert(nodeID, propModel);
 	}
 
-	auto prop = propModel->property(propID);
-
-	if(prop == nullptr)
-	{
-		switch(propType)
-		{
-		case EPropertyType::Boolean:
-			propModel->addProperty(propID, new BooleanProperty(propName, value.toBool()));
-			break;
-		case EPropertyType::Integer:
-			propModel->addProperty(propID, new IntegerProperty(propName, value.toInt()));
-			break;
-		case EPropertyType::Double:
-			propModel->addProperty(propID, new DoubleProperty(propName, value.toDouble()));
-			break;
-		case EPropertyType::Enum:
-			/// TODO: How to pass default index?
-			propModel->addProperty(propID, new EnumProperty(propName, value.toStringList()));
-			break;
-		case EPropertyType::Filepath:
-			propModel->addProperty(propID, new FilePathProperty(propName, value.toString()));
-			break;
-		case EPropertyType::String:
-			propModel->addProperty(propID, new StringProperty(propName, value.toString()));
-			break;
-		}
-	}
+	return propModel;
 }
 
 PropertyModel* PropertyManager::propertyModel(NodeID nodeID)

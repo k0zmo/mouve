@@ -14,12 +14,15 @@ class QPainter;
 class Property
 {
 public:
-	Property(const QString& name,
+	explicit Property(const QString& name,
 		const QVariant& value,
 		EPropertyType type,
 		Property* parent = nullptr);
 
 	virtual ~Property();
+
+	PropertyID propertyID() const;
+	void setPropertyID(PropertyID propID);
 
 	/// Dodaje na koniec listy nowego potomka
 	void appendChild(Property* child);
@@ -64,12 +67,13 @@ protected:
 	QString _name;
 	QVariant _value;
 	EPropertyType _type;
+	PropertyID _propID;
 };
 
 class DoubleProperty : public Property
 {
 public:
-	DoubleProperty(const QString& name, double value);
+	explicit DoubleProperty(const QString& name, double value);
 
 	QWidget* createEditor(QWidget* parent,
 		const QStyleOptionViewItem& option) override;
@@ -85,8 +89,9 @@ public:
 class EnumProperty : public Property
 {
 public:
-	EnumProperty(const QString& name, 
+	explicit EnumProperty(const QString& name, 
 		const QStringList& valueList,
+		/// TODO:
 		int currentIndex = 0);
 
 	QVariant value(int role = Qt::UserRole) const override;
@@ -106,7 +111,7 @@ private:
 class IntegerProperty : public Property
 {
 public:
-	IntegerProperty(const QString& name, int value);
+	explicit IntegerProperty(const QString& name, int value);
 
 	QWidget* createEditor(QWidget* parent,
 		const QStyleOptionViewItem& option) override;
@@ -118,7 +123,7 @@ public:
 class StringProperty : public Property
 {
 public:
-	StringProperty(const QString& name, const QString& value);
+	explicit StringProperty(const QString& name, const QString& value);
 
 	// We use default factory here for string (not need for widget customization for now)
 };
@@ -126,7 +131,7 @@ public:
 class BooleanProperty : public Property
 {
 public:
-	BooleanProperty(const QString& name, bool value);
+	explicit BooleanProperty(const QString& name, bool value);
 
 	QWidget* createEditor(QWidget* parent,
 		const QStyleOptionViewItem& option) override;
@@ -142,7 +147,7 @@ public:
 class FilePathProperty : public Property
 {
 public:
-	FilePathProperty(const QString& name, 
+	explicit FilePathProperty(const QString& name, 
 					 const QString& initialPath = QString());
 
 	QWidget* createEditor(QWidget* parent,
@@ -164,7 +169,7 @@ struct vec3
 class Vector3Property : public Property
 {
 public:
-	Vector3Property(const QString& name, vec3 value)
+	explicit Vector3Property(const QString& name, vec3 value)
 		: Property(name, QVariant(0), EPropertyType::Vector3, nullptr)
 		, _x(new DoubleProperty("X", value.x))
 		, _y(new DoubleProperty("Y", value.y))
@@ -194,6 +199,12 @@ private:
 };
 */
 
+inline PropertyID Property::propertyID() const
+{ return _propID; }
+
+inline void Property::setPropertyID(PropertyID propID)
+{ _propID = propID; }
+
 inline Property* Property::child(int row)
 { return _children.value(row); }
 
@@ -213,12 +224,10 @@ inline void Property::setName(const QString& name)
 { _name = name; }
 
 inline QVariant Property::value(int role) const
-{ Q_UNUSED(role);
-  return _value; }
+{ Q_UNUSED(role); return _value; }
 
 inline void Property::setValue(const QVariant& value, int role)
-{ Q_UNUSED(role);
-  _value = value; }
+{ Q_UNUSED(role); _value = value; }
 
 // Type is immutable
 inline EPropertyType Property::type() const
@@ -226,8 +235,7 @@ inline EPropertyType Property::type() const
 
 inline QWidget* Property::createEditor(QWidget* parent,
 									   const QStyleOptionViewItem& option)
-{ Q_UNUSED(parent); Q_UNUSED(option);
-  return nullptr; }
+{ Q_UNUSED(parent); Q_UNUSED(option); return nullptr; }
 
 inline bool Property::setEditorData(QWidget* editor,
 									const QVariant& data)
@@ -235,11 +243,9 @@ inline bool Property::setEditorData(QWidget* editor,
   return false; }
 
 inline QVariant Property::editorData(QWidget* editor)
-{ Q_UNUSED(editor);
-  return QVariant(); }
+{ Q_UNUSED(editor); return QVariant(); }
 
 inline bool Property::paint(QPainter* painter, 
 							const QStyleOptionViewItem& option, 
 							const QVariant& value)
-{ Q_UNUSED(painter); Q_UNUSED(option); Q_UNUSED(value);
-  return false; }
+{ Q_UNUSED(painter); Q_UNUSED(option); Q_UNUSED(value); return false; }

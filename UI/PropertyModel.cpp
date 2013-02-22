@@ -1,11 +1,10 @@
 #include "PropertyModel.h"
-#include "Property.h"
-
 
 PropertyModel::PropertyModel(NodeID nodeID, QObject* parent)
 	: QAbstractItemModel(parent)
 	, _nodeID(nodeID)
 	, _root(new Property("Name", "Value", EPropertyType::String, nullptr))
+	, _currentGroup(_root.data())
 {
 }
 
@@ -13,16 +12,54 @@ PropertyModel::~PropertyModel()
 {
 }
 
-void PropertyModel::addProperty(PropertyID propID, Property* prop)
+void PropertyModel::addPropertyGroup(const QString& groupName)
 {
-	_propIdMap[propID] = prop;
-	_propertyMap[prop] = propID;
-	_root->appendChild(prop);
+	_currentGroup = new Property(groupName, QString(), 
+		EPropertyType::String, nullptr);
+	_root->appendChild(_currentGroup);
 }
 
-Property* PropertyModel::property(PropertyID propID)
+void PropertyModel::addProperty(PropertyID propID, EPropertyType propType,
+	const QString& propName, const QVariant& value, const QString& uiHint)
 {
-	return _propIdMap.value(propID);
+	if(!_propIdMap.contains(propID))
+	{
+		Property* prop;
+
+		switch(propType)
+		{
+		case EPropertyType::Boolean:
+			prop = new BooleanProperty(propName, value.toBool());
+			break;
+		case EPropertyType::Integer:
+			prop = new IntegerProperty(propName, value.toInt());
+			break;
+		case EPropertyType::Double:
+			prop = new DoubleProperty(propName, value.toDouble());
+			break;
+		case EPropertyType::Enum:
+			/// TODO: How to pass default index?
+			prop = new EnumProperty(propName, value.toStringList());
+			break;
+		case EPropertyType::Filepath:
+			prop = new FilePathProperty(propName, value.toString());
+			break;
+		case EPropertyType::String:
+			prop = new StringProperty(propName, value.toString());
+			break;
+		default:
+			/// TODO: throw ??
+			return;
+		}
+
+		prop->setPropertyID(propID);
+		_propIdMap.insert(propID, prop);
+		_currentGroup->appendChild(prop);
+	}
+	else
+	{
+		/// TODO: throw ??
+	}
 }
 
 int PropertyModel::columnCount(const QModelIndex& parent) const
@@ -83,7 +120,8 @@ QVariant PropertyModel::data(const QModelIndex& index, int role) const
 			return item->value(role);
 
 	//case Qt::SizeHintRole:
-		//return QSize(QFontMetrics(QFont()).width(data(index, Qt::DisplayRole).toString()) + 30, 22);
+		//return QSize(QFontMetrics(QFont()).width(
+		//	data(index, Qt::DisplayRole).toString()) + 30, 22);
 	//case Qt::DecorationRole:
 	//case Qt::ToolTipRole:
 		//break;
@@ -103,14 +141,12 @@ bool PropertyModel::setData(const QModelIndex& index,
 	if(index.isValid() && role == Qt::EditRole)
 	{
 		Property* item = property(index);
-		/// Mozna by dac bool result = item->setValue() i dac wybor modelowi
-
-		qDebug() << index << value;
-
+		/// TODO:Mozna by dac bool result = item->setValue() i dac wybor modelowi
 		item->setValue(value, role);
 
 		emit dataChanged(index, index);
-		emit propertyChanged(_nodeID, _propertyMap.value(item), item->value());
+		emit propertyChanged(_nodeID, item->propertyID(), item->value());
+
 		return true;
 	}
 
