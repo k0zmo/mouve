@@ -10,8 +10,10 @@ class PropertyDelegate : public QStyledItemDelegate
 {
 	Q_OBJECT
 public:
-	PropertyDelegate(QObject* parent = nullptr);
+	explicit PropertyDelegate(QObject* parent = nullptr);
 	~PropertyDelegate() override;
+
+	void setImmediateUpdate(bool immediate);
 
 	QWidget* createEditor(QWidget* parent,
 		const QStyleOptionViewItem& option,
@@ -35,4 +37,8 @@ protected:
 
 private:
 	QSignalMapper* _mapper;
+	bool _immediateUpdate;
 };
+
+inline void PropertyDelegate::setImmediateUpdate(bool immediate)
+{ _immediateUpdate = immediate; }

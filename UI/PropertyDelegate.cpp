@@ -4,11 +4,10 @@
 #include <QApplication>
 #include <QSignalMapper>
 
-#undef IMMEDIATE_UPDATE
-
 PropertyDelegate::PropertyDelegate(QObject* parent)
 	: QStyledItemDelegate(parent)
 	, _mapper(new QSignalMapper(this))
+	, _immediateUpdate(false)
 {
 	// not needed as base class already call it and we just override its eventFilter function
 	//installEventFilter(this);
@@ -35,14 +34,14 @@ QWidget* PropertyDelegate::createEditor(QWidget* parent,
 
 			if(editor)
 			{
-#if defined(IMMEDIATE_UPDATE)
-				if(editor->metaObject()->indexOfSignal("commitData()") >= 0)
+				if(_immediateUpdate && 
+					editor->metaObject()->indexOfSignal("commitData()") >= 0)
 				{
 					connect(editor, SIGNAL(commitData()),
 						_mapper, SLOT(map()));
 					_mapper->setMapping(editor, editor);
 				}
-#endif
+
 				return editor;
 			}
 		}
@@ -115,8 +114,7 @@ QSize PropertyDelegate::sizeHint(const QStyleOptionViewItem& option,
 
 bool PropertyDelegate::eventFilter(QObject* obj, QEvent* event)
 {
-#if defined(IMMEDIATE_UPDATE)
-	if(event->type() == QEvent::FocusOut)
+	if(_immediateUpdate && event->type() == QEvent::FocusOut)
 	{
 		if(obj->metaObject()->indexOfSignal("commitData()") >= 0)
 		{
@@ -138,6 +136,5 @@ bool PropertyDelegate::eventFilter(QObject* obj, QEvent* event)
 			}
 		}
 	}
-#endif
 	return QStyledItemDelegate::eventFilter(obj, event);
 }
