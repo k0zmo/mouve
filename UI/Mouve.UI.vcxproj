@@ -67,6 +67,7 @@
     <ClCompile Include="GeneratedFiles\Release\moc_PropertyWidgets.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
     </ClCompile>
+    <ClCompile Include="LogView.cpp" />
     <ClCompile Include="NodeConnectorView.cpp" />
     <ClCompile Include="NodeEditorView.cpp" />
     <ClCompile Include="NodeLinkView.cpp" />
@@ -263,6 +264,7 @@
     </CustomBuild>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="LogView.h" />
     <ClInclude Include="Property.h" />
     <CustomBuild Include="PropertyWidgets.h">
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(QTDIR)\bin\moc.exe;%(FullPath)</AdditionalInputs>

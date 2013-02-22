@@ -8,6 +8,8 @@
 #include "PropertyManager.h"
 #include "PropertyModel.h"
 
+#include "LogView.h"
+
 /// xXx: This is needed here for now
 #include "Logic/BuiltinNodeTypes.h"
 
@@ -54,12 +56,25 @@ Controller::Controller(QWidget* parent, Qt::WindowFlags flags)
 	QAction* actionPreview = _ui->previewDockWidget->toggleViewAction();
 	actionPreview->setShortcut(tr("Ctrl+2"));
 
-	/// setCorner(Qt::BottomRightCorner, Qt::RightDockWidgetArea);
+	QAction* actionLog = _ui->logDockWidget->toggleViewAction();
+	actionLog->setShortcut(tr("Ctrl+3"));
+
+	// Create log view
+	LogView* logView = new LogView(this);
+	_ui->logDockWidget->setWidget(logView);
+	// Hide log on default
+	_ui->logDockWidget->hide();
+
+	setCorner(Qt::BottomRightCorner, Qt::RightDockWidgetArea);
+	setCorner(Qt::BottomLeftCorner, Qt::LeftDockWidgetArea);
+	setCorner(Qt::TopRightCorner, Qt::RightDockWidgetArea);
+	setCorner(Qt::TopLeftCorner, Qt::LeftDockWidgetArea);
 	/// tabifyDockWidget(_ui->propertiesDockWidget, _ui->previewDockWidget);
 
 	// Init menu bar and its 'view' menu
 	_ui->menuView->addAction(actionProperties);
 	_ui->menuView->addAction(actionPreview);
+	_ui->menuView->addAction(actionLog);
 
 	// Init properties window
 	_ui->propertiesTreeView->setItemDelegateForColumn(1, 
