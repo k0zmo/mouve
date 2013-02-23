@@ -1,9 +1,13 @@
 #include "NodeEditorView.h"
 #include <QWheelEvent>
+#include <QScrollBar>
 
 NodeEditorView::NodeEditorView(QWidget* parent)
 	: QGraphicsView(parent)
 	, mZoom(1.0f)
+	, mPanning(false)
+	, mOriginalCursor(viewport()->cursor())
+	, mLastMouseEventPos(QPoint())
 {
 	setRenderHint(QPainter::Antialiasing);
 	scale(mZoom, mZoom);
@@ -25,27 +29,47 @@ void NodeEditorView::setZoom(float zoom)
 
 void NodeEditorView::mousePressEvent(QMouseEvent* event)
 {
-	/// xXx: For now this works not entirely like desired :)
-	//if(event->button() == Qt::MiddleButton)
-	//{
-	//	setDragMode(QGraphicsView::ScrollHandDrag);
-	//}
-	//else
-	//{
+	if(event->button() == Qt::MiddleButton)
+	{
+		mPanning = true;
+		mLastMouseEventPos = event->pos();
+		viewport()->setCursor(Qt::SizeAllCursor);
+	}
+	else if(!mPanning)
+	{
 		QGraphicsView::mousePressEvent(event);
-	//}
+	}
 }
 
 void NodeEditorView::mouseReleaseEvent(QMouseEvent* event)
 {
-	/// xXx: For now this works not entirely like desired :)
-	//if(event->button() == Qt::MiddleButton)
-	//{
-	//	setDragMode(QGraphicsView::RubberBandDrag);
-	//}
-	//else
+	if(event->button() == Qt::MiddleButton)
+	{
+		mPanning = false;
+		viewport()->setCursor(mOriginalCursor);
+	}
+	else
 	{
 		QGraphicsView::mouseReleaseEvent(event);
+	}
+}
+
+void NodeEditorView::mouseMoveEvent(QMouseEvent* event)
+{
+	if(mPanning)
+	{
+		QScrollBar* hBar = horizontalScrollBar();
+		QScrollBar* vBar = verticalScrollBar();
+
+		QPoint delta = event->pos() - mLastMouseEventPos;
+		mLastMouseEventPos = event->pos();
+
+		hBar->setValue(hBar->value() + (isRightToLeft() ? delta.x() : -delta.x()));
+		vBar->setValue(vBar->value() - delta.y());
+	}
+	else
+	{
+		QGraphicsView::mouseMoveEvent(event);
 	}
 }
 
@@ -61,7 +85,10 @@ void NodeEditorView::wheelEvent(QWheelEvent* event)
 
 void NodeEditorView::contextMenuEvent(QContextMenuEvent* event)
 {
-	emit contextMenu(event->globalPos(), mapToScene(event->pos()));
+	if(!mPanning)
+	{
+		emit contextMenu(event->globalPos(), mapToScene(event->pos()));
+	}	
 }
 
 void NodeEditorView::keyPressEvent(QKeyEvent* event)
