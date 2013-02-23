@@ -76,6 +76,14 @@ Controller::Controller(QWidget* parent, Qt::WindowFlags flags)
 	_ui->menuView->addAction(actionPreview);
 	_ui->menuView->addAction(actionLog);
 
+	QAction* actionAboutQt = new QAction(
+		QIcon(":/qt-project.org/qmessagebox/images/qtlogo-64.png"), 
+		tr("About &Qt"), this);
+	actionAboutQt->setToolTip(tr("Show information about Qt"));
+	actionAboutQt->setMenuRole(QAction::AboutQtRole);
+	connect(actionAboutQt, SIGNAL(triggered()), qApp, SLOT(aboutQt()));
+	_ui->menuHelp->addAction(actionAboutQt);
+
 	// Init properties window
 	_ui->propertiesTreeView->setItemDelegateForColumn(1, 
 		new PropertyDelegate(this));
