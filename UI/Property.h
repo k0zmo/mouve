@@ -43,7 +43,7 @@ public:
 	void setName(const QString& name);
 
 	virtual QVariant value(int role = Qt::UserRole) const;
-	virtual void setValue(const QVariant& value,
+	virtual bool setValue(const QVariant& value,
 		int role = Qt::UserRole);
 
 	// Type is immutable
@@ -95,7 +95,7 @@ public:
 		int currentIndex = 0);
 
 	QVariant value(int role = Qt::UserRole) const override;
-	void setValue(const QVariant& value, 
+	bool setValue(const QVariant& value, 
 		int role = Qt::UserRole) override;
 
 	QWidget* createEditor(QWidget* parent,
@@ -226,8 +226,9 @@ inline void Property::setName(const QString& name)
 inline QVariant Property::value(int role) const
 { Q_UNUSED(role); return _value; }
 
-inline void Property::setValue(const QVariant& value, int role)
-{ Q_UNUSED(role); _value = value; }
+inline bool Property::setValue(const QVariant& value, int role)
+{ Q_UNUSED(role);
+if(_value != value) { _value = value; return true; } return false; }
 
 // Type is immutable
 inline EPropertyType Property::type() const

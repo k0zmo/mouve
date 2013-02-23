@@ -137,12 +137,17 @@ EnumProperty::EnumProperty(const QString& name,
 
 QVariant EnumProperty::value(int role) const
 {
-	Q_UNUSED(role);
-
-	return _valueList[Property::value(role).toInt()];
+	if(role == Qt::UserRole)
+	{
+		return Property::value(role).toInt();
+	}
+	else
+	{
+		return _valueList[Property::value(role).toInt()];
+	}
 }
 
-void EnumProperty::setValue(const QVariant& value, int role)
+bool EnumProperty::setValue(const QVariant& value, int role)
 {
 	if(role == Qt::EditRole)
 	{
@@ -159,9 +164,13 @@ void EnumProperty::setValue(const QVariant& value, int role)
 				qDebug() << "[TODO] New value:" << index << _valueList[index];
 
 				_value = index;
+
+				return true;
 			}
 		}
 	}
+
+	return false;
 }
 
 QWidget* EnumProperty::createEditor(QWidget* parent, 

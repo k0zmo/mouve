@@ -141,13 +141,14 @@ bool PropertyModel::setData(const QModelIndex& index,
 	if(index.isValid() && role == Qt::EditRole)
 	{
 		Property* item = property(index);
-		/// TODO:Mozna by dac bool result = item->setValue() i dac wybor modelowi
-		item->setValue(value, role);
+		
+		if(item->setValue(value, role))
+		{
+			emit dataChanged(index, index);
+			emit propertyChanged(_nodeID, item->propertyID(), item->value());
 
-		emit dataChanged(index, index);
-		emit propertyChanged(_nodeID, item->propertyID(), item->value());
-
-		return true;
+			return true;
+		}
 	}
 
 	return false;
