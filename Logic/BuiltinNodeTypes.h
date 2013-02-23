@@ -322,6 +322,81 @@ public:
 	}
 };
 
+class BinarizationNodeType : public NodeType
+{
+public:
+	BinarizationNodeType()
+		: threshold(128)
+		, inv(false)
+	{
+	}
+
+	bool property(PropertyID propId, const QVariant& newValue) override
+	{
+		switch(propId)
+		{
+		case ID_Threshold:
+			threshold = newValue.toInt();
+			return true;
+		case ID_Invert:
+			inv = newValue.toBool();
+			return true;
+		}
+
+		return false;
+	}
+
+	void execute(NodeSocketReader* reader, NodeSocketWriter* writer) override
+	{
+		qDebug() << "Executing `Binarization` node";
+
+		const cv::Mat& src = reader->readSocket(0);
+		cv::Mat& dst = writer->lockSocket(0);
+
+		if(src.rows == 0 || src.cols == 0 || threshold < 0 || threshold > 255)
+		{
+			dst = cv::Mat();
+			return;
+		}
+
+		int type = inv ? cv::THRESH_BINARY_INV : cv::THRESH_BINARY;
+		cv::threshold(src, dst, (double) threshold, 255, type);
+	}
+
+	void configuration(NodeConfig& nodeConfig) const override
+	{
+		static const InputSocketConfig in_config[] = {
+			{ "source", "Source", "" },
+			{ "", "", "" }
+		};
+		static const OutputSocketConfig out_config[] = {
+			{ "output", "Output", "" },
+			{ "", "", "" }
+		};
+		static const PropertyConfig prop_config[] = {
+			{ EPropertyType::Integer, "Threshold", QVariant(128), "min=0;max=255" },
+			{ EPropertyType::Boolean, "Inverted", QVariant(false), "" },
+			{ EPropertyType::Unknown, "", QVariant(), "" }
+		};
+
+		nodeConfig.description = "Creates a binary image by segmenting pixel values to 0 or 1 depending on threshold value";
+		nodeConfig.pInputSockets = in_config;
+		nodeConfig.pOutputSockets = out_config;
+		nodeConfig.pProperties = prop_config;
+	}
+
+private:
+	int threshold;
+	bool inv;
+
+private:
+	enum EPropertyID
+	{
+		ID_Threshold,
+		ID_Invert
+	};
+};
+
 #include "CV.h"
 
 class MorphologyNodeType : public NodeType
@@ -440,6 +515,7 @@ private:
 REGISTER_NODE("Negate", NegateNodeType)
 REGISTER_NODE("Subtract", SubtractNodeType)
 REGISTER_NODE("Add", AddNodeType)
+REGISTER_NODE("Binarization", BinarizationNodeType)
 REGISTER_NODE("Morphology op.", MorphologyNodeType)
 REGISTER_NODE("Canny edge detector", CannyEdgeDetectorNodeType)
 REGISTER_NODE("Gaussian blur", GaussianBlurNodeType)
