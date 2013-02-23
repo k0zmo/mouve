@@ -42,6 +42,17 @@ PropertyModel* PropertyManager::propertyModelCreate(NodeID nodeID)
 	return propModel;
 }
 
+void PropertyManager::deletePropertyModel(NodeID nodeID)
+{
+	PropertyModel* model = propertyModel(nodeID);
+	if(model != nullptr)
+	{
+		int res = _idPropertyModelHash.remove(nodeID);
+		Q_ASSERT(res == 1);
+		model->deleteLater();
+	}
+}
+
 PropertyModel* PropertyManager::propertyModel(NodeID nodeID)
 {
 	return _idPropertyModelHash.value(nodeID);

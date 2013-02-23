@@ -369,6 +369,11 @@ void Controller::deleteNode(NodeView* nodeView)
 		}
 	}
 
+	// Remove property model associated with removed node
+	// We don't need to clear properties view first because
+	// we clear selection - selectionChanged() - before
+	_propManager->deletePropertyModel(nodeID);	
+
 	// Remove node view 
 	_nodeScene->removeItem(nodeView);
 	_nodeViews.remove(nodeID);

@@ -16,6 +16,8 @@ public:
 		const QString& propName, const QVariant& value, const QString& uiHint);
 	void newPropertyGroup(NodeID nodeID, const QString& groupName);
 
+	void deletePropertyModel(NodeID nodeID);
+
 	PropertyModel* propertyModel(NodeID nodeID);
 
 private:
