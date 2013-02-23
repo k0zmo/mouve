@@ -24,7 +24,7 @@ LogView::~LogView()
 {
 	// remove yourself from the list
 	auto it = _headView;
-	while(it && it->_nextView != this)
+	while(it->_nextView && it->_nextView != this)
 		it = it->_nextView;
 
 	if(it->_nextView == this)
@@ -35,6 +35,11 @@ void LogView::messageHandler(QtMsgType type,
 							 const QMessageLogContext& context,
 							 const QString& msg)
 {
+	// This should be fixed in 5.0.2
+	if(msg == "QWindowsNativeInterface::nativeResourceForWindow: 'handle' "
+		"requested for null window or window without handle.")
+		return;
+
 	auto it = _headView;
 	while(it)
 	{
@@ -46,7 +51,7 @@ void LogView::messageHandler(QtMsgType type,
 		switch(type)
 		{
 		case QtDebugMsg:
-			item->setBackgroundColor(Qt::lightGray);
+			item->setBackgroundColor(Qt::white);
 			item->setTextColor(Qt::black);
 			break;
 
