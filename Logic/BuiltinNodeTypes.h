@@ -33,7 +33,7 @@ public:
 	{
 		Q_UNUSED(reader);
 
-		qDebug() << "Executing `Image from file` node";		
+		qDebug() << "Executing 'Image from file' node";		
 
 		cv::Mat& output = writer->lockSocket(0);
 
@@ -96,7 +96,7 @@ public:
 
 	void execute(NodeSocketReader* reader, NodeSocketWriter* writer) override
 	{
-		qDebug() << "Executing `Gaussian blur` node";
+		qDebug() << "Executing 'Gaussian blur' node";
 
 		const cv::Mat& input = reader->readSocket(0);
 		cv::Mat& output = writer->lockSocket(0);
@@ -150,7 +150,7 @@ public:
 
 	void execute(NodeSocketReader* reader, NodeSocketWriter* writer) override
 	{
-		qDebug() << "Executing `Canny edge detector` node";
+		qDebug() << "Executing 'Canny edge detector' node";
 
 		const cv::Mat& input = reader->readSocket(0);
 		cv::Mat& output = writer->lockSocket(0);
@@ -221,7 +221,7 @@ class AddNodeType : public NodeType
 public:
 	void execute(NodeSocketReader* reader, NodeSocketWriter* writer) override
 	{
-		qDebug() << "Executing `Add` node";
+		qDebug() << "Executing 'Add' node";
 		const cv::Mat& src1 = reader->readSocket(0);
 		const cv::Mat& src2 = reader->readSocket(1);
 		cv::Mat& dst = writer->lockSocket(0);
@@ -259,7 +259,7 @@ class SubtractNodeType : public NodeType
 public:
 	void execute(NodeSocketReader* reader, NodeSocketWriter* writer) override
 	{
-		qDebug() << "Executing `Subtract` node";
+		qDebug() << "Executing 'Subtract' node";
 		const cv::Mat& src1 = reader->readSocket(0);
 		const cv::Mat& src2 = reader->readSocket(1);
 		cv::Mat& dst = writer->lockSocket(0);
@@ -297,7 +297,7 @@ class NegateNodeType : public NodeType
 public:
 	void execute(NodeSocketReader* reader, NodeSocketWriter* writer) override
 	{
-		qDebug() << "Executing `Negate` node";
+		qDebug() << "Executing 'Negate' node";
 		const cv::Mat& src = reader->readSocket(0);
 		cv::Mat& dst = writer->lockSocket(0);
 
@@ -348,7 +348,7 @@ public:
 
 	void execute(NodeSocketReader* reader, NodeSocketWriter* writer) override
 	{
-		qDebug() << "Executing `Binarization` node";
+		qDebug() << "Executing 'Binarization' node";
 
 		const cv::Mat& src = reader->readSocket(0);
 		cv::Mat& dst = writer->lockSocket(0);
@@ -437,7 +437,7 @@ public:
 
 	void execute(NodeSocketReader* reader, NodeSocketWriter* writer) override
 	{
-		qDebug() << "Executing `Morphology` node";
+		qDebug() << "Executing 'Morphology' node";
 
 		const cv::Mat& src = reader->readSocket(0);
 		cv::Mat& dst = writer->lockSocket(0);
