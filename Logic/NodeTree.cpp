@@ -4,11 +4,11 @@
 #include "NodeLink.h"
 #include "NodeSystem.h"
 
-/// xXx: Change this to some neat logging system
-#include <iostream>
+#include "Common/StlUtils.h"
 
 NodeTree::NodeTree(NodeSystem* nodeSystem)
 	: _nodeSystem(nodeSystem)
+	, _executeListDirty(false)
 {
 }
 
@@ -25,47 +25,64 @@ void NodeTree::clear()
 	_recycledIDs.clear();
 	_taggedNodesID.clear();
 	_links.clear();
+	_executeList.clear();
 	_nodeNameToNodeID.clear();
+	_executeListDirty = false;
 }
 
-std::vector<NodeID> NodeTree::step()
+void NodeTree::tagNode(NodeID nodeID)
 {
+	auto f = std::find(_taggedNodesID.begin(), _taggedNodesID.end(), nodeID);
+	if(f == _taggedNodesID.end())
+	{
+		_taggedNodesID.push_back(nodeID);
+		_executeListDirty = true;
+	}
+}
+
+void NodeTree::untagNode(NodeID nodeID)
+{
+	if(stlu::remove_value(&_taggedNodesID, nodeID))
+	{
+		_executeListDirty = true;
+	}
+}
+
+void NodeTree::prepareList()
+{
+	if(!_executeListDirty)
+		return;
+	_executeList.clear();
+
 	// stable_sort doesn't touch already sorted items (?)
 	//std::sort(std::begin(links), std::end(links));
 	std::stable_sort(std::begin(_links), std::end(_links));
-
-	/// xXx: remove duplicates? or just dont allow to create it?
-
-	// Build execution list
-	std::vector<NodeID> execList;
 
 	for(NodeID nodeID : _taggedNodesID)
 	{
 		if(!validateNode(nodeID))
 			continue;
 
-		if(std::find(execList.begin(), execList.end(), nodeID) == execList.end())
+		if(!stlu::contains_value(_executeList, nodeID))
 		{
-			addToExecuteList(execList, nodeID);
-			traverseRecurs(execList, nodeID);
+			addToExecuteList(_executeList, nodeID);
+			traverseRecurs(_executeList, nodeID);
 		}		
 	}
 
-   /// -------------------------------------------------------
-	/// DEBUG
-	std::cout << "[NodeTree:] NodeID execution list: ";
-	for(NodeID nodeID : execList)
-	{
-		std::cout << nodeID << " ";
-	}
-	std::cout << "\n";
-	/// -------------------------------------------------------
+	_executeListDirty = false;
+}
+
+void NodeTree::execute()
+{
+	if(_executeListDirty)
+		prepareList();
 
 	NodeSocketReader reader(this);
 	NodeSocketWriter writer;
 
 	// Traverse through just-built exec list and process each node
-	for(NodeID nodeID : execList)
+	for(NodeID nodeID : _executeList)
 	{
 		auto& nodeRef = _nodes[nodeID];
 
@@ -73,30 +90,24 @@ std::vector<NodeID> NodeTree::step()
 		nodeRef.execute(&reader, &writer);
 	}
 
+	// Clean
 	_taggedNodesID.clear();
-
-	return execList;
+	// We allow for getting executeList after execute() has been called
+	_executeListDirty = true;
 }
 
-void NodeTree::tagNode(NodeID nodeID, ETagReason reason)
+std::vector<NodeID> NodeTree::executeList() const
 {
-	// TODO
-	(void) reason;
-
-	if(std::find(_taggedNodesID.begin(), 
-	        _taggedNodesID.end(), nodeID) == _taggedNodesID.end())
-	{
-		_taggedNodesID.push_back(nodeID);
-	}
+	return _executeList;
 }
 
 NodeID NodeTree::createNode(NodeTypeID typeID, const std::string& name)
 {
-	// Check if the given name is unique
-	if(_nodeNameToNodeID.find(name) != _nodeNameToNodeID.end())
+	if(!_nodeSystem)
 		return InvalidNodeID;
 
-	if(!_nodeSystem)
+	// Check if the given name is unique
+	if(_nodeNameToNodeID.find(name) != _nodeNameToNodeID.end())
 		return InvalidNodeID;
 
 	// Allocate NodeID
@@ -116,6 +127,9 @@ NodeID NodeTree::createNode(NodeTypeID typeID, const std::string& name)
 	_nodes[id] = Node(std::move(nodeType), name, typeID);
 	// Add the pair <node name, node ID> to hash map
 	_nodeNameToNodeID.insert(std::make_pair(name, id));
+	// Tag it for next execution
+	tagNode(id);
+
 	return id;
 }
 
@@ -132,9 +146,20 @@ bool NodeTree::removeNode(NodeID nodeID)
 			return nodeLink.fromNode == nodeID ||
 			       nodeLink.toNode   == nodeID;
 		});
-	/// xXx: tag affected nodes?
+
+	// Tag nodes that are directly connected to the removed node
+	for(auto it = removeFirstNodeLink; it != std::end(_links); ++it)
+	{
+		if(it->fromNode == nodeID)
+		{
+			tagNode(it->toNode);
+		}
+	}
+
+	// Remove all links connected to the removed node
 	_links.erase(removeFirstNodeLink, std::end(_links));
 
+	// Finally remove the node
 	deallocateNodeID(nodeID);
 
 	return true;
@@ -154,21 +179,21 @@ bool NodeTree::linkNodes(SocketAddress from, SocketAddress to)
 	if(!validateLink(from, to))
 		return false;
 
-	// Check if we don't try to link input socket with more than one output
+	// Check if we are not trying to link input socket with more than one output
 	for(size_t i = 0; i < _links.size(); ++i)
 	{
 		auto& link = _links[i];
 
 		if(link.toNode == to.node &&
-		   link.toSocket == to.socket)
+			link.toSocket == to.socket)
 		{
 			return false;
 		}
 	}
 
 	_links.emplace_back(NodeLink(from, to));
-
-	/// xXx: tag affected nodes?
+	// tag affected node
+	tagNode(to.node);
 
 	return true;
 }
@@ -188,9 +213,13 @@ bool NodeTree::unlinkNodes(SocketAddress from, SocketAddress to)
 
 	if(iter != std::end(_links))
 	{
+		// Need to store ID before erase() invalidates iterator
+		NodeID nodeID = iter->toNode;
+
 		_links.erase(iter);
 
-		/// xXx: tag affected nodes?
+		// tag affected node
+		tagNode(nodeID);
 
 		return true;
 	}
@@ -269,7 +298,7 @@ const std::string& NodeTree::nodeTypeName(NodeID nodeID) const
 
 SocketAddress NodeTree::connectedFrom(SocketAddress iSocketAddr) const
 {
-	// This function does not rely on a assumption that a links are sorted
+	// This function does not rely on a assumption that links are sorted
 	SocketAddress ret(InvalidNodeID, InvalidSocketID, false);
 
 	// ... and only works when addr points to input socket
@@ -294,7 +323,7 @@ SocketAddress NodeTree::connectedFrom(SocketAddress iSocketAddr) const
 const cv::Mat& NodeTree::outputSocket(NodeID nodeID, SocketID socketID) const
 {
 	if(!validateNode(nodeID))
-		/// xXx: To throw or not to throw ?
+		/// TODO: To throw or not to throw ?
 		throw std::runtime_error("node validation failed");
 
 	// outputSocket verifies socketID
@@ -304,7 +333,7 @@ const cv::Mat& NodeTree::outputSocket(NodeID nodeID, SocketID socketID) const
 const cv::Mat& NodeTree::inputSocket(NodeID nodeID, SocketID socketID) const
 {
 	if(!validateNode(nodeID))
-		/// xXx: To throw or not to throw ?
+		/// TODO: To throw or not to throw ?
 		throw std::runtime_error("node validation failed");
 
 	SocketAddress outputAddr = connectedFrom(
@@ -377,6 +406,8 @@ void NodeTree::deallocateNodeID(NodeID id)
 
 	// Add NodeID to recycled ones
 	_recycledIDs.push_back(id);
+
+	untagNode(id);
 }
 
 size_t NodeTree::firstOutputLink(NodeID fromNode,

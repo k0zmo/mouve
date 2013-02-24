@@ -4,16 +4,6 @@
 #include "Node.h"
 #include "NodeLink.h"
 
-/// TODO - enum class
-/// TODO - uwzglednic auto/manualny refresh
-enum ETagReason
-{
-	Reason_Unspecified,
-	Reason_NewFrame,
-	Reason_AttributeChanged,
-	Reason_ConnectionChanged
-};
-
 class MOUVE_LOGIC_EXPORT NodeTree
 {
 	Q_DISABLE_COPY(NodeTree)
@@ -22,9 +12,13 @@ public:
 	~NodeTree();
 
 	void clear();
-	std::vector<NodeID> step();
 
-	void tagNode(NodeID nodeID, ETagReason reason = Reason_Unspecified);
+	void tagNode(NodeID nodeID);
+	void untagNode(NodeID nodeID);
+	void prepareList();
+	void execute();
+
+	std::vector<NodeID> executeList() const;
 
 	NodeID createNode(NodeTypeID typeID, const std::string& name);
 	bool removeNode(NodeID);
@@ -75,8 +69,10 @@ private:
 	std::vector<NodeID> _recycledIDs;
 	std::vector<NodeID> _taggedNodesID;
 	std::vector<NodeLink> _links;
+	std::vector<NodeID> _executeList;
 	std::unordered_map<std::string, NodeID> _nodeNameToNodeID;
 	NodeSystem* _nodeSystem;
+	bool _executeListDirty;
 
 private:
 	// Interfaces implementations

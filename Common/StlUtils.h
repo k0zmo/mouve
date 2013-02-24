@@ -13,19 +13,24 @@ namespace stlu
 
 	// Removes (all) items that satisfy given predicate from a generic container
 	template <class Container, class Predicate>
-	inline void remove_pred(Container* container, Predicate pred)
+	inline bool remove_pred(Container* container, Predicate pred)
 	{
-		container->erase(
-			std::remove_if(container->begin(), container->end(), pred),
-			container->end());
+		auto it = std::remove_if(container->begin(), container->end(), pred);
+		if(it != container->end())
+		{
+			container->erase(it, container->end());
+			return true;
+		}
+
+		return false;
 	}
 
 	// Removes (all) items of given value from a container
 	template <class Container>
-	inline void remove_value(Container* container,
+	inline bool remove_value(Container* container,
 	                         const typename Container::value_type& vt)
 	{
-		remove_pred(container,
+		return remove_pred(container,
 			[&](decltype(vt) it)
 			{
 				return vt == it;
@@ -141,10 +146,18 @@ namespace stlu
 	}
 
 	template <class Container, class Pred>
-	inline bool exists(const Container& container, Pred pred)
+	inline bool contains_pred(const Container& container, Pred pred)
 	{
-		return find_if(container.begin(), container.end(), pred)
+		return std::find_if(container.begin(), container.end(), pred)
 			!= container.end();
+	}
+
+	template <class Container>
+	inline bool contains_value(const Container& container, 
+		const typename Container::value_type& vt)
+	{
+		return std::find(std::begin(container), std::end(container), vt) 
+			!= std::end(container);
 	}
 
 	template <class Map>

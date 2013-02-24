@@ -29,6 +29,10 @@ private:
 
 	void deleteNode(NodeView* nodeView);
 
+	/// NEW
+	void setupUi();
+	bool isAutoRefresh();
+
 private slots:
 	void draggingLinkDrop(QGraphicsWidget* from, QGraphicsWidget* to);
 	void draggingLinkStart(QGraphicsWidget* from);
@@ -37,7 +41,6 @@ private slots:
 	void contextMenu(const QPoint& globalPos, const QPointF& scenePos);
 	void keyPress(QKeyEvent* event);
 
-	void executeClicked();
 	void mouseDoubleClickNodeView(NodeView* nodeView);
 
 	/// NEW
@@ -45,27 +48,37 @@ private slots:
 	void changeProperty(NodeID nodeID, PropertyID propID, 
 		const QVariant& newValue);
 
+	void singleStep();
+	void autoRefresh();
+
+	void play();
+	void pause();
+	void stop();
+
 private:
+	/// TODO: QHash
 	QList<NodeLinkView*> _linkViews;
 	QHash<NodeID, NodeView*> _nodeViews;
 
 	NodeView* _previewSelectedNodeView;
-
 	NodeScene* _nodeScene;
-
 	PropertyManager* _propManager;
 
 	std::unique_ptr<NodeSystem> _nodeSystem;
 	std::unique_ptr<NodeTree> _nodeTree;
-	/// xXx: QList< std::unique_ptr<NodeTree> > _nodeTrees;
 
+	// Temporary
 	QList<QAction*> _addNodesActions;
 
 	Ui::MainWindow* _ui;
 
 private:
 	void showErrorMessage(const QString& message);
-	void updatePreview(const std::vector<NodeID>& executedNodes);
+
+	/// NEW
+	void processAutoRefresh();
+	bool shouldUpdatePreview(const std::vector<NodeID>& executedNodes);
+	void updatePreview();
 };
 
 #define gC Controller::instancePtr()
