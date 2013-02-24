@@ -72,7 +72,7 @@
     <bool>true</bool>
    </property>
    <property name="toolButtonStyle">
-    <enum>Qt::ToolButtonIconOnly</enum>
+    <enum>Qt::ToolButtonFollowStyle</enum>
    </property>
    <property name="floatable">
     <bool>true</bool>
@@ -83,7 +83,12 @@
    <attribute name="toolBarBreak">
     <bool>false</bool>
    </attribute>
-   <addaction name="actionExecute"/>
+   <addaction name="actionSingleStep"/>
+   <addaction name="actionAutoRefresh"/>
+   <addaction name="separator"/>
+   <addaction name="actionPlay"/>
+   <addaction name="actionPause"/>
+   <addaction name="actionStop"/>
   </widget>
   <widget class="QDockWidget" name="propertiesDockWidget">
    <property name="windowTitle">
@@ -219,21 +224,76 @@
     </layout>
    </widget>
   </widget>
-  <action name="actionExecute">
+  <action name="actionPlay">
    <property name="icon">
-    <iconset resource="../../../Qt/5.0.1/src/widgets/styles/qstyle.qrc">
-     <normaloff>:/qt-project.org/styles/commonstyle/images/media-play-32.png</normaloff>:/qt-project.org/styles/commonstyle/images/media-play-32.png</iconset>
+    <iconset resource="Editor.qrc">
+     <normaloff>:/images/button-play.png</normaloff>:/images/button-play.png</iconset>
    </property>
    <property name="text">
-    <string>Execute</string>
+    <string>Play</string>
    </property>
-   <property name="shortcut">
-    <string>Ctrl+R</string>
+   <property name="toolTip">
+    <string>Play</string>
    </property>
   </action>
   <action name="actionQuit">
+   <property name="icon">
+    <iconset resource="Editor.qrc">
+     <normaloff>:/images/button-home.png</normaloff>:/images/button-home.png</iconset>
+   </property>
    <property name="text">
     <string>Quit</string>
+   </property>
+  </action>
+  <action name="actionSingleStep">
+   <property name="icon">
+    <iconset resource="Editor.qrc">
+     <normaloff>:/images/button-end.png</normaloff>:/images/button-end.png</iconset>
+   </property>
+   <property name="text">
+    <string>Single step</string>
+   </property>
+   <property name="toolTip">
+    <string>Step</string>
+   </property>
+  </action>
+  <action name="actionPause">
+   <property name="icon">
+    <iconset resource="Editor.qrc">
+     <normaloff>:/images/button-pause.png</normaloff>:/images/button-pause.png</iconset>
+   </property>
+   <property name="text">
+    <string>Pause</string>
+   </property>
+   <property name="toolTip">
+    <string>Pause</string>
+   </property>
+  </action>
+  <action name="actionStop">
+   <property name="icon">
+    <iconset resource="Editor.qrc">
+     <normaloff>:/images/button-stop.png</normaloff>:/images/button-stop.png</iconset>
+   </property>
+   <property name="text">
+    <string>Stop</string>
+   </property>
+   <property name="toolTip">
+    <string>Stop</string>
+   </property>
+  </action>
+  <action name="actionAutoRefresh">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="Editor.qrc">
+     <normaloff>:/images/button-synchronize.png</normaloff>:/images/button-synchronize.png</iconset>
+   </property>
+   <property name="text">
+    <string>Auto Refresh</string>
+   </property>
+   <property name="toolTip">
+    <string>Auto Refresh</string>
    </property>
   </action>
  </widget>
@@ -246,7 +306,7 @@
   </customwidget>
  </customwidgets>
  <resources>
-  <include location="../../../Qt/5.0.1/src/widgets/styles/qstyle.qrc"/>
+  <include location="Editor.qrc"/>
  </resources>
  <connections/>
 </ui>

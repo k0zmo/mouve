@@ -143,6 +143,9 @@
     <ClCompile Include="LogView.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="GeneratedFiles\qrc_Editor.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="Controller.h">
@@ -195,6 +198,9 @@
     </CustomBuild>
     <CustomBuild Include="PropertyModel.h">
       <Filter>Header Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Editor.qrc">
+      <Filter>Resource Files</Filter>
     </CustomBuild>
   </ItemGroup>
   <ItemGroup>
