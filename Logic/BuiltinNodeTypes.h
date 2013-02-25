@@ -64,7 +64,7 @@ class GaussianBlurNodeType : public NodeType
 {
 public:
 	GaussianBlurNodeType()
-		: kernelSize(5)
+		: kernelRadius(2)
 		, sigma(10.0)
 	{
 	}
@@ -74,18 +74,8 @@ public:
 		switch(propId)
 		{
 		case ID_KernelSize:
-			{
-				int ksize = newValue.toInt();
-				if(ksize >=3 && (ksize & 1) == 1)
-				{
-					kernelSize = ksize;
-					return true;
-				}
-				else
-				{
-					return false;
-				}
-			}			
+			kernelRadius = newValue.toInt();
+			return true;
 		case ID_Sigma:
 			sigma = newValue.toDouble();
 			return true;
@@ -101,7 +91,7 @@ public:
 		const cv::Mat& input = reader->readSocket(0);
 		cv::Mat& output = writer->lockSocket(0);
 
-		cv::GaussianBlur(input, output, cv::Size(kernelSize,kernelSize), sigma, 0);
+		cv::GaussianBlur(input, output, cv::Size(kernelRadius*2+1,kernelRadius*2+1), sigma, 0);
 	}
 
 	void configuration(NodeConfig& nodeConfig) const override
@@ -115,7 +105,8 @@ public:
 			{ "", "", "" }
 		};
 		static const PropertyConfig prop_config[] = {
-			{ EPropertyType::Integer, "Kernel size", QVariant(kernelSize), "min=3;max=21;step=2" },
+			// TODO: In future we might use slider
+			{ EPropertyType::Integer, "Kernel radius", QVariant(kernelRadius), "min=1;max=20;step=1" },
 			{ EPropertyType::Double, "Sigma", QVariant(sigma), "min=0.0" },
 			{ EPropertyType::Unknown, "", QVariant(), "" }
 		};
@@ -127,7 +118,7 @@ public:
 	}
 
 private:
-	int kernelSize;
+	int kernelRadius;
 	double sigma;
 
 private:
