@@ -390,7 +390,174 @@ private:
 
 #include "CV.h"
 
+class StructuringElementNodeType : public NodeType
+{
+public:
+
+	StructuringElementNodeType()
+		: se(cvu::EStructuringElementType::Rectangle)
+		, xradius(1)
+		, yradius(1)
+		, rotation(0)
+	{
+	}
+
+	bool setProperty(PropertyID propId, const QVariant& newValue) override
+	{
+		switch(propId)
+		{
+		case ID_StructuringElementType:
+			se = cvu::EStructuringElementType(newValue.toInt());
+			return true;
+		case ID_XRadius:
+			xradius = newValue.toInt();
+			return true;
+		case ID_YRadius:
+			yradius = newValue.toInt();
+			return true;
+		case ID_Rotation:
+			rotation = newValue.toInt();
+			return true;
+		}
+
+		return false;
+	}
+
+	void execute(NodeSocketReader* reader, NodeSocketWriter* writer) override
+	{
+		qDebug() << "Executing 'Structuring element' node";
+
+		cv::Mat& kernel = writer->lockSocket(0);
+
+		if(xradius == 0 || yradius == 0)
+		{
+			kernel = cv::Mat();
+			return;
+		}
+
+		kernel = cvu::standardStructuringElement(xradius, yradius, se, rotation);
+	}
+
+	void configuration(NodeConfig& nodeConfig) const override
+	{
+		static const OutputSocketConfig out_config[] = {
+			{ "structuringElement", "Structuring element", "" },
+			{ "", "", "" }
+		};
+		static const PropertyConfig prop_config[] = {
+			{ EPropertyType::Enum, "SE shape", 
+				QVariant(QStringList() << "Rectangle" << "Ellipse" << "Cross"), "" },
+			{ EPropertyType::Integer, "Horizontal radius", QVariant(xradius), "min=1;max=75" },
+			{ EPropertyType::Integer, "Vertical radius", QVariant(yradius), "min=1;max=75" },
+			{ EPropertyType::Integer, "Rotation", QVariant(rotation), "min=0;max=359" },
+			{ EPropertyType::Unknown, "", QVariant(), "" }
+		};
+
+		nodeConfig.description = "Generates a structuring element for a morphology "
+			"operation with a given parameters describing its shape, size and rotation";
+		nodeConfig.pOutputSockets = out_config;
+		nodeConfig.pProperties = prop_config;
+	}
+
+private:
+	enum EPropertyID
+	{
+		ID_StructuringElementType,
+		ID_XRadius,
+		ID_YRadius,
+		ID_Rotation
+	};
+
+private:
+	cvu::EStructuringElementType se;
+	int xradius;
+	int yradius;
+	int rotation;
+};
+
 class MorphologyNodeType : public NodeType
+{
+public:
+	MorphologyNodeType()
+		: op(Erode)
+	{
+	}
+
+	bool setProperty(PropertyID propId, const QVariant& newValue) override
+	{
+		switch(propId)
+		{
+		case ID_Operation:
+			op = EMorphologyOperation(newValue.toInt());
+			return true;
+		}
+
+		return false;
+	}
+
+	void execute(NodeSocketReader* reader, NodeSocketWriter* writer) override
+	{
+		qDebug() << "Executing 'Morphology' node";
+
+		const cv::Mat& src = reader->readSocket(0);
+		const cv::Mat& se = reader->readSocket(1);
+		cv::Mat& dst = writer->lockSocket(0);
+
+		if(se.cols == 0 || se.rows == 0 || src.rows == 0 || src.cols == 0)
+		{
+			dst = cv::Mat();
+			return;
+		}
+		
+		cv::morphologyEx(src, dst, op, se);
+	}
+
+	void configuration(NodeConfig& nodeConfig) const override
+	{
+		static const InputSocketConfig in_config[] = {
+			{ "source", "Source", "" },
+			{ "source", "Structuring element", "" },
+			{ "", "", "" }
+		};
+		static const OutputSocketConfig out_config[] = {
+			{ "output", "Output", "" },
+			{ "", "", "" }
+		};
+		static const PropertyConfig prop_config[] = {
+			{ EPropertyType::Enum, "Operation type", 
+			QVariant(QStringList() << "Erode" << "Dilate" << "Open" << 
+			"Close" << "Gradient" << "Top Hat" << "Black Hat"),
+			"" },
+			{ EPropertyType::Unknown, "", QVariant(), "" }
+		};
+
+		nodeConfig.description = "Performs a morphology operation on a given image";
+		nodeConfig.pInputSockets = in_config;
+		nodeConfig.pOutputSockets = out_config;
+		nodeConfig.pProperties = prop_config;
+	}
+
+private:
+	enum EMorphologyOperation
+	{
+		Erode    = cv::MORPH_ERODE,
+		Dilate   = cv::MORPH_DILATE,
+		Open     = cv::MORPH_OPEN,
+		Close    = cv::MORPH_CLOSE,
+		Gradient = cv::MORPH_GRADIENT,
+		TopHat   = cv::MORPH_TOPHAT,
+		BlackHat = cv::MORPH_BLACKHAT
+	};
+
+	enum EPropertyID
+	{
+		ID_Operation
+	};
+
+	EMorphologyOperation op;
+};
+
+/*class MorphologyNodeType : public NodeType
 {
 public:
 	MorphologyNodeType()
@@ -511,11 +678,13 @@ private:
 	int yradius;
 	int rotation;
 };
+*/
 
 REGISTER_NODE("Negate", NegateNodeType)
 REGISTER_NODE("Subtract", SubtractNodeType)
 REGISTER_NODE("Add", AddNodeType)
 REGISTER_NODE("Binarization", BinarizationNodeType)
+REGISTER_NODE("Structuring element", StructuringElementNodeType)
 REGISTER_NODE("Morphology op.", MorphologyNodeType)
 REGISTER_NODE("Canny edge detector", CannyEdgeDetectorNodeType)
 REGISTER_NODE("Gaussian blur", GaussianBlurNodeType)
