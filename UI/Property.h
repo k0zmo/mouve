@@ -150,11 +150,18 @@ public:
 	explicit FilePathProperty(const QString& name, 
 					 const QString& initialPath = QString());
 
+	QVariant value(int role = Qt::UserRole) const override;
+	bool setValue(const QVariant& value, 
+		int role = Qt::UserRole) override;
+
 	QWidget* createEditor(QWidget* parent,
 		const QStyleOptionViewItem& option) override;
 	bool setEditorData(QWidget* editor,
 		const QVariant& data) override;
 	QVariant editorData(QWidget* editor) override;
+
+private:
+	QFileInfo _fileInfo;
 };
 
 //

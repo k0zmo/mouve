@@ -147,7 +147,7 @@ void Controller::setupUi()
 
 	// Init properties window
 	PropertyDelegate* delegate = new PropertyDelegate(this);
-	delegate->setImmediateUpdate(true);
+	delegate->setImmediateUpdate(false);
 	_ui->propertiesTreeView->setItemDelegateForColumn(1, delegate);
 	_ui->propertiesTreeView->header()->setSectionResizeMode(
 		QHeaderView::ResizeToContents);
@@ -543,6 +543,8 @@ void Controller::changeProperty(NodeID nodeID,
 								PropertyID propID, 
 								const QVariant& newValue)
 {
+	qDebug() << "[INFO] Property changed! details: nodeID:" << nodeID << ", propID:" << propID << "newValue:" << newValue;
+
 	// 'System' property
 	if(propID < 0)
 	{
@@ -596,7 +598,9 @@ void Controller::singleStep()
 
 void Controller::autoRefresh()
 {
-	qDebug() << isAutoRefresh();
+	processAutoRefresh();
+
+	// TODO: change itemdelegate updateimmediate
 }
 
 void Controller::play()

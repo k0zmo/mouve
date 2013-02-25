@@ -59,7 +59,7 @@ PropertyCheckBox::PropertyCheckBox(QWidget* parent)
 	});
 
 	/// TODO: This causes pretty weird behaviour on Windows 
-	//setFocusProxy(_checkBox);
+	setFocusProxy(_checkBox);
 }
 
 void PropertyCheckBox::mousePressEvent(QMouseEvent* event)
@@ -74,7 +74,7 @@ void PropertyCheckBox::mousePressEvent(QMouseEvent* event)
 		QWidget::mousePressEvent(event);
 	}
 }
-
+/*
 ShortenTextLineEdit::ShortenTextLineEdit(QWidget* parent)
 	: QLineEdit(parent)
 	, _drawShortenMessage(true)
@@ -207,21 +207,25 @@ FileRequester::FileRequester(QWidget* parent)
 	, _fileNameLineEdit(new ShortenTextLineEdit(this))
 	, _openButton(new QToolButton(this))
 {
-	QHBoxLayout* layout = new QHBoxLayout(this);
-
-	setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed, QSizePolicy::LineEdit));
-
 	_openButton->setIcon(QIcon::fromTheme("document-open",
 		QIcon(":/qt-project.org/styles/commonstyle/"
-		"images/standardbutton-open-16.png")));
-
-	layout->addWidget(_fileNameLineEdit, 1);
-	layout->addWidget(_openButton);
-	layout->setSpacing(3);
+			  "images/standardbutton-open-16.png")));
+	_openButton->setAutoRaise(true);
+	_openButton->setIconSize(QSize(16,16));
+	_openButton->setToolButtonStyle(Qt::ToolButtonIconOnly);;
+	_openButton->setSizePolicy(QSizePolicy(QSizePolicy::Fixed, QSizePolicy::MinimumExpanding));;
 
 	connect(_openButton, &QToolButton::clicked,
-		this, &FileRequester::openFileDialog);
-	_openButton->setAutoRaise(true);
+			this, &FileRequester::openFileDialog);   
+
+	QHBoxLayout* layout = new QHBoxLayout(this);
+	layout->addWidget(_fileNameLineEdit, 1);
+	layout->addWidget(_openButton);
+	layout->setSpacing(0);
+	layout->setContentsMargins(0, 0, 0, 0);
+
+	setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed, QSizePolicy::LineEdit));
+	setFocusProxy(_fileNameLineEdit);
 }
 
 void FileRequester::openFileDialog()
@@ -241,7 +245,57 @@ void FileRequester::setFilePath(const QString& path)
 {
 	_fileNameLineEdit->setText(path);
 }
+*/
 
+FileRequester::FileRequester(QWidget* parent)
+	: QWidget(parent)
+	, _fileNameLineEdit(new QLineEdit(this))
+	, _openButton(new QToolButton(this))
+{
+	_openButton->setSizePolicy(QSizePolicy(QSizePolicy::Fixed, QSizePolicy::MinimumExpanding));;
+	_openButton->setText("...");
+
+	connect(_openButton, &QToolButton::clicked,
+		this, &FileRequester::openFileDialog); 
+
+	QHBoxLayout* layout = new QHBoxLayout(this);
+	layout->addWidget(_fileNameLineEdit, 1);
+	layout->addWidget(_openButton);
+	layout->setSpacing(0);
+	layout->setContentsMargins(0, 0, 0, 0);
+
+	setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed, QSizePolicy::LineEdit));
+	setFocusProxy(_fileNameLineEdit);
+}
+
+QString FileRequester::text() const
+{
+	return _fileNameLineEdit->text();
+}
+
+void FileRequester::blockLineEditSignals(bool block)
+{
+	_fileNameLineEdit->blockSignals(block);
+}
+
+void FileRequester::openFileDialog()
+{
+	QString path = QFileDialog::getOpenFileName(this, "Choose a file",
+		QFileInfo(text()).absolutePath(), QString());
+
+	if(!path.isEmpty())
+	{
+		_fileNameLineEdit->setText(path);
+		_fileNameLineEdit->setFocus();
+	}
+}
+
+void FileRequester::setText(const QString& text)
+{
+	_fileNameLineEdit->setText(text);
+}
+
+/*
 LineEditReset::LineEditReset(QWidget* parent)
 	: QLineEdit(parent)
 	, _toolButton(new QToolButton(this))
@@ -279,3 +333,4 @@ void LineEditReset::updateCloseButton(const QString& text)
 {
 	_toolButton->setVisible(!text.isEmpty());
 }
+*/

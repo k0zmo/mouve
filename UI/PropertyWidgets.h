@@ -1,3 +1,4 @@
+
 #pragma once
 
 #include "Prerequisites.h"
@@ -50,20 +51,21 @@ public:
 	explicit PropertyCheckBox(QWidget* parent = nullptr);
 
 	bool isChecked() const;
-	void setChecked(bool c);
-
 	void blockCheckBoxSignals(bool block);
 
-protected:
-	void mousePressEvent(QMouseEvent* event) override;
+public slots:
+	void setChecked(bool c);
 
 signals:
 	void commitData();
 
+protected:
+	void mousePressEvent(QMouseEvent* event) override;
+
 private:
 	QCheckBox* _checkBox;
 };
-
+/*
 class ShortenTextLineEdit : public QLineEdit
 {
 	Q_OBJECT
@@ -110,7 +112,34 @@ private:
 	ShortenTextLineEdit* _fileNameLineEdit;
 	QToolButton* _openButton;
 };
+*/
 
+class FileRequester : public QWidget
+{
+	Q_OBJECT
+public :
+	explicit FileRequester(QWidget* parent = nullptr);
+
+	QString text() const;
+
+	void blockLineEditSignals(bool block);
+	
+	/// TODO:
+	/// filter
+	/// filemod
+
+public slots:
+	void openFileDialog();
+	void setText(const QString& text);
+
+private:
+	QLineEdit* _fileNameLineEdit;
+	QToolButton* _openButton;
+};
+
+
+/// TODO: dodac widgeta, ktory opakowuje innego i dostawia z prawej strony tool buttona do resetowania
+/*
 class LineEditReset : public QLineEdit
 {
 	Q_OBJECT
@@ -126,6 +155,7 @@ private slots:
 private: 
 	QToolButton* _toolButton;
 };
+*/
 
 inline bool PropertyCheckBox::isChecked() const
 { return _checkBox->isChecked(); }
@@ -136,6 +166,7 @@ inline void PropertyCheckBox::setChecked(bool c)
 inline void PropertyCheckBox::blockCheckBoxSignals(bool block)
 { _checkBox->blockSignals(block); }
 
+/*
 inline QFileInfo ShortenTextLineEdit::fileInfo() const
 { return _fileInfo; }
 
@@ -144,3 +175,4 @@ inline QFileInfo FileRequester::fileInfo() const
 
 inline QString FileRequester::filePath() const
 { return fileInfo().filePath(); }
+*/

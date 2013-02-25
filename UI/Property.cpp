@@ -160,9 +160,6 @@ bool EnumProperty::setValue(const QVariant& value, int role)
 				Q_ASSERT(index >= 0);
 				Q_ASSERT(index < _valueList.count());
 
-				// Teraz sygnal jest wyzwalany w momencie out of focus'a
-				qDebug() << "[TODO] New value:" << index << _valueList[index];
-
 				_value = index;
 
 				return true;
@@ -278,11 +275,7 @@ BooleanProperty::BooleanProperty(const QString& name, bool value)
 QWidget* BooleanProperty::createEditor(QWidget* parent,
 									   const QStyleOptionViewItem& option)
 {
-	Q_UNUSED(option);
-
-	PropertyCheckBox* editor = new PropertyCheckBox(parent);
-
-	return editor;
+	return new PropertyCheckBox(parent);
 }
 
 bool BooleanProperty::setEditorData(QWidget* editor,
@@ -341,50 +334,86 @@ bool BooleanProperty::paint(QPainter* painter,
 
 FilePathProperty::FilePathProperty(const QString& name,
 								   const QString& initialPath)
-	: Property(name, QVariant(initialPath), EPropertyType::Filepath, nullptr)
+	: Property(name, QVariant(QFileInfo(initialPath).absoluteFilePath()), 
+		EPropertyType::Filepath, nullptr)
+	, _fileInfo(initialPath)
 {
+}
+
+QVariant FilePathProperty::value(int role) const
+{
+	if(role == Qt::UserRole || role == Qt::EditRole)
+	{
+		// Returns full path to a file
+		return Property::value(role).toString();
+	}
+	else
+	{
+		// For display role - returns just a file name
+		return _fileInfo.fileName();
+	}
+}
+
+bool FilePathProperty::setValue(const QVariant& value, int role)
+{
+	if(role == Qt::EditRole)
+	{
+		//qDebug() << Q_FUNC_INFO << value;
+
+		if(QMetaType::Type(value.type()) == QMetaType::QString)
+		{
+			QFileInfo tmpInfo = QFileInfo(value.toString());
+			if(tmpInfo != _fileInfo 
+				&& tmpInfo.exists())
+			{
+				_fileInfo = tmpInfo;
+				_value = _fileInfo.filePath();
+				return true;
+			}
+		}
+	}
+
+	return false;
 }
 
 QWidget* FilePathProperty::createEditor(QWidget* parent,
 										const QStyleOptionViewItem& option)
 {
-	//auto editor = new FileRequester(parent);
-	//auto editor = new ShortenTextLineEdit(parent);
-	//return editor;
-
-	//return nullptr;
-	return new QLineEdit(parent);
+	return new FileRequester(parent);
 }
 
 bool FilePathProperty::setEditorData(QWidget* editor,
 									 const QVariant& data)
 {
-	//FileRequester* editor_ = qobject_cast<FileRequester*>(editor);
+	FileRequester* editor_ = qobject_cast<FileRequester*>(editor);
 
-	//if(editor_ != nullptr)
-	//{
-	//    if(QMetaType::Type(data.type()) == QMetaType::QString)
-	//    {
-	//        // editor_->blockSignals(true);
-	//        editor_->setFilePath(data.toString());
-	//        // editor_->blockSignals(false);
+	if(editor_ != nullptr)
+	{
+		if(QMetaType::Type(data.type()) == QMetaType::QString)
+		{
+			//qDebug() << Q_FUNC_INFO << data.toString();
+			//editor_->setFilePath(data.toString());
 
-	//        return true;
-	//    }
-	//}
+			editor_->blockLineEditSignals(true);
+			editor_->setText(data.toString());
+			editor_->blockLineEditSignals(false);
+
+			return true;
+		}
+	}
 
 	return false;
 }
 
 QVariant FilePathProperty::editorData(QWidget* editor)
 {
-	//FileRequester* editor_ = qobject_cast<FileRequester*>(editor);
+	FileRequester* editor_ = qobject_cast<FileRequester*>(editor);
 
-	//if(editor_ != nullptr)
-	//{
-	//    qDebug() << editor_->filePath();
-	//    return editor_->filePath();
-	//}
+	if(editor_ != nullptr)
+	{
+		//qDebug() << Q_FUNC_INFO << editor_->text();
+		return editor_->text();
+	}
 
 	return QVariant();
 }
