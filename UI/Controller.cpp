@@ -378,7 +378,10 @@ void Controller::deleteNode(NodeView* nodeView)
 	_nodeScene->removeItem(nodeView);
 	_nodeViews.remove(nodeID);
 	if(_previewSelectedNodeView == nodeView)
+	{
 		_previewSelectedNodeView = nullptr;
+		updatePreview();
+	}
 	nodeView->deleteLater();
 
 	processAutoRefresh();
