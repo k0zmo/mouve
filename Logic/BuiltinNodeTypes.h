@@ -135,7 +135,6 @@ public:
 	CannyEdgeDetectorNodeType()
 		: threshold(10)
 		, ratio(3)
-		//, apertureSize(3)
 	{
 	}
 
@@ -152,7 +151,7 @@ public:
 			return;
 		}
 
-		cv::Canny(input, output, threshold, threshold*ratio, 3/*apertureSize*/);
+		cv::Canny(input, output, threshold, threshold*ratio, 3);
 	}
 
 	bool setProperty(PropertyID propId, const QVariant& newValue) override
@@ -181,9 +180,8 @@ public:
 			{ "", "", "" }
 		};
 		static const PropertyConfig prop_config[] = {
-			{ EPropertyType::Double, "Threshold", QVariant(threshold), "min=0.0;max=100.0" },
-			{ EPropertyType::Double, "Ratio", QVariant(ratio), "min=0.0" },
-			//{ EPropertyType::Integer, "Sobel operator size", QVariant(3), "min=1;step=2" },
+			{ EPropertyType::Double, "Threshold", QVariant(threshold), "min=0.0;max=100.0;decimals=3" },
+			{ EPropertyType::Double, "Ratio", QVariant(ratio), "min=0.0;decimals=3" },
 			{ EPropertyType::Unknown, "", QVariant(), "" }
 		};
 
@@ -196,14 +194,12 @@ public:
 private:
 	double threshold;
 	double ratio;
-	//int apertureSize;
 
 private:
 	enum EPropertyID
 	{
 		ID_Threshold,
 		ID_Ratio,
-		//ID_ApertureSize
 	};
 };
 
@@ -395,7 +391,7 @@ class StructuringElementNodeType : public NodeType
 public:
 
 	StructuringElementNodeType()
-		: se(cvu::EStructuringElementType::Rectangle)
+		: se(cvu::EStructuringElementType::Ellipse)
 		, xradius(1)
 		, yradius(1)
 		, rotation(0)
@@ -446,10 +442,10 @@ public:
 		};
 		static const PropertyConfig prop_config[] = {
 			{ EPropertyType::Enum, "SE shape", 
-				QVariant(QStringList() << "Rectangle" << "Ellipse" << "Cross"), "" },
-			{ EPropertyType::Integer, "Horizontal radius", QVariant(xradius), "min=1;max=75" },
-			{ EPropertyType::Integer, "Vertical radius", QVariant(yradius), "min=1;max=75" },
-			{ EPropertyType::Integer, "Rotation", QVariant(rotation), "min=0;max=359" },
+				QVariant(QStringList() << "Rectangle" << "Ellipse" << "Cross"), "index=1" },
+			{ EPropertyType::Integer, "Horizontal radius", QVariant(xradius), "min=1;max=50" },
+			{ EPropertyType::Integer, "Vertical radius", QVariant(yradius), "min=1;max=50" },
+			{ EPropertyType::Integer, "Rotation", QVariant(rotation), "min=0;max=359;wrap=true" },
 			{ EPropertyType::Unknown, "", QVariant(), "" }
 		};
 

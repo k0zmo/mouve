@@ -121,20 +121,23 @@ public :
 	explicit FileRequester(QWidget* parent = nullptr);
 
 	QString text() const;
+	QString filter() const;
 
 	void blockLineEditSignals(bool block);
 	
 	/// TODO:
-	/// filter
+	/// filter (DONE)
 	/// filemod
 
 public slots:
 	void openFileDialog();
 	void setText(const QString& text);
+	void setFilter(const QString& filter);
 
 private:
 	QLineEdit* _fileNameLineEdit;
 	QToolButton* _openButton;
+	QString _filter;
 };
 
 

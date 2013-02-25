@@ -251,6 +251,7 @@ FileRequester::FileRequester(QWidget* parent)
 	: QWidget(parent)
 	, _fileNameLineEdit(new QLineEdit(this))
 	, _openButton(new QToolButton(this))
+	, _filter()
 {
 	_openButton->setSizePolicy(QSizePolicy(QSizePolicy::Fixed, QSizePolicy::MinimumExpanding));;
 	_openButton->setText("...");
@@ -273,6 +274,11 @@ QString FileRequester::text() const
 	return _fileNameLineEdit->text();
 }
 
+QString FileRequester::filter() const
+{
+	return _filter;
+}
+
 void FileRequester::blockLineEditSignals(bool block)
 {
 	_fileNameLineEdit->blockSignals(block);
@@ -280,8 +286,9 @@ void FileRequester::blockLineEditSignals(bool block)
 
 void FileRequester::openFileDialog()
 {
+	/// TODO: filemod - existing, existings, read, write, etc...
 	QString path = QFileDialog::getOpenFileName(this, "Choose a file",
-		QFileInfo(text()).absolutePath(), QString());
+		QFileInfo(text()).absolutePath(), _filter);
 
 	if(!path.isEmpty())
 	{
@@ -294,6 +301,12 @@ void FileRequester::setText(const QString& text)
 {
 	_fileNameLineEdit->setText(text);
 }
+
+void FileRequester::setFilter(const QString& filter)
+{
+	_filter = filter;
+}
+
 
 /*
 LineEditReset::LineEditReset(QWidget* parent)

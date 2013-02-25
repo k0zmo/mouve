@@ -6,6 +6,50 @@
 
 #include "PropertyWidgets.h"
 
+template <typename T>
+bool tryConvert(const QString& str, T& value) 
+{ static_assert(false, "conversion doesn't exist"); return false; }
+
+
+template <> 
+bool tryConvert<int>(const QString& str, int& value)
+{
+	bool ok;
+	int v = str.toInt(&ok);
+	if(ok)
+		value = v;
+	return ok;
+}
+
+template <> 
+bool tryConvert<bool>(const QString& str, bool& value)
+{
+	QString lowerCase = str.toLower();
+	if(lowerCase == QStringLiteral("true")
+		|| lowerCase == QStringLiteral("1"))
+	{
+		value = true;
+		return true;
+	}
+	else if(lowerCase == QStringLiteral("false")
+		|| lowerCase == QStringLiteral("0"))
+	{
+		value = false;
+		return true;
+	}
+	return false;
+}
+
+template <>
+bool tryConvert<double>(const QString& str, double& value)
+{
+	bool ok;
+	double v = str.toDouble(&ok);
+	if(ok)
+		value = v;
+	return ok;
+}
+
 Property::Property(const QString& name,
 				   const QVariant& value,
 				   EPropertyType type,
@@ -77,6 +121,10 @@ int Property::childNumber() const
 
 DoubleProperty::DoubleProperty(const QString& name, double value)
 	: Property(name, QVariant(value), EPropertyType::Double, nullptr)
+	, _min(-std::numeric_limits<double>::max())
+	, _max(+std::numeric_limits<double>::max())
+	, _step(1.0)
+	, _decimals(2)
 {
 }
 
@@ -87,10 +135,10 @@ QWidget* DoubleProperty::createEditor(QWidget* parent,
 
 	PropertyDoubleSpinBox* editor = new PropertyDoubleSpinBox(parent);
 
-	editor->setDecimals(3);
-	editor->setMinimum(-100.0);
-	editor->setMaximum(100.0);
-	editor->setSingleStep(0.1);
+	editor->setMinimum(_min);
+	editor->setMaximum(_max);
+	editor->setSingleStep(_step);
+	editor->setDecimals(_decimals);
 
 	return editor;
 }
@@ -126,10 +174,28 @@ QVariant DoubleProperty::editorData(QWidget* editor)
 	return QVariant();
 }
 
+void DoubleProperty::setUiHints(const AttributeMap& map)
+{
+	AttributeMap::const_iterator it = map.begin();
+	while(it != map.end())
+	{
+		QString hintName = it.key();
+		if(hintName == QStringLiteral("min"))
+			tryConvert(it.value(), _min);
+		else if(hintName == QStringLiteral("max"))
+			tryConvert(it.value(), _max);
+		else if(hintName == QStringLiteral("step"))
+			tryConvert(it.value(), _step);
+		else if(hintName == QStringLiteral("decimals"))
+			tryConvert(it.value(), _decimals);
+
+		++it;
+	}
+}
+
 EnumProperty::EnumProperty(const QString& name, 
-						   const QStringList& valueList,
-						   int currentIndex)
-	: Property(name, QVariant(currentIndex), EPropertyType::Enum, nullptr)
+						   const QStringList& valueList)
+	: Property(name, QVariant(0), EPropertyType::Enum, nullptr)
 	, _valueList(valueList)
 {
 }
@@ -210,8 +276,28 @@ QVariant EnumProperty::editorData(QWidget* editor)
 	return QVariant();
 }
 
+void EnumProperty::setUiHints(const AttributeMap& map)
+{
+	AttributeMap::const_iterator it = map.begin();
+	while(it != map.end())
+	{
+		QString hintName = it.key();
+		if(hintName == QStringLiteral("index"))
+		{
+			int index = 0;
+			if(tryConvert(it.value(), index))
+				_value = index;
+		}
+		++it;
+	}
+}
+
 IntegerProperty::IntegerProperty(const QString& name, int value)
 	: Property(name, QVariant(value), EPropertyType::Integer, nullptr)
+	, _min(-std::numeric_limits<int>::max())
+	, _max(+std::numeric_limits<int>::max())
+	, _step(1)
+	, _wrap(false)
 {
 }
 
@@ -222,9 +308,10 @@ QWidget* IntegerProperty::createEditor(QWidget* parent,
 
 	PropertySpinBox* editor = new PropertySpinBox(parent);
 
-	editor->setMinimum(-100);
-	editor->setMaximum(100);
-	editor->setSingleStep(1);
+	editor->setMinimum(_min);
+	editor->setMaximum(_max);
+	editor->setSingleStep(_step);
+	editor->setWrapping(_wrap);
 
 	return editor;
 }
@@ -258,6 +345,25 @@ QVariant IntegerProperty::editorData(QWidget* editor)
 	}
 
 	return QVariant();
+}
+
+void IntegerProperty::setUiHints(const AttributeMap& map)
+{
+	AttributeMap::const_iterator it = map.begin();
+	while(it != map.end())
+	{
+		QString hintName = it.key();
+		if(hintName == QStringLiteral("min"))
+			tryConvert(it.value(), _min);
+		else if(hintName == QStringLiteral("max"))
+			tryConvert(it.value(), _max);
+		else if(hintName == QStringLiteral("step"))
+			tryConvert(it.value(), _step);
+		else if(hintName == QStringLiteral("wrap"))
+			tryConvert(it.value(), _wrap);
+
+		++it;
+	}
 }
 
 StringProperty::StringProperty(const QString& name, const QString& value)
@@ -335,6 +441,7 @@ FilePathProperty::FilePathProperty(const QString& name,
 	: Property(name, QVariant(QFileInfo(initialPath).absoluteFilePath()), 
 		EPropertyType::Filepath, nullptr)
 	, _fileInfo(initialPath)
+	, _filter()
 {
 }
 
@@ -377,7 +484,23 @@ bool FilePathProperty::setValue(const QVariant& value, int role)
 QWidget* FilePathProperty::createEditor(QWidget* parent,
 										const QStyleOptionViewItem& option)
 {
-	return new FileRequester(parent);
+	FileRequester* editor = new FileRequester(parent);
+
+	/// TODO:
+	/// editor->setFilter(_filter);
+
+	editor->setFilter(QObject::tr(
+		"Popular image formats (*.bmp *.jpeg *.jpg *.png *.tiff);;"
+		"Windows bitmaps (*.bmp *.dib);;"
+		"JPEG files (*.jpeg *.jpg *.jpe);;"
+		"JPEG 2000 files (*.jp2);;"
+		"Portable Network Graphics (*.png);;"
+		"Portable image format (*.pbm *.pgm *.ppm);;"
+		"Sun rasters (*.sr *.ras);;"
+		"TIFF files (*.tiff *.tif);;"
+		"All files (*.*)"));
+
+	return editor;
 }
 
 bool FilePathProperty::setEditorData(QWidget* editor,
@@ -414,4 +537,16 @@ QVariant FilePathProperty::editorData(QWidget* editor)
 	}
 
 	return QVariant();
+}
+
+void FilePathProperty::setUiHints(const AttributeMap& map)
+{
+	AttributeMap::const_iterator it = map.begin();
+	while(it != map.end())
+	{
+		QString hintName = it.key();
+		if(hintName == QStringLiteral("filter"))
+			_filter = it.value();
+		++it;
+	}
 }

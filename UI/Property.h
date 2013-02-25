@@ -11,6 +11,8 @@
 class QStyleOptionViewItem;
 class QPainter;
 
+typedef QMap<QString, QString> AttributeMap;
+
 class Property
 {
 public:
@@ -61,6 +63,8 @@ public:
 		const QStyleOptionViewItem& option,
 		const QVariant& value);
 
+	virtual void setUiHints(const AttributeMap& map) {}
+
 protected:
 	QVector<Property*> _children;
 	Property* _parent;
@@ -81,18 +85,20 @@ public:
 		const QVariant& data) override;
 	QVariant editorData(QWidget* editor) override;
 
-	///
-	/// min, max, step, decimals(int)
-	///
+	void setUiHints(const AttributeMap& map) override;
+
+private:
+	double _min;
+	double _max;
+	double _step;
+	int _decimals;
 };
 
 class EnumProperty : public Property
 {
 public:
 	explicit EnumProperty(const QString& name, 
-		const QStringList& valueList,
-		/// TODO:
-		int currentIndex = 0);
+		const QStringList& valueList);
 
 	QVariant value(int role = Qt::UserRole) const override;
 	bool setValue(const QVariant& value, 
@@ -103,6 +109,8 @@ public:
 	bool setEditorData(QWidget* editor,
 		const QVariant& data) override;
 	QVariant editorData(QWidget* editor) override;
+
+	void setUiHints(const AttributeMap& map) override;
 
 private:
 	QStringList _valueList;
@@ -118,6 +126,14 @@ public:
 	bool setEditorData(QWidget* editor,
 		const QVariant& data) override;
 	QVariant editorData(QWidget* editor) override;
+
+	void setUiHints(const AttributeMap& map) override;
+
+private:
+	int _min;
+	int _max;
+	int _step;
+	bool _wrap;
 };
 
 class StringProperty : public Property
@@ -160,8 +176,11 @@ public:
 		const QVariant& data) override;
 	QVariant editorData(QWidget* editor) override;
 
+	void setUiHints(const AttributeMap& map) override;
+
 private:
 	QFileInfo _fileInfo;
+	QString _filter;
 };
 
 //
