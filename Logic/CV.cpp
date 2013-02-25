@@ -164,7 +164,7 @@ cv::Mat standardStructuringElement(int xradius, int yradius,
 				double n2 = x*sinbeta-y*cosbeta;
 				double lhs = (n1*n1)/a2 + (n2*n2)/b2;
 				double rhs = 1;
-				element.at<uchar>(y+axis, x+axis) = (lhs <= rhs ? 1 : 0);
+				element.at<uchar>(y+axis, x+axis) = (lhs <= rhs ? 255 : 0);
 			}
 		}
 		return element;
@@ -180,6 +180,7 @@ cv::Mat standardStructuringElement(int xradius, int yradius,
 	}
 
 	cv::Mat element = cv::getStructuringElement(shape, elem_size, anchor);
+	element *= 255;
 	return rotateStructuringElement(rotation, element);
 }
 
