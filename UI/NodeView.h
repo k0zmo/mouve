@@ -35,8 +35,8 @@ private:
 	QGraphicsDropShadowEffect* mDropShadowEffect;
 	QPainterPath mShape1;
 	QPainterPath mShape2;
-	QHash<NodeID, NodeSocketView*> mInputSocketViews;
-	QHash<NodeID, NodeSocketView*> mOutputSocketViews;
+	QMap<NodeID, NodeSocketView*> mInputSocketViews;
+	QMap<NodeID, NodeSocketView*> mOutputSocketViews;
 	bool mPreviewSelected;
 
 private:

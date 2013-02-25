@@ -432,14 +432,23 @@ public:
 
 		const cv::Mat& src = reader->readSocket(0);
 		cv::Mat& dst = writer->lockSocket(0);
+		cv::Mat& kernel = writer->lockSocket(1);
 
-		if(src.rows == 0 || src.cols == 0 || xradius == 0 || yradius == 0)
+		if(xradius == 0 || yradius == 0)
+		{
+			dst = cv::Mat();
+			kernel = cv::Mat();
+			return;
+		}
+
+		kernel = cvu::standardStructuringElement(xradius, yradius, se, rotation);
+
+		if(src.rows == 0 || src.cols == 0)
 		{
 			dst = cv::Mat();
 			return;
 		}
-
-		cv::Mat kernel = cvu::standardStructuringElement(xradius, yradius, se, rotation);
+		
 		cv::morphologyEx(src, dst, op, kernel);
 	}
 
@@ -451,8 +460,8 @@ public:
 		};
 		static const OutputSocketConfig out_config[] = {
 			{ "output", "Output", "" },
-			/// TODO: NodeView draws it in alphabetical order - need to fix it
-			//{ "structuringElement", "Structuring element", "" },
+			// still need to think how to preview binary 0-1 image such as structuring element
+			{ "structuringElement", "Structuring element", "" },
 			{ "", "", "" }
 		};
 		static const PropertyConfig prop_config[] = {
