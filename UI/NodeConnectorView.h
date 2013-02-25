@@ -4,6 +4,7 @@
 
 #include <QGraphicsWidget>
 #include <QPropertyAnimation>
+#include <QPen>
 
 #include "NodeSocketView.h"
 

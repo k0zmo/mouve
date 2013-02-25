@@ -1,6 +1,8 @@
 #include "NodeTemporaryLinkView.h"
 #include "NodeStyle.h"
 
+#include <QPainter>
+
 NodeTemporaryLinkView::NodeTemporaryLinkView(const QPointF& startPosition,
 	const QPointF& endPosition, QGraphicsItem* parent)
 	: QGraphicsItem(parent)

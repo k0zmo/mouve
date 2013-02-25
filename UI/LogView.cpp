@@ -1,5 +1,7 @@
 #include "LogView.h"
 
+#include <QDateTime>
+
 LogView* LogView::_headView = nullptr;
 
 LogView::LogView(QWidget* parent)

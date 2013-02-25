@@ -4,6 +4,7 @@
 
 #include <QGraphicsSceneMouseEvent>
 #include <QGraphicsScene>
+#include <QPainter>
 
 NodeConnectorView::NodeConnectorView(bool isOutput, QGraphicsItem* parent)
 	: QGraphicsWidget(parent, 0)

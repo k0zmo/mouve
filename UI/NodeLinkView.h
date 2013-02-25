@@ -3,6 +3,7 @@
 #include "Prerequisites.h"
 
 #include <QGraphicsItem>
+#include <QPen>
 
 class NodeLinkView :  public QGraphicsItem
 {

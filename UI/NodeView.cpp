@@ -3,6 +3,8 @@
 #include "NodeSocketView.h"
 #include "Controller.h"
 
+#include <QPainter>
+
 NodeView::NodeView(const QString& title, QGraphicsItem* parent)
 	: QGraphicsWidget(parent)
 	, mLabel(new QGraphicsSimpleTextItem(this))

@@ -2,6 +2,8 @@
 #include "NodeStyle.h"
 #include "NodeSocketView.h"
 
+#include <QPainter>
+
 NodeLinkView::NodeLinkView(NodeSocketView* fromSocketView, 
 	NodeSocketView* toSocketView, QGraphicsItem* parent)
 	: QGraphicsItem(parent)
