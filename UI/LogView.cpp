@@ -74,6 +74,7 @@ void LogView::messageHandler(QtMsgType type,
 		}
 
 		it->_widget->addItem(item);
+		it->_widget->scrollToBottom();
 
 		// go to next logView
 		it = it->_nextView;
