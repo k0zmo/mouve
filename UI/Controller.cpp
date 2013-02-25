@@ -657,12 +657,15 @@ void Controller::updatePreview()
 		///      This shouldn't be much a problem
 		const cv::Mat& mat = _nodeTree->outputSocket(_previewSelectedNodeView->nodeKey(), 0);
 		cv::Mat mat_;
+
+		
 			
 		// Scale it up nicely
 		/// xXx: In future we should use OpenGL and got free scaling
 
-		if(mat.rows > maxImageHeight || 
-		   mat.cols > maxImageWidth)
+		//if(mat.rows > maxImageHeight || 
+		//   mat.cols > maxImageWidth)
+		if(mat.rows > 0 && mat.cols > 0)
 		{
 			double fx;
 			if(mat.rows > mat.cols)
