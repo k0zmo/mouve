@@ -47,7 +47,7 @@ public:
 			{ "", "", "" }
 		};
 		static const PropertyConfig prop_config[] = {
-			{ EPropertyType::Filepath, "File path", QVariant(), "" },
+			{ EPropertyType::Filepath, "File path", QVariant(QString::fromStdString(filePath)), "" },
 			{ EPropertyType::Unknown, "", QVariant(), "" }
 		};
 
@@ -115,8 +115,8 @@ public:
 			{ "", "", "" }
 		};
 		static const PropertyConfig prop_config[] = {
-			{ EPropertyType::Integer, "Kernel size", QVariant(5), "min=3;max=21;step=2" },
-			{ EPropertyType::Double, "Sigma", QVariant(10.0), "min=0.0" },
+			{ EPropertyType::Integer, "Kernel size", QVariant(kernelSize), "min=3;max=21;step=2" },
+			{ EPropertyType::Double, "Sigma", QVariant(sigma), "min=0.0" },
 			{ EPropertyType::Unknown, "", QVariant(), "" }
 		};
 
@@ -142,7 +142,7 @@ class CannyEdgeDetectorNodeType : public NodeType
 {
 public:
 	CannyEdgeDetectorNodeType()
-		: threshold(3)
+		: threshold(10)
 		, ratio(3)
 		//, apertureSize(3)
 	{
@@ -190,8 +190,8 @@ public:
 			{ "", "", "" }
 		};
 		static const PropertyConfig prop_config[] = {
-			{ EPropertyType::Double, "Threshold", QVariant(3.0), "min=0.0;max=100.0" },
-			{ EPropertyType::Double, "Ratio", QVariant(3.0), "min=0.0" },
+			{ EPropertyType::Double, "Threshold", QVariant(threshold), "min=0.0;max=100.0" },
+			{ EPropertyType::Double, "Ratio", QVariant(ratio), "min=0.0" },
 			//{ EPropertyType::Integer, "Sobel operator size", QVariant(3), "min=1;step=2" },
 			{ EPropertyType::Unknown, "", QVariant(), "" }
 		};
@@ -374,8 +374,8 @@ public:
 			{ "", "", "" }
 		};
 		static const PropertyConfig prop_config[] = {
-			{ EPropertyType::Integer, "Threshold", QVariant(128), "min=0;max=255" },
-			{ EPropertyType::Boolean, "Inverted", QVariant(false), "" },
+			{ EPropertyType::Integer, "Threshold", QVariant(threshold), "min=0;max=255" },
+			{ EPropertyType::Boolean, "Inverted", QVariant(inv), "" },
 			{ EPropertyType::Unknown, "", QVariant(), "" }
 		};
 
@@ -471,9 +471,9 @@ public:
 			"" },
 			{ EPropertyType::Enum, "SE shape", 
 			QVariant(QStringList() << "Rectangle" << "Ellipse" << "Cross"), "" },
-			{ EPropertyType::Integer, "Horizontal radius", QVariant(1), "min=1;max=75" },
-			{ EPropertyType::Integer, "Vertical radius", QVariant(1), "min=1;max=75" },
-			{ EPropertyType::Integer, "Rotation", QVariant(0), "min=0;max=359" },
+			{ EPropertyType::Integer, "Horizontal radius", QVariant(xradius), "min=1;max=75" },
+			{ EPropertyType::Integer, "Vertical radius", QVariant(yradius), "min=1;max=75" },
+			{ EPropertyType::Integer, "Rotation", QVariant(rotation), "min=0;max=359" },
 			{ EPropertyType::Unknown, "", QVariant(), "" }
 		};
 
