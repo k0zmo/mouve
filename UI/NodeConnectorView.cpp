@@ -78,14 +78,12 @@ void NodeConnectorView::hoverLeaveEvent(QGraphicsSceneHoverEvent* event)
 
 void NodeConnectorView::mousePressEvent(QGraphicsSceneMouseEvent* event)
 {
-	if(event->button() == Qt::LeftButton)
+	if(event->button() == Qt::LeftButton
+		&& !mTemporaryLink) // protect from double click
 	{
-		if(isOutput()) /// xXx: or !isOutput()
-		{ 
-			mTemporaryLink = new NodeTemporaryLinkView
-				(centerPos(), event->scenePos(), this);
-			emit draggingLinkStarted(socketView());
-		}
+		mTemporaryLink = new NodeTemporaryLinkView
+			(centerPos(), event->scenePos(), this);
+		emit draggingLinkStarted(socketView());
 	}
 }
 
@@ -97,12 +95,19 @@ void NodeConnectorView::mouseMoveEvent(QGraphicsSceneMouseEvent* event)
 
 void NodeConnectorView::mouseReleaseEvent(QGraphicsSceneMouseEvent* event)
 {
+
 	if(mTemporaryLink != nullptr)
 	{
 		emit draggingLinkStopped(socketView());
 		NodeConnectorView* itemColliding = canDrop(event->scenePos());
 		if(itemColliding != nullptr)
-			emit draggingLinkDropped(socketView(), itemColliding->socketView());
+		{
+			if(isOutput())
+				emit draggingLinkDropped(socketView(), itemColliding->socketView());
+			else
+				emit draggingLinkDropped(itemColliding->socketView(), socketView());
+		}
+
 		scene()->removeItem(mTemporaryLink);
 		delete mTemporaryLink;
 		mTemporaryLink = nullptr;
