@@ -363,12 +363,12 @@ bool NodeTree::nodeConfiguration(NodeID nodeID, NodeConfig& nodeConfig) const
 	return true;
 }
 
-bool NodeTree::nodeProperty(NodeID nodeID, PropertyID propID, const QVariant& value)
+bool NodeTree::nodeSetProperty(NodeID nodeID, PropertyID propID, const QVariant& value)
 {
 	if(!validateNode(nodeID))
 		return false;
 
-	return _nodes[nodeID].property(propID, value);
+	return _nodes[nodeID].setProperty(propID, value);
 }
 
 NodeID NodeTree::allocateNodeID()

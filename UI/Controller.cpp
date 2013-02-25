@@ -575,7 +575,7 @@ void Controller::changeProperty(NodeID nodeID,
 		}
 	}
 
-	if(_nodeTree->nodeProperty(nodeID, propID, newValue))
+	if(_nodeTree->nodeSetProperty(nodeID, propID, newValue))
 	{
 		_nodeTree->tagNode(nodeID);
 		processAutoRefresh();

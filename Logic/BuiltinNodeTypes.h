@@ -18,7 +18,7 @@ public:
 	{
 	}
 
-	bool property(PropertyID propId, const QVariant& newValue) override
+	bool setProperty(PropertyID propId, const QVariant& newValue) override
 	{
 		if(propId == 0)
 		{
@@ -69,7 +69,7 @@ public:
 	{
 	}
 
-	bool property(PropertyID propId, const QVariant& newValue) override
+	bool setProperty(PropertyID propId, const QVariant& newValue) override
 	{
 		switch(propId)
 		{
@@ -164,7 +164,7 @@ public:
 		cv::Canny(input, output, threshold, threshold*ratio, 3/*apertureSize*/);
 	}
 
-	bool property(PropertyID propId, const QVariant& newValue) override
+	bool setProperty(PropertyID propId, const QVariant& newValue) override
 	{
 		switch(propId)
 		{
@@ -331,7 +331,7 @@ public:
 	{
 	}
 
-	bool property(PropertyID propId, const QVariant& newValue) override
+	bool setProperty(PropertyID propId, const QVariant& newValue) override
 	{
 		switch(propId)
 		{
@@ -411,7 +411,7 @@ public:
 	{
 	}
 
-	bool property(PropertyID propId, const QVariant& newValue) override
+	bool setProperty(PropertyID propId, const QVariant& newValue) override
 	{
 		switch(propId)
 		{

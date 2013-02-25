@@ -90,7 +90,7 @@ class NodeType
 public:
 	virtual ~NodeType() {}
 	// virtual void initialize();
-	virtual bool property(PropertyID propId, const QVariant& newValue) { return false; }
+	virtual bool setProperty(PropertyID propId, const QVariant& newValue) { return false; }
 	virtual void execute(NodeSocketReader* reader, NodeSocketWriter* writer) = 0;
 	virtual void configuration(NodeConfig& nodeConfig) const = 0;
 	// void registerUpdateInterval();
