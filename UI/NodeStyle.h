@@ -15,6 +15,9 @@ struct NodeStyle
 	// Link NodeStyle
 	static QPen LinkPen;
 
+	// TemporaryLink NodeStyle
+	static QPen TemporaryLinkPen;
+
 	// Node NodeStyle
 	static QFont NodeTitleFont;
 	static QBrush NodeTitleFontBrush;

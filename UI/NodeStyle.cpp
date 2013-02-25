@@ -12,6 +12,9 @@ QColor NodeStyle::SceneBackground = QColor(64, 64, 64);
 // Link NodeStyle
 QPen NodeStyle::LinkPen = QPen(QColor(222, 222, 222), 2.0, Qt::SolidLine);
 
+// TemporaryLink NodeStyle
+QPen NodeStyle::TemporaryLinkPen = QPen(QColor(244, 98, 0), 2.0, Qt::SolidLine);
+
 // Node NodeStyle
 QFont NodeStyle::NodeTitleFont = QFont(FontName, 11, QFont::Bold);
 QBrush NodeStyle::NodeTitleFontBrush = QBrush(QColor(180, 180, 180));

@@ -6,7 +6,7 @@
 NodeTemporaryLinkView::NodeTemporaryLinkView(const QPointF& startPosition,
 	const QPointF& endPosition, QGraphicsItem* parent)
 	: QGraphicsItem(parent)
-	, mPen(NodeStyle::LinkPen)
+	, mPen(NodeStyle::TemporaryLinkPen)
 	, mEndPosition(mapFromScene(endPosition))
 	, mDrawDebug(false)
 	, mDrawMode(1)
