@@ -87,7 +87,6 @@ QWidget* DoubleProperty::createEditor(QWidget* parent,
 
 	PropertyDoubleSpinBox* editor = new PropertyDoubleSpinBox(parent);
 
-	editor->setFrame(false);
 	editor->setDecimals(3);
 	editor->setMinimum(-100.0);
 	editor->setMaximum(100.0);
@@ -223,7 +222,6 @@ QWidget* IntegerProperty::createEditor(QWidget* parent,
 
 	PropertySpinBox* editor = new PropertySpinBox(parent);
 
-	editor->setFrame(false);
 	editor->setMinimum(-100);
 	editor->setMaximum(100);
 	editor->setSingleStep(1);
