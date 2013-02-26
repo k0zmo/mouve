@@ -164,6 +164,44 @@ void NodeView::updateLayout()
 	qreal inputsWidth = 0.0;
 	qreal outputsWidth = 0.0;
 
+#if 0
+	foreach(NodeSocketView* sv, mInputSocketViews.values())
+	{
+		if(!sv->isVisible())
+			continue;
+		sv->updateLayout();
+		sv->setPos(NodeStyle::NodeSocketHorizontalMargin, yPos);
+		yPos += sv->boundingRect().height() + NodeStyle::NodeSocketVerticalMargin;
+		inputsWidth = qMax(inputsWidth,
+			NodeStyle::NodeSocketHorizontalMargin + sv->boundingRect().width() + 5.0);
+	}
+
+	foreach(NodeSocketView* sv, mOutputSocketViews.values())
+	{
+		if(!sv->isVisible())
+			continue;
+		sv->updateLayout();
+		outputsWidth = qMax(outputsWidth, 
+			NodeStyle::NodeSocketHorizontalMargin + sv->boundingRect().width() + 5.0);
+	}
+
+	totalWidth = qMax(totalWidth, qMax(
+		outputsWidth, inputsWidth));
+
+	// Second pass
+	qreal inputsHeight = qMax(yPos, titleHeight * 1.5); // if node is trivial
+
+	foreach(NodeSocketView* sv, mOutputSocketViews.values())
+	{
+		if(!sv->isVisible())
+			continue;
+		QRectF b = sv->boundingRect();
+		sv->setPos(totalWidth - 
+			(b.width() + NodeStyle::NodeSocketHorizontalMargin), yPos);
+		yPos += b.height() + NodeStyle::NodeSocketVerticalMargin;
+	}
+
+#else
 	// First pass
 	foreach(NodeSocketView* sv, mInputSocketViews.values())
 	{
@@ -201,6 +239,7 @@ void NodeView::updateLayout()
 			(b.width() + NodeStyle::NodeSocketHorizontalMargin), yPos);
 		yPos += b.height() + NodeStyle::NodeSocketVerticalMargin;
 	}
+#endif
 
 	// Center title
 	mLabel->setPos((totalWidth - titleWidth) / 2.0,
