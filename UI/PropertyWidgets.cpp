@@ -379,7 +379,9 @@ PropertyMatrixDialog::PropertyMatrixDialog(const Matrix3x3& matrix, QWidget* par
 	: QDialog(parent)
 	, _normalizeCheckBox(new QCheckBox(this))
 {
-	resize(180, 150);
+	resize(215, 150);
+	setMinimumSize(215, 150);
+	setMaximumSize(215, 150);
 	setWindowTitle(tr("Matrix coefficients"));
 	
 	auto gridLayout = new QGridLayout();

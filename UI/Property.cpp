@@ -564,10 +564,16 @@ QVariant MatrixProperty::value(int role) const
 
 	auto m = _value.value<Matrix3x3>();
 
-	QString str;
+	QString str = "[";
+	int column = 0;
 	for(auto v : m.v)
-		str += QString::number(v) + " ";
-	str = str.trimmed();
+	{
+		str += QString(" %1").arg(v);
+		++column;
+		if(!(column % 3))
+			str += ";";
+	}
+	str += " ]";
 
 	return str;
 }
@@ -603,8 +609,6 @@ bool MatrixProperty::setEditorData(QWidget* editor,
 QVariant MatrixProperty::editorData(QWidget* editor)
 {
 	PropertyMatrixButton* ed = qobject_cast<PropertyMatrixButton*>(editor);
-
-	qDebug() << "QWEQWEQWEQWEQWE";
 
 	if(ed)
 		return QVariant::fromValue<Matrix3x3>(ed->matrix());
