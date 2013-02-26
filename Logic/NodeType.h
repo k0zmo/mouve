@@ -42,6 +42,26 @@ private:
 	std::vector<cv::Mat>* _outputs;
 };
 
+struct Matrix3x3
+{
+	double v[9];
+
+	Matrix3x3()
+	{
+		for(int i = 0; i < 9; ++i)
+			v[i] = 0.0;
+	}
+
+	Matrix3x3(double center)
+	{
+		for(int i = 0; i < 9; ++i)
+			v[i] = 0.0;
+		v[4] = center;
+	}
+
+	// TODO: Do I need copy constructor ??
+};
+
 enum class EPropertyType
 {
 	Unknown,
@@ -49,9 +69,12 @@ enum class EPropertyType
 	Integer,
 	Double,
 	Enum,
+	Matrix,
 	Filepath,
 	String
 }; 
+
+Q_DECLARE_METATYPE(Matrix3x3)
 
 struct InputSocketConfig
 {

@@ -10,6 +10,11 @@
 #include <QLineEdit>
 #include <QIcon>
 #include <QFileInfo>
+#include <QPushButton>
+#include <QDialog>
+
+// Required for Matrix3x3
+#include "Logic/NodeType.h"
 
 class QToolButton;
 class QMouseEvent;
@@ -179,3 +184,33 @@ inline QFileInfo FileRequester::fileInfo() const
 inline QString FileRequester::filePath() const
 { return fileInfo().filePath(); }
 */
+
+class PropertyMatrixButton : public QPushButton
+{
+	Q_OBJECT
+public:
+	explicit PropertyMatrixButton(QWidget* parent = nullptr);
+
+	void setMatrix(const Matrix3x3& mat);
+	Matrix3x3 matrix() const;
+
+private slots:
+	void showDialog();
+
+private:
+	Matrix3x3 _matrix;
+};
+
+class PropertyMatrixDialog : public QDialog
+{
+public:
+	explicit PropertyMatrixDialog(const Matrix3x3& matrix, QWidget* parent = nullptr);
+	Matrix3x3 coefficients() const;
+
+	static Matrix3x3 getCoefficients(QWidget* parent, 
+		const Matrix3x3& init = Matrix3x3(), int* ok = nullptr);
+
+private:
+	QCheckBox* _normalizeCheckBox;
+	QList<QDoubleSpinBox*> _coeffSpinBox;
+};

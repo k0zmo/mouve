@@ -164,7 +164,7 @@ class FilePathProperty : public Property
 {
 public:
 	explicit FilePathProperty(const QString& name, 
-					 const QString& initialPath = QString());
+		const QString& initialPath = QString());
 
 	QVariant value(int role = Qt::UserRole) const override;
 	bool setValue(const QVariant& value, 
@@ -181,6 +181,24 @@ public:
 private:
 	QFileInfo _fileInfo;
 	QString _filter;
+};
+
+// For now - its simple 3x3 matrix
+class MatrixProperty : public Property
+{
+public:
+	explicit MatrixProperty(const QString& name,
+		const Matrix3x3& initial = Matrix3x3(1));
+
+	QVariant value(int role = Qt::UserRole) const override;
+	//bool setValue(const QVariant& value, 
+	//	int role = Qt::UserRole) override;
+
+	QWidget* createEditor(QWidget* parent,
+		const QStyleOptionViewItem& option) override;
+	bool setEditorData(QWidget* editor,
+		const QVariant& data) override;
+	QVariant editorData(QWidget* editor) override;
 };
 
 //

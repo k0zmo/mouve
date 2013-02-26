@@ -15,6 +15,8 @@
 #include <QToolButton>
 #include <QFileDialog>
 
+#include <QDialogButtonBox>
+
 PropertySpinBox::PropertySpinBox(QWidget* parent)
 	: QSpinBox(parent)
 {
@@ -307,7 +309,6 @@ void FileRequester::setFilter(const QString& filter)
 	_filter = filter;
 }
 
-
 /*
 LineEditReset::LineEditReset(QWidget* parent)
 	: QLineEdit(parent)
@@ -347,3 +348,105 @@ void LineEditReset::updateCloseButton(const QString& text)
 	_toolButton->setVisible(!text.isEmpty());
 }
 */
+
+PropertyMatrixButton::PropertyMatrixButton(QWidget* parent)
+	: QPushButton(parent)
+{
+	setText(tr("Choose"));
+	connect(this, SIGNAL(clicked()), this, SLOT(showDialog()));
+}
+
+void PropertyMatrixButton::showDialog()
+{
+	int ok;
+	Matrix3x3 tmpMatrix = PropertyMatrixDialog::getCoefficients(this, _matrix, &ok);
+
+	if(ok)
+		setMatrix(tmpMatrix);
+}
+
+void PropertyMatrixButton::setMatrix(const Matrix3x3& mat)
+{
+	_matrix = mat;
+}
+
+Matrix3x3 PropertyMatrixButton::matrix() const
+{
+	return _matrix;
+}
+
+PropertyMatrixDialog::PropertyMatrixDialog(const Matrix3x3& matrix, QWidget* parent)
+	: QDialog(parent)
+	, _normalizeCheckBox(new QCheckBox(this))
+{
+	resize(180, 150);
+	setWindowTitle(tr("Matrix coefficients"));
+	
+	auto gridLayout = new QGridLayout();
+	
+	for(int y = 0; y < 3; ++y)
+	{
+		for(int x = 0; x < 3; ++x)
+		{
+			auto sb = new QDoubleSpinBox();
+			sb->setMinimum(-std::numeric_limits<double>::max());
+			sb->setMaximum(+std::numeric_limits<double>::max());
+			sb->setDecimals(2);
+			sb->setValue(matrix.v[y*3+x]);
+
+			gridLayout->addWidget(sb, y, x, 1, 1);
+
+			_coeffSpinBox.append(sb);
+		}
+	}
+
+	_normalizeCheckBox->setText(tr("Normalize coefficients"));
+	_normalizeCheckBox->setChecked(true);
+
+	auto buttonBox = new QDialogButtonBox(this);
+	buttonBox->setStandardButtons(QDialogButtonBox::Cancel|QDialogButtonBox::Ok);
+	buttonBox->setCenterButtons(false);
+	connect(buttonBox, &QDialogButtonBox::accepted, this, &QDialog::accept);
+	connect(buttonBox, &QDialogButtonBox::rejected, this, &QDialog::reject);
+
+	auto verticalLayout = new QVBoxLayout(this);
+	verticalLayout->addLayout(gridLayout);
+	verticalLayout->addWidget(_normalizeCheckBox);
+	verticalLayout->addWidget(buttonBox);
+
+	_coeffSpinBox.first()->setFocus();
+}
+
+Matrix3x3 PropertyMatrixDialog::coefficients() const
+{
+	Matrix3x3 m;
+	int i = 0;
+	double sum = 0.0;
+
+	if(_normalizeCheckBox->isChecked())
+	{
+		foreach(const QDoubleSpinBox* sb, _coeffSpinBox)
+			sum += sb->value();
+	}
+
+	if(fabs(sum) < DBL_EPSILON)
+		// High pass filter
+		sum = 1.0;
+	else
+		sum = 1.0 / sum;
+
+	foreach(const QDoubleSpinBox* sb, _coeffSpinBox)
+		m.v[i++] = sb->value() * sum;
+
+	return m;
+}
+
+Matrix3x3 PropertyMatrixDialog::getCoefficients(QWidget* parent, const Matrix3x3& init, int* ok)
+{
+	PropertyMatrixDialog dlg(init, parent);
+	const int res = dlg.exec();
+	if(ok)
+		*ok = res;
+		
+	return res == QDialog::Accepted ? dlg.coefficients() : init;
+}

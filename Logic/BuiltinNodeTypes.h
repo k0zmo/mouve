@@ -384,6 +384,62 @@ private:
 	};
 };
 
+class CustomConvolutionNodeType : public NodeType
+{
+public:
+	CustomConvolutionNodeType()
+		: _coeffs(1)
+	{
+	}
+
+	bool setProperty(PropertyID propId, const QVariant& newValue) override
+	{
+		switch(propId)
+		{
+		case 0:
+			_coeffs = newValue.value<Matrix3x3>();
+			return true;
+		}
+
+		return false;
+	}
+
+	void execute(NodeSocketReader* reader, NodeSocketWriter* writer) override
+	{
+		qDebug() << "Executing 'Custom Convolution' node";
+
+		const cv::Mat& src = reader->readSocket(0);
+		cv::Mat& dst = writer->lockSocket(0);
+
+		cv::Mat kernel(3, 3, CV_64FC1, _coeffs.v);
+		cv::filter2D(src, dst, -1, kernel);
+	}
+
+	void configuration(NodeConfig& nodeConfig) const override
+	{
+		static const InputSocketConfig in_config[] = {
+			{ "source", "Source", "" },
+			{ "", "", "" }
+		};
+		static const OutputSocketConfig out_config[] = {
+			{ "output", "Output", "" },
+			{ "", "", "" }
+		};
+		static const PropertyConfig prop_config[] = {
+			{ EPropertyType::Matrix, "Coefficients", QVariant::fromValue<Matrix3x3>(_coeffs), "" },
+			{ EPropertyType::Unknown, "", QVariant(), "" }
+		};
+
+		nodeConfig.description = "Performs image convolution";
+		nodeConfig.pInputSockets = in_config;
+		nodeConfig.pOutputSockets = out_config;
+		nodeConfig.pProperties = prop_config;
+	}
+
+private:
+	Matrix3x3 _coeffs;
+};
+
 #include "CV.h"
 
 class StructuringElementNodeType : public NodeType
@@ -676,6 +732,7 @@ private:
 };
 */
 
+REGISTER_NODE("Convolution", CustomConvolutionNodeType)
 REGISTER_NODE("Negate", NegateNodeType)
 REGISTER_NODE("Subtract", SubtractNodeType)
 REGISTER_NODE("Add", AddNodeType)

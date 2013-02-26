@@ -40,8 +40,10 @@ void PropertyModel::addProperty(PropertyID propID, EPropertyType propType,
 			prop = new DoubleProperty(propName, value.toDouble());
 			break;
 		case EPropertyType::Enum:
-			/// TODO: How to pass default index?
 			prop = new EnumProperty(propName, value.toStringList());
+			break;
+		case EPropertyType::Matrix:
+			prop = new MatrixProperty(propName, value.value<Matrix3x3>());
 			break;
 		case EPropertyType::Filepath:
 			prop = new FilePathProperty(propName, value.toString());

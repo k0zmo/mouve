@@ -550,3 +550,64 @@ void FilePathProperty::setUiHints(const AttributeMap& map)
 		++it;
 	}
 }
+
+MatrixProperty::MatrixProperty(const QString& name,
+	const Matrix3x3& initial)
+	: Property(name, QVariant::fromValue<Matrix3x3>(initial), EPropertyType::Matrix, nullptr)
+{
+}
+
+QVariant MatrixProperty::value(int role) const
+{
+	if(role != Qt::DisplayRole)
+		return Property::value(role);
+
+	auto m = _value.value<Matrix3x3>();
+
+	QString str;
+	for(auto v : m.v)
+		str += QString::number(v) + " ";
+	str = str.trimmed();
+
+	return str;
+}
+
+//bool setValue(const QVariant& value, 
+//	int role = Qt::UserRole) override;
+
+#include <QPushButton>
+
+QWidget* MatrixProperty::createEditor(QWidget* parent,
+	const QStyleOptionViewItem& option)
+{
+	return new PropertyMatrixButton(parent);
+}
+
+bool MatrixProperty::setEditorData(QWidget* editor,
+	const QVariant& data)
+{
+	PropertyMatrixButton* ed = qobject_cast<PropertyMatrixButton*>(editor);
+
+	if(ed)
+	{
+		if(data.userType() == QMetaTypeId<Matrix3x3>::qt_metatype_id())
+		{
+			ed->setMatrix(data.value<Matrix3x3>());
+			return true;
+		}
+	}
+
+	return false;
+}
+
+QVariant MatrixProperty::editorData(QWidget* editor)
+{
+	PropertyMatrixButton* ed = qobject_cast<PropertyMatrixButton*>(editor);
+
+	qDebug() << "QWEQWEQWEQWEQWE";
+
+	if(ed)
+		return QVariant::fromValue<Matrix3x3>(ed->matrix());
+
+	return QVariant();
+}
