@@ -20,9 +20,6 @@ NodeView::NodeView(const QString& title, QGraphicsItem* parent)
 	mLabel->setFont(NodeStyle::NodeTitleFont);
 	mLabel->setBrush(NodeStyle::NodeTitleFontBrush);
 
-	/// xXx: set this based on model
-	setToolTip("ToolTip");
-
 	// Additional visual effect
 	mDropShadowEffect->setOffset(5.0, 5.0);
 	mDropShadowEffect->setBlurRadius(12.0);

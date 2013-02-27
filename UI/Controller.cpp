@@ -198,6 +198,8 @@ void Controller::addNodeView(const QString& nodeTitle,
 	}
 
 	NodeView* nodeView = new NodeView(nodeTitle);
+	if(!nodeConfig.description.empty())
+		nodeView->setToolTip(QString::fromStdString(nodeConfig.description));
 
 	// Add input sockets views to node view
 	SocketID socketID = 0;
