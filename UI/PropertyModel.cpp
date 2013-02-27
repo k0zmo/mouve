@@ -162,13 +162,23 @@ bool PropertyModel::setData(const QModelIndex& index,
 	if(index.isValid() && role == Qt::EditRole)
 	{
 		Property* item = property(index);
+		QVariant oldValue = item->value(role);
 		
 		if(item->setValue(value, role))
 		{
-			emit dataChanged(index, index);
-			emit propertyChanged(_nodeID, item->propertyID(), item->value());
+			bool ok = true;
+			emit propertyChanged(_nodeID, item->propertyID(), item->value(), &ok);
 
-			return true;
+			if(ok)
+			{
+				emit dataChanged(index, index);
+				return true;
+			}
+			else
+			{
+				item->setValue(oldValue, role);
+				return false;
+			}			
 		}
 	}
 

@@ -544,7 +544,8 @@ void Controller::sceneSelectionChanged()
 
 void Controller::changeProperty(NodeID nodeID,
 								PropertyID propID, 
-								const QVariant& newValue)
+								const QVariant& newValue,
+								bool* ok)
 {
 	qDebug() << "[INFO] Property changed! details: nodeID:" << nodeID << ", propID:" << propID << "newValue:" << newValue;
 
@@ -560,9 +561,13 @@ void Controller::changeProperty(NodeID nodeID,
 				QString name = newValue.toString();
 				std::string nameStd = name.toStdString();
 
-				if(_nodeTree->nodeName(nodeID) == nameStd)
+				if(_nodeTree->nodeName(nodeID) == nameStd 
+					|| name.isEmpty())
+				{
+					*ok = false;
 					// No change
 					return;
+				}
 
 				if(_nodeTree->resolveNode(nameStd) == InvalidNodeID)
 				{
@@ -571,6 +576,7 @@ void Controller::changeProperty(NodeID nodeID,
 				}
 				else
 				{
+					*ok = false;
 					showErrorMessage("Name already taken");
 				}
 			}
@@ -658,8 +664,6 @@ void Controller::updatePreview()
 		const cv::Mat& mat = _nodeTree->outputSocket(_previewSelectedNodeView->nodeKey(), 0);
 		cv::Mat mat_;
 
-		
-			
 		// Scale it up nicely
 		/// xXx: In future we should use OpenGL and got free scaling
 

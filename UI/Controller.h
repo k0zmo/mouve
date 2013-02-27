@@ -46,7 +46,7 @@ private slots:
 	/// NEW
 	void sceneSelectionChanged();
 	void changeProperty(NodeID nodeID, PropertyID propID, 
-		const QVariant& newValue);
+		const QVariant& newValue, bool* ok);
 
 	void singleStep();
 	void autoRefresh();

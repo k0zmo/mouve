@@ -44,7 +44,8 @@ public:
 
 signals:
 	void propertyChanged(NodeID nodeID,
-		PropertyID propID, const QVariant& newValue);
+		PropertyID propID, const QVariant& newValue,
+		bool* ok);
 
 private:
 	Property* property(const QModelIndex& index) const;
