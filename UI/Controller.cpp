@@ -25,8 +25,8 @@
 #include "ui_MainWindow.h"
 
 static bool DEBUG_LINKS = false;
-static const int maxImageWidth = 256;
-static const int maxImageHeight = 256;
+static const int maxImageWidth = 400;
+static const int maxImageHeight = 400;
 
 template<> Controller* Singleton<Controller>::_singleton = nullptr;
 
@@ -458,9 +458,9 @@ void Controller::contextMenu(const QPoint& globalPos,
 	if(items.isEmpty())
 	{
 		QMenu menu;
-		QMenu* menuAddNode = menu.addMenu("Add node");
+		//QMenu* menuAddNode = menu.addMenu("Add node");
 		foreach(QAction* a, _addNodesActions)
-			menuAddNode->addAction(a);
+			menu.addAction(a);
 		QAction* ret = menu.exec(globalPos);
 		if(ret != nullptr)
 			addNode(ret->data().toInt(), scenePos);
