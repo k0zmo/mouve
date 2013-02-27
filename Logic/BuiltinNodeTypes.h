@@ -14,7 +14,7 @@ class VideoFromFileNodeType : public NodeType
 {
 public:
 	VideoFromFileNodeType()
-		: _videoPath("video-3.mkv")
+		: _videoPath("video-1.mkv")
 	{
 	}
 
@@ -50,6 +50,7 @@ public:
 		cv::Mat& output = writer->lockSocket(0);
 		
 		_capture.read(output);
+		cv::cvtColor(output, output, CV_BGR2GRAY);
 	}
 
 	void configuration(NodeConfig& nodeConfig) const override

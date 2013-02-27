@@ -33,6 +33,9 @@ private:
 	void setupUi();
 	bool isAutoRefresh();
 
+	void switchToVideoMode();
+	void switchToImageMode();
+
 private slots:
 	void draggingLinkDrop(QGraphicsWidget* from, QGraphicsWidget* to);
 	void draggingLinkStart(QGraphicsWidget* from);
@@ -69,8 +72,13 @@ private:
 
 	// Temporary
 	QList<QAction*> _addNodesActions;
+	QTimer* _videoTimer;
 
 	Ui::MainWindow* _ui;
+
+	bool _videoMode;
+	bool _currentlyPlaying;
+	bool _startWithInit;
 
 private:
 	void showErrorMessage(const QString& message);

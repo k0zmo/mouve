@@ -10,7 +10,6 @@ template <typename T>
 bool tryConvert(const QString& str, T& value) 
 { static_assert(false, "conversion doesn't exist"); return false; }
 
-
 template <> 
 bool tryConvert<int>(const QString& str, int& value)
 {
@@ -498,6 +497,7 @@ QWidget* FilePathProperty::createEditor(QWidget* parent,
 		"Portable image format (*.pbm *.pgm *.ppm);;"
 		"Sun rasters (*.sr *.ras);;"
 		"TIFF files (*.tiff *.tif);;"
+		"Video files (*.mkv *.mp4 *.avi);;"
 		"All files (*.*)"));
 
 	return editor;

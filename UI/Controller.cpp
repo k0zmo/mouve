@@ -37,6 +37,10 @@ Controller::Controller(QWidget* parent, Qt::WindowFlags flags)
 	, _nodeSystem(new NodeSystem())
 	, _propManager(new PropertyManager(this))
 	, _ui(new Ui::MainWindow())
+	, _videoMode(false)
+	, _currentlyPlaying(false)
+	, _startWithInit(true)
+	, _videoTimer(new QTimer(this))
 {
 	setupUi();
 
@@ -73,6 +77,8 @@ Controller::Controller(QWidget* parent, Qt::WindowFlags flags)
 		action->setData(info.typeID);
 		_addNodesActions.append(action);
 	}
+
+	connect(_videoTimer, &QTimer::timeout, this, &Controller::singleStep);
 }
 
 Controller::~Controller()
@@ -158,6 +164,32 @@ bool Controller::isAutoRefresh()
 	return _ui->actionAutoRefresh->isChecked();
 }
 
+void Controller::switchToVideoMode()
+{
+	if(_videoMode)
+		return;
+
+	_ui->actionAutoRefresh->setEnabled(false);
+	_ui->actionPlay->setEnabled(true);
+	_ui->actionPause->setEnabled(true);
+	_ui->actionStop->setEnabled(true);
+
+	_videoMode = true;
+}
+
+void Controller::switchToImageMode()
+{
+	if(!_videoMode)
+		return;
+
+	_ui->actionAutoRefresh->setEnabled(true);
+	_ui->actionPlay->setEnabled(false);
+	_ui->actionPause->setEnabled(false);
+	_ui->actionStop->setEnabled(false);
+
+	_videoMode = false;
+}
+
 void Controller::addNode(NodeTypeID nodeTypeID, const QPointF& scenePos)
 {
 	// Create new model
@@ -185,6 +217,9 @@ void Controller::addNode(NodeTypeID nodeTypeID, const QPointF& scenePos)
 
 	// Create new view associated with the model
 	addNodeView(QString::fromStdString(nodeTitle), nodeID, scenePos);
+
+	if(!_nodeTree->isTreeStateless())
+		switchToVideoMode();
 }
 
 void Controller::addNodeView(const QString& nodeTitle,
@@ -348,6 +383,9 @@ void Controller::deleteNode(NodeView* nodeView)
 		showErrorMessage("[NodeTree] Couldn't removed given node");
 		return;
 	}
+
+	if(_nodeTree->isTreeStateless())
+		switchToImageMode();
 
 	// Remove incoming and outgoing links
 	// This should be done in cooperation with model but it would probably make the case harder
@@ -600,39 +638,73 @@ void Controller::changeProperty(NodeID nodeID,
 
 void Controller::singleStep()
 {
-	_nodeTree->prepareList();
-	_nodeTree->execute();
+	/// TODO: Cleanup, this is only temporary (as well as "timer driven" video)
+	if(!_videoMode)
+	{
+		_nodeTree->prepareList();
+		_nodeTree->execute();
 
-	if(shouldUpdatePreview(_nodeTree->executeList()))
-		updatePreview();
+		if(shouldUpdatePreview(_nodeTree->executeList()))
+			updatePreview();
+	}
+	else
+	{
+		_nodeTree->prepareList();
+		_nodeTree->execute(_startWithInit);
+		_startWithInit = false;
+
+		if(shouldUpdatePreview(_nodeTree->executeList()))
+			updatePreview();
+	}
 }
 
 void Controller::autoRefresh()
 {
+	/// TODO: change itemdelegate updateimmediate
 	processAutoRefresh();
-
-	// TODO: change itemdelegate updateimmediate
 }
 
 void Controller::play()
 {
-	qDebug() << Q_FUNC_INFO;
+	if(!_currentlyPlaying)
+	{
+		_currentlyPlaying = true;
+		_videoTimer->start(50);
+
+		_ui->actionPlay->setEnabled(false);
+		_ui->actionSingleStep->setEnabled(false);
+	}
 }
 
 void Controller::pause()
 {
-	qDebug() << Q_FUNC_INFO;
+	if(_currentlyPlaying)
+	{
+		_currentlyPlaying = false;
+		_videoTimer->stop();
+
+		_ui->actionPlay->setEnabled(true);
+		_ui->actionSingleStep->setEnabled(true);
+	}
 }
 
 void Controller::stop()
 {
-	qDebug() << Q_FUNC_INFO;
+	if(_currentlyPlaying)
+	{
+		_startWithInit = true;
+		_currentlyPlaying = false;
+		_videoTimer->stop();
+
+		_ui->actionPlay->setEnabled(true);
+		_ui->actionSingleStep->setEnabled(true);
+	}
 }
 
 void Controller::processAutoRefresh()
 {
 	// Execute if auto refresh is on
-	if(isAutoRefresh())
+	if(!_videoMode && isAutoRefresh())
 	{
 		_nodeTree->execute();
 
