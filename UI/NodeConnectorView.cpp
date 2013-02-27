@@ -95,7 +95,6 @@ void NodeConnectorView::mouseMoveEvent(QGraphicsSceneMouseEvent* event)
 
 void NodeConnectorView::mouseReleaseEvent(QGraphicsSceneMouseEvent* event)
 {
-
 	if(mTemporaryLink != nullptr)
 	{
 		emit draggingLinkStopped(socketView());

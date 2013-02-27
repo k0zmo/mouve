@@ -85,13 +85,17 @@ void NodeEditorView::wheelEvent(QWheelEvent* event)
 
 void NodeEditorView::contextMenuEvent(QContextMenuEvent* event)
 {
-	if(!mPanning)
-	{
+	if(!mPanning && !isPseudoInteractive())
 		emit contextMenu(event->globalPos(), mapToScene(event->pos()));
-	}	
 }
 
 void NodeEditorView::keyPressEvent(QKeyEvent* event)
 {
-	emit keyPress(event);
+	if(!isPseudoInteractive())
+		emit keyPress(event);
+}
+
+void NodeEditorView::setPseudoInteractive(bool allowed)
+{
+	mPseudoInteractive = !allowed;
 }

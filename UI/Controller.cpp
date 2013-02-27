@@ -171,8 +171,8 @@ void Controller::switchToVideoMode()
 
 	_ui->actionAutoRefresh->setEnabled(false);
 	_ui->actionPlay->setEnabled(true);
-	_ui->actionPause->setEnabled(true);
-	_ui->actionStop->setEnabled(true);
+	_ui->actionPause->setEnabled(false);
+	_ui->actionStop->setEnabled(false);
 
 	_videoMode = true;
 }
@@ -429,8 +429,11 @@ void Controller::deleteNode(NodeView* nodeView)
 
 void Controller::draggingLinkDrop(QGraphicsWidget* from, QGraphicsWidget* to)
 {
-	linkNodes(static_cast<NodeSocketView*>(from),
-			  static_cast<NodeSocketView*>(to));
+	if(!_ui->graphicsView->isPseudoInteractive())
+	{
+		linkNodes(static_cast<NodeSocketView*>(from),
+				  static_cast<NodeSocketView*>(to));
+	}
 }
 
 void Controller::draggingLinkStart(QGraphicsWidget* from)
@@ -649,9 +652,13 @@ void Controller::singleStep()
 	}
 	else
 	{
+		setInteractive(false);
+
 		_nodeTree->prepareList();
 		_nodeTree->execute(_startWithInit);
 		_startWithInit = false;
+
+		_ui->actionStop->setEnabled(true);
 
 		if(shouldUpdatePreview(_nodeTree->executeList()))
 			updatePreview();
@@ -670,10 +677,14 @@ void Controller::play()
 	{
 		_currentlyPlaying = true;
 		_videoTimer->start(50);
-
-		_ui->actionPlay->setEnabled(false);
-		_ui->actionSingleStep->setEnabled(false);
 	}
+
+	_ui->actionPause->setEnabled(true);
+	_ui->actionStop->setEnabled(true);
+	_ui->actionPlay->setEnabled(false);
+	_ui->actionSingleStep->setEnabled(false);
+
+	setInteractive(false);
 }
 
 void Controller::pause()
@@ -682,23 +693,30 @@ void Controller::pause()
 	{
 		_currentlyPlaying = false;
 		_videoTimer->stop();
-
-		_ui->actionPlay->setEnabled(true);
-		_ui->actionSingleStep->setEnabled(true);
 	}
+
+	_ui->actionPause->setEnabled(false);
+	_ui->actionStop->setEnabled(true);
+	_ui->actionPlay->setEnabled(true);
+	_ui->actionSingleStep->setEnabled(true);
 }
 
 void Controller::stop()
 {
 	if(_currentlyPlaying)
 	{
-		_startWithInit = true;
 		_currentlyPlaying = false;
 		_videoTimer->stop();
-
-		_ui->actionPlay->setEnabled(true);
-		_ui->actionSingleStep->setEnabled(true);
 	}
+
+	_startWithInit = true;
+
+	_ui->actionPause->setEnabled(false);
+	_ui->actionStop->setEnabled(false);
+	_ui->actionPlay->setEnabled(true);
+	_ui->actionSingleStep->setEnabled(true);
+
+	setInteractive(true);
 }
 
 void Controller::processAutoRefresh()
@@ -768,4 +786,14 @@ void Controller::updatePreview()
 		/// TODO: Use somekind of dummy pixmap to indicate that preview is unavailable
 		_ui->outputPreview->setPixmap(QPixmap());
 	}
+}
+
+void Controller::setInteractive(bool allowed)
+{
+	_ui->graphicsView->setPseudoInteractive(allowed);
+
+	if(allowed)
+		_nodeScene->setBackgroundBrush(QColor(64, 64, 64));
+	else
+		_nodeScene->setBackgroundBrush(QColor(34, 34, 34));
 }

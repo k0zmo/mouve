@@ -9,7 +9,12 @@ class NodeEditorView : public QGraphicsView
 	Q_OBJECT
 public:
 	NodeEditorView(QWidget* parent = nullptr);
+
+	/// TODO: SLOTS?
 	void setZoom(float zoom);
+	void setPseudoInteractive(bool allowed);
+	
+	bool isPseudoInteractive() const;
 
 protected:
 	virtual void mousePressEvent(QMouseEvent* event);
@@ -24,8 +29,12 @@ private:
 	bool mPanning;
 	QCursor mOriginalCursor;
 	QPoint mLastMouseEventPos;
+	bool mPseudoInteractive;
 
 signals:
 	void contextMenu(const QPoint& globalPos, const QPointF& scenePos);
 	void keyPress(QKeyEvent* event);
 };
+
+inline bool NodeEditorView::isPseudoInteractive() const
+{ return mPseudoInteractive; }

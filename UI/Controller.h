@@ -87,6 +87,7 @@ private:
 	void processAutoRefresh();
 	bool shouldUpdatePreview(const std::vector<NodeID>& executedNodes);
 	void updatePreview();
+	void setInteractive(bool allowed);
 };
 
 #define gC Controller::instancePtr()
