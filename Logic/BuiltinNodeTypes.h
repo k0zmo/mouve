@@ -10,11 +10,11 @@
 
 #include <QDebug>
 
-class ImageFromFileNodeType : public NodeType
+class VideoFromFileNodeType : public NodeType
 {
-public: 
-	ImageFromFileNodeType()
-		: filePath("lena.jpg")
+public:
+	VideoFromFileNodeType()
+		: _videoPath("video-3.mkv")
 	{
 	}
 
@@ -22,7 +22,71 @@ public:
 	{
 		if(propId == 0)
 		{
-			filePath = newValue.toString().toStdString();
+			_videoPath = newValue.toString().toStdString();
+			return true;
+		}
+
+		return false;
+	}
+
+	bool initialize() override
+	{
+		// This isn't really necessary as subsequent open()
+		// should call it automatically
+		if(_capture.isOpened())
+			_capture.release();
+
+		_capture.open(_videoPath);
+		if(!_capture.isOpened())
+			return false;
+		return true;
+	}
+
+	void execute(NodeSocketReader* reader, NodeSocketWriter* writer) override
+	{
+		Q_UNUSED(reader);
+		qDebug() << "Executing 'Video from file' node";
+
+		cv::Mat& output = writer->lockSocket(0);
+		
+		_capture.read(output);
+	}
+
+	void configuration(NodeConfig& nodeConfig) const override
+	{
+		static const OutputSocketConfig out_config[] = {
+			{ "output", "Output", "" },
+			{ "", "", "" }
+		};
+		static const PropertyConfig prop_config[] = {
+			{ EPropertyType::Filepath, "Video path", QVariant(QString::fromStdString(_videoPath)), "" },
+			{ EPropertyType::Unknown, "", QVariant(), "" }
+		};
+
+		nodeConfig.description = "Provides video frames from specified stream";
+		nodeConfig.pOutputSockets = out_config;
+		nodeConfig.pProperties = prop_config;
+		nodeConfig.flags = Node_State | Node_SelfTagging;
+	}
+
+private:
+	std::string _videoPath;
+	cv::VideoCapture _capture;
+};
+
+class ImageFromFileNodeType : public NodeType
+{
+public: 
+	ImageFromFileNodeType()
+		: _filePath("lena.jpg")
+	{
+	}
+
+	bool setProperty(PropertyID propId, const QVariant& newValue) override
+	{
+		if(propId == 0)
+		{
+			_filePath = newValue.toString().toStdString();
 			return true;
 		}
 
@@ -37,17 +101,17 @@ public:
 
 		cv::Mat& output = writer->lockSocket(0);
 
-		output = cv::imread(filePath, CV_LOAD_IMAGE_GRAYSCALE);
+		output = cv::imread(_filePath, CV_LOAD_IMAGE_GRAYSCALE);
 	}
 
-	void configuration(NodeConfig& nodeConfig) const  override
+	void configuration(NodeConfig& nodeConfig) const override
 	{
 		static const OutputSocketConfig out_config[] = {
 			{ "output", "Output", "" },
 			{ "", "", "" }
 		};
 		static const PropertyConfig prop_config[] = {
-			{ EPropertyType::Filepath, "File path", QVariant(QString::fromStdString(filePath)), "" },
+			{ EPropertyType::Filepath, "File path", QVariant(QString::fromStdString(_filePath)), "" },
 			{ EPropertyType::Unknown, "", QVariant(), "" }
 		};
 
@@ -57,7 +121,7 @@ public:
 	}
 
 private:
-	std::string filePath;
+	std::string _filePath;
 };
 
 class GaussianBlurNodeType : public NodeType
@@ -985,4 +1049,5 @@ REGISTER_NODE("Morphology op.", MorphologyNodeType)
 REGISTER_NODE("Canny edge detector", CannyEdgeDetectorNodeType)
 REGISTER_NODE("Sobel filter", SobelFilterNodeType)
 REGISTER_NODE("Gaussian blur", GaussianBlurNodeType)
+REGISTER_NODE("Video from file", VideoFromFileNodeType)
 REGISTER_NODE("Image from file", ImageFromFileNodeType)

@@ -190,7 +190,7 @@ void Controller::addNode(NodeTypeID nodeTypeID, const QPointF& scenePos)
 void Controller::addNodeView(const QString& nodeTitle,
 	NodeID nodeID, const QPointF& scenePos)
 {
-	NodeConfig nodeConfig = {0};
+	NodeConfig nodeConfig;
 	if(!_nodeTree->nodeConfiguration(nodeID, nodeConfig))
 	{
 		showErrorMessage("[NodeTree] Error during querying node configuration");

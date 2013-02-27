@@ -23,7 +23,7 @@ Node::Node(std::unique_ptr<NodeType> nodeType,
 	, _numOutputs(0)
 	, _nodeTypeID(nodeTypeID)
 {
-	NodeConfig config = {0};
+	NodeConfig config;
 	_nodeType->configuration(config);
 
 	// Count number of input sockets
@@ -82,6 +82,11 @@ const cv::Mat& Node::outputSocket(SocketID socketID) const
 		throw std::runtime_error("bad socketID");
 
 	return _outputSockets[socketID];
+}
+
+bool Node::initialize()
+{
+	return _nodeType->initialize();
 }
 
 void Node::execute(NodeSocketReader* reader, NodeSocketWriter* writer)

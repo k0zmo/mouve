@@ -82,14 +82,14 @@
     <CustomBuild Include="NodeType.h">
       <Filter>Header Files</Filter>
     </CustomBuild>
-    <CustomBuild Include="BuiltinNodeTypes.h">
-      <Filter>Common Files</Filter>
-    </CustomBuild>
     <CustomBuild Include="Precomp.h">
       <Filter>Common Files</Filter>
     </CustomBuild>
     <CustomBuild Include="Prerequisites.h">
       <Filter>Common Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="BuiltinNodeTypes.h">
+      <Filter>CV</Filter>
     </CustomBuild>
   </ItemGroup>
   <ItemGroup>

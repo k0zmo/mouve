@@ -35,6 +35,7 @@ public:
 	NodeTypeID nodeTypeID() const;
 
 	// Below methods are thin wrapper for held NodeType interface
+	bool initialize();
 	void execute(NodeSocketReader* reader, NodeSocketWriter* writer);
 	void configuration(NodeConfig& nodeConfig) const;
 	bool setProperty(PropertyID propID, const QVariant& value);

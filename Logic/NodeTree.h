@@ -16,7 +16,7 @@ public:
 	void tagNode(NodeID nodeID);
 	void untagNode(NodeID nodeID);
 	void prepareList();
-	void execute();
+	void execute(bool withInit = false);
 
 	std::vector<NodeID> executeList() const;
 
@@ -53,6 +53,8 @@ public:
 	std::unique_ptr<NodeIterator> createNodeIterator();
 	std::unique_ptr<NodeLinkIterator> createNodeLinkIterator();
 
+	bool isTreeStateless() const;
+
 private:
 	NodeID allocateNodeID();
 	void deallocateNodeID(NodeID id);
@@ -71,6 +73,8 @@ private:
 	std::vector<NodeLink> _links;
 	std::vector<NodeID> _executeList;
 	std::unordered_map<std::string, NodeID> _nodeNameToNodeID;
+	std::set<NodeID> _stateNodes; // assuming small size of it
+	std::set<NodeID> _selfTaggingNodes;
 	NodeSystem* _nodeSystem;
 	bool _executeListDirty;
 

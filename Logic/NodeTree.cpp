@@ -27,6 +27,7 @@ void NodeTree::clear()
 	_links.clear();
 	_executeList.clear();
 	_nodeNameToNodeID.clear();
+	_stateNodes.clear();
 	_executeListDirty = false;
 }
 
@@ -75,7 +76,7 @@ void NodeTree::prepareList()
 	_executeListDirty = false;
 }
 
-void NodeTree::execute()
+void NodeTree::execute(bool withInit)
 {
 	if(_executeListDirty)
 		prepareList();
@@ -89,13 +90,22 @@ void NodeTree::execute()
 		auto& nodeRef = _nodes[nodeID];
 
 		reader.setNode(nodeID, nodeRef.numInputSockets());
+
+		if(withInit && _stateNodes.find(nodeID) != _stateNodes.end())
+		{
+			/// TODO:
+			/*bool res = */nodeRef.initialize();
+		}
 		nodeRef.execute(&reader, &writer);
 	}
 
 	// Clean
 	_taggedNodesID.clear();
-	// We allow for getting executeList after execute() has been called
 	_executeListDirty = true;
+
+	// tag all self-tagging nodes
+	for(auto id : _selfTaggingNodes)
+		tagNode(id);
 }
 
 std::vector<NodeID> NodeTree::executeList() const
@@ -131,6 +141,14 @@ NodeID NodeTree::createNode(NodeTypeID typeID, const std::string& name)
 	_nodeNameToNodeID.insert(std::make_pair(name, id));
 	// Tag it for next execution
 	tagNode(id);
+
+	// Check if this is a stateless node or not
+	NodeConfig nodeConfig;
+	_nodes[id].configuration(nodeConfig);
+	if(nodeConfig.flags & Node_State)
+		_stateNodes.insert(id);
+	if(nodeConfig.flags & Node_SelfTagging)
+		_selfTaggingNodes.insert(id);
 
 	return id;
 }
@@ -406,6 +424,9 @@ void NodeTree::deallocateNodeID(NodeID id)
 	// Invalidate node
 	_nodes[id] = Node();
 
+	_stateNodes.erase(id);
+	_selfTaggingNodes.erase(id);
+
 	// Add NodeID to recycled ones
 	_recycledIDs.push_back(id);
 
@@ -498,6 +519,11 @@ bool NodeTree::validateNode(NodeID nodeID) const
 	if(nodeID >= _nodes.size() || nodeID == InvalidNodeID)
 		return false;
 	return _nodes[nodeID].isValid();
+}
+
+bool NodeTree::isTreeStateless() const
+{
+	return _stateNodes.empty();
 }
 
 // -----------------------------------------------------------------------------

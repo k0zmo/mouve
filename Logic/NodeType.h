@@ -100,24 +100,48 @@ struct PropertyConfig
 	std::string uiHint;
 };
 
+enum ENodeFlags
+{
+	Node_Stateless   = 0, // default 
+	Node_State       = 1 << 0,
+	Node_SelfTagging = 1 << 1
+};
+Q_DECLARE_FLAGS(NodeFlags, ENodeFlags);
+Q_DECLARE_OPERATORS_FOR_FLAGS(NodeFlags)
+
 struct NodeConfig
 {
 	const InputSocketConfig* pInputSockets;
 	const OutputSocketConfig* pOutputSockets;
 	const PropertyConfig* pProperties;
 	std::string description;
+	NodeFlags flags;
+
+	NodeConfig()
+		: pInputSockets(nullptr)
+		, pOutputSockets(nullptr)
+		, pProperties(nullptr)
+		, description()
+		, flags(Node_Stateless)
+	{
+	}
 };
 
 class NodeType
 {
 public:
 	virtual ~NodeType() {}
-	// virtual void initialize();
-	virtual bool setProperty(PropertyID propId, const QVariant& newValue) { return false; }
-	virtual void execute(NodeSocketReader* reader, NodeSocketWriter* writer) = 0;
 	virtual void configuration(NodeConfig& nodeConfig) const = 0;
+	virtual bool setProperty(PropertyID propId, const QVariant& newValue);
+	virtual bool initialize();
+	virtual void execute(NodeSocketReader* reader, NodeSocketWriter* writer) = 0;
 	// void registerUpdateInterval();
 };
+
+inline bool NodeType::setProperty(PropertyID propId, const QVariant& newValue)
+{ return false; }
+inline bool NodeType::initialize()
+{ return false; }
 
 class NodeTypeIterator
 {

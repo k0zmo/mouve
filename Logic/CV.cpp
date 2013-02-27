@@ -174,7 +174,6 @@ cv::Mat standardStructuringElement(int xradius, int yradius,
 	switch(type)
 	{
 	case EStructuringElementType::Rectangle: shape = cv::MORPH_RECT; break;
-	//case SET_Ellipse: shape = cv::MORPH_ELLIPSE; break;
 	case EStructuringElementType::Cross: shape = cv::MORPH_CROSS; break;
 	default: return cv::Mat();
 	}
