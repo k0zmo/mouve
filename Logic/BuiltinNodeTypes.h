@@ -129,6 +129,54 @@ private:
 	};
 };
 
+class SobelFilterNodeType : public NodeType
+{
+public:
+	SobelFilterNodeType()
+	{
+	}
+
+	void execute(NodeSocketReader* reader, NodeSocketWriter* writer) override
+	{
+		qDebug() << "Executing 'Sobel filter' node";
+
+		const cv::Mat& input = reader->readSocket(0);
+		cv::Mat& output = writer->lockSocket(0);
+
+		if(input.rows == 0 || input.cols == 0)
+		{
+			output = cv::Mat();
+			return;
+		}
+
+		cv::Mat xgrad;
+		cv::Sobel(input, xgrad, CV_16S, 1, 0, 3);
+		cv::convertScaleAbs(xgrad, xgrad);
+
+		cv::Mat ygrad;
+		cv::Sobel(input, ygrad, CV_16S, 0, 1, 3);
+		cv::convertScaleAbs(ygrad, ygrad);
+
+		cv::addWeighted(xgrad, 0.5, ygrad, 0.5, 0, output);
+	}
+
+	void configuration(NodeConfig& nodeConfig) const override
+	{
+		static const InputSocketConfig in_config[] = {
+			{ "input", "Input", "" },
+			{ "", "", "" }
+		};
+		static const OutputSocketConfig out_config[] = {
+			{ "output", "Output", "" },
+			{ "", "", "" }
+		};
+
+		nodeConfig.description = "Calculates the first image derivatives using  Sobel operator";
+		nodeConfig.pInputSockets = in_config;
+		nodeConfig.pOutputSockets = out_config;
+	}
+};
+
 class CannyEdgeDetectorNodeType : public NodeType
 {
 public:
@@ -206,6 +254,27 @@ private:
 class AddNodeType : public NodeType
 {
 public:
+	AddNodeType()
+		: _alpha(0.5)
+		, _beta(0.5)
+	{
+	}
+
+	bool setProperty(PropertyID propId, const QVariant& newValue) override
+	{
+		switch(propId)
+		{
+		case Alpha:
+			_alpha = newValue.toDouble();
+			return true;
+		case Beta:
+			_beta = newValue.toDouble();
+			return true;
+		}
+
+		return false;
+	}
+
 	void execute(NodeSocketReader* reader, NodeSocketWriter* writer) override
 	{
 		qDebug() << "Executing 'Add' node";
@@ -220,7 +289,7 @@ public:
 			return;
 		}
 
-		cv::add(src1, src2, dst);
+		cv::addWeighted(src1, _alpha, src2, _beta, 0, dst);
 	}
 
 	void configuration(NodeConfig& nodeConfig) const override
@@ -234,38 +303,51 @@ public:
 			{ "output", "Output", "" },
 			{ "", "", "" }
 		};
+		static const PropertyConfig prop_config[] = {
+			{ EPropertyType::Double, "Alpha", QVariant(_alpha), "min=0.0;max=1.0;decimals=3;step=0.1" },
+			{ EPropertyType::Double, "Beta", QVariant(_beta), "min=0.0;max=1.0;decimals=3;step=0.1" },
+			{ EPropertyType::Unknown, "", QVariant(), "" }
+		};
 
-		nodeConfig.description = "Adds one image to another: x + y";
+		nodeConfig.description = "Adds one image to another with specified weights: alpha * x + beta * y";
 		nodeConfig.pInputSockets = in_config;
 		nodeConfig.pOutputSockets = out_config;
+		nodeConfig.pProperties = prop_config;
 	}
+
+private:
+	enum EPropertyID
+	{
+		Alpha,
+		Beta
+	};
+
+	double _alpha;
+	double _beta;
 };
 
-class SumOfAbsoluteNodeType : public NodeType
+class AbsoluteNodeType : public NodeType
 {
 public:
 	void execute(NodeSocketReader* reader, NodeSocketWriter* writer) override
 	{
-		qDebug() << "Executing 'Sum of absolute' node";
-		const cv::Mat& src1 = reader->readSocket(0);
-		const cv::Mat& src2 = reader->readSocket(1);
+		qDebug() << "Executing 'Absolute' node";
+		const cv::Mat& src = reader->readSocket(0);
 		cv::Mat& dst = writer->lockSocket(0);
 
-		if((src1.rows == 0 || src1.cols == 0) ||
-			(src2.rows == 0 || src2.cols == 0))
+		if(src.rows == 0 || src.cols == 0)
 		{
 			dst = cv::Mat();
 			return;
 		}
 
-		cv::add(cv::abs(src1), cv::abs(src2), dst);
+		dst = cv::abs(src);
 	}
 
 	void configuration(NodeConfig& nodeConfig) const override
 	{
 		static const InputSocketConfig in_config[] = {
-			{ "source1", "X", "" },
-			{ "source2", "Y", "" },
+			{ "source", "Source", "" },
 			{ "", "", "" }
 		};
 		static const OutputSocketConfig out_config[] = {
@@ -273,7 +355,7 @@ public:
 			{ "", "", "" }
 		};
 
-		nodeConfig.description = "Adds absolute values of two images: |x| + |y|";
+		nodeConfig.description = "Calculates absolute value of a given image: y = abs(x)";
 		nodeConfig.pInputSockets = in_config;
 		nodeConfig.pOutputSockets = out_config;
 	}
@@ -465,6 +547,7 @@ class CustomConvolutionNodeType : public NodeType
 public:
 	CustomConvolutionNodeType()
 		: _coeffs(1)
+		, _scaleAbs(true)
 	{
 	}
 
@@ -472,8 +555,11 @@ public:
 	{
 		switch(propId)
 		{
-		case 0:
+		case Coefficients:
 			_coeffs = newValue.value<Matrix3x3>();
+			return true;
+		case ScaleAbs:
+			_scaleAbs = newValue.toBool();
 			return true;
 		}
 
@@ -487,8 +573,13 @@ public:
 		const cv::Mat& src = reader->readSocket(0);
 		cv::Mat& dst = writer->lockSocket(0);
 
+		int ddepth = _scaleAbs ? CV_16S : -1;
+
 		cv::Mat kernel(3, 3, CV_64FC1, _coeffs.v);
-		cv::filter2D(src, dst, -1, kernel);
+		cv::filter2D(src, dst, ddepth, kernel);
+
+		if(_scaleAbs)
+			cv::convertScaleAbs(dst, dst);
 	}
 
 	void configuration(NodeConfig& nodeConfig) const override
@@ -503,6 +594,7 @@ public:
 		};
 		static const PropertyConfig prop_config[] = {
 			{ EPropertyType::Matrix, "Coefficients", QVariant::fromValue<Matrix3x3>(_coeffs), "" },
+			{ EPropertyType::Boolean, "Scale absolute", QVariant(_scaleAbs), "" },
 			{ EPropertyType::Unknown, "", QVariant(), "" }
 		};
 
@@ -513,7 +605,14 @@ public:
 	}
 
 private:
+	enum EPropertyID
+	{
+		Coefficients,
+		ScaleAbs
+	};
+
 	Matrix3x3 _coeffs;
+	bool _scaleAbs;
 };
 
 #include "CV.h"
@@ -545,7 +644,14 @@ public:
 		const cv::Mat& src = reader->readSocket(0);
 		cv::Mat& dst = writer->lockSocket(0);
 
-		cv::filter2D(src, dst, -1, cvu::predefinedConvolutionKernel(_filterType));
+		cv::Mat kernel = cvu::predefinedConvolutionKernel(_filterType);
+		bool weight0 = cv::sum(kernel) == cv::Scalar(0);
+		int ddepth = weight0 ? CV_16S : -1;
+
+		cv::filter2D(src, dst, ddepth, kernel);
+
+		if(weight0)
+			cv::convertScaleAbs(dst, dst);
 	}
 
 	void configuration(NodeConfig& nodeConfig) const override
@@ -871,11 +977,12 @@ REGISTER_NODE("Predefined convolution", PredefinedConvolutionNodeType)
 REGISTER_NODE("Negate", NegateNodeType)
 REGISTER_NODE("Absolute diff.", AbsoluteDifferenceNodeType)
 REGISTER_NODE("Subtract", SubtractNodeType)
-REGISTER_NODE("Sum of absolute", SumOfAbsoluteNodeType)
+REGISTER_NODE("Absolute", AbsoluteNodeType)
 REGISTER_NODE("Add", AddNodeType)
 REGISTER_NODE("Binarization", BinarizationNodeType)
 REGISTER_NODE("Structuring element", StructuringElementNodeType)
 REGISTER_NODE("Morphology op.", MorphologyNodeType)
 REGISTER_NODE("Canny edge detector", CannyEdgeDetectorNodeType)
+REGISTER_NODE("Sobel filter", SobelFilterNodeType)
 REGISTER_NODE("Gaussian blur", GaussianBlurNodeType)
 REGISTER_NODE("Image from file", ImageFromFileNodeType)
