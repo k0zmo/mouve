@@ -226,8 +226,8 @@ public:
 	void configuration(NodeConfig& nodeConfig) const override
 	{
 		static const InputSocketConfig in_config[] = {
-			{ "source1", "Source 1", "" },
-			{ "source2", "Source 2", "" },
+			{ "source1", "X", "" },
+			{ "source2", "Y", "" },
 			{ "", "", "" }
 		};
 		static const OutputSocketConfig out_config[] = {
@@ -235,7 +235,45 @@ public:
 			{ "", "", "" }
 		};
 
-		nodeConfig.description = "Adds one image from another";
+		nodeConfig.description = "Adds one image to another: x + y";
+		nodeConfig.pInputSockets = in_config;
+		nodeConfig.pOutputSockets = out_config;
+	}
+};
+
+class SumOfAbsoluteNodeType : public NodeType
+{
+public:
+	void execute(NodeSocketReader* reader, NodeSocketWriter* writer) override
+	{
+		qDebug() << "Executing 'Sum of absolute' node";
+		const cv::Mat& src1 = reader->readSocket(0);
+		const cv::Mat& src2 = reader->readSocket(1);
+		cv::Mat& dst = writer->lockSocket(0);
+
+		if((src1.rows == 0 || src1.cols == 0) ||
+			(src2.rows == 0 || src2.cols == 0))
+		{
+			dst = cv::Mat();
+			return;
+		}
+
+		cv::add(cv::abs(src1), cv::abs(src2), dst);
+	}
+
+	void configuration(NodeConfig& nodeConfig) const override
+	{
+		static const InputSocketConfig in_config[] = {
+			{ "source1", "X", "" },
+			{ "source2", "Y", "" },
+			{ "", "", "" }
+		};
+		static const OutputSocketConfig out_config[] = {
+			{ "output", "Output", "" },
+			{ "", "", "" }
+		};
+
+		nodeConfig.description = "Adds absolute values of two images: |x| + |y|";
 		nodeConfig.pInputSockets = in_config;
 		nodeConfig.pOutputSockets = out_config;
 	}
@@ -264,8 +302,8 @@ public:
 	void configuration(NodeConfig& nodeConfig) const override
 	{
 		static const InputSocketConfig in_config[] = {
-			{ "source1", "Source 1", "" },
-			{ "source2", "Source 2", "" },
+			{ "source1", "X", "" },
+			{ "source2", "Y", "" },
 			{ "", "", "" }
 		};
 		static const OutputSocketConfig out_config[] = {
@@ -273,7 +311,45 @@ public:
 			{ "", "", "" }
 		};
 
-		nodeConfig.description = "Subtracts one image from another";
+		nodeConfig.description = "Subtracts one image from another: x - y";
+		nodeConfig.pInputSockets = in_config;
+		nodeConfig.pOutputSockets = out_config;
+	}
+};
+
+class AbsoluteDifferenceNodeType : public NodeType
+{
+public:
+	void execute(NodeSocketReader* reader, NodeSocketWriter* writer) override
+	{
+		qDebug() << "Executing 'Absolute difference' node";
+		const cv::Mat& src1 = reader->readSocket(0);
+		const cv::Mat& src2 = reader->readSocket(1);
+		cv::Mat& dst = writer->lockSocket(0);
+
+		if((src1.rows == 0 || src1.cols == 0) ||
+		   (src2.rows == 0 || src2.cols == 0))
+		{
+			dst = cv::Mat();
+			return;
+		}
+
+		cv::absdiff(src1, src2, dst);
+	}
+
+	void configuration(NodeConfig& nodeConfig) const override
+	{
+		static const InputSocketConfig in_config[] = {
+			{ "source1", "X", "" },
+			{ "source2", "Y", "" },
+			{ "", "", "" }
+		};
+		static const OutputSocketConfig out_config[] = {
+			{ "output", "Output", "" },
+			{ "", "", "" }
+		};
+
+		nodeConfig.description = "Calculates absolute values from difference of two images: |x - y|";
 		nodeConfig.pInputSockets = in_config;
 		nodeConfig.pOutputSockets = out_config;
 	}
@@ -441,6 +517,64 @@ private:
 };
 
 #include "CV.h"
+
+class PredefinedConvolutionNodeType : public NodeType
+{
+public:
+	PredefinedConvolutionNodeType()
+		: _filterType(cvu::EPredefinedConvolutionType::NoOperation)
+	{
+	}
+
+	bool setProperty(PropertyID propId, const QVariant& newValue) override
+	{
+		switch(propId)
+		{
+		case 0:
+			_filterType = cvu::EPredefinedConvolutionType(newValue.toInt());
+			return true;
+		}
+
+		return false;
+	}
+
+	void execute(NodeSocketReader* reader, NodeSocketWriter* writer) override
+	{
+		qDebug() << "Executing 'Predefined Convolution' node";
+
+		const cv::Mat& src = reader->readSocket(0);
+		cv::Mat& dst = writer->lockSocket(0);
+
+		cv::filter2D(src, dst, -1, cvu::predefinedConvolutionKernel(_filterType));
+	}
+
+	void configuration(NodeConfig& nodeConfig) const override
+	{
+		static const InputSocketConfig in_config[] = {
+			{ "source", "Source", "" },
+			{ "", "", "" }
+		};
+		static const OutputSocketConfig out_config[] = {
+			{ "output", "Output", "" },
+			{ "", "", "" }
+		};
+		static const PropertyConfig prop_config[] = {
+			{ EPropertyType::Enum, "Kernel",
+			QVariant(QStringList() << "No operation" << "Average" << "Gaussian" << "Mean removal" << 
+				"Robert's cross 45" << "Robert's cross 135" << "Laplacian" << "Prewitt horizontal" <<
+				"Prewitt vertical" << "Sobel horizontal" << "Sobel vertical"), "index=0" },
+			{ EPropertyType::Unknown, "", QVariant(), "" }
+		};
+
+		nodeConfig.description = "Performs image convolution using one of predefined convolution kernel";
+		nodeConfig.pInputSockets = in_config;
+		nodeConfig.pOutputSockets = out_config;
+		nodeConfig.pProperties = prop_config;
+	}
+
+private:
+	cvu::EPredefinedConvolutionType _filterType;
+};
 
 class StructuringElementNodeType : public NodeType
 {
@@ -733,8 +867,11 @@ private:
 */
 
 REGISTER_NODE("Convolution", CustomConvolutionNodeType)
+REGISTER_NODE("Predefined convolution", PredefinedConvolutionNodeType)
 REGISTER_NODE("Negate", NegateNodeType)
+REGISTER_NODE("Absolute diff.", AbsoluteDifferenceNodeType)
 REGISTER_NODE("Subtract", SubtractNodeType)
+REGISTER_NODE("Sum of absolute", SumOfAbsoluteNodeType)
 REGISTER_NODE("Add", AddNodeType)
 REGISTER_NODE("Binarization", BinarizationNodeType)
 REGISTER_NODE("Structuring element", StructuringElementNodeType)
