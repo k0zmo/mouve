@@ -50,7 +50,8 @@ public:
 		cv::Mat& output = writer->lockSocket(0);
 		
 		_capture.read(output);
-		cv::cvtColor(output, output, CV_BGR2GRAY);
+		if(output.data)
+			cv::cvtColor(output, output, CV_BGR2GRAY);
 	}
 
 	void configuration(NodeConfig& nodeConfig) const override
@@ -71,6 +72,7 @@ public:
 	}
 
 private:
+	/// TODO: bool _opened??
 	std::string _videoPath;
 	cv::VideoCapture _capture;
 };

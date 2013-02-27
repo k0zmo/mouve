@@ -8,6 +8,7 @@ NodeEditorView::NodeEditorView(QWidget* parent)
 	, mPanning(false)
 	, mOriginalCursor(viewport()->cursor())
 	, mLastMouseEventPos(QPoint())
+	, mPseudoInteractive(false)
 {
 	setRenderHint(QPainter::Antialiasing);
 	scale(mZoom, mZoom);
