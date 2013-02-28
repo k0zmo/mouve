@@ -376,6 +376,13 @@ public:
 			return;
 		}
 
+		if(src1.rows != src2.rows
+			|| src1.cols != src2.cols)
+		{
+			dst = cv::Mat();
+			return;
+		}
+
 		cv::addWeighted(src1, _alpha, src2, _beta, 0, dst);
 	}
 
@@ -465,6 +472,13 @@ public:
 			return;
 		}
 
+		if(src1.rows != src2.rows
+			|| src1.cols != src2.cols)
+		{
+			dst = cv::Mat();
+			return;
+		}
+
 		cv::subtract(src1, src2, dst);
 	}
 
@@ -498,6 +512,13 @@ public:
 
 		if((src1.rows == 0 || src1.cols == 0) ||
 		   (src2.rows == 0 || src2.cols == 0))
+		{
+			dst = cv::Mat();
+			return;
+		}
+
+		if(src1.rows != src2.rows
+			|| src1.cols != src2.cols)
 		{
 			dst = cv::Mat();
 			return;
