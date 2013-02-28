@@ -793,7 +793,13 @@ void Controller::setInteractive(bool allowed)
 	_ui->graphicsView->setPseudoInteractive(allowed);
 
 	if(allowed)
+	{
 		_nodeScene->setBackgroundBrush(QColor(64, 64, 64));
+		_ui->propertiesTreeView->setEditTriggers(QAbstractItemView::AllEditTriggers);
+	}
 	else
+	{
 		_nodeScene->setBackgroundBrush(QColor(34, 34, 34));
+		_ui->propertiesTreeView->setEditTriggers(QAbstractItemView::NoEditTriggers);
+	}	
 }
