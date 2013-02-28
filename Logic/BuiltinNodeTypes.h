@@ -15,14 +15,19 @@ class VideoFromFileNodeType : public NodeType
 public:
 	VideoFromFileNodeType()
 		: _videoPath("video-1.mkv")
+		, _startFrame(0)
 	{
 	}
 
 	bool setProperty(PropertyID propId, const QVariant& newValue) override
 	{
-		if(propId == 0)
+		switch(propId)
 		{
+		case VideoPath:
 			_videoPath = newValue.toString().toStdString();
+			return true;
+		case StartFrame:
+			_startFrame = newValue.toUInt();
 			return true;
 		}
 
@@ -39,6 +44,9 @@ public:
 		_capture.open(_videoPath);
 		if(!_capture.isOpened())
 			return false;
+
+		if(_startFrame > 0)
+			_capture.set(CV_CAP_PROP_POS_FRAMES, _startFrame);
 		return true;
 	}
 
@@ -48,6 +56,11 @@ public:
 		qDebug() << "Executing 'Video from file' node";
 
 		cv::Mat& output = writer->lockSocket(0);
+		if(!_capture.isOpened())
+		{
+			output = cv::Mat();
+			return;
+		}
 		
 		_capture.read(output);
 		if(output.data)
@@ -62,6 +75,7 @@ public:
 		};
 		static const PropertyConfig prop_config[] = {
 			{ EPropertyType::Filepath, "Video path", QVariant(QString::fromStdString(_videoPath)), "" },
+			{ EPropertyType::Integer, "Start frame", QVariant(_startFrame), "min=0" },
 			{ EPropertyType::Unknown, "", QVariant(), "" }
 		};
 
@@ -72,9 +86,15 @@ public:
 	}
 
 private:
-	/// TODO: bool _opened??
+	enum EPropertyID
+	{
+		VideoPath,
+		StartFrame
+	};
+
 	std::string _videoPath;
 	cv::VideoCapture _capture;
+	unsigned _startFrame;
 };
 
 class ImageFromFileNodeType : public NodeType
