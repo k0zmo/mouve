@@ -346,12 +346,14 @@
     <Import Project="..\Mouve.Logic.props" />
     <Import Project="..\Mouve.Common.props" />
     <Import Project="..\OpenCV.Debug.props" />
+    <Import Project="..\OpenCV.Video.Debug.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
     <Import Project="..\Mouve.Common.props" />
     <Import Project="..\Mouve.Logic.props" />
     <Import Project="..\OpenCV.Release.props" />
+    <Import Project="..\OpenCV.Video.Release.props" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup>

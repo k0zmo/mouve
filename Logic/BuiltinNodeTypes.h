@@ -7,6 +7,7 @@
 #include <opencv2/core/core.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/highgui/highgui.hpp>
+#include <opencv2/video/video.hpp>
 
 #include <QDebug>
 
@@ -14,7 +15,7 @@ class VideoFromFileNodeType : public NodeType
 {
 public:
 	VideoFromFileNodeType()
-		: _videoPath("video-1.mkv")
+		: _videoPath("video-4.mkv")
 		, _startFrame(0)
 	{
 	}
@@ -95,6 +96,95 @@ private:
 	std::string _videoPath;
 	cv::VideoCapture _capture;
 	unsigned _startFrame;
+};
+
+class MixtureOfGaussianNodeType : public NodeType
+{
+public:
+	MixtureOfGaussianNodeType()
+		: _history(200)
+		, _nmixtures(5)
+		, _backgroundRatio(0.7)
+		, _learningRate(-1)
+	{
+	}
+
+	bool setProperty(PropertyID propId, const QVariant& newValue) override
+	{
+		switch(propId)
+		{
+		case History:
+			_history = newValue.toInt();
+			return true;
+		case NMixtures:
+			_nmixtures = newValue.toInt();
+			return true;
+		case BackgroundRatio:
+			_backgroundRatio = newValue.toDouble();
+			return true;
+		case LearningRate:
+			_learningRate = newValue.toDouble();
+			return true;
+		}
+
+		return false;
+	}
+
+	bool initialize() override
+	{
+		_mog = cv::BackgroundSubtractorMOG(_history, _nmixtures, _backgroundRatio);
+		return true;
+	}
+
+	void execute(NodeSocketReader* reader, NodeSocketWriter* writer) override
+	{
+		qDebug() << "Executing 'Mixture of Gaussian' node";		
+
+		const cv::Mat& source = reader->readSocket(0);
+		cv::Mat& output = writer->lockSocket(0);
+		_mog(source, output, _learningRate);
+	}
+
+	void configuration(NodeConfig& nodeConfig) const override
+	{
+		static const InputSocketConfig in_config[] = {
+			{ "input", "Input", "" },
+			{ "", "", "" }
+		};
+		static const OutputSocketConfig out_config[] = {
+			{ "output", "Output", "" },
+			{ "", "", "" }
+		};
+
+		static const PropertyConfig prop_config[] = {
+			{ EPropertyType::Integer, "History frames", QVariant(_history), "min=1;max=500" },
+			{ EPropertyType::Integer, "Number of mixtures", QVariant(_nmixtures), "min=1;max=9" },
+			{ EPropertyType::Double, "Background ratio", QVariant(_backgroundRatio), "min=0.01;max=0.99;step=0.01" },
+			{ EPropertyType::Double, "Learning rate", QVariant(_learningRate), "min=-1;max=1;step=0.01" },
+			{ EPropertyType::Unknown, "", QVariant(), "" }
+		};
+
+		nodeConfig.description = "Gaussian Mixture-based Background/Foreground Segmentation Algorithm.";
+		nodeConfig.pInputSockets = in_config;
+		nodeConfig.pOutputSockets = out_config;
+		nodeConfig.pProperties = prop_config;
+		nodeConfig.flags = Node_State;
+	}
+
+private:
+	enum EPropertyID
+	{
+		History,
+		NMixtures,
+		BackgroundRatio,
+		LearningRate
+	};
+
+	cv::BackgroundSubtractorMOG _mog;
+	int _history;
+	int _nmixtures;
+	double _backgroundRatio;
+	double _learningRate;
 };
 
 class ImageFromFileNodeType : public NodeType
@@ -1080,6 +1170,7 @@ private:
 };
 */
 
+REGISTER_NODE("Mixture of Gaussians", MixtureOfGaussianNodeType)
 REGISTER_NODE("Convolution", CustomConvolutionNodeType)
 REGISTER_NODE("Predefined convolution", PredefinedConvolutionNodeType)
 REGISTER_NODE("Negate", NegateNodeType)
