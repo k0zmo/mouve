@@ -4,12 +4,12 @@
 #include "NodeType.h"
 #include "NodeFactory.h"
 
+#include <QStringList>
+
 #include <opencv2/core/core.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/video/video.hpp>
-
-#include <QDebug>
 
 class VideoFromFileNodeType : public NodeType
 {
@@ -1152,19 +1152,3 @@ private:
 };
 */
 
-REGISTER_NODE("Mixture of Gaussians", MixtureOfGaussianNodeType)
-REGISTER_NODE("Convolution", CustomConvolutionNodeType)
-REGISTER_NODE("Predefined convolution", PredefinedConvolutionNodeType)
-REGISTER_NODE("Negate", NegateNodeType)
-REGISTER_NODE("Absolute diff.", AbsoluteDifferenceNodeType)
-REGISTER_NODE("Subtract", SubtractNodeType)
-REGISTER_NODE("Absolute", AbsoluteNodeType)
-REGISTER_NODE("Add", AddNodeType)
-REGISTER_NODE("Binarization", BinarizationNodeType)
-REGISTER_NODE("Structuring element", StructuringElementNodeType)
-REGISTER_NODE("Morphology op.", MorphologyNodeType)
-REGISTER_NODE("Canny edge detector", CannyEdgeDetectorNodeType)
-REGISTER_NODE("Sobel filter", SobelFilterNodeType)
-REGISTER_NODE("Gaussian blur", GaussianBlurNodeType)
-REGISTER_NODE("Video from file", VideoFromFileNodeType)
-REGISTER_NODE("Image from file", ImageFromFileNodeType)

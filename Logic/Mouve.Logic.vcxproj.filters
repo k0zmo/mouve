@@ -62,6 +62,9 @@
     <ClCompile Include="CV.cpp">
       <Filter>CV</Filter>
     </ClCompile>
+    <ClCompile Include="BuiltInNodeTypes.cpp">
+      <Filter>CV</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="Node.h">
