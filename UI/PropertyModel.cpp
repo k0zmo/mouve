@@ -59,13 +59,13 @@ void PropertyModel::addProperty(PropertyID propID, EPropertyType propType,
 		if(!uiHint.isEmpty())
 		{
 			AttributeMap uiHintMap;
-			QRegExp re(QString("([^= ]*)\\s*={1}\\s*([^; ]*);?"));
+			QRegExp re(QString("([^= ]*):{1}([^,]*),?"));
 			re.setMinimal(false);
 			int pos = 0;
 
 			while((pos = re.indexIn(uiHint, pos)) != -1)
 			{
-				uiHintMap.insert(re.cap(1), re.cap(2));
+				uiHintMap.insert(re.cap(1), re.cap(2).trimmed());
 				pos += re.matchedLength();
 			}
 

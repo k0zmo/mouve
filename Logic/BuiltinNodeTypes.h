@@ -54,7 +54,6 @@ public:
 	void execute(NodeSocketReader* reader, NodeSocketWriter* writer) override
 	{
 		Q_UNUSED(reader);
-		qDebug() << "Executing 'Video from file' node";
 
 		cv::Mat& output = writer->lockSocket(0);
 		if(!_capture.isOpened())
@@ -75,8 +74,9 @@ public:
 			{ "", "", "" }
 		};
 		static const PropertyConfig prop_config[] = {
-			{ EPropertyType::Filepath, "Video path", QVariant(QString::fromStdString(_videoPath)), "" },
-			{ EPropertyType::Integer, "Start frame", QVariant(_startFrame), "min=0" },
+			{ EPropertyType::Filepath, "Video path", QVariant(QString::fromStdString(_videoPath)),
+				"filter:Video files (*.mkv *.mp4 *.avi)" },
+			{ EPropertyType::Integer, "Start frame", QVariant(_startFrame), "min:0" },
 			{ EPropertyType::Unknown, "", QVariant(), "" }
 		};
 
@@ -138,8 +138,6 @@ public:
 
 	void execute(NodeSocketReader* reader, NodeSocketWriter* writer) override
 	{
-		qDebug() << "Executing 'Mixture of Gaussian' node";		
-
 		const cv::Mat& source = reader->readSocket(0);
 		cv::Mat& output = writer->lockSocket(0);
 		_mog(source, output, _learningRate);
@@ -157,10 +155,10 @@ public:
 		};
 
 		static const PropertyConfig prop_config[] = {
-			{ EPropertyType::Integer, "History frames", QVariant(_history), "min=1;max=500" },
-			{ EPropertyType::Integer, "Number of mixtures", QVariant(_nmixtures), "min=1;max=9" },
-			{ EPropertyType::Double, "Background ratio", QVariant(_backgroundRatio), "min=0.01;max=0.99;step=0.01" },
-			{ EPropertyType::Double, "Learning rate", QVariant(_learningRate), "min=-1;max=1;step=0.01" },
+			{ EPropertyType::Integer, "History frames", QVariant(_history), "min:1, max:500" },
+			{ EPropertyType::Integer, "Number of mixtures", QVariant(_nmixtures), "min:1, max:9" },
+			{ EPropertyType::Double, "Background ratio", QVariant(_backgroundRatio), "min:0.01, max:0.99, step:0.01" },
+			{ EPropertyType::Double, "Learning rate", QVariant(_learningRate), "min:-1, max:1, step:0.01" },
 			{ EPropertyType::Unknown, "", QVariant(), "" }
 		};
 
@@ -210,8 +208,6 @@ public:
 	{
 		Q_UNUSED(reader);
 
-		qDebug() << "Executing 'Image from file' node";		
-
 		cv::Mat& output = writer->lockSocket(0);
 
 		output = cv::imread(_filePath, CV_LOAD_IMAGE_GRAYSCALE);
@@ -224,7 +220,16 @@ public:
 			{ "", "", "" }
 		};
 		static const PropertyConfig prop_config[] = {
-			{ EPropertyType::Filepath, "File path", QVariant(QString::fromStdString(_filePath)), "" },
+			{ EPropertyType::Filepath, "File path", QVariant(QString::fromStdString(_filePath)), "filter:"
+				"Popular image formats (*.bmp *.jpeg *.jpg *.png *.tiff);;"
+				"Windows bitmaps (*.bmp *.dib);;"
+				"JPEG files (*.jpeg *.jpg *.jpe);;"
+				"JPEG 2000 files (*.jp2);;"
+				"Portable Network Graphics (*.png);;"
+				"Portable image format (*.pbm *.pgm *.ppm);;"
+				"Sun rasters (*.sr *.ras);;"
+				"TIFF files (*.tiff *.tif);;"
+				"All files (*.*)" },
 			{ EPropertyType::Unknown, "", QVariant(), "" }
 		};
 
@@ -263,8 +268,6 @@ public:
 
 	void execute(NodeSocketReader* reader, NodeSocketWriter* writer) override
 	{
-		qDebug() << "Executing 'Gaussian blur' node";
-
 		const cv::Mat& input = reader->readSocket(0);
 		cv::Mat& output = writer->lockSocket(0);
 
@@ -283,8 +286,8 @@ public:
 		};
 		static const PropertyConfig prop_config[] = {
 			// TODO: In future we might use slider
-			{ EPropertyType::Integer, "Kernel radius", QVariant(kernelRadius), "min=1;max=20;step=1" },
-			{ EPropertyType::Double, "Sigma", QVariant(sigma), "min=0.0" },
+			{ EPropertyType::Integer, "Kernel radius", QVariant(kernelRadius), "min:1, max:20, step:1" },
+			{ EPropertyType::Double, "Sigma", QVariant(sigma), "min:0.0" },
 			{ EPropertyType::Unknown, "", QVariant(), "" }
 		};
 
@@ -315,8 +318,6 @@ public:
 
 	void execute(NodeSocketReader* reader, NodeSocketWriter* writer) override
 	{
-		qDebug() << "Executing 'Sobel filter' node";
-
 		const cv::Mat& input = reader->readSocket(0);
 		cv::Mat& output = writer->lockSocket(0);
 
@@ -348,7 +349,7 @@ public:
 			{ "", "", "" }
 		};
 
-		nodeConfig.description = "Calculates the first image derivatives using  Sobel operator";
+		nodeConfig.description = "Calculates the first image derivatives using Sobel operator";
 		nodeConfig.pInputSockets = in_config;
 		nodeConfig.pOutputSockets = out_config;
 	}
@@ -365,8 +366,6 @@ public:
 
 	void execute(NodeSocketReader* reader, NodeSocketWriter* writer) override
 	{
-		qDebug() << "Executing 'Canny edge detector' node";
-
 		const cv::Mat& input = reader->readSocket(0);
 		cv::Mat& output = writer->lockSocket(0);
 
@@ -405,8 +404,8 @@ public:
 			{ "", "", "" }
 		};
 		static const PropertyConfig prop_config[] = {
-			{ EPropertyType::Double, "Threshold", QVariant(threshold), "min=0.0;max=100.0;decimals=3" },
-			{ EPropertyType::Double, "Ratio", QVariant(ratio), "min=0.0;decimals=3" },
+			{ EPropertyType::Double, "Threshold", QVariant(threshold), "min:0.0, max:100.0, decimals:3" },
+			{ EPropertyType::Double, "Ratio", QVariant(ratio), "min:0.0, decimals:3" },
 			{ EPropertyType::Unknown, "", QVariant(), "" }
 		};
 
@@ -454,7 +453,6 @@ public:
 
 	void execute(NodeSocketReader* reader, NodeSocketWriter* writer) override
 	{
-		qDebug() << "Executing 'Add' node";
 		const cv::Mat& src1 = reader->readSocket(0);
 		const cv::Mat& src2 = reader->readSocket(1);
 		cv::Mat& dst = writer->lockSocket(0);
@@ -488,8 +486,8 @@ public:
 			{ "", "", "" }
 		};
 		static const PropertyConfig prop_config[] = {
-			{ EPropertyType::Double, "Alpha", QVariant(_alpha), "min=0.0;max=1.0;decimals=3;step=0.1" },
-			{ EPropertyType::Double, "Beta", QVariant(_beta), "min=0.0;max=1.0;decimals=3;step=0.1" },
+			{ EPropertyType::Double, "Alpha", QVariant(_alpha), "min:0.0, max:1.0, decimals:3, step:0.1" },
+			{ EPropertyType::Double, "Beta", QVariant(_beta), "min:0.0, max:1.0, decimals:3, step:0.1" },
 			{ EPropertyType::Unknown, "", QVariant(), "" }
 		};
 
@@ -515,7 +513,6 @@ class AbsoluteNodeType : public NodeType
 public:
 	void execute(NodeSocketReader* reader, NodeSocketWriter* writer) override
 	{
-		qDebug() << "Executing 'Absolute' node";
 		const cv::Mat& src = reader->readSocket(0);
 		cv::Mat& dst = writer->lockSocket(0);
 
@@ -550,7 +547,6 @@ class SubtractNodeType : public NodeType
 public:
 	void execute(NodeSocketReader* reader, NodeSocketWriter* writer) override
 	{
-		qDebug() << "Executing 'Subtract' node";
 		const cv::Mat& src1 = reader->readSocket(0);
 		const cv::Mat& src2 = reader->readSocket(1);
 		cv::Mat& dst = writer->lockSocket(0);
@@ -595,7 +591,6 @@ class AbsoluteDifferenceNodeType : public NodeType
 public:
 	void execute(NodeSocketReader* reader, NodeSocketWriter* writer) override
 	{
-		qDebug() << "Executing 'Absolute difference' node";
 		const cv::Mat& src1 = reader->readSocket(0);
 		const cv::Mat& src2 = reader->readSocket(1);
 		cv::Mat& dst = writer->lockSocket(0);
@@ -640,7 +635,6 @@ class NegateNodeType : public NodeType
 public:
 	void execute(NodeSocketReader* reader, NodeSocketWriter* writer) override
 	{
-		qDebug() << "Executing 'Negate' node";
 		const cv::Mat& src = reader->readSocket(0);
 		cv::Mat& dst = writer->lockSocket(0);
 
@@ -691,8 +685,6 @@ public:
 
 	void execute(NodeSocketReader* reader, NodeSocketWriter* writer) override
 	{
-		qDebug() << "Executing 'Binarization' node";
-
 		const cv::Mat& src = reader->readSocket(0);
 		cv::Mat& dst = writer->lockSocket(0);
 
@@ -717,7 +709,7 @@ public:
 			{ "", "", "" }
 		};
 		static const PropertyConfig prop_config[] = {
-			{ EPropertyType::Integer, "Threshold", QVariant(threshold), "min=0;max=255" },
+			{ EPropertyType::Integer, "Threshold", QVariant(threshold), "min:0, max:255" },
 			{ EPropertyType::Boolean, "Inverted", QVariant(inv), "" },
 			{ EPropertyType::Unknown, "", QVariant(), "" }
 		};
@@ -766,8 +758,6 @@ public:
 
 	void execute(NodeSocketReader* reader, NodeSocketWriter* writer) override
 	{
-		qDebug() << "Executing 'Custom Convolution' node";
-
 		const cv::Mat& src = reader->readSocket(0);
 		cv::Mat& dst = writer->lockSocket(0);
 
@@ -837,8 +827,6 @@ public:
 
 	void execute(NodeSocketReader* reader, NodeSocketWriter* writer) override
 	{
-		qDebug() << "Executing 'Predefined Convolution' node";
-
 		const cv::Mat& src = reader->readSocket(0);
 		cv::Mat& dst = writer->lockSocket(0);
 
@@ -866,7 +854,7 @@ public:
 			{ EPropertyType::Enum, "Kernel",
 			QVariant(QStringList() << "No operation" << "Average" << "Gaussian" << "Mean removal" << 
 				"Robert's cross 45" << "Robert's cross 135" << "Laplacian" << "Prewitt horizontal" <<
-				"Prewitt vertical" << "Sobel horizontal" << "Sobel vertical"), "index=0" },
+				"Prewitt vertical" << "Sobel horizontal" << "Sobel vertical"), "index:0" },
 			{ EPropertyType::Unknown, "", QVariant(), "" }
 		};
 
@@ -915,8 +903,6 @@ public:
 
 	void execute(NodeSocketReader* reader, NodeSocketWriter* writer) override
 	{
-		qDebug() << "Executing 'Structuring element' node";
-
 		cv::Mat& kernel = writer->lockSocket(0);
 
 		if(xradius == 0 || yradius == 0)
@@ -936,10 +922,10 @@ public:
 		};
 		static const PropertyConfig prop_config[] = {
 			{ EPropertyType::Enum, "SE shape", 
-				QVariant(QStringList() << "Rectangle" << "Ellipse" << "Cross"), "index=1" },
-			{ EPropertyType::Integer, "Horizontal radius", QVariant(xradius), "min=1;max=50" },
-			{ EPropertyType::Integer, "Vertical radius", QVariant(yradius), "min=1;max=50" },
-			{ EPropertyType::Integer, "Rotation", QVariant(rotation), "min=0;max=359;wrap=true" },
+				QVariant(QStringList() << "Rectangle" << "Ellipse" << "Cross"), "index:1" },
+			{ EPropertyType::Integer, "Horizontal radius", QVariant(xradius), "min:1, max:50" },
+			{ EPropertyType::Integer, "Vertical radius", QVariant(yradius), "min:1, max:50" },
+			{ EPropertyType::Integer, "Rotation", QVariant(rotation), "min:0, max:359, wrap:true" },
 			{ EPropertyType::Unknown, "", QVariant(), "" }
 		};
 
@@ -987,8 +973,6 @@ public:
 
 	void execute(NodeSocketReader* reader, NodeSocketWriter* writer) override
 	{
-		qDebug() << "Executing 'Morphology' node";
-
 		const cv::Mat& src = reader->readSocket(0);
 		const cv::Mat& se = reader->readSocket(1);
 		cv::Mat& dst = writer->lockSocket(0);
@@ -1085,8 +1069,6 @@ public:
 
 	void execute(NodeSocketReader* reader, NodeSocketWriter* writer) override
 	{
-		qDebug() << "Executing 'Morphology' node";
-
 		const cv::Mat& src = reader->readSocket(0);
 		cv::Mat& dst = writer->lockSocket(0);
 		cv::Mat& kernel = writer->lockSocket(1);

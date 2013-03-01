@@ -484,22 +484,7 @@ QWidget* FilePathProperty::createEditor(QWidget* parent,
 										const QStyleOptionViewItem& option)
 {
 	FileRequester* editor = new FileRequester(parent);
-
-	/// TODO:
-	/// editor->setFilter(_filter);
-
-	editor->setFilter(QObject::tr(
-		"Popular image formats (*.bmp *.jpeg *.jpg *.png *.tiff);;"
-		"Windows bitmaps (*.bmp *.dib);;"
-		"JPEG files (*.jpeg *.jpg *.jpe);;"
-		"JPEG 2000 files (*.jp2);;"
-		"Portable Network Graphics (*.png);;"
-		"Portable image format (*.pbm *.pgm *.ppm);;"
-		"Sun rasters (*.sr *.ras);;"
-		"TIFF files (*.tiff *.tif);;"
-		"Video files (*.mkv *.mp4 *.avi);;"
-		"All files (*.*)"));
-
+	editor->setFilter(_filter);
 	return editor;
 }
 
