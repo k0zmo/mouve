@@ -94,6 +94,19 @@ Controller::~Controller()
 	delete _ui;
 }
 
+void Controller::closeEvent(QCloseEvent* event)
+{
+	if (canQuit())
+	{
+		// QMainWindow::saveState?
+		event->accept();
+	} 
+	else
+	{
+		event->ignore();
+	}
+}
+
 void Controller::setupUi()
 {
 	_ui->setupUi(this);
@@ -663,29 +676,8 @@ void Controller::changeProperty(NodeID nodeID,
 
 void Controller::newTree()
 {
-	if(_nodeTreeDirty)
-	{
-		QString message = QString("Save \"%1\" ?")
-			.arg((_nodeTreeFilePath.isEmpty()
-				? tr("Untitled")
-				: _nodeTreeFilePath));
-
-		QMessageBox::StandardButton reply= QMessageBox::question(
-			this, tr("Save unsaved changes"), message, 
-			QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel);
-
-		if (reply == QMessageBox::Yes)
-		{
-			if(!saveTree())
-				return;
-		}
-		else if(reply == QMessageBox::Cancel)
-		{
-			return;
-		}
-	}
-
-	createNewTree();
+	if(canQuit())
+		createNewTree();
 }
 
 void Controller::openTree()
@@ -888,6 +880,33 @@ void Controller::updateTitleBar()
 	if(_nodeTreeDirty)
 		windowTitle += "*";
 	setWindowTitle(windowTitle + tmp);
+}
+
+bool Controller::canQuit()
+{
+	if(_nodeTreeDirty)
+	{
+		QString message = QString("Save \"%1\" ?")
+			.arg((_nodeTreeFilePath.isEmpty()
+				? tr("Untitled")
+				: _nodeTreeFilePath));
+
+		QMessageBox::StandardButton reply= QMessageBox::question(
+			this, tr("Save unsaved changes"), message, 
+			QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel);
+
+		if (reply == QMessageBox::Yes)
+		{
+			if(!saveTree())
+				return false;
+		}
+		else if(reply == QMessageBox::Cancel)
+		{
+			return false;
+		}
+	}
+
+	return true;
 }
 
 void Controller::createNewNodeScene()

@@ -19,6 +19,11 @@ public:
 	explicit Controller(QWidget* parent = nullptr, Qt::WindowFlags flags = 0);
 	virtual ~Controller();
 
+	
+protected:
+	/// NEW
+	void closeEvent(QCloseEvent* event);
+
 private:
 	void addNode(NodeTypeID nodeTypeID, const QPointF& scenePos);
 	void addNodeView(const QString& nodeTitle,
@@ -99,11 +104,15 @@ private:
 
 	void updateTitleBar();
 
+	bool canQuit();
+
 	void createNewNodeScene();
 	void createNewTree();
 	bool saveTreeToFile(const QString& filePath);
 	bool saveTreeToFileImpl(const QString& filePath);
 	bool openTreeFromFile(const QString& filePath);
+
+
 };
 
 #define gC Controller::instancePtr()
