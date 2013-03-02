@@ -48,6 +48,11 @@
     <property name="title">
      <string>&amp;File</string>
     </property>
+    <addaction name="actionNewTree"/>
+    <addaction name="actionOpenTree"/>
+    <addaction name="actionSaveTree"/>
+    <addaction name="actionSaveTreeAs"/>
+    <addaction name="separator"/>
     <addaction name="actionQuit"/>
    </widget>
    <widget class="QMenu" name="menuView">
@@ -356,6 +361,14 @@
    </property>
    <property name="toolTip">
     <string>Save current tree</string>
+   </property>
+  </action>
+  <action name="actionSaveTreeAs">
+   <property name="text">
+    <string>Save tree as ...</string>
+   </property>
+   <property name="toolTip">
+    <string>Save tree as ...</string>
    </property>
   </action>
  </widget>

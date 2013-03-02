@@ -22,12 +22,16 @@
 #include <QMessageBox>
 #include <QMenu>
 
+#include <QJsonDocument>
+#include <QFileDialog>
+
 #include "ui_MainWindow.h"
 
 static bool DEBUG_LINKS = false;
 static const int maxImageWidth = 400;
 static const int maxImageHeight = 400;
 
+static const QString applicationTitle = QStringLiteral("mouve");
 template<> Controller* Singleton<Controller>::_singleton = nullptr;
 
 Controller::Controller(QWidget* parent, Qt::WindowFlags flags)
@@ -43,6 +47,7 @@ Controller::Controller(QWidget* parent, Qt::WindowFlags flags)
 	, _videoTimer(new QTimer(this))
 {
 	setupUi();
+	updateTitleBar();
 
 	// Set up a node scene
 	/// xXx: Temporary
@@ -83,6 +88,11 @@ Controller::Controller(QWidget* parent, Qt::WindowFlags flags)
 
 Controller::~Controller()
 {
+	/// TODO:
+	/// Is this really is correct ? 
+	/// Deleting nodeScene should delete linkviews and nodeviews
+	/// If so, we can also change it to qDeleteAll()
+
 	foreach(NodeLinkView* link, _linkViews)
 		delete link;
 	_linkViews.clear();
@@ -141,6 +151,11 @@ void Controller::setupUi()
 	_ui->menuHelp->addAction(actionAboutQt);
 
 	// Connect actions from a toolbar
+	connect(_ui->actionNewTree, &QAction::triggered, this, &Controller::newTree);
+	connect(_ui->actionOpenTree, &QAction::triggered, this, &Controller::openTree);
+	connect(_ui->actionSaveTree, &QAction::triggered, this, &Controller::saveTree);
+	connect(_ui->actionSaveTreeAs, &QAction::triggered, this, &Controller::saveTreeAs);
+
 	connect(_ui->actionSingleStep, &QAction::triggered, this, &Controller::singleStep);
 	connect(_ui->actionAutoRefresh, &QAction::triggered, this, &Controller::autoRefresh);
 	connect(_ui->actionPlay, &QAction::triggered, this, &Controller::play);
@@ -639,6 +654,38 @@ void Controller::changeProperty(NodeID nodeID,
 	}
 }
 
+void Controller::newTree()
+{
+	qWarning() << "Not implemented yet";
+}
+
+void Controller::openTree()
+{
+	qWarning() << "Not implemented yet";
+}
+
+void Controller::saveTree()
+{
+	// if current tree isn't associated with any file we need to act as "save as"
+	if(_nodeTreeFilePath.isEmpty())
+	{
+		saveTreeAs();
+		return;
+	}
+
+	saveTreeToFile(_nodeTreeFilePath);
+}
+
+void Controller::saveTreeAs()
+{
+	QString filePath = QFileDialog::getSaveFileName(
+		this, tr("Save file as..."),QString(), "Node tree files (*.tree)"); 
+	if(filePath.isEmpty())
+		return;
+
+	saveTreeToFile(filePath);
+}
+
 void Controller::singleStep()
 {
 	/// TODO: Cleanup, this is only temporary (as well as "timer driven" video)
@@ -802,4 +849,150 @@ void Controller::setInteractive(bool allowed)
 		_nodeScene->setBackgroundBrush(QColor(34, 34, 34));
 		_ui->propertiesTreeView->setEditTriggers(QAbstractItemView::NoEditTriggers);
 	}	
+}
+
+void Controller::updateTitleBar()
+{
+	QString tmp = _nodeTreeFilePath.isEmpty()
+		? tr("Untitled")
+		: QFileInfo(_nodeTreeFilePath).fileName();
+	setWindowTitle(applicationTitle + " - " + tmp);
+}
+
+void Controller::saveTreeToFile(const QString& filePath)
+{
+	if(saveTreeToFileImpl(filePath))
+	{
+		_nodeTreeFilePath = filePath;
+		updateTitleBar();
+		qDebug() << "Tree successfully save to file:" << filePath;
+	}
+	else
+	{
+		showErrorMessage("Error occured during saving file! Check logs for more details.");
+		qCritical() << "Couldn't save node tree to file:" << filePath;
+	}
+}
+
+bool Controller::saveTreeToFileImpl(const QString& filePath)
+{
+	// Iterate over all nodes and serialize it as JSON value of JSON array
+	QJsonArray jsonNodes;
+	auto nodeIt = _nodeTree->createNodeIterator();
+	NodeID nodeID;
+	while(const Node* node = nodeIt->next(nodeID))
+	{
+		QJsonObject jsonNode;
+
+		NodeTypeID nodeTypeID = node->nodeTypeID();
+		QString nodeName = QString::fromStdString(node->nodeName());
+		QString nodeTypeName = QString::fromStdString(_nodeTree->nodeTypeName(nodeID));		
+		QPointF nodePos = _nodeViews[nodeID]->scenePos();
+
+		jsonNode.insert(QStringLiteral("typeId"), nodeTypeID);
+		jsonNode.insert(QStringLiteral("id"), nodeID);
+		jsonNode.insert(QStringLiteral("name"), nodeName);
+		jsonNode.insert(QStringLiteral("typeName"), nodeTypeName);
+		jsonNode.insert(QStringLiteral("scenePosX"), nodePos.x());
+		jsonNode.insert(QStringLiteral("scenePosY"), nodePos.y());
+
+		// Save properties' values
+		NodeConfig nodeConfig;
+		node->configuration(nodeConfig);
+		PropertyID propID = 0;
+		QJsonArray jsonProperties;
+
+		if(nodeConfig.pProperties)
+		{
+			while(nodeConfig.pProperties[propID].type != EPropertyType::Unknown)
+			{
+				QVariant propValue = node->property(propID);
+
+				if(propValue.isValid())
+				{
+					auto& prop = nodeConfig.pProperties[propID];
+
+					QJsonObject jsonProp;
+					jsonProp.insert(QStringLiteral("propId"), propID);
+
+					switch(prop.type)
+					{
+					case EPropertyType::Boolean:
+						jsonProp.insert("value", propValue.toBool());
+						jsonProp.insert("type", QStringLiteral("boolean"));
+						break;
+					case EPropertyType::Integer:
+						jsonProp.insert("Value", propValue.toInt());
+						jsonProp.insert("type", QStringLiteral("integer"));
+						break;
+					case EPropertyType::Double:
+						jsonProp.insert("value", propValue.toDouble());
+						jsonProp.insert("type", QStringLiteral("double"));
+						break;
+					case EPropertyType::Enum:
+						jsonProp.insert("value", propValue.toInt());
+						jsonProp.insert("type", QStringLiteral("enum"));
+						break;
+					case EPropertyType::Matrix:
+						{
+							QJsonArray jsonMatrix;
+							Matrix3x3 matrix = propValue.value<Matrix3x3>();
+							for(double v : matrix.v)
+								jsonMatrix.append(v);
+							jsonProp.insert("value", jsonMatrix);
+							jsonProp.insert("type", QStringLiteral("matrix3x3"));
+							break;
+						}
+					case EPropertyType::Filepath:
+						jsonProp.insert("value", propValue.toString());
+						jsonProp.insert("type", QStringLiteral("filepath"));
+						break;
+					case EPropertyType::String:
+						jsonProp.insert("value", propValue.toString());
+						jsonProp.insert("type", QStringLiteral("string"));
+						break;
+					}
+
+					jsonProperties.append(jsonProp);
+				}
+
+				++propID;
+			}
+		}
+
+		if(!jsonProperties.isEmpty())
+			jsonNode.insert(QStringLiteral("properties"), jsonProperties);
+
+		jsonNodes.append(jsonNode);
+	}
+
+	// Iterate over all links and serialize it as JSON value of JSON array
+	QJsonArray jsonLinks;
+	auto linkIt = _nodeTree->createNodeLinkIterator();
+	NodeLink nodeLink;
+	while(linkIt->next(nodeLink))
+	{
+		QJsonObject jsonLink;
+
+		jsonLink.insert(QStringLiteral("fromNode"), nodeLink.fromNode);
+		jsonLink.insert(QStringLiteral("fromSocket"), nodeLink.fromSocket);
+		jsonLink.insert(QStringLiteral("toNode"), nodeLink.toNode);
+		jsonLink.insert(QStringLiteral("toSocket"), nodeLink.toSocket);
+
+		jsonLinks.append(jsonLink);
+	}
+
+	// Finally, add JSON arrays representing nodes and links
+	QJsonObject jsonTree;
+	jsonTree.insert(QStringLiteral("nodes"), jsonNodes);
+	jsonTree.insert(QStringLiteral("links"), jsonLinks);
+
+	QJsonDocument doc(jsonTree);
+	QByteArray textJson = doc.toJson();
+
+	QFile file(filePath);
+	if(!file.open(QIODevice::WriteOnly | QIODevice::Text))
+		return false;
+	file.write(textJson);
+	return true;
 }

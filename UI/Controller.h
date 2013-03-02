@@ -51,6 +51,11 @@ private slots:
 	void changeProperty(NodeID nodeID, PropertyID propID, 
 		const QVariant& newValue, bool* ok);
 
+	void newTree();
+	void openTree();
+	void saveTree();
+	void saveTreeAs();
+
 	void singleStep();
 	void autoRefresh();
 
@@ -80,6 +85,8 @@ private:
 	bool _currentlyPlaying;
 	bool _startWithInit;
 
+	QString _nodeTreeFilePath;
+
 private:
 	void showErrorMessage(const QString& message);
 
@@ -88,6 +95,10 @@ private:
 	bool shouldUpdatePreview(const std::vector<NodeID>& executedNodes);
 	void updatePreview();
 	void setInteractive(bool allowed);
+
+	void updateTitleBar();
+	void saveTreeToFile(const QString& filePath);
+	bool saveTreeToFileImpl(const QString& filePath);
 };
 
 #define gC Controller::instancePtr()
