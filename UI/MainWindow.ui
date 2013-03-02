@@ -64,7 +64,27 @@
    <addaction name="menuView"/>
    <addaction name="menuHelp"/>
   </widget>
-  <widget class="QToolBar" name="toolBar">
+  <widget class="QToolBar" name="documentToolbar">
+   <property name="windowTitle">
+    <string>Document toolbar</string>
+   </property>
+   <property name="iconSize">
+    <size>
+     <width>32</width>
+     <height>32</height>
+    </size>
+   </property>
+   <attribute name="toolBarArea">
+    <enum>TopToolBarArea</enum>
+   </attribute>
+   <attribute name="toolBarBreak">
+    <bool>false</bool>
+   </attribute>
+   <addaction name="actionNewTree"/>
+   <addaction name="actionOpenTree"/>
+   <addaction name="actionSaveTree"/>
+  </widget>
+  <widget class="QToolBar" name="controlToolBar">
    <property name="windowTitle">
     <string>Control toolbar</string>
    </property>
@@ -296,10 +316,46 @@
      <normaloff>:/images/button-synchronize.png</normaloff>:/images/button-synchronize.png</iconset>
    </property>
    <property name="text">
-    <string>Auto Refresh</string>
+    <string>Autor refresh</string>
    </property>
    <property name="toolTip">
-    <string>Auto Refresh</string>
+    <string>Turn off/on auto refresh</string>
+   </property>
+  </action>
+  <action name="actionNewTree">
+   <property name="icon">
+    <iconset resource="Editor.qrc">
+     <normaloff>:/images/button-document.png</normaloff>:/images/button-document.png</iconset>
+   </property>
+   <property name="text">
+    <string>New tree</string>
+   </property>
+   <property name="toolTip">
+    <string>New tree</string>
+   </property>
+  </action>
+  <action name="actionOpenTree">
+   <property name="icon">
+    <iconset resource="Editor.qrc">
+     <normaloff>:/images/button-folder.png</normaloff>:/images/button-folder.png</iconset>
+   </property>
+   <property name="text">
+    <string>Open tree</string>
+   </property>
+   <property name="toolTip">
+    <string>Open tree</string>
+   </property>
+  </action>
+  <action name="actionSaveTree">
+   <property name="icon">
+    <iconset resource="Editor.qrc">
+     <normaloff>:/images/button-floppy.png</normaloff>:/images/button-floppy.png</iconset>
+   </property>
+   <property name="text">
+    <string>Save tree</string>
+   </property>
+   <property name="toolTip">
+    <string>Save current tree</string>
    </property>
   </action>
  </widget>

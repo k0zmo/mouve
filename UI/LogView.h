@@ -2,6 +2,7 @@
 
 #include <QListWidget>
 #include <QHBoxLayout>
+#include <QIcon>
 #include <qlogging.h>
 
 class LogView : public QWidget
@@ -21,5 +22,8 @@ private:
 	// Intrusive list of all created log views (in distant future: all log channels)
 	LogView* _nextView;
 	static LogView* _headView;
+	static QIcon _warningIcon;
+	static QIcon _infoIcon;
+	static QIcon _errorIcon;
 };
 

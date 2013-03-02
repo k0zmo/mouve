@@ -590,7 +590,7 @@ void Controller::changeProperty(NodeID nodeID,
 								const QVariant& newValue,
 								bool* ok)
 {
-	qDebug() << "[INFO] Property changed! details: nodeID:" << nodeID << ", propID:" << propID << "newValue:" << newValue;
+	qDebug() << "Property changed! details: nodeID:" << nodeID << ", propID:" << propID << "newValue:" << newValue;
 
 	// 'System' property
 	if(propID < 0)
@@ -634,7 +634,7 @@ void Controller::changeProperty(NodeID nodeID,
 	}
 	else
 	{
-		qWarning() << "[ERROR] bad value for nodeID:" << nodeID << 
+		qWarning() << "Bad value for nodeID:" << nodeID << 
 			", propertyID:" << propID << ", newValue:" << newValue;
 	}
 }

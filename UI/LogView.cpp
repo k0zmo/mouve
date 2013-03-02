@@ -3,6 +3,9 @@
 #include <QDateTime>
 
 LogView* LogView::_headView = nullptr;
+QIcon LogView::_warningIcon;
+QIcon LogView::_infoIcon;
+QIcon LogView::_errorIcon;
 
 LogView::LogView(QWidget* parent)
 	: QWidget(parent)
@@ -10,7 +13,14 @@ LogView::LogView(QWidget* parent)
 {
 	// register message handler - but only once
 	if(!_headView)
+	{
 		qInstallMessageHandler(LogView::messageHandler);
+
+		// open icon
+		_warningIcon = QIcon(":/images/exclamation-white.png");
+		_infoIcon = QIcon(":/images/question-baloon.png");
+		_errorIcon = QIcon(":/images/exclamation-black.png");
+	}
 
 	// append at the beginning
 	_nextView = _headView;
@@ -53,23 +63,23 @@ void LogView::messageHandler(QtMsgType type,
 		switch(type)
 		{
 		case QtDebugMsg:
-			item->setBackgroundColor(Qt::white);
-			item->setTextColor(Qt::black);
+			item->setIcon(_infoIcon);
 			break;
 
 		case QtWarningMsg:
-			item->setBackgroundColor(Qt::yellow);
-			item->setTextColor(Qt::black);
+			item->setIcon(_warningIcon);
 			break;
 
 		case QtCriticalMsg:
 			item->setBackgroundColor(Qt::red);
 			item->setTextColor(Qt::blue);
+			item->setIcon(_errorIcon);
 			break;
 
 		case QtFatalMsg:
 			item->setBackgroundColor(Qt::red);
 			item->setTextColor(Qt::yellow);
+			item->setIcon(_errorIcon);
 			break;
 		}
 
