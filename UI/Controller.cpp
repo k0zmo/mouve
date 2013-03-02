@@ -37,7 +37,6 @@ template<> Controller* Singleton<Controller>::_singleton = nullptr;
 Controller::Controller(QWidget* parent, Qt::WindowFlags flags)
 	: QMainWindow(parent, flags)
 	, _previewSelectedNodeView(nullptr)
-	, _nodeScene(new NodeScene(this))
 	, _nodeSystem(new NodeSystem())
 	, _propManager(new PropertyManager(this))
 	, _ui(new Ui::MainWindow())
@@ -45,21 +44,11 @@ Controller::Controller(QWidget* parent, Qt::WindowFlags flags)
 	, _currentlyPlaying(false)
 	, _startWithInit(true)
 	, _videoTimer(new QTimer(this))
+	, _nodeTreeDirty(false)
 {
 	setupUi();
 	updateTitleBar();
-
-	// Set up a node scene
-	/// xXx: Temporary
-	///_nodeScene->setSceneRect(-200,-200,1000,600);
-
-	connect(_nodeScene, &QGraphicsScene::selectionChanged,
-		this, &Controller::sceneSelectionChanged);
-
-	/// Qt bug concering scene->removeItem ?? Seems to fixed it
-	_nodeScene->setItemIndexMethod(QGraphicsScene::NoIndex);
-
-	_ui->graphicsView->setScene(_nodeScene);
+	createNewNodeScene();	
 
 	/// MB: Use eventFilter?
 	// Context menu from node graphics view
@@ -69,9 +58,10 @@ Controller::Controller(QWidget* parent, Qt::WindowFlags flags)
 	connect(_ui->graphicsView, &NodeEditorView::keyPress,
 		this, &Controller::keyPress);
 
-	/// xXx: Create our node tree
+	// Create node tree
 	_nodeTree = _nodeSystem->createNodeTree();
 
+	/// TODO: Fix it - use some kind of a NodeTypeModel
 	// Get available nodes and and them to Add Node context menu
 	auto nodeTypeIterator = _nodeSystem->createNodeTypeIterator();
 	NodeTypeIterator::NodeTypeInfo info;
@@ -149,6 +139,10 @@ void Controller::setupUi()
 	actionAboutQt->setMenuRole(QAction::AboutQtRole);
 	connect(actionAboutQt, SIGNAL(triggered()), qApp, SLOT(aboutQt()));
 	_ui->menuHelp->addAction(actionAboutQt);
+
+	_ui->actionNewTree->setShortcut(QKeySequence(QKeySequence::New));
+	_ui->actionOpenTree->setShortcut(QKeySequence(QKeySequence::Open));
+	_ui->actionSaveTree->setShortcut(QKeySequence(QKeySequence::Save));
 
 	// Connect actions from a toolbar
 	connect(_ui->actionNewTree, &QAction::triggered, this, &Controller::newTree);
@@ -232,6 +226,9 @@ void Controller::addNode(NodeTypeID nodeTypeID, const QPointF& scenePos)
 
 	// Create new view associated with the model
 	addNodeView(QString::fromStdString(nodeTitle), nodeID, scenePos);
+
+	_nodeTreeDirty = true;
+	updateTitleBar();
 
 	if(!_nodeTree->isTreeStateless())
 		switchToVideoMode();
@@ -348,6 +345,8 @@ void Controller::linkNodes(NodeSocketView* from, NodeSocketView* to)
 	_linkViews.append(link);
 	_nodeScene->addItem(link);
 
+	_nodeTreeDirty = true;
+	updateTitleBar();
 	processAutoRefresh();
 }
 
@@ -382,6 +381,8 @@ void Controller::unlinkNodes(NodeLinkView* linkView)
 	_nodeScene->removeItem(linkView);
 	delete linkView;
 
+	_nodeTreeDirty = true;
+	updateTitleBar();
 	processAutoRefresh();
 }
 
@@ -439,6 +440,8 @@ void Controller::deleteNode(NodeView* nodeView)
 	}
 	nodeView->deleteLater();
 
+	_nodeTreeDirty = true;
+	updateTitleBar();
 	processAutoRefresh();
 }
 
@@ -631,6 +634,8 @@ void Controller::changeProperty(NodeID nodeID,
 				{
 					_nodeTree->setNodeName(nodeID, nameStd);
 					_nodeViews[nodeID]->setNodeViewName(name);
+					_nodeTreeDirty = true;
+					updateTitleBar();
 				}
 				else
 				{
@@ -645,6 +650,8 @@ void Controller::changeProperty(NodeID nodeID,
 	if(_nodeTree->nodeSetProperty(nodeID, propID, newValue))
 	{
 		_nodeTree->tagNode(nodeID);
+		_nodeTreeDirty = true;
+		updateTitleBar();
 		processAutoRefresh();
 	}
 	else
@@ -656,7 +663,29 @@ void Controller::changeProperty(NodeID nodeID,
 
 void Controller::newTree()
 {
-	qWarning() << "Not implemented yet";
+	if(_nodeTreeDirty)
+	{
+		QString message = QString("Save \"%1\" ?")
+			.arg((_nodeTreeFilePath.isEmpty()
+				? tr("Untitled")
+				: _nodeTreeFilePath));
+
+		QMessageBox::StandardButton reply= QMessageBox::question(
+			this, tr("Save unsaved changes"), message, 
+			QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel);
+
+		if (reply == QMessageBox::Yes)
+		{
+			if(!saveTree())
+				return;
+		}
+		else if(reply == QMessageBox::Cancel)
+		{
+			return;
+		}
+	}
+
+	createNewTree();
 }
 
 void Controller::openTree()
@@ -664,26 +693,25 @@ void Controller::openTree()
 	qWarning() << "Not implemented yet";
 }
 
-void Controller::saveTree()
+bool Controller::saveTree()
 {
 	// if current tree isn't associated with any file we need to act as "save as"
 	if(_nodeTreeFilePath.isEmpty())
 	{
-		saveTreeAs();
-		return;
+		return saveTreeAs();
 	}
 
-	saveTreeToFile(_nodeTreeFilePath);
+	return saveTreeToFile(_nodeTreeFilePath);
 }
 
-void Controller::saveTreeAs()
+bool Controller::saveTreeAs()
 {
 	QString filePath = QFileDialog::getSaveFileName(
 		this, tr("Save file as..."),QString(), "Node tree files (*.tree)"); 
 	if(filePath.isEmpty())
-		return;
+		return false;
 
-	saveTreeToFile(filePath);
+	return saveTreeToFile(filePath);
 }
 
 void Controller::singleStep()
@@ -856,21 +884,68 @@ void Controller::updateTitleBar()
 	QString tmp = _nodeTreeFilePath.isEmpty()
 		? tr("Untitled")
 		: QFileInfo(_nodeTreeFilePath).fileName();
-	setWindowTitle(applicationTitle + " - " + tmp);
+	QString windowTitle = applicationTitle + " - ";
+	if(_nodeTreeDirty)
+		windowTitle += "*";
+	setWindowTitle(windowTitle + tmp);
 }
 
-void Controller::saveTreeToFile(const QString& filePath)
+void Controller::createNewNodeScene()
+{
+	// Set up a node scene
+	/// xXx: Temporary
+	///_nodeScene->setSceneRect(-200,-200,1000,600);
+
+	// Create new tree view (node scene)
+	_nodeScene = new NodeScene(this);
+	connect(_nodeScene, &QGraphicsScene::selectionChanged,
+		this, &Controller::sceneSelectionChanged);
+	/// Qt bug concering scene->removeItem ?? Seems to fixed it
+	_nodeScene->setItemIndexMethod(QGraphicsScene::NoIndex);
+
+	_ui->graphicsView->setScene(_nodeScene);
+}
+
+void Controller::createNewTree()
+{
+	// Remove leftovers
+	_nodeScene->clearSelection(); // deselects current proper model 
+	_nodeScene->deleteLater();
+	_previewSelectedNodeView = nullptr;
+	_nodeTreeDirty = false;
+	_nodeTreeFilePath = QString();
+
+	_propManager->clear();
+
+	_nodeViews.clear();
+	_linkViews.clear();	
+
+	// Create new tree (view and model)
+	createNewNodeScene();
+	_nodeTree = _nodeSystem->createNodeTree();
+
+	updateTitleBar();
+	updatePreview();
+	switchToImageMode();
+}
+
+bool Controller::saveTreeToFile(const QString& filePath)
 {
 	if(saveTreeToFileImpl(filePath))
 	{
 		_nodeTreeFilePath = filePath;
+		_nodeTreeDirty = false;
 		updateTitleBar();
 		qDebug() << "Tree successfully save to file:" << filePath;
+
+		return true;
 	}
 	else
 	{
 		showErrorMessage("Error occured during saving file! Check logs for more details.");
 		qCritical() << "Couldn't save node tree to file:" << filePath;
+
+		return false;
 	}
 }
 

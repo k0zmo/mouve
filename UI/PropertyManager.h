@@ -12,6 +12,8 @@ public:
 	explicit PropertyManager(QObject* parent = nullptr);
 	~PropertyManager() override;
 
+	void clear();
+
 	void newProperty(NodeID nodeID, PropertyID propID, EPropertyType propType,
 		const QString& propName, const QVariant& value, const QString& uiHint);
 	void newPropertyGroup(NodeID nodeID, const QString& groupName);

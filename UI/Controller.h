@@ -53,8 +53,8 @@ private slots:
 
 	void newTree();
 	void openTree();
-	void saveTree();
-	void saveTreeAs();
+	bool saveTree();
+	bool saveTreeAs();
 
 	void singleStep();
 	void autoRefresh();
@@ -86,6 +86,7 @@ private:
 	bool _startWithInit;
 
 	QString _nodeTreeFilePath;
+	bool _nodeTreeDirty;
 
 private:
 	void showErrorMessage(const QString& message);
@@ -97,8 +98,12 @@ private:
 	void setInteractive(bool allowed);
 
 	void updateTitleBar();
-	void saveTreeToFile(const QString& filePath);
+
+	void createNewNodeScene();
+	void createNewTree();
+	bool saveTreeToFile(const QString& filePath);
 	bool saveTreeToFileImpl(const QString& filePath);
+	bool openTreeFromFile(const QString& filePath);
 };
 
 #define gC Controller::instancePtr()

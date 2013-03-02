@@ -11,6 +11,12 @@ PropertyManager::~PropertyManager()
 {
 }
 
+void PropertyManager::clear()
+{
+	qDeleteAll(_idPropertyModelHash);
+	_idPropertyModelHash.clear();
+}
+
 void PropertyManager::newProperty(NodeID nodeID, 
 								  PropertyID propID,
 								  EPropertyType propType,
