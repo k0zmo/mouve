@@ -974,7 +974,7 @@ bool Controller::saveTreeToFile(const QString& filePath)
 		_nodeTreeFilePath = filePath;
 		_nodeTreeDirty = false;
 		updateTitleBar();
-		qDebug() << "Tree successfully save to file:" << filePath;
+		qDebug() << "Tree successfully saved to file:" << filePath;
 
 		return true;
 	}
@@ -1026,7 +1026,8 @@ bool Controller::saveTreeToFileImpl(const QString& filePath)
 					auto& prop = nodeConfig.pProperties[propID];
 
 					QJsonObject jsonProp;
-					jsonProp.insert(QStringLiteral("propId"), propID);
+					jsonProp.insert(QStringLiteral("id"), propID);
+					jsonProp.insert(QStringLiteral("name"), QString::fromStdString(prop.name));
 
 					switch(prop.type)
 					{
@@ -1035,7 +1036,7 @@ bool Controller::saveTreeToFileImpl(const QString& filePath)
 						jsonProp.insert("type", QStringLiteral("boolean"));
 						break;
 					case EPropertyType::Integer:
-						jsonProp.insert("Value", propValue.toInt());
+						jsonProp.insert("value", propValue.toInt());
 						jsonProp.insert("type", QStringLiteral("integer"));
 						break;
 					case EPropertyType::Double:
