@@ -24,15 +24,26 @@ public:
 	{
 		switch(propId)
 		{
-		case VideoPath:
+		case ID_VideoPath:
 			_videoPath = newValue.toString().toStdString();
 			return true;
-		case StartFrame:
+		case ID_StartFrame:
 			_startFrame = newValue.toUInt();
 			return true;
 		}
 
 		return false;
+	}
+
+	QVariant property(PropertyID propId) const override
+	{
+		switch(propId)
+		{
+		case ID_VideoPath: return QString::fromStdString(_videoPath);
+		case ID_StartFrame: return _startFrame;
+		}
+
+		return QVariant();
 	}
 
 	bool initialize() override
@@ -89,8 +100,8 @@ public:
 private:
 	enum EPropertyID
 	{
-		VideoPath,
-		StartFrame
+		ID_VideoPath,
+		ID_StartFrame
 	};
 
 	std::string _videoPath;
@@ -113,21 +124,34 @@ public:
 	{
 		switch(propId)
 		{
-		case History:
+		case ID_History:
 			_history = newValue.toInt();
 			return true;
-		case NMixtures:
+		case ID_NMixtures:
 			_nmixtures = newValue.toInt();
 			return true;
-		case BackgroundRatio:
+		case ID_BackgroundRatio:
 			_backgroundRatio = newValue.toDouble();
 			return true;
-		case LearningRate:
+		case ID_LearningRate:
 			_learningRate = newValue.toDouble();
 			return true;
 		}
 
 		return false;
+	}
+
+	QVariant property(PropertyID propId) const override
+	{
+		switch(propId)
+		{
+		case ID_History: return _history;
+		case ID_NMixtures: return _nmixtures;
+		case ID_BackgroundRatio: return _backgroundRatio;
+		case ID_LearningRate: return _learningRate;
+		}
+
+		return QVariant();
 	}
 
 	bool initialize() override
@@ -172,10 +196,10 @@ public:
 private:
 	enum EPropertyID
 	{
-		History,
-		NMixtures,
-		BackgroundRatio,
-		LearningRate
+		ID_History,
+		ID_NMixtures,
+		ID_BackgroundRatio,
+		ID_LearningRate
 	};
 
 	cv::BackgroundSubtractorMOG _mog;
@@ -202,6 +226,14 @@ public:
 		}
 
 		return false;
+	}
+
+	QVariant property(PropertyID propId) const override
+	{
+		if(propId == 0)
+			return QString::fromStdString(_filePath);
+
+		return QVariant();
 	}
 
 	void execute(NodeSocketReader* reader, NodeSocketWriter* writer) override
@@ -246,8 +278,8 @@ class GaussianBlurNodeType : public NodeType
 {
 public:
 	GaussianBlurNodeType()
-		: kernelRadius(2)
-		, sigma(10.0)
+		: _kernelRadius(2)
+		, _sigma(10.0)
 	{
 	}
 
@@ -256,14 +288,25 @@ public:
 		switch(propId)
 		{
 		case ID_KernelSize:
-			kernelRadius = newValue.toInt();
+			_kernelRadius = newValue.toInt();
 			return true;
 		case ID_Sigma:
-			sigma = newValue.toDouble();
+			_sigma = newValue.toDouble();
 			return true;
 		}
 
 		return false;
+	}
+
+	QVariant property(PropertyID propId) const override
+	{
+		switch(propId)
+		{
+		case ID_KernelSize: return _kernelRadius;
+		case ID_Sigma: return _sigma;
+		}
+
+		return QVariant();
 	}
 
 	void execute(NodeSocketReader* reader, NodeSocketWriter* writer) override
@@ -271,7 +314,7 @@ public:
 		const cv::Mat& input = reader->readSocket(0);
 		cv::Mat& output = writer->lockSocket(0);
 
-		cv::GaussianBlur(input, output, cv::Size(kernelRadius*2+1,kernelRadius*2+1), sigma, 0);
+		cv::GaussianBlur(input, output, cv::Size(_kernelRadius*2+1,_kernelRadius*2+1), _sigma, 0);
 	}
 
 	void configuration(NodeConfig& nodeConfig) const override
@@ -286,8 +329,8 @@ public:
 		};
 		static const PropertyConfig prop_config[] = {
 			// TODO: In future we might use slider
-			{ EPropertyType::Integer, "Kernel radius", QVariant(kernelRadius), "min:1, max:20, step:1" },
-			{ EPropertyType::Double, "Sigma", QVariant(sigma), "min:0.0" },
+			{ EPropertyType::Integer, "Kernel radius", QVariant(_kernelRadius), "min:1, max:20, step:1" },
+			{ EPropertyType::Double, "Sigma", QVariant(_sigma), "min:0.0" },
 			{ EPropertyType::Unknown, "", QVariant(), "" }
 		};
 
@@ -298,15 +341,14 @@ public:
 	}
 
 private:
-	int kernelRadius;
-	double sigma;
-
-private:
 	enum EPropertyID
 	{
 		ID_KernelSize,
 		ID_Sigma
 	};
+
+	int _kernelRadius;
+	double _sigma;
 };
 
 class SobelFilterNodeType : public NodeType
@@ -359,9 +401,35 @@ class CannyEdgeDetectorNodeType : public NodeType
 {
 public:
 	CannyEdgeDetectorNodeType()
-		: threshold(10)
-		, ratio(3)
+		: _threshold(10)
+		, _ratio(3)
 	{
+	}
+
+	QVariant property(PropertyID propId) const override
+	{
+		switch(propId)
+		{
+		case ID_Threshold: return _threshold;
+		case ID_Ratio: return _ratio;
+		}
+
+		return QVariant();
+	}
+
+	bool setProperty(PropertyID propId, const QVariant& newValue) override
+	{
+		switch(propId)
+		{
+		case ID_Threshold:
+			_threshold = newValue.toDouble();
+			return true;
+		case ID_Ratio:
+			_ratio = newValue.toDouble();
+			return true;
+		}
+
+		return false;
 	}
 
 	void execute(NodeSocketReader* reader, NodeSocketWriter* writer) override
@@ -375,23 +443,9 @@ public:
 			return;
 		}
 
-		cv::Canny(input, output, threshold, threshold*ratio, 3);
+		cv::Canny(input, output, _threshold, _threshold*_ratio, 3);
 	}
 
-	bool setProperty(PropertyID propId, const QVariant& newValue) override
-	{
-		switch(propId)
-		{
-		case ID_Threshold:
-			threshold = newValue.toDouble();
-			return true;
-		case ID_Ratio:
-			ratio = newValue.toDouble();
-			return true;
-		}
-
-		return false;
-	}
 
 	void configuration(NodeConfig& nodeConfig) const override
 	{
@@ -404,8 +458,8 @@ public:
 			{ "", "", "" }
 		};
 		static const PropertyConfig prop_config[] = {
-			{ EPropertyType::Double, "Threshold", QVariant(threshold), "min:0.0, max:100.0, decimals:3" },
-			{ EPropertyType::Double, "Ratio", QVariant(ratio), "min:0.0, decimals:3" },
+			{ EPropertyType::Double, "Threshold", QVariant(_threshold), "min:0.0, max:100.0, decimals:3" },
+			{ EPropertyType::Double, "Ratio", QVariant(_ratio), "min:0.0, decimals:3" },
 			{ EPropertyType::Unknown, "", QVariant(), "" }
 		};
 
@@ -416,15 +470,14 @@ public:
 	}
 
 private:
-	double threshold;
-	double ratio;
-
-private:
 	enum EPropertyID
 	{
 		ID_Threshold,
 		ID_Ratio,
 	};
+
+	double _threshold;
+	double _ratio;
 };
 
 class AddNodeType : public NodeType
@@ -440,15 +493,26 @@ public:
 	{
 		switch(propId)
 		{
-		case Alpha:
+		case ID_Alpha:
 			_alpha = newValue.toDouble();
 			return true;
-		case Beta:
+		case ID_Beta:
 			_beta = newValue.toDouble();
 			return true;
 		}
 
 		return false;
+	}
+
+	QVariant property(PropertyID propId) const override
+	{
+		switch(propId)
+		{
+		case ID_Alpha: return _alpha;
+		case ID_Beta: return _beta;
+		}
+
+		return QVariant();
 	}
 
 	void execute(NodeSocketReader* reader, NodeSocketWriter* writer) override
@@ -500,8 +564,8 @@ public:
 private:
 	enum EPropertyID
 	{
-		Alpha,
-		Beta
+		ID_Alpha,
+		ID_Beta
 	};
 
 	double _alpha;
@@ -663,8 +727,8 @@ class BinarizationNodeType : public NodeType
 {
 public:
 	BinarizationNodeType()
-		: threshold(128)
-		, inv(false)
+		: _threshold(128)
+		, _inv(false)
 	{
 	}
 
@@ -673,14 +737,25 @@ public:
 		switch(propId)
 		{
 		case ID_Threshold:
-			threshold = newValue.toInt();
+			_threshold = newValue.toInt();
 			return true;
 		case ID_Invert:
-			inv = newValue.toBool();
+			_inv = newValue.toBool();
 			return true;
 		}
 
 		return false;
+	}
+
+	QVariant property(PropertyID propId) const override
+	{
+		switch(propId)
+		{
+		case ID_Threshold: return _threshold;
+		case ID_Invert: return _inv;
+		}
+
+		return QVariant();
 	}
 
 	void execute(NodeSocketReader* reader, NodeSocketWriter* writer) override
@@ -688,14 +763,14 @@ public:
 		const cv::Mat& src = reader->readSocket(0);
 		cv::Mat& dst = writer->lockSocket(0);
 
-		if(src.rows == 0 || src.cols == 0 || threshold < 0 || threshold > 255)
+		if(src.rows == 0 || src.cols == 0 || _threshold < 0 || _threshold > 255)
 		{
 			dst = cv::Mat();
 			return;
 		}
 
-		int type = inv ? cv::THRESH_BINARY_INV : cv::THRESH_BINARY;
-		cv::threshold(src, dst, (double) threshold, 255, type);
+		int type = _inv ? cv::THRESH_BINARY_INV : cv::THRESH_BINARY;
+		cv::threshold(src, dst, (double) _threshold, 255, type);
 	}
 
 	void configuration(NodeConfig& nodeConfig) const override
@@ -709,8 +784,8 @@ public:
 			{ "", "", "" }
 		};
 		static const PropertyConfig prop_config[] = {
-			{ EPropertyType::Integer, "Threshold", QVariant(threshold), "min:0, max:255" },
-			{ EPropertyType::Boolean, "Inverted", QVariant(inv), "" },
+			{ EPropertyType::Integer, "Threshold", QVariant(_threshold), "min:0, max:255" },
+			{ EPropertyType::Boolean, "Inverted", QVariant(_inv), "" },
 			{ EPropertyType::Unknown, "", QVariant(), "" }
 		};
 
@@ -721,15 +796,14 @@ public:
 	}
 
 private:
-	int threshold;
-	bool inv;
-
-private:
 	enum EPropertyID
 	{
 		ID_Threshold,
 		ID_Invert
 	};
+
+	int _threshold;
+	bool _inv;
 };
 
 class CustomConvolutionNodeType : public NodeType
@@ -745,15 +819,26 @@ public:
 	{
 		switch(propId)
 		{
-		case Coefficients:
+		case ID_Coefficients:
 			_coeffs = newValue.value<Matrix3x3>();
 			return true;
-		case ScaleAbs:
+		case ID_ScaleAbs:
 			_scaleAbs = newValue.toBool();
 			return true;
 		}
 
 		return false;
+	}
+
+	QVariant property(PropertyID propId) const override
+	{
+		switch(propId)
+		{
+		case ID_Coefficients: return QVariant::fromValue<Matrix3x3>(_coeffs);
+		case ID_ScaleAbs: return _scaleAbs;
+		}
+
+		return QVariant();
 	}
 
 	void execute(NodeSocketReader* reader, NodeSocketWriter* writer) override
@@ -795,8 +880,8 @@ public:
 private:
 	enum EPropertyID
 	{
-		Coefficients,
-		ScaleAbs
+		ID_Coefficients,
+		ID_ScaleAbs
 	};
 
 	Matrix3x3 _coeffs;
@@ -823,6 +908,16 @@ public:
 		}
 
 		return false;
+	}
+
+	QVariant property(PropertyID propId) const override
+	{
+		switch(propId)
+		{
+		case 0: return int(_filterType);
+		}
+
+		return QVariant();
 	}
 
 	void execute(NodeSocketReader* reader, NodeSocketWriter* writer) override
@@ -873,10 +968,10 @@ class StructuringElementNodeType : public NodeType
 public:
 
 	StructuringElementNodeType()
-		: se(cvu::EStructuringElementType::Ellipse)
-		, xradius(1)
-		, yradius(1)
-		, rotation(0)
+		: _se(cvu::EStructuringElementType::Ellipse)
+		, _xradius(1)
+		, _yradius(1)
+		, _rotation(0)
 	{
 	}
 
@@ -885,33 +980,46 @@ public:
 		switch(propId)
 		{
 		case ID_StructuringElementType:
-			se = cvu::EStructuringElementType(newValue.toInt());
+			_se = cvu::EStructuringElementType(newValue.toInt());
 			return true;
 		case ID_XRadius:
-			xradius = newValue.toInt();
+			_xradius = newValue.toInt();
 			return true;
 		case ID_YRadius:
-			yradius = newValue.toInt();
+			_yradius = newValue.toInt();
 			return true;
 		case ID_Rotation:
-			rotation = newValue.toInt();
+			_rotation = newValue.toInt();
 			return true;
 		}
 
 		return false;
 	}
 
+	QVariant property(PropertyID propId) const override
+	{
+		switch(propId)
+		{
+		case ID_StructuringElementType: return int(_se);
+		case ID_XRadius: return _xradius;
+		case ID_YRadius: return _yradius;
+		case ID_Rotation: return _rotation;
+		}
+
+		return QVariant();
+	}
+
 	void execute(NodeSocketReader* reader, NodeSocketWriter* writer) override
 	{
 		cv::Mat& kernel = writer->lockSocket(0);
 
-		if(xradius == 0 || yradius == 0)
+		if(_xradius == 0 || _yradius == 0)
 		{
 			kernel = cv::Mat();
 			return;
 		}
 
-		kernel = cvu::standardStructuringElement(xradius, yradius, se, rotation);
+		kernel = cvu::standardStructuringElement(_xradius, _yradius, _se, _rotation);
 	}
 
 	void configuration(NodeConfig& nodeConfig) const override
@@ -923,9 +1031,9 @@ public:
 		static const PropertyConfig prop_config[] = {
 			{ EPropertyType::Enum, "SE shape", 
 				QVariant(QStringList() << "Rectangle" << "Ellipse" << "Cross"), "index:1" },
-			{ EPropertyType::Integer, "Horizontal radius", QVariant(xradius), "min:1, max:50" },
-			{ EPropertyType::Integer, "Vertical radius", QVariant(yradius), "min:1, max:50" },
-			{ EPropertyType::Integer, "Rotation", QVariant(rotation), "min:0, max:359, wrap:true" },
+			{ EPropertyType::Integer, "Horizontal radius", QVariant(_xradius), "min:1, max:50" },
+			{ EPropertyType::Integer, "Vertical radius", QVariant(_yradius), "min:1, max:50" },
+			{ EPropertyType::Integer, "Rotation", QVariant(_rotation), "min:0, max:359, wrap:true" },
 			{ EPropertyType::Unknown, "", QVariant(), "" }
 		};
 
@@ -944,18 +1052,17 @@ private:
 		ID_Rotation
 	};
 
-private:
-	cvu::EStructuringElementType se;
-	int xradius;
-	int yradius;
-	int rotation;
+	cvu::EStructuringElementType _se;
+	int _xradius;
+	int _yradius;
+	int _rotation;
 };
 
 class MorphologyNodeType : public NodeType
 {
 public:
 	MorphologyNodeType()
-		: op(Erode)
+		: _op(Erode)
 	{
 	}
 
@@ -964,11 +1071,21 @@ public:
 		switch(propId)
 		{
 		case ID_Operation:
-			op = EMorphologyOperation(newValue.toInt());
+			_op = EMorphologyOperation(newValue.toInt());
 			return true;
 		}
 
 		return false;
+	}
+
+	QVariant property(PropertyID propId) const override
+	{
+		switch(propId)
+		{
+		case ID_Operation: return int(_op);
+		}
+
+		return QVariant();
 	}
 
 	void execute(NodeSocketReader* reader, NodeSocketWriter* writer) override
@@ -983,7 +1100,7 @@ public:
 			return;
 		}
 		
-		cv::morphologyEx(src, dst, op, se);
+		cv::morphologyEx(src, dst, _op, se);
 	}
 
 	void configuration(NodeConfig& nodeConfig) const override
@@ -1028,127 +1145,5 @@ private:
 		ID_Operation
 	};
 
-	EMorphologyOperation op;
+	EMorphologyOperation _op;
 };
-
-/*class MorphologyNodeType : public NodeType
-{
-public:
-	MorphologyNodeType()
-		: op(Erode)
-		, se(cvu::EStructuringElementType::Rectangle)
-		, xradius(1)
-		, yradius(1)
-		, rotation(0)
-	{
-	}
-
-	bool setProperty(PropertyID propId, const QVariant& newValue) override
-	{
-		switch(propId)
-		{
-		case ID_Operation:
-			op = EMorphologyOperation(newValue.toInt());
-			return true;
-		case ID_StructuringElementType:
-			se = cvu::EStructuringElementType(newValue.toInt());
-			return true;
-		case ID_XRadius:
-			xradius = newValue.toInt();
-			return true;
-		case ID_YRadius:
-			yradius = newValue.toInt();
-			return true;
-		case ID_Rotation:
-			rotation = newValue.toInt();
-			return true;
-		}
-
-		return false;
-	}
-
-	void execute(NodeSocketReader* reader, NodeSocketWriter* writer) override
-	{
-		const cv::Mat& src = reader->readSocket(0);
-		cv::Mat& dst = writer->lockSocket(0);
-		cv::Mat& kernel = writer->lockSocket(1);
-
-		if(xradius == 0 || yradius == 0)
-		{
-			dst = cv::Mat();
-			kernel = cv::Mat();
-			return;
-		}
-
-		kernel = cvu::standardStructuringElement(xradius, yradius, se, rotation);
-
-		if(src.rows == 0 || src.cols == 0)
-		{
-			dst = cv::Mat();
-			return;
-		}
-		
-		cv::morphologyEx(src, dst, op, kernel);
-	}
-
-	void configuration(NodeConfig& nodeConfig) const override
-	{
-		static const InputSocketConfig in_config[] = {
-			{ "source", "Source", "" },
-			{ "", "", "" }
-		};
-		static const OutputSocketConfig out_config[] = {
-			{ "output", "Output", "" },
-			// still need to think how to preview binary 0-1 image such as structuring element
-			{ "structuringElement", "Structuring element", "" },
-			{ "", "", "" }
-		};
-		static const PropertyConfig prop_config[] = {
-			{ EPropertyType::Enum, "Operation type", 
-			QVariant(QStringList() << "Erode" << "Dilate" << "Open" << 
-				"Close" << "Gradient" << "Top Hat" << "Black Hat"),
-			"" },
-			{ EPropertyType::Enum, "SE shape", 
-			QVariant(QStringList() << "Rectangle" << "Ellipse" << "Cross"), "" },
-			{ EPropertyType::Integer, "Horizontal radius", QVariant(xradius), "min=1;max=75" },
-			{ EPropertyType::Integer, "Vertical radius", QVariant(yradius), "min=1;max=75" },
-			{ EPropertyType::Integer, "Rotation", QVariant(rotation), "min=0;max=359" },
-			{ EPropertyType::Unknown, "", QVariant(), "" }
-		};
-
-		nodeConfig.description = "Performs a morphology operation on a given image";
-		nodeConfig.pInputSockets = in_config;
-		nodeConfig.pOutputSockets = out_config;
-		nodeConfig.pProperties = prop_config;
-	}
-
-private:
-	enum EMorphologyOperation
-	{
-		Erode    = cv::MORPH_ERODE,
-		Dilate   = cv::MORPH_DILATE,
-		Open     = cv::MORPH_OPEN,
-		Close    = cv::MORPH_CLOSE,
-		Gradient = cv::MORPH_GRADIENT,
-		TopHat   = cv::MORPH_TOPHAT,
-		BlackHat = cv::MORPH_BLACKHAT
-	};
-
-	enum EPropertyID
-	{
-		ID_Operation,
-		ID_StructuringElementType,
-		ID_XRadius,
-		ID_YRadius,
-		ID_Rotation
-	};
-
-private:
-	EMorphologyOperation op;
-	cvu::EStructuringElementType se;
-	int xradius;
-	int yradius;
-	int rotation;
-};
-*/
-

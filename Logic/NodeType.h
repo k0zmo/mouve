@@ -133,6 +133,7 @@ public:
 	virtual ~NodeType() {}
 	virtual void configuration(NodeConfig& nodeConfig) const = 0;
 	virtual bool setProperty(PropertyID propId, const QVariant& newValue);
+	virtual QVariant property(PropertyID propId) const;
 	virtual bool initialize();
 	virtual void execute(NodeSocketReader* reader, NodeSocketWriter* writer) = 0;
 	// void registerUpdateInterval();
@@ -140,6 +141,8 @@ public:
 
 inline bool NodeType::setProperty(PropertyID propId, const QVariant& newValue)
 { return false; }
+inline QVariant NodeType::property(PropertyID propId) const
+{ return QVariant(); }
 inline bool NodeType::initialize()
 { return false; }
 

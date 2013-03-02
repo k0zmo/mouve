@@ -104,3 +104,8 @@ bool Node::setProperty(PropertyID propID, const QVariant& value)
 {
 	return _nodeType->setProperty(propID, value);
 }
+
+QVariant Node::property(PropertyID propID) const
+{
+	return _nodeType->property(propID);
+}
