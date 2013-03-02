@@ -68,7 +68,7 @@ QPainterPath NodeView::shape2(qreal titleHeight) const
 	return shape;
 }
 
-NodeSocketView* NodeView::addSocketView(NodeID socketKey,
+NodeSocketView* NodeView::addSocketView(SocketID socketKey,
 	const QString& title, bool isOutput)
 {
 	// Check if the socketKey hasn't been added already

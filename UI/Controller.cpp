@@ -330,23 +330,36 @@ void Controller::addNodeView(const QString& nodeTitle,
 	_nodeViews[nodeID] = nodeView;
 }
 
-void Controller::linkNodes(NodeSocketView* from, NodeSocketView* to)
+void Controller::linkNodes(NodeID fromNodeID, SocketID fromSocketID,
+		NodeID toNodeID, SocketID toSocketID)
 {
-	/// xXx: Add some checking to release
-	Q_ASSERT(from);
-	Q_ASSERT(from->nodeView());
-	Q_ASSERT(to);
-	Q_ASSERT(to->nodeView());	
+	SocketAddress addrFrom(fromNodeID, fromSocketID, true);
+	SocketAddress addrTo(toNodeID, toSocketID, false);
 
-	SocketAddress addrFrom(from->nodeView()->nodeKey(), from->socketKey(), true);
-	SocketAddress addrTo(to->nodeView()->nodeKey(), to->socketKey(), false);
-
-	/// xXx: give a reason
+	/// TODO: give a reason
 	if(!_nodeTree->linkNodes(addrFrom, addrTo))
 	{
 		showErrorMessage("[NodeTree] Couldn't linked given sockets");
 		return;
 	}
+
+	/// xXx: Add some checking to release
+	Q_ASSERT(_nodeViews[fromNodeID]);
+	Q_ASSERT(_nodeViews[toNodeID]);
+
+	linkNodesView(_nodeViews[fromNodeID]->outputSocketView(fromSocketID),
+		_nodeViews[toNodeID]->inputSocketView(toSocketID));
+
+	_nodeTreeDirty = true;
+	updateTitleBar();
+	processAutoRefresh();
+}
+
+void Controller::linkNodesView(NodeSocketView* from, NodeSocketView* to)
+{
+	/// xXx: Add some checking to release
+	Q_ASSERT(from);
+	Q_ASSERT(to);
 
 	// Create new link view 
 	NodeLinkView* link = new NodeLinkView(from, to, nullptr);
@@ -357,10 +370,6 @@ void Controller::linkNodes(NodeSocketView* from, NodeSocketView* to)
 	// Cache it and add it to a scene
 	_linkViews.append(link);
 	_nodeScene->addItem(link);
-
-	_nodeTreeDirty = true;
-	updateTitleBar();
-	processAutoRefresh();
 }
 
 void Controller::unlinkNodes(NodeLinkView* linkView)
@@ -462,8 +471,18 @@ void Controller::draggingLinkDrop(QGraphicsWidget* from, QGraphicsWidget* to)
 {
 	if(!_ui->graphicsView->isPseudoInteractive())
 	{
-		linkNodes(static_cast<NodeSocketView*>(from),
-				  static_cast<NodeSocketView*>(to));
+		auto fromSocket = static_cast<NodeSocketView*>(from);
+		auto toSocket = static_cast<NodeSocketView*>(to);
+
+		Q_ASSERT(fromSocket);
+		Q_ASSERT(toSocket);
+		Q_ASSERT(fromSocket->nodeView());
+		Q_ASSERT(toSocket->nodeView());
+
+		linkNodes(fromSocket->nodeView()->nodeKey(),
+			fromSocket->socketKey(),
+			toSocket->nodeView()->nodeKey(),
+			toSocket->socketKey());
 	}
 }
 

@@ -29,9 +29,12 @@ private:
 	void addNodeView(const QString& nodeTitle,
 		NodeID nodeID, const QPointF& scenePos);
 
-	void linkNodes(NodeSocketView* from, NodeSocketView* to);
-	void unlinkNodes(NodeLinkView* linkView);
+	void linkNodes(NodeID fromNodeID, SocketID fromSocketID,
+		NodeID toNodeID, SocketID toSocketID);
+	void linkNodesView(NodeSocketView* from, NodeSocketView* to);
 
+	// Called from the controller itself
+	void unlinkNodes(NodeLinkView* linkView);
 	void deleteNode(NodeView* nodeView);
 
 	/// NEW

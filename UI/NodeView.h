@@ -16,7 +16,7 @@ public:
 		const QStyleOptionGraphicsItem* option, QWidget* widget);
 
 	NodeID nodeKey() const;
-	NodeSocketView* addSocketView(NodeID socketKey,
+	NodeSocketView* addSocketView(SocketID socketKey,
 		const QString& title, bool isOutput = false);
 	void updateLayout();
 	void selectPreview(bool selected);
@@ -24,6 +24,9 @@ public:
 	enum { Type = QGraphicsItem::UserType + 1 };
 
 	void setNodeViewName(const QString& newName);
+
+	NodeSocketView* inputSocketView(SocketID socketID) const;
+	NodeSocketView* outputSocketView(SocketID socketID) const;
 
 protected:
 	virtual void hoverEnterEvent(QGraphicsSceneHoverEvent* event);
@@ -35,8 +38,8 @@ private:
 	QGraphicsDropShadowEffect* mDropShadowEffect;
 	QPainterPath mShape1;
 	QPainterPath mShape2;
-	QMap<NodeID, NodeSocketView*> mInputSocketViews;
-	QMap<NodeID, NodeSocketView*> mOutputSocketViews;
+	QMap<SocketID, NodeSocketView*> mInputSocketViews;
+	QMap<SocketID, NodeSocketView*> mOutputSocketViews;
 	bool mPreviewSelected;
 
 private:
@@ -52,3 +55,9 @@ inline int NodeView::type() const
 
 inline NodeID NodeView::nodeKey() const
 { return data(NodeDataIndex::NodeKey).toInt(); }
+
+inline NodeSocketView* NodeView::inputSocketView(SocketID socketID) const
+{ return mInputSocketViews.value(socketID); }
+
+inline NodeSocketView* NodeView::outputSocketView(SocketID socketID) const
+{ return mOutputSocketViews.value(socketID); }
