@@ -134,6 +134,8 @@ void NodeConnectorView::mouseReleaseEvent(QGraphicsSceneMouseEvent* event)
 				emit draggingLinkDropped(itemColliding->socketView(), socketView());
 		}
 
+		mHoveredConnector = nullptr;
+
 		// From Qt: It is more efficient to remove the item from the QGraphicsScene before destroying the item.
 		scene()->removeItem(mTemporaryLink);
 		delete mTemporaryLink;
