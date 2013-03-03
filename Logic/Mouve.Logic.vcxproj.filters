@@ -91,9 +91,6 @@
     <CustomBuild Include="Prerequisites.h">
       <Filter>Common Files</Filter>
     </CustomBuild>
-    <CustomBuild Include="BuiltinNodeTypes.h">
-      <Filter>CV</Filter>
-    </CustomBuild>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="CV.h">

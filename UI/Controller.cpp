@@ -10,9 +10,6 @@
 
 #include "LogView.h"
 
-/// xXx: This is needed here for now
-#include "Logic/BuiltinNodeTypes.h"
-
 #include "Logic/NodeSystem.h"
 #include "Logic/NodeTree.h"
 #include "Logic/NodeType.h"
@@ -24,6 +21,10 @@
 
 #include <QJsonDocument>
 #include <QFileDialog>
+
+/// TODO: Temporary for preview
+#include <opencv2/core/core.hpp>
+#include <opencv2/imgproc/imgproc.hpp>
 
 #include "ui_MainWindow.h"
 
