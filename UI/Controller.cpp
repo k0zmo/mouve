@@ -59,9 +59,6 @@ Controller::Controller(QWidget* parent, Qt::WindowFlags flags)
 	connect(_ui->graphicsView, &NodeEditorView::keyPress,
 		this, &Controller::keyPress);
 
-	// Create node tree
-	_nodeTree = _nodeSystem->createNodeTree();
-
 	/// TODO: Fix it - use some kind of a NodeTypeModel
 	// Get available nodes and and them to Add Node context menu
 	auto nodeTypeIterator = _nodeSystem->createNodeTypeIterator();
@@ -79,24 +76,16 @@ Controller::Controller(QWidget* parent, Qt::WindowFlags flags)
 
 Controller::~Controller()
 {
-	/// TODO:
-	/// Is this really is correct ? 
-	/// Deleting nodeScene should delete linkviews and nodeviews
-	/// If so, we can also change it to qDeleteAll()
-
-	foreach(NodeLinkView* link, _linkViews)
-		delete link;
-	_linkViews.clear();
-
-	foreach(NodeView* node, _nodeViews.values())
-		delete node;
-	_nodeViews.clear();
+	clearTreeView();
 
 	delete _ui;
 }
 
 void Controller::closeEvent(QCloseEvent* event)
 {
+	if(_currentlyPlaying)
+		stop();
+
 	if (canQuit())
 	{
 		// QMainWindow::saveState?
@@ -691,7 +680,28 @@ void Controller::newTree()
 
 void Controller::openTree()
 {
-	qWarning() << "Not implemented yet";
+	if(!canQuit())
+		return;
+
+	QString filePath = QFileDialog::getOpenFileName(
+		this, tr("Open file"), QString(), "Node tree files (*.tree)");
+	if(filePath.isEmpty())
+		return;
+
+	createNewTree();
+
+	if(openTreeFromFileImpl(filePath))
+	{
+		_nodeTreeFilePath = filePath;
+		_nodeTreeDirty = false;
+		updateTitleBar();
+		qDebug() << "Tree successfully opened from file:" << filePath;
+	}
+	else
+	{
+		showErrorMessage("Error occured during opening file! Check logs for more details.");
+		qCritical() << "Couldn't open node tree from file:" << filePath;
+	}
 }
 
 bool Controller::saveTree()
@@ -733,6 +743,11 @@ void Controller::singleStep()
 		_nodeTree->prepareList();
 		_nodeTree->execute(_startWithInit);
 		_startWithInit = false;
+
+		_ui->actionNewTree->setEnabled(false);
+		_ui->actionOpenTree->setEnabled(false);
+		_ui->actionSaveTree->setEnabled(false);
+		_ui->actionSaveTreeAs->setEnabled(false);
 
 		_ui->actionStop->setEnabled(true);
 
@@ -786,6 +801,11 @@ void Controller::stop()
 	}
 
 	_startWithInit = true;
+
+	_ui->actionNewTree->setEnabled(true);
+	_ui->actionOpenTree->setEnabled(true);
+	_ui->actionSaveTree->setEnabled(true);
+	_ui->actionSaveTreeAs->setEnabled(true);
 
 	_ui->actionPause->setEnabled(false);
 	_ui->actionStop->setEnabled(false);
@@ -918,11 +938,39 @@ bool Controller::canQuit()
 	return true;
 }
 
+void Controller::clearTreeView()
+{
+	// NOTE: This order is important 
+	// If node views would be first deleted then during a link view destruction 
+	// we would get AV because it tries to access already nonexistent 
+	// socket view (which is removed with its parent - nodeview)
+	// This isn't pretty but for now it's a must
+
+	for(NodeLinkView* link : _linkViews)
+	{
+		// Removing item from scene before removing the item 
+		// itself is not required but it should be faster altogether
+		_nodeScene->removeItem(link);
+		delete link;
+	}
+	_linkViews.clear();	
+
+	for(NodeView* node : _nodeViews.values())
+	{
+		_nodeScene->removeItem(node);
+		delete node;
+	}
+	_nodeViews.clear();
+}
+
 void Controller::createNewNodeScene()
 {
 	// Set up a node scene
 	/// xXx: Temporary
 	///_nodeScene->setSceneRect(-200,-200,1000,600);
+
+	// Create new tree model
+	_nodeTree = _nodeSystem->createNodeTree();
 
 	// Create new tree view (node scene)
 	_nodeScene = new QGraphicsScene(this);
@@ -937,21 +985,22 @@ void Controller::createNewNodeScene()
 
 void Controller::createNewTree()
 {
+	// Deselect current proper model 
+	_nodeScene->clearSelection();
+
 	// Remove leftovers
-	_nodeScene->clearSelection(); // deselects current proper model 
-	_nodeScene->deleteLater();
 	_previewSelectedNodeView = nullptr;
 	_nodeTreeDirty = false;
 	_nodeTreeFilePath = QString();
 
 	_propManager->clear();
 
-	_nodeViews.clear();
-	_linkViews.clear();	
+	// We can't rely on scene destruction because its order doesn't satisfy us
+	clearTreeView();
+	_nodeScene->deleteLater();
 
 	// Create new tree (view and model)
 	createNewNodeScene();
-	_nodeTree = _nodeSystem->createNodeTree();
 
 	updateTitleBar();
 	updatePreview();
@@ -1100,4 +1149,204 @@ bool Controller::saveTreeToFileImpl(const QString& filePath)
 		return false;
 	file.write(textJson);
 	return true;
+}
+
+bool Controller::openTreeFromFileImpl(const QString& filePath)
+{
+	QFile file(filePath);
+	if(!file.open(QIODevice::ReadOnly | QIODevice::Text))
+		return false;
+
+	QByteArray fileContents = file.readAll();
+	QJsonParseError error;
+	QJsonDocument doc = QJsonDocument::fromJson(fileContents, &error);
+	if(error.error != QJsonParseError::NoError)
+	{
+		showErrorMessage("Error occured during parsing file! Check logs for more details.");
+		qCritical() << "Couldn't open node tree from file:" << filePath
+			<< " details:" << error.errorString() << "in" << error.offset << "character";
+		return false;
+	}
+
+	if(!doc.isObject())
+	{
+		showErrorMessage("Error occured during parsing file! Check logs for more details.");
+		qCritical() << "Couldn't open node tree from file:" << filePath
+			<< " details: root value isn't JSON object";
+		return false;
+	}
+
+	QJsonObject jsonTree = doc.object();
+	QVariantMap map = jsonTree.toVariantMap();
+
+	QVariant& nodesVariant = map["nodes"];
+	QVariant& linksVariant = map["links"];
+
+	if(!nodesVariant.isValid() || !linksVariant.isValid())
+	{
+		showErrorMessage("Error occured during parsing file! Check logs for more details.");
+		qCritical() << "Couldn't open node tree from file:" << filePath
+			<< " details: can't find \"nodes\" and/or \"links\" section(s)";
+		return false;
+	}
+
+	/// TODO : check if they "nodes" and "links" are indeed QVariantList?
+
+	// Method used in loading nodes makes them lose their original NodeID
+	// Below map is a "cure" for this
+	QMap<uint, NodeID> oldToNewNodeID;
+
+	// Read nodes and its links
+	loadNodes(nodesVariant.toList(), oldToNewNodeID);
+	loadLinks(linksVariant.toList(), oldToNewNodeID);
+
+	return true;
+}
+
+void Controller::loadNodes(const QVariantList& nodes,
+						   QMap<uint, NodeID>& oldToNewNodeID)
+{
+	for(auto& node : nodes)
+	{
+		QVariantMap mapNode = node.toMap();		
+
+		bool ok;
+		uint nodeTypeId = mapNode["typeId"].toUInt(&ok);
+		if(!ok)
+		{
+			qWarning() << "\"typeId\" is bad, node will be skipped";
+			continue;
+		}
+
+		uint nodeId = mapNode["id"].toUInt(&ok);
+		if(!ok)
+		{
+			qWarning() << "\"id\" is bad, node will be skipped";
+			continue;
+		}
+
+		QString nodeName = mapNode["name"].toString();
+		if(nodeName.isEmpty())
+		{
+			qWarning() << "\"name\" is bad, node of id" << nodeId << "will be skipped";
+			continue;
+		}
+
+		double nodeScenePosX = mapNode["scenePosX"].toDouble(&ok);
+		if(!ok)
+		{
+			qWarning() << "\"scenePosX\" is bad, assuming 0.0";
+			nodeScenePosX = 0.0;
+		}
+
+		double nodeScenePosY = mapNode["scenePosY"].toDouble(&ok);
+		if(!ok)
+		{
+			qWarning() << "\"scenePosX\" is bad, assuming 0.0";
+			nodeScenePosX = 0.0;
+		}
+
+		// Try to create new node 
+		NodeID _nodeId = _nodeTree->createNode(nodeTypeId, nodeName.toStdString());
+		oldToNewNodeID.insert(nodeId, _nodeId);
+		if(_nodeId == InvalidNodeID)
+		{
+			qWarning() << QString("Couldn't create node of id: %1 and type id: %2, skipping")
+				.arg(nodeId)
+				.arg(nodeTypeId);
+			continue;
+		}
+
+		QVariant varProperties = mapNode["properties"];
+		if(varProperties.isValid() 
+			&& varProperties.type() == QVariant::List)
+		{
+			QVariantList properties = varProperties.toList();
+
+			for(auto& prop : properties)
+			{
+				QVariantMap propMap = prop.toMap();
+
+				bool ok;
+				uint propId = propMap["id"].toUInt(&ok);
+				if(!ok)
+				{
+					qWarning() << "\"id\" is bad, property will be skipped";
+					continue;
+				}
+
+				QVariant value = propMap["value"];
+				if(!value.isValid())
+				{
+					qWarning() << "\"value\" is bad, property of id" << propId << "will be skipped";
+					continue;
+				}
+
+				// Special case - type is matrix3x3. For rest types we don't even check it (at least for now)
+				QString propType = propMap["type"].toString();
+				if(propType == "matrix3x3")
+				{
+					// Convert from QList<QVariant (of double)> to Matrix3x3
+					QVariantList matrixList = value.toList();
+					Matrix3x3 matrix;
+					for(int i = 0; i < matrixList.count() && i < 9; ++i)
+						matrix.v[i] = matrixList[i].toDouble();
+					
+					value = QVariant::fromValue<Matrix3x3>(matrix);
+				}
+
+				if(!_nodeTree->nodeSetProperty(_nodeId, propId, value))
+				{
+					qWarning() << "Couldn't set loaded property" << propId <<  "to" << value;
+				}
+			}
+		}
+
+		// Create new view associated with the model
+		addNodeView(nodeName, _nodeId, QPointF(nodeScenePosX, nodeScenePosY));
+	}
+}
+
+void Controller::loadLinks(const QVariantList& links,
+						   const QMap<uint, NodeID>& oldToNewNodeID)
+{
+	for(auto& link : links)
+	{
+		QVariantMap mapLink = link.toMap();
+
+		bool ok;
+		uint fromNode = mapLink["fromNode"].toUInt(&ok);
+		if(!ok)
+		{
+			qWarning() << "\"fromNode\" is bad, node link will be skipped";
+			continue;
+		}
+
+		uint fromSocket = mapLink["fromSocket"].toUInt(&ok);
+		if(!ok)
+		{
+			qWarning() << "\"fromSocket\" is bad, node link will be skipped";
+			continue;
+		}
+
+		uint toNode = mapLink["toNode"].toUInt(&ok);
+		if(!ok)
+		{
+			qWarning() << "\"toNode\" is bad, node link will be skipped";
+			continue;
+		}
+
+		uint toSocket = mapLink["toSocket"].toUInt(&ok);
+		if(!ok)
+		{
+			qWarning() << "\"toSocket\" is bad, node link will be skipped";
+			continue;
+		}
+
+		linkNodes(
+			oldToNewNodeID[fromNode],
+			fromSocket,
+			oldToNewNodeID[toNode],
+			toSocket);
+	}
 }

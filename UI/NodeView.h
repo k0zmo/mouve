@@ -10,6 +10,7 @@ class NodeView : public QGraphicsWidget
 	Q_OBJECT
 public:
 	explicit NodeView(const QString& title, QGraphicsItem* parent = nullptr);
+	virtual ~NodeView();
 
 	virtual int type() const;
 	virtual void paint(QPainter* painter,

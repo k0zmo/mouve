@@ -19,7 +19,6 @@ public:
 	explicit Controller(QWidget* parent = nullptr, Qt::WindowFlags flags = 0);
 	virtual ~Controller();
 
-	
 protected:
 	/// NEW
 	void closeEvent(QCloseEvent* event);
@@ -57,14 +56,17 @@ private slots:
 	void changeProperty(NodeID nodeID, PropertyID propID, 
 		const QVariant& newValue, bool* ok);
 
+	// Menu (toolbar) actions
 	void newTree();
 	void openTree();
 	bool saveTree();
 	bool saveTreeAs();
 
+	// Image mode toolbar
 	void singleStep();
 	void autoRefresh();
 
+	// Video mode toolbar
 	void play();
 	void pause();
 	void stop();
@@ -103,17 +105,27 @@ private:
 	void updatePreview();
 	void setInteractive(bool allowed);
 
+	// Updates window title whenever current node tree changes
+	// (its name, dirty status and so on)
 	void updateTitleBar();
 
+	// If changes are not saved shows adequate message 
+	// Returns false if user "changed his mind"
 	bool canQuit();
 
+	// Creating new node tree
+	void clearTreeView();
 	void createNewNodeScene();
 	void createNewTree();
+
+	// Saving node tree to a given file (json serialization)
 	bool saveTreeToFile(const QString& filePath);
 	bool saveTreeToFileImpl(const QString& filePath);
-	bool openTreeFromFile(const QString& filePath);
 
-
+	// Opening node tree from a given file (json deserialization)
+	bool openTreeFromFileImpl(const QString& filePath);
+	void loadNodes(const QVariantList& nodes, QMap<uint, NodeID>& oldToNewNodeID);
+	void loadLinks(const QVariantList& links, const QMap<uint, NodeID>& oldToNewNodeID);
 };
 
 #define gC Controller::instancePtr()

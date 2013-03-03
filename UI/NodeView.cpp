@@ -33,6 +33,10 @@ NodeView::NodeView(const QString& title, QGraphicsItem* parent)
 	updateLayout();
 }
 
+NodeView::~NodeView()
+{
+}
+
 QPainterPath NodeView::shape1(qreal titleHeight) const
 {
 	qreal w = rect().width();
