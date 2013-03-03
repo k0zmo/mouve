@@ -50,8 +50,6 @@ private:
 
 signals:
 	void draggingLinkDropped(QGraphicsWidget*, QGraphicsWidget*);
-	void draggingLinkStarted(QGraphicsWidget*);
-	void draggingLinkStopped(QGraphicsWidget*);
 };
 
 inline int NodeSocketView::type() const

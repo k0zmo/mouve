@@ -83,10 +83,6 @@ NodeSocketView* NodeView::addSocketView(SocketID socketKey,
 
 		connect(socketView, SIGNAL(draggingLinkDropped(QGraphicsWidget*, QGraphicsWidget*)),
 			gC, SLOT(draggingLinkDrop(QGraphicsWidget*, QGraphicsWidget*)));
-		connect(socketView, SIGNAL(draggingLinkStarted(QGraphicsWidget*)),
-			gC, SLOT(draggingLinkStart(QGraphicsWidget*)));
-		connect(socketView, SIGNAL(draggingLinkStopped(QGraphicsWidget*)),
-			gC, SLOT(draggingLinkStop(QGraphicsWidget*)));
 
 		views.insert(socketKey, socketView);
 

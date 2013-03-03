@@ -12,6 +12,7 @@ NodeConnectorView::NodeConnectorView(bool isOutput, QGraphicsItem* parent)
 	, mPen(NodeStyle::SocketPen)
 	, mAnimation(this, "penWidth")
 	, mTemporaryLink(nullptr)
+	, mHoveredConnector(nullptr)
 	, mIsOutput(isOutput)
 {
 	QLinearGradient gradient(0, mRect.y(), 0, mRect.height());
@@ -83,21 +84,47 @@ void NodeConnectorView::mousePressEvent(QGraphicsSceneMouseEvent* event)
 	{
 		mTemporaryLink = new NodeTemporaryLinkView
 			(centerPos(), event->scenePos(), this);
-		emit draggingLinkStarted(socketView());
 	}
 }
 
 void NodeConnectorView::mouseMoveEvent(QGraphicsSceneMouseEvent* event)
 {
 	if(mTemporaryLink != nullptr)
+	{
 		mTemporaryLink->updateEndPosition(event->scenePos());
+
+		QList<QGraphicsItem*> items = scene()->items
+			(event->scenePos(), Qt::IntersectsItemShape, Qt::DescendingOrder);
+		for(QGraphicsItem* item : items)
+		{
+			// Did we hover on another connector during making connection
+			if(item != this && item->type() == NodeConnectorView::Type)
+			{
+				auto nc = static_cast<NodeConnectorView*>(item);
+				if(nc->isOutput() != isOutput())
+				{
+					if(mHoveredConnector != nullptr)
+						mHoveredConnector->setHighlight(false);
+
+					mHoveredConnector = nc;
+					mHoveredConnector->setHighlight(true);
+					return;
+				}
+			}
+		}
+
+		if(mHoveredConnector != nullptr)
+		{
+			mHoveredConnector->setHighlight(false);
+			mHoveredConnector = nullptr;
+		}
+	}
 }
 
 void NodeConnectorView::mouseReleaseEvent(QGraphicsSceneMouseEvent* event)
 {
 	if(mTemporaryLink != nullptr)
 	{
-		emit draggingLinkStopped(socketView());
 		NodeConnectorView* itemColliding = canDrop(event->scenePos());
 		if(itemColliding != nullptr)
 		{

@@ -1,5 +1,4 @@
 #include "Controller.h"
-#include "NodeScene.h"
 #include "NodeView.h"
 #include "NodeLinkView.h"
 #include "NodeSocketView.h"
@@ -9,6 +8,7 @@
 #include "PropertyModel.h"
 
 #include "LogView.h"
+#include "NodeStyle.h"
 
 #include "Logic/NodeSystem.h"
 #include "Logic/NodeTree.h"
@@ -488,18 +488,6 @@ void Controller::draggingLinkDrop(QGraphicsWidget* from, QGraphicsWidget* to)
 	}
 }
 
-void Controller::draggingLinkStart(QGraphicsWidget* from)
-{
-	Q_UNUSED(from);
-	_nodeScene->setDragging(true);
-}
-
-void Controller::draggingLinkStop(QGraphicsWidget* from)
-{
-	Q_UNUSED(from);
-	_nodeScene->setDragging(false);
-}
-
 void Controller::contextMenu(const QPoint& globalPos,
 	const QPointF& scenePos)
 {
@@ -937,7 +925,8 @@ void Controller::createNewNodeScene()
 	///_nodeScene->setSceneRect(-200,-200,1000,600);
 
 	// Create new tree view (node scene)
-	_nodeScene = new NodeScene(this);
+	_nodeScene = new QGraphicsScene(this);
+	_nodeScene->setBackgroundBrush(NodeStyle::SceneBackground);
 	connect(_nodeScene, &QGraphicsScene::selectionChanged,
 		this, &Controller::sceneSelectionChanged);
 	/// Qt bug concering scene->removeItem ?? Seems to fixed it

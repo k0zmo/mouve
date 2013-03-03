@@ -77,9 +77,6 @@
     <ClCompile Include="NodeLinkView.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="NodeScene.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="NodeSocketView.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -167,9 +164,6 @@
       <Filter>Form Files</Filter>
     </CustomBuild>
     <CustomBuild Include="NodeLinkView.h">
-      <Filter>Header Files</Filter>
-    </CustomBuild>
-    <CustomBuild Include="NodeScene.h">
       <Filter>Header Files</Filter>
     </CustomBuild>
     <CustomBuild Include="NodeTemporaryLinkView.h">

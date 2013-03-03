@@ -13,7 +13,6 @@ class NodeConnectorView;
 class NodeTemporaryLinkView;
 class NodeSocketView;
 class NodeLinkView;
-class NodeScene;
 class NodeView;
 
 struct NodeDataIndex

@@ -45,6 +45,7 @@ private:
 	QBrush mBrush;
 	QPropertyAnimation mAnimation;
 	NodeTemporaryLinkView* mTemporaryLink;
+	NodeConnectorView* mHoveredConnector;
 	bool mIsOutput;
 
 private:
@@ -52,8 +53,6 @@ private:
 
 signals:
 	void draggingLinkDropped(QGraphicsWidget*, QGraphicsWidget*);
-	void draggingLinkStarted(QGraphicsWidget*);
-	void draggingLinkStopped(QGraphicsWidget*);
 };
 
 inline float NodeConnectorView::penWidth() const 

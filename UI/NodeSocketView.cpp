@@ -21,10 +21,6 @@ NodeSocketView::NodeSocketView(const QString& title, bool isOutput,
 	// Send the signals from connector elsewhere
 	connect(mConnector, SIGNAL(draggingLinkDropped(QGraphicsWidget*, QGraphicsWidget*)),
 		SIGNAL(draggingLinkDropped(QGraphicsWidget*, QGraphicsWidget*)));
-	connect(mConnector, SIGNAL(draggingLinkStarted(QGraphicsWidget*)),
-		SIGNAL(draggingLinkStarted(QGraphicsWidget*)));
-	connect(mConnector, SIGNAL(draggingLinkStopped(QGraphicsWidget*)),
-		SIGNAL(draggingLinkStopped(QGraphicsWidget*)));
 }
 
 void NodeSocketView::updateLayout()

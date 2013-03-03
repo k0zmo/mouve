@@ -46,8 +46,6 @@ private:
 
 private slots:
 	void draggingLinkDrop(QGraphicsWidget* from, QGraphicsWidget* to);
-	void draggingLinkStart(QGraphicsWidget* from);
-	void draggingLinkStop(QGraphicsWidget* from);
 
 	void contextMenu(const QPoint& globalPos, const QPointF& scenePos);
 	void keyPress(QKeyEvent* event);
@@ -77,7 +75,7 @@ private:
 	QHash<NodeID, NodeView*> _nodeViews;
 
 	NodeView* _previewSelectedNodeView;
-	NodeScene* _nodeScene;
+	QGraphicsScene* _nodeScene;
 	PropertyManager* _propManager;
 
 	std::unique_ptr<NodeSystem> _nodeSystem;
