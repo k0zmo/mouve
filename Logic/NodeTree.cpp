@@ -158,6 +158,13 @@ bool NodeTree::removeNode(NodeID nodeID)
 	if(!validateNode(nodeID))
 		return false;
 
+	// Tag nodes that are directly connected to the removed node
+	for(auto& nodeLink : _links)
+	{
+		if(nodeLink.fromNode == nodeID)
+			tagNode(nodeLink.toNode);
+	}
+
 	// Remove any referring links
 	auto removeFirstNodeLink = std::remove_if(
 		std::begin(_links), std::end(_links),
@@ -166,17 +173,6 @@ bool NodeTree::removeNode(NodeID nodeID)
 			return nodeLink.fromNode == nodeID ||
 			       nodeLink.toNode   == nodeID;
 		});
-
-	// Tag nodes that are directly connected to the removed node
-	for(auto it = removeFirstNodeLink; it != std::end(_links); ++it)
-	{
-		if(it->fromNode == nodeID)
-		{
-			tagNode(it->toNode);
-		}
-	}
-
-	// Remove all links connected to the removed node
 	_links.erase(removeFirstNodeLink, std::end(_links));
 
 	// Finally remove the node
