@@ -11,6 +11,7 @@ struct NodeStyle
 {
 	// Scene NodeStyle
 	static QColor SceneBackground;
+	static QColor SceneBlockedBackground;
 
 	// Link NodeStyle
 	static QPen LinkPen;
@@ -34,15 +35,17 @@ struct NodeStyle
 	static float NodeSocketsMargin;
 
 	// Socket NodeStyle
+	static QBrush SocketTitleBrush;
+	static QBrush SocketTitleInactiveBrush;
+	static QFont SocketFont;
+	
+	// Connector NodeStyle
 	static QColor SocketGradientStart;
 	static QColor SocketGradientStop;
 	static QPen SocketPen;
 	static QRect SocketSize;
-
-	static QBrush SocketTitleBrush;
-	static QBrush SocketTitleInactiveBrush;
-
-	static QFont SocketFont;
+	static float NodeSocketPenWidth;
+	static float NodeSocketPenWidthHovered;
 
 	static int ZValueNode;
 	static int ZValueNodeHovered;

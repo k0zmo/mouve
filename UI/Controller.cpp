@@ -870,12 +870,12 @@ void Controller::setInteractive(bool allowed)
 
 	if(allowed)
 	{
-		_nodeScene->setBackgroundBrush(QColor(64, 64, 64));
+		_nodeScene->setBackgroundBrush(NodeStyle::SceneBackground);
 		_ui->propertiesTreeView->setEditTriggers(QAbstractItemView::AllEditTriggers);
 	}
 	else
 	{
-		_nodeScene->setBackgroundBrush(QColor(34, 34, 34));
+		_nodeScene->setBackgroundBrush(NodeStyle::SceneBlockedBackground);
 		_ui->propertiesTreeView->setEditTriggers(QAbstractItemView::NoEditTriggers);
 	}	
 }

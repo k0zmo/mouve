@@ -19,7 +19,7 @@ NodeConnectorView::NodeConnectorView(bool isOutput, QGraphicsItem* parent)
 	gradient.setColorAt(0, NodeStyle::SocketGradientStart);
 	gradient.setColorAt(1, NodeStyle::SocketGradientStop);
 	mBrush = QBrush(gradient);
-	mPen.setWidthF(1.0f); /// xXx: Use style
+	mPen.setWidthF(NodeStyle::NodeSocketPenWidth);
 
 	setAcceptHoverEvents(true);
 
@@ -52,7 +52,7 @@ void NodeConnectorView::setHighlight(bool highlight)
 		mAnimation.stop();
 		qreal start = qMax(qreal(1.0), mAnimation.currentValue().toReal());
 		mAnimation.setStartValue(start);
-		mAnimation.setEndValue(2.0); /// xXx: Use style
+		mAnimation.setEndValue(NodeStyle::NodeSocketPenWidthHovered);
 		mAnimation.start();
 	}
 	else
@@ -60,7 +60,7 @@ void NodeConnectorView::setHighlight(bool highlight)
 		mAnimation.stop();
 		qreal start = qMin(qreal(2.0), mAnimation.currentValue().toReal());
 		mAnimation.setStartValue(start);
-		mAnimation.setEndValue(1.0); /// xXx: Use style
+		mAnimation.setEndValue(NodeStyle::NodeSocketPenWidth);
 		mAnimation.start();
 	}
 }
@@ -80,7 +80,7 @@ void NodeConnectorView::hoverLeaveEvent(QGraphicsSceneHoverEvent* event)
 void NodeConnectorView::mousePressEvent(QGraphicsSceneMouseEvent* event)
 {
 	if(event->button() == Qt::LeftButton
-		&& !mTemporaryLink) // protect from double click
+		&& !mTemporaryLink) // protects from double click
 	{
 		mTemporaryLink = new NodeTemporaryLinkView
 			(centerPos(), event->scenePos(), this);
@@ -134,6 +134,7 @@ void NodeConnectorView::mouseReleaseEvent(QGraphicsSceneMouseEvent* event)
 				emit draggingLinkDropped(itemColliding->socketView(), socketView());
 		}
 
+		// From Qt: It is more efficient to remove the item from the QGraphicsScene before destroying the item.
 		scene()->removeItem(mTemporaryLink);
 		delete mTemporaryLink;
 		mTemporaryLink = nullptr;

@@ -8,6 +8,7 @@ static QString FontName = "DejaVu Sans";
 
 // Scene NodeStyle
 QColor NodeStyle::SceneBackground = QColor(64, 64, 64);
+QColor NodeStyle::SceneBlockedBackground = QColor(34, 34, 34);
 
 // Link NodeStyle
 QPen NodeStyle::LinkPen = QPen(QColor(222, 222, 222), 2.0, Qt::SolidLine);
@@ -31,15 +32,18 @@ float NodeStyle::NodeSocketVerticalMargin = 8.0;
 float NodeStyle::NodeSocketsMargin = 20.0;
 
 // Socket NodeStyle
+QBrush NodeStyle::SocketTitleBrush = QBrush(QColor(180, 180, 180));
+QBrush NodeStyle::SocketTitleInactiveBrush = QBrush(QColor(119, 119, 119));
+QFont NodeStyle::SocketFont = QFont(FontName, 9);
+
+// Connector NodeStyle
 QColor NodeStyle::SocketGradientStart = QColor(93, 93, 93);
 QColor NodeStyle::SocketGradientStop = QColor(57, 57, 57);
 QPen NodeStyle::SocketPen = QPen(QColor(180, 180, 180), 1.0, Qt::SolidLine);
 QRect NodeStyle::SocketSize = QRect(0, 0, 15, 15);
+float NodeStyle::NodeSocketPenWidth = 1.0f;
+float NodeStyle::NodeSocketPenWidthHovered = 2.0f;
 
-QBrush NodeStyle::SocketTitleBrush = QBrush(QColor(180, 180, 180));
-QBrush NodeStyle::SocketTitleInactiveBrush = QBrush(QColor(119, 119, 119));
-
-QFont NodeStyle::SocketFont = QFont(FontName, 9);
 
 int NodeStyle::ZValueNode = 100;
 int NodeStyle::ZValueNodeHovered = 200;
