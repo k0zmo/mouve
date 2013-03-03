@@ -35,11 +35,11 @@ public:
 	NodeTypeID nodeTypeID() const;
 
 	// Below methods are thin wrapper for held NodeType interface
-	bool initialize();
-	void execute(NodeSocketReader* reader, NodeSocketWriter* writer);
 	void configuration(NodeConfig& nodeConfig) const;
+	void execute(NodeSocketReader* reader, NodeSocketWriter* writer);
 	bool setProperty(PropertyID propID, const QVariant& value);
 	QVariant property(PropertyID propID) const;
+	bool initialize();
 
 private:
 	// NOTE: If you add any new fields be sure to also handle them in move constructor/operator

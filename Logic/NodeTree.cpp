@@ -387,6 +387,14 @@ bool NodeTree::nodeSetProperty(NodeID nodeID, PropertyID propID, const QVariant&
 	return _nodes[nodeID].setProperty(propID, value);
 }
 
+QVariant NodeTree::nodeProperty(NodeID nodeID, PropertyID propID)
+{
+	if(!validateNode(nodeID))
+		return QVariant();
+
+	return _nodes[nodeID].property(propID);
+}
+
 NodeID NodeTree::allocateNodeID()
 {
 	NodeID id = InvalidNodeID;

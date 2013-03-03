@@ -131,12 +131,15 @@ class NodeType
 {
 public:
 	virtual ~NodeType() {}
+
+	// Required methods
 	virtual void configuration(NodeConfig& nodeConfig) const = 0;
+	virtual void execute(NodeSocketReader* reader, NodeSocketWriter* writer) = 0;
+
+	// Optional methods
 	virtual bool setProperty(PropertyID propId, const QVariant& newValue);
 	virtual QVariant property(PropertyID propId) const;
 	virtual bool initialize();
-	virtual void execute(NodeSocketReader* reader, NodeSocketWriter* writer) = 0;
-	// void registerUpdateInterval();
 };
 
 inline bool NodeType::setProperty(PropertyID propId, const QVariant& newValue)

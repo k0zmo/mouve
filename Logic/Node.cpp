@@ -84,20 +84,15 @@ const cv::Mat& Node::outputSocket(SocketID socketID) const
 	return _outputSockets[socketID];
 }
 
-bool Node::initialize()
+void Node::configuration(NodeConfig& nodeConfig) const
 {
-	return _nodeType->initialize();
+	_nodeType->configuration(nodeConfig);
 }
 
 void Node::execute(NodeSocketReader* reader, NodeSocketWriter* writer)
 {
 	writer->setOutputSockets(_outputSockets);
 	_nodeType->execute(reader, writer);
-}
-
-void Node::configuration(NodeConfig& nodeConfig) const
-{
-	_nodeType->configuration(nodeConfig);
 }
 
 bool Node::setProperty(PropertyID propID, const QVariant& value)
@@ -108,4 +103,9 @@ bool Node::setProperty(PropertyID propID, const QVariant& value)
 QVariant Node::property(PropertyID propID) const
 {
 	return _nodeType->property(propID);
+}
+
+bool Node::initialize()
+{
+	return _nodeType->initialize();
 }
