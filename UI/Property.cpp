@@ -2,6 +2,7 @@
 
 #include <QDoubleSpinBox>
 #include <QComboBox>
+#include <QPushButton>
 #include <QApplication>
 
 #include "PropertyWidgets.h"
@@ -173,29 +174,26 @@ QVariant DoubleProperty::editorData(QWidget* editor)
 	return QVariant();
 }
 
-void DoubleProperty::setUiHints(const AttributeMap& map)
+void DoubleProperty::setUiHints(const PropertyHintList& list)
 {
-	AttributeMap::const_iterator it = map.begin();
-	while(it != map.end())
+	PropertyHintList::const_iterator it = list.begin();
+	while(it != list.end())
 	{
-		QString hintName = it.key();
+		QString hintName = it->first;
 		if(hintName == QStringLiteral("min"))
-			tryConvert(it.value(), _min);
+			tryConvert(it->second, _min);
 		else if(hintName == QStringLiteral("max"))
-			tryConvert(it.value(), _max);
+			tryConvert(it->second, _max);
 		else if(hintName == QStringLiteral("step"))
-			tryConvert(it.value(), _step);
+			tryConvert(it->second, _step);
 		else if(hintName == QStringLiteral("decimals"))
-			tryConvert(it.value(), _decimals);
-
+			tryConvert(it->second, _decimals);
 		++it;
 	}
 }
 
-EnumProperty::EnumProperty(const QString& name, 
-						   const QStringList& valueList)
-	: Property(name, QVariant(0), EPropertyType::Enum, nullptr)
-	, _valueList(valueList)
+EnumProperty::EnumProperty(const QString& name, int index)
+	: Property(name, QVariant(index), EPropertyType::Enum, nullptr)
 {
 }
 
@@ -207,7 +205,10 @@ QVariant EnumProperty::value(int role) const
 	}
 	else
 	{
-		return _valueList[Property::value(role).toInt()];
+		int index = Property::value(role).toInt();
+		if(index < _valueList.count())
+			return _valueList[index];
+		return QVariant();
 	}
 }
 
@@ -217,15 +218,14 @@ bool EnumProperty::setValue(const QVariant& value, int role)
 	{
 		if(QMetaType::Type(value.type()) == QMetaType::Int)
 		{
-			int index = value.toInt();
+			bool ok;
+			int index = value.toInt(&ok);
 			
-			if(index != _value)
+			if(ok && index != _value
+				&& index >= 0 
+				&& index < _valueList.count())
 			{
-				Q_ASSERT(index >= 0);
-				Q_ASSERT(index < _valueList.count());
-
 				_value = index;
-
 				return true;
 			}
 		}
@@ -275,18 +275,14 @@ QVariant EnumProperty::editorData(QWidget* editor)
 	return QVariant();
 }
 
-void EnumProperty::setUiHints(const AttributeMap& map)
+void EnumProperty::setUiHints(const PropertyHintList& list)
 {
-	AttributeMap::const_iterator it = map.begin();
-	while(it != map.end())
+	PropertyHintList::const_iterator it = list.begin();
+	while(it != list.end())
 	{
-		QString hintName = it.key();
-		if(hintName == QStringLiteral("index"))
-		{
-			int index = 0;
-			if(tryConvert(it.value(), index))
-				_value = index;
-		}
+		if(it->first == QStringLiteral("item"))
+			_valueList.append(it->second);
+
 		++it;
 	}
 }
@@ -346,20 +342,20 @@ QVariant IntegerProperty::editorData(QWidget* editor)
 	return QVariant();
 }
 
-void IntegerProperty::setUiHints(const AttributeMap& map)
+void IntegerProperty::setUiHints(const PropertyHintList& list)
 {
-	AttributeMap::const_iterator it = map.begin();
-	while(it != map.end())
+	PropertyHintList::const_iterator it = list.begin();
+	while(it != list.end())
 	{
-		QString hintName = it.key();
+		QString hintName = it->first;
 		if(hintName == QStringLiteral("min"))
-			tryConvert(it.value(), _min);
+			tryConvert(it->second, _min);
 		else if(hintName == QStringLiteral("max"))
-			tryConvert(it.value(), _max);
+			tryConvert(it->second, _max);
 		else if(hintName == QStringLiteral("step"))
-			tryConvert(it.value(), _step);
+			tryConvert(it->second, _step);
 		else if(hintName == QStringLiteral("wrap"))
-			tryConvert(it.value(), _wrap);
+			tryConvert(it->second, _wrap);
 
 		++it;
 	}
@@ -524,14 +520,14 @@ QVariant FilePathProperty::editorData(QWidget* editor)
 	return QVariant();
 }
 
-void FilePathProperty::setUiHints(const AttributeMap& map)
+void FilePathProperty::setUiHints(const PropertyHintList& list)
 {
-	AttributeMap::const_iterator it = map.begin();
-	while(it != map.end())
+	PropertyHintList::const_iterator it = list.begin();
+	while(it != list.end())
 	{
-		QString hintName = it.key();
+		QString hintName = it->first;
 		if(hintName == QStringLiteral("filter"))
-			_filter = it.value();
+			_filter = it->second;
 		++it;
 	}
 }
@@ -565,8 +561,6 @@ QVariant MatrixProperty::value(int role) const
 
 //bool setValue(const QVariant& value, 
 //	int role = Qt::UserRole) override;
-
-#include <QPushButton>
 
 QWidget* MatrixProperty::createEditor(QWidget* parent,
 	const QStyleOptionViewItem& option)

@@ -946,10 +946,11 @@ public:
 			{ "", "", "" }
 		};
 		static const PropertyConfig prop_config[] = {
-			{ EPropertyType::Enum, "Kernel",
-			QVariant(QStringList() << "No operation" << "Average" << "Gaussian" << "Mean removal" << 
-				"Robert's cross 45" << "Robert's cross 135" << "Laplacian" << "Prewitt horizontal" <<
-				"Prewitt vertical" << "Sobel horizontal" << "Sobel vertical"), "index:0" },
+			{ EPropertyType::Enum, "Kernel", int(_filterType),
+				"item: No operation, item: Average, item: Gaussian, item: Mean removal,"
+				"item: Robert's cross 45, item: Robert's cross 135, item: Laplacian,"
+				"item: Prewitt horizontal, item: Prewitt vertical, "
+				"item: Sobel horizontal, item: Sobel vertical"},
 			{ EPropertyType::Unknown, "", QVariant(), "" }
 		};
 
@@ -1029,8 +1030,8 @@ public:
 			{ "", "", "" }
 		};
 		static const PropertyConfig prop_config[] = {
-			{ EPropertyType::Enum, "SE shape", 
-				QVariant(QStringList() << "Rectangle" << "Ellipse" << "Cross"), "index:1" },
+			{ EPropertyType::Enum, "SE shape", int(_se),
+				"item: Rectangle, item: Ellipse, item: Cross" },
 			{ EPropertyType::Integer, "Horizontal radius", QVariant(_xradius), "min:1, max:50" },
 			{ EPropertyType::Integer, "Vertical radius", QVariant(_yradius), "min:1, max:50" },
 			{ EPropertyType::Integer, "Rotation", QVariant(_rotation), "min:0, max:359, wrap:true" },
@@ -1115,10 +1116,9 @@ public:
 			{ "", "", "" }
 		};
 		static const PropertyConfig prop_config[] = {
-			{ EPropertyType::Enum, "Operation type", 
-			QVariant(QStringList() << "Erode" << "Dilate" << "Open" << 
-			"Close" << "Gradient" << "Top Hat" << "Black Hat"),
-			"" },
+			{ EPropertyType::Enum, "Operation type", int(_op), 
+				"item: Erode, item: Dilate, item: Open, item: Close,"
+				"item: Gradient, item: Top Hat, item: Black Hat"},
 			{ EPropertyType::Unknown, "", QVariant(), "" }
 		};
 

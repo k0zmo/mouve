@@ -40,7 +40,7 @@ void PropertyModel::addProperty(PropertyID propID, EPropertyType propType,
 			prop = new DoubleProperty(propName, value.toDouble());
 			break;
 		case EPropertyType::Enum:
-			prop = new EnumProperty(propName, value.toStringList());
+			prop = new EnumProperty(propName, value.toInt());
 			break;
 		case EPropertyType::Matrix:
 			prop = new MatrixProperty(propName, value.value<Matrix3x3>());
@@ -58,19 +58,19 @@ void PropertyModel::addProperty(PropertyID propID, EPropertyType propType,
 
 		if(!uiHint.isEmpty())
 		{
-			AttributeMap uiHintMap;
+			PropertyHintList uiHintsLists;
 			QRegExp re(QString("([^= ]*):{1}([^,]*),?"));
 			re.setMinimal(false);
 			int pos = 0;
 
 			while((pos = re.indexIn(uiHint, pos)) != -1)
 			{
-				uiHintMap.insert(re.cap(1), re.cap(2).trimmed());
+				uiHintsLists.append(qMakePair(re.cap(1), re.cap(2).trimmed()));
 				pos += re.matchedLength();
 			}
 
-			if(!uiHintMap.isEmpty())
-				prop->setUiHints(uiHintMap);
+			if(!uiHintsLists.isEmpty())
+				prop->setUiHints(uiHintsLists);
 		}
 
 		prop->setPropertyID(propID);

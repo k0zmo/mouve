@@ -11,7 +11,7 @@
 class QStyleOptionViewItem;
 class QPainter;
 
-typedef QMap<QString, QString> AttributeMap;
+typedef QList<QPair<QString, QString>> PropertyHintList;
 
 class Property
 {
@@ -63,7 +63,7 @@ public:
 		const QStyleOptionViewItem& option,
 		const QVariant& value);
 
-	virtual void setUiHints(const AttributeMap& map) {}
+	virtual void setUiHints(const PropertyHintList& list) {}
 
 protected:
 	QVector<Property*> _children;
@@ -85,7 +85,7 @@ public:
 		const QVariant& data) override;
 	QVariant editorData(QWidget* editor) override;
 
-	void setUiHints(const AttributeMap& map) override;
+	void setUiHints(const PropertyHintList& list) override;
 
 private:
 	double _min;
@@ -97,8 +97,7 @@ private:
 class EnumProperty : public Property
 {
 public:
-	explicit EnumProperty(const QString& name, 
-		const QStringList& valueList);
+	explicit EnumProperty(const QString& name, int value);
 
 	QVariant value(int role = Qt::UserRole) const override;
 	bool setValue(const QVariant& value, 
@@ -110,7 +109,7 @@ public:
 		const QVariant& data) override;
 	QVariant editorData(QWidget* editor) override;
 
-	void setUiHints(const AttributeMap& map) override;
+	void setUiHints(const PropertyHintList& list) override;
 
 private:
 	QStringList _valueList;
@@ -127,7 +126,7 @@ public:
 		const QVariant& data) override;
 	QVariant editorData(QWidget* editor) override;
 
-	void setUiHints(const AttributeMap& map) override;
+	void setUiHints(const PropertyHintList& list) override;
 
 private:
 	int _min;
@@ -176,7 +175,7 @@ public:
 		const QVariant& data) override;
 	QVariant editorData(QWidget* editor) override;
 
-	void setUiHints(const AttributeMap& map) override;
+	void setUiHints(const PropertyHintList& list) override;
 
 private:
 	QFileInfo _fileInfo;
