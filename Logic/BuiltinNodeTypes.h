@@ -85,10 +85,9 @@ public:
 			{ "", "", "" }
 		};
 		static const PropertyConfig prop_config[] = {
-			{ EPropertyType::Filepath, "Video path", QVariant(QString::fromStdString(_videoPath)),
-				"filter:Video files (*.mkv *.mp4 *.avi)" },
-			{ EPropertyType::Integer, "Start frame", QVariant(_startFrame), "min:0" },
-			{ EPropertyType::Unknown, "", QVariant(), "" }
+			{ EPropertyType::Filepath, "Video path", "filter:Video files (*.mkv *.mp4 *.avi)" },
+			{ EPropertyType::Integer, "Start frame", "min:0" },
+			{ EPropertyType::Unknown, "", "" }
 		};
 
 		nodeConfig.description = "Provides video frames from specified stream";
@@ -179,11 +178,11 @@ public:
 		};
 
 		static const PropertyConfig prop_config[] = {
-			{ EPropertyType::Integer, "History frames", QVariant(_history), "min:1, max:500" },
-			{ EPropertyType::Integer, "Number of mixtures", QVariant(_nmixtures), "min:1, max:9" },
-			{ EPropertyType::Double, "Background ratio", QVariant(_backgroundRatio), "min:0.01, max:0.99, step:0.01" },
-			{ EPropertyType::Double, "Learning rate", QVariant(_learningRate), "min:-1, max:1, step:0.01" },
-			{ EPropertyType::Unknown, "", QVariant(), "" }
+			{ EPropertyType::Integer, "History frames", "min:1, max:500" },
+			{ EPropertyType::Integer, "Number of mixtures",  "min:1, max:9" },
+			{ EPropertyType::Double, "Background ratio", "min:0.01, max:0.99, step:0.01" },
+			{ EPropertyType::Double, "Learning rate", "min:-1, max:1, step:0.01" },
+			{ EPropertyType::Unknown, "", "" }
 		};
 
 		nodeConfig.description = "Gaussian Mixture-based Background/Foreground Segmentation Algorithm.";
@@ -252,7 +251,7 @@ public:
 			{ "", "", "" }
 		};
 		static const PropertyConfig prop_config[] = {
-			{ EPropertyType::Filepath, "File path", QVariant(QString::fromStdString(_filePath)), "filter:"
+			{ EPropertyType::Filepath, "File path", "filter:"
 				"Popular image formats (*.bmp *.jpeg *.jpg *.png *.tiff);;"
 				"Windows bitmaps (*.bmp *.dib);;"
 				"JPEG files (*.jpeg *.jpg *.jpe);;"
@@ -262,7 +261,7 @@ public:
 				"Sun rasters (*.sr *.ras);;"
 				"TIFF files (*.tiff *.tif);;"
 				"All files (*.*)" },
-			{ EPropertyType::Unknown, "", QVariant(), "" }
+			{ EPropertyType::Unknown, "", "" }
 		};
 
 		nodeConfig.description = "Loads image from a given location";
@@ -329,9 +328,9 @@ public:
 		};
 		static const PropertyConfig prop_config[] = {
 			// TODO: In future we might use slider
-			{ EPropertyType::Integer, "Kernel radius", QVariant(_kernelRadius), "min:1, max:20, step:1" },
-			{ EPropertyType::Double, "Sigma", QVariant(_sigma), "min:0.0" },
-			{ EPropertyType::Unknown, "", QVariant(), "" }
+			{ EPropertyType::Integer, "Kernel radius", "min:1, max:20, step:1" },
+			{ EPropertyType::Double, "Sigma", "min:0.0" },
+			{ EPropertyType::Unknown, "", "" }
 		};
 
 		nodeConfig.description = "Performs Gaussian blur on input image";
@@ -458,9 +457,9 @@ public:
 			{ "", "", "" }
 		};
 		static const PropertyConfig prop_config[] = {
-			{ EPropertyType::Double, "Threshold", QVariant(_threshold), "min:0.0, max:100.0, decimals:3" },
-			{ EPropertyType::Double, "Ratio", QVariant(_ratio), "min:0.0, decimals:3" },
-			{ EPropertyType::Unknown, "", QVariant(), "" }
+			{ EPropertyType::Double, "Threshold", "min:0.0, max:100.0, decimals:3" },
+			{ EPropertyType::Double, "Ratio", "min:0.0, decimals:3" },
+			{ EPropertyType::Unknown, "", "" }
 		};
 
 		nodeConfig.description = "Detects edges in input image using Canny detector";
@@ -550,9 +549,9 @@ public:
 			{ "", "", "" }
 		};
 		static const PropertyConfig prop_config[] = {
-			{ EPropertyType::Double, "Alpha", QVariant(_alpha), "min:0.0, max:1.0, decimals:3, step:0.1" },
-			{ EPropertyType::Double, "Beta", QVariant(_beta), "min:0.0, max:1.0, decimals:3, step:0.1" },
-			{ EPropertyType::Unknown, "", QVariant(), "" }
+			{ EPropertyType::Double, "Alpha", "min:0.0, max:1.0, decimals:3, step:0.1" },
+			{ EPropertyType::Double, "Beta",  "min:0.0, max:1.0, decimals:3, step:0.1" },
+			{ EPropertyType::Unknown, "", "" }
 		};
 
 		nodeConfig.description = "Adds one image to another with specified weights: alpha * x + beta * y";
@@ -784,9 +783,9 @@ public:
 			{ "", "", "" }
 		};
 		static const PropertyConfig prop_config[] = {
-			{ EPropertyType::Integer, "Threshold", QVariant(_threshold), "min:0, max:255" },
-			{ EPropertyType::Boolean, "Inverted", QVariant(_inv), "" },
-			{ EPropertyType::Unknown, "", QVariant(), "" }
+			{ EPropertyType::Integer, "Threshold", "min:0, max:255" },
+			{ EPropertyType::Boolean, "Inverted", "" },
+			{ EPropertyType::Unknown, "", "" }
 		};
 
 		nodeConfig.description = "Creates a binary image by segmenting pixel values to 0 or 1 depending on threshold value";
@@ -866,9 +865,9 @@ public:
 			{ "", "", "" }
 		};
 		static const PropertyConfig prop_config[] = {
-			{ EPropertyType::Matrix, "Coefficients", QVariant::fromValue<Matrix3x3>(_coeffs), "" },
-			{ EPropertyType::Boolean, "Scale absolute", QVariant(_scaleAbs), "" },
-			{ EPropertyType::Unknown, "", QVariant(), "" }
+			{ EPropertyType::Matrix, "Coefficients", "" },
+			{ EPropertyType::Boolean, "Scale absolute", "" },
+			{ EPropertyType::Unknown, "", "" }
 		};
 
 		nodeConfig.description = "Performs image convolution";
@@ -946,12 +945,12 @@ public:
 			{ "", "", "" }
 		};
 		static const PropertyConfig prop_config[] = {
-			{ EPropertyType::Enum, "Kernel", int(_filterType),
+			{ EPropertyType::Enum, "Kernel",
 				"item: No operation, item: Average, item: Gaussian, item: Mean removal,"
 				"item: Robert's cross 45, item: Robert's cross 135, item: Laplacian,"
 				"item: Prewitt horizontal, item: Prewitt vertical, "
 				"item: Sobel horizontal, item: Sobel vertical"},
-			{ EPropertyType::Unknown, "", QVariant(), "" }
+			{ EPropertyType::Unknown, "", "" }
 		};
 
 		nodeConfig.description = "Performs image convolution using one of predefined convolution kernel";
@@ -1030,12 +1029,11 @@ public:
 			{ "", "", "" }
 		};
 		static const PropertyConfig prop_config[] = {
-			{ EPropertyType::Enum, "SE shape", int(_se),
-				"item: Rectangle, item: Ellipse, item: Cross" },
-			{ EPropertyType::Integer, "Horizontal radius", QVariant(_xradius), "min:1, max:50" },
-			{ EPropertyType::Integer, "Vertical radius", QVariant(_yradius), "min:1, max:50" },
-			{ EPropertyType::Integer, "Rotation", QVariant(_rotation), "min:0, max:359, wrap:true" },
-			{ EPropertyType::Unknown, "", QVariant(), "" }
+			{ EPropertyType::Enum, "SE shape", "item: Rectangle, item: Ellipse, item: Cross" },
+			{ EPropertyType::Integer, "Horizontal radius", "min:1, max:50" },
+			{ EPropertyType::Integer, "Vertical radius", "min:1, max:50" },
+			{ EPropertyType::Integer, "Rotation", "min:0, max:359, wrap:true" },
+			{ EPropertyType::Unknown, "", "" }
 		};
 
 		nodeConfig.description = "Generates a structuring element for a morphology "
@@ -1116,10 +1114,10 @@ public:
 			{ "", "", "" }
 		};
 		static const PropertyConfig prop_config[] = {
-			{ EPropertyType::Enum, "Operation type", int(_op), 
+			{ EPropertyType::Enum, "Operation type", 
 				"item: Erode, item: Dilate, item: Open, item: Close,"
 				"item: Gradient, item: Top Hat, item: Black Hat"},
-			{ EPropertyType::Unknown, "", QVariant(), "" }
+			{ EPropertyType::Unknown, "", "" }
 		};
 
 		nodeConfig.description = "Performs a morphology operation on a given image";

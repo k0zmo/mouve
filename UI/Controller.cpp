@@ -308,7 +308,8 @@ void Controller::addNodeView(const QString& nodeTitle,
 			auto& prop = nodeConfig.pProperties[propID];
 
 			_propManager->newProperty(nodeID, propID, prop.type, 
-				QString::fromStdString(prop.name), prop.initial, 
+				QString::fromStdString(prop.name),
+				_nodeTree->nodeProperty(nodeID, propID),
 				QString::fromStdString(prop.uiHint));
 
 			++propID;

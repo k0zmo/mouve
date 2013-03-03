@@ -96,7 +96,6 @@ struct PropertyConfig
 {
 	EPropertyType type;
 	std::string name; // humanName
-	QVariant initial; // boost::variant??
 	std::string uiHint;
 };
 
