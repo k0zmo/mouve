@@ -15,6 +15,8 @@ class NodeSocketView;
 class NodeLinkView;
 class NodeView;
 
+class PreviewWidget;
+
 struct NodeDataIndex
 {
 	static const int NodeKey = 0;

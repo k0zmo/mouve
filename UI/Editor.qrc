@@ -1,5 +1,8 @@
 <RCC>
   <qresource prefix="/">
+    <file>images/button-image.png</file>
+    <file>images/button-zoom-in.png</file>
+    <file>images/button-zoom-out.png</file>
     <file>images/button-floppy.png</file>
     <file>images/button-edit.png</file>
     <file>images/button-upload.png</file>

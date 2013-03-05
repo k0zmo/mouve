@@ -88,6 +88,7 @@ private:
 	QTimer* _videoTimer;
 
 	Ui::MainWindow* _ui;
+	PreviewWidget* _previewWidget;
 
 	bool _videoMode;
 	bool _currentlyPlaying;

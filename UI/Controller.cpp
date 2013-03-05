@@ -9,6 +9,7 @@
 
 #include "LogView.h"
 #include "NodeStyle.h"
+#include "PreviewWidget.h"
 
 #include "Logic/NodeSystem.h"
 #include "Logic/NodeTree.h"
@@ -101,10 +102,6 @@ void Controller::setupUi()
 {
 	_ui->setupUi(this);
 
-	/// TODO: use OpenGL
-	_ui->outputPreview->setMinimumSize(maxImageWidth, maxImageHeight);
-	_ui->outputPreview->setMaximumSize(maxImageWidth, maxImageHeight);
-
 	// Menu bar actions
 	_ui->actionQuit->setShortcuts(QKeySequence::Quit);
 	connect(_ui->actionQuit, &QAction::triggered, this, &QMainWindow::close);
@@ -169,6 +166,11 @@ void Controller::setupUi()
 	_ui->propertiesTreeView->setItemDelegateForColumn(1, delegate);
 	_ui->propertiesTreeView->header()->setSectionResizeMode(
 		QHeaderView::ResizeToContents);
+
+	// Init preview window
+	_previewWidget = new PreviewWidget(this);
+	_previewWidget->showDummy();
+	_ui->previewDockWidget->setWidget(_previewWidget);
 }
 
 bool Controller::isAutoRefresh()
@@ -850,37 +852,15 @@ void Controller::updatePreview()
 		/// xXx: For now we preview only first output socket
 		///      This shouldn't be much a problem
 		const cv::Mat& mat = _nodeTree->outputSocket(_previewSelectedNodeView->nodeKey(), 0);
-		cv::Mat mat_;
 
-		// Scale it up nicely
-		/// xXx: In future we should use OpenGL and got free scaling
-
-		//if(mat.rows > maxImageHeight || 
-		//   mat.cols > maxImageWidth)
-		if(mat.rows > 0 && mat.cols > 0)
-		{
-			double fx;
-			if(mat.rows > mat.cols)
-				fx = static_cast<double>(maxImageHeight) / mat.rows;
-			else
-				fx = static_cast<double>(maxImageWidth) / mat.cols;
-			cv::resize(mat, mat_, cv::Size(0,0), fx, fx, cv::INTER_LINEAR);
-		}
+		if(mat.data)
+			_previewWidget->show(mat);
 		else
-		{
-			mat_ = mat;
-		}
-
-		QImage image = QImage(
-			reinterpret_cast<const quint8*>(mat_.data),
-			mat_.cols, mat_.rows, mat_.step, 
-			QImage::Format_Indexed8);
-		_ui->outputPreview->setPixmap(QPixmap::fromImage(image));
+			_previewWidget->showDummy();
 	}
 	else
 	{
-		/// TODO: Use somekind of dummy pixmap to indicate that preview is unavailable
-		_ui->outputPreview->setPixmap(QPixmap());
+		_previewWidget->showDummy();
 	}
 }
 
