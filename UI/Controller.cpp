@@ -21,7 +21,11 @@
 #include <QMenu>
 
 #include <QJsonDocument>
+#include <QJsonObject>
+#include <QJsonArray>
 #include <QFileDialog>
+
+#include <QTimer>
 
 /// TODO: Temporary for preview
 #include <opencv2/core/core.hpp>
@@ -39,13 +43,13 @@ template<> Controller* Singleton<Controller>::_singleton = nullptr;
 Controller::Controller(QWidget* parent, Qt::WindowFlags flags)
 	: QMainWindow(parent, flags)
 	, _previewSelectedNodeView(nullptr)
-	, _nodeSystem(new NodeSystem())
 	, _propManager(new PropertyManager(this))
+	, _nodeSystem(new NodeSystem())
+	, _videoTimer(new QTimer(this))
 	, _ui(new Ui::MainWindow())
 	, _videoMode(false)
 	, _currentlyPlaying(false)
 	, _startWithInit(true)
-	, _videoTimer(new QTimer(this))
 	, _nodeTreeDirty(false)
 {
 	setupUi();
@@ -630,7 +634,7 @@ void Controller::changeProperty(NodeID nodeID,
 		{
 		/// TODO: Use enum
 		case -1:
-			if(newValue.type() == QMetaType::QString)
+			if(newValue.type() == QVariant::String)
 			{
 				QString name = newValue.toString();
 				std::string nameStd = name.toStdString();

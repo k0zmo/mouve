@@ -1,5 +1,3 @@
-#pragma once
-
 #include "Prerequisites.h"
 #include "NodeType.h"
 #include "NodeFactory.h"
@@ -1009,7 +1007,7 @@ public:
 		return QVariant();
 	}
 
-	void execute(NodeSocketReader* reader, NodeSocketWriter* writer) override
+	void execute(NodeSocketReader*, NodeSocketWriter* writer) override
 	{
 		cv::Mat& kernel = writer->lockSocket(0);
 

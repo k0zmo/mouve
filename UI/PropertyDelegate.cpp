@@ -30,7 +30,7 @@ QWidget* PropertyDelegate::createEditor(QWidget* parent,
 
 		if(item)
 		{
-			QWidget* editor = item->createEditor(parent, option);
+			QWidget* editor = item->createEditor(parent);
 
 			if(editor)
 			{

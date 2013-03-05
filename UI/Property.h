@@ -8,6 +8,8 @@
 #include <QVariant>
 #include <QStyleOption>
 
+#include <QFileInfo>
+
 class QStyleOptionViewItem;
 class QPainter;
 
@@ -51,8 +53,7 @@ public:
 	// Type is immutable
 	EPropertyType type() const;
 
-	virtual QWidget* createEditor(QWidget* parent,
-		const QStyleOptionViewItem& option);
+	virtual QWidget* createEditor(QWidget* parent);
 
 	virtual bool setEditorData(QWidget* editor,
 		const QVariant& data);
@@ -63,7 +64,7 @@ public:
 		const QStyleOptionViewItem& option,
 		const QVariant& value);
 
-	virtual void setUiHints(const PropertyHintList& list) {}
+	virtual void setUiHints(const PropertyHintList& list) { Q_UNUSED(list); }
 
 protected:
 	QVector<Property*> _children;
@@ -79,8 +80,7 @@ class DoubleProperty : public Property
 public:
 	explicit DoubleProperty(const QString& name, double value);
 
-	QWidget* createEditor(QWidget* parent,
-		const QStyleOptionViewItem& option) override;
+	QWidget* createEditor(QWidget* parent) override;
 	bool setEditorData(QWidget* editor,
 		const QVariant& data) override;
 	QVariant editorData(QWidget* editor) override;
@@ -103,8 +103,7 @@ public:
 	bool setValue(const QVariant& value, 
 		int role = Qt::UserRole) override;
 
-	QWidget* createEditor(QWidget* parent,
-		const QStyleOptionViewItem& option) override;
+	QWidget* createEditor(QWidget* parent) override;
 	bool setEditorData(QWidget* editor,
 		const QVariant& data) override;
 	QVariant editorData(QWidget* editor) override;
@@ -120,8 +119,7 @@ class IntegerProperty : public Property
 public:
 	explicit IntegerProperty(const QString& name, int value);
 
-	QWidget* createEditor(QWidget* parent,
-		const QStyleOptionViewItem& option) override;
+	QWidget* createEditor(QWidget* parent) override;
 	bool setEditorData(QWidget* editor,
 		const QVariant& data) override;
 	QVariant editorData(QWidget* editor) override;
@@ -148,8 +146,7 @@ class BooleanProperty : public Property
 public:
 	explicit BooleanProperty(const QString& name, bool value);
 
-	QWidget* createEditor(QWidget* parent,
-		const QStyleOptionViewItem& option) override;
+	QWidget* createEditor(QWidget* parent) override;
 	bool setEditorData(QWidget* editor,
 		const QVariant& data) override;
 	QVariant editorData(QWidget* editor) override;
@@ -169,8 +166,7 @@ public:
 	bool setValue(const QVariant& value, 
 		int role = Qt::UserRole) override;
 
-	QWidget* createEditor(QWidget* parent,
-		const QStyleOptionViewItem& option) override;
+	QWidget* createEditor(QWidget* parent) override;
 	bool setEditorData(QWidget* editor,
 		const QVariant& data) override;
 	QVariant editorData(QWidget* editor) override;
@@ -193,8 +189,7 @@ public:
 	//bool setValue(const QVariant& value, 
 	//	int role = Qt::UserRole) override;
 
-	QWidget* createEditor(QWidget* parent,
-		const QStyleOptionViewItem& option) override;
+	QWidget* createEditor(QWidget* parent) override;
 	bool setEditorData(QWidget* editor,
 		const QVariant& data) override;
 	QVariant editorData(QWidget* editor) override;
@@ -277,9 +272,8 @@ if(_value != value) { _value = value; return true; } return false; }
 inline EPropertyType Property::type() const
 { return _type; }
 
-inline QWidget* Property::createEditor(QWidget* parent,
-									   const QStyleOptionViewItem& option)
-{ Q_UNUSED(parent); Q_UNUSED(option); return nullptr; }
+inline QWidget* Property::createEditor(QWidget* parent)
+{ Q_UNUSED(parent); return nullptr; }
 
 inline bool Property::setEditorData(QWidget* editor,
 									const QVariant& data)

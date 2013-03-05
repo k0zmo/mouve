@@ -9,7 +9,12 @@
 
 template <typename T>
 bool tryConvert(const QString& str, T& value) 
-{ static_assert(false, "conversion doesn't exist"); return false; }
+{
+#if defined(Q_CC_MSVC)
+	static_assert(false, "conversion doesn't exist");
+#endif
+	return false;
+}
 
 template <> 
 bool tryConvert<int>(const QString& str, int& value)
@@ -67,27 +72,27 @@ Property::Property(const QString& name,
 		break;
 
 	case EPropertyType::Boolean:
-		Q_ASSERT(QMetaType::Type(value.type()) == QMetaType::Bool);
+		Q_ASSERT(value.type() == QVariant::Bool);
 		break;
 
 	case EPropertyType::Integer:
-		Q_ASSERT(QMetaType::Type(value.type()) == QMetaType::Int);
+		Q_ASSERT(value.type() == QVariant::Int);
 		break;
 
 	case EPropertyType::Double:
-		Q_ASSERT(QMetaType::Type(value.type()) == QMetaType::Double);
+		Q_ASSERT(value.type() == QVariant::Double);
 		break;
 
 	case EPropertyType::Enum:
-		Q_ASSERT(QMetaType::Type(value.type()) == QMetaType::Int);
+		Q_ASSERT(value.type() == QVariant::Int);
 		break;
 
 	case EPropertyType::Filepath:
-		Q_ASSERT(QMetaType::Type(value.type()) == QMetaType::QString);
+		Q_ASSERT(value.type() == QVariant::String);
 		break;
 
 	case EPropertyType::String:
-		Q_ASSERT(QMetaType::Type(value.type()) == QMetaType::QString);
+		Q_ASSERT(value.type() == QVariant::String);
 		break;
 /*
 	case EPropertyType::Vector3:
@@ -128,11 +133,8 @@ DoubleProperty::DoubleProperty(const QString& name, double value)
 {
 }
 
-QWidget* DoubleProperty::createEditor(QWidget* parent,
-									  const QStyleOptionViewItem& option)
+QWidget* DoubleProperty::createEditor(QWidget* parent)
 {
-	Q_UNUSED(option);
-
 	PropertyDoubleSpinBox* editor = new PropertyDoubleSpinBox(parent);
 
 	editor->setMinimum(_min);
@@ -234,11 +236,8 @@ bool EnumProperty::setValue(const QVariant& value, int role)
 	return false;
 }
 
-QWidget* EnumProperty::createEditor(QWidget* parent, 
-									const QStyleOptionViewItem& option)
+QWidget* EnumProperty::createEditor(QWidget* parent)
 {
-	Q_UNUSED(option);
-
 	PropertyComboBox* editor = new PropertyComboBox(parent);
 	editor->addItems(_valueList);
 	return editor;
@@ -296,11 +295,8 @@ IntegerProperty::IntegerProperty(const QString& name, int value)
 {
 }
 
-QWidget* IntegerProperty::createEditor(QWidget* parent,
-									   const QStyleOptionViewItem& option)
+QWidget* IntegerProperty::createEditor(QWidget* parent)
 {
-	Q_UNUSED(option);
-
 	PropertySpinBox* editor = new PropertySpinBox(parent);
 
 	editor->setMinimum(_min);
@@ -371,8 +367,7 @@ BooleanProperty::BooleanProperty(const QString& name, bool value)
 {
 }
 
-QWidget* BooleanProperty::createEditor(QWidget* parent,
-									   const QStyleOptionViewItem& option)
+QWidget* BooleanProperty::createEditor(QWidget* parent)
 {
 	return new PropertyCheckBox(parent);
 }
@@ -476,8 +471,7 @@ bool FilePathProperty::setValue(const QVariant& value, int role)
 	return false;
 }
 
-QWidget* FilePathProperty::createEditor(QWidget* parent,
-										const QStyleOptionViewItem& option)
+QWidget* FilePathProperty::createEditor(QWidget* parent)
 {
 	FileRequester* editor = new FileRequester(parent);
 	editor->setFilter(_filter);
@@ -562,8 +556,7 @@ QVariant MatrixProperty::value(int role) const
 //bool setValue(const QVariant& value, 
 //	int role = Qt::UserRole) override;
 
-QWidget* MatrixProperty::createEditor(QWidget* parent,
-	const QStyleOptionViewItem& option)
+QWidget* MatrixProperty::createEditor(QWidget* parent)
 {
 	return new PropertyMatrixButton(parent);
 }

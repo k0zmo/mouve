@@ -431,7 +431,7 @@ Matrix3x3 PropertyMatrixDialog::coefficients() const
 			sum += sb->value();
 	}
 
-	if(fabs(sum) < DBL_EPSILON)
+	if(fabs(sum) < std::numeric_limits<double>::epsilon())
 		// High pass filter
 		sum = 1.0;
 	else

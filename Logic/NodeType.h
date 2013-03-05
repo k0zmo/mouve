@@ -141,9 +141,9 @@ public:
 	virtual bool initialize();
 };
 
-inline bool NodeType::setProperty(PropertyID propId, const QVariant& newValue)
+inline bool NodeType::setProperty(PropertyID, const QVariant&)
 { return false; }
-inline QVariant NodeType::property(PropertyID propId) const
+inline QVariant NodeType::property(PropertyID) const
 { return QVariant(); }
 inline bool NodeType::initialize()
 { return false; }

@@ -2,15 +2,17 @@
 
 #include <opencv2/core/core.hpp>
 
+#include <QWheelEvent>
+
 GLWidget::GLWidget(QWidget* parent)
 	: QGLWidget(parent)
-	, _left(0)
-	, _bottom(0)
-	, _right(1)
 	, _top(1)
+	, _left(0)
+	, _right(1)
+	, _bottom(0)
 	, _textureId(0)
-	, _textureCheckerId(0)
 	, _foreignTextureId(0)
+	, _textureCheckerId(0)
 	, _textureWidth(0)
 	, _textureHeight(0)
 	, _resizeBehavior(EResizeBehavior::Scale)
@@ -99,11 +101,15 @@ void GLWidget::show(const QImage& image)
 	glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, image.width(), image.height(),	
 		0, format, type, image.constBits());
 
+	bool sizeChanged = _textureWidth != image.width()
+		|| _textureHeight != image.height();
+
 	_textureWidth = image.width();
 	_textureHeight = image.height();
 	_showDummy = false;
 
-	recalculateTexCoords();
+	if(sizeChanged)
+		recalculateTexCoords();
 	updateGL();
 }
 
@@ -165,11 +171,15 @@ void GLWidget::show(const cv::Mat& image)
 	glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, image.cols, image.rows,
 		0, format, type, image.data);
 
+	bool sizeChanged = _textureWidth != image.cols
+		|| _textureHeight != image.rows;
+
 	_textureWidth = image.cols;
 	_textureHeight = image.rows;
 	_showDummy = false;
 
-	recalculateTexCoords();
+	if(sizeChanged)
+		recalculateTexCoords();
 	updateGL();
 }
 
@@ -413,7 +423,7 @@ void GLWidget::paintGL()
 		};
 
 		// Flip texture horizontally
-		for(int i = 1; i < sizeof(st) / sizeof(float); i += 2)
+		for(size_t i = 1; i < sizeof(st) / sizeof(float); i += 2)
 			st[i] = 1.0f - st[i];
 
 		glBindTexture(GL_TEXTURE_2D, _textureId);
