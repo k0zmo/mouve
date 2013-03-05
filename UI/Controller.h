@@ -71,6 +71,8 @@ private slots:
 	void pause();
 	void stop();
 
+	void fitToView();
+
 private:
 	/// TODO: QHash
 	QList<NodeLinkView*> _linkViews;

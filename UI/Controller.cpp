@@ -160,6 +160,8 @@ void Controller::setupUi()
 	connect(_ui->actionPause, &QAction::triggered, this, &Controller::pause);
 	connect(_ui->actionStop, &QAction::triggered, this, &Controller::stop);
 
+	connect(_ui->actionFitToView, &QAction::triggered, this, &Controller::fitToView);
+
 	_ui->actionPlay->setEnabled(false);
 	_ui->actionPause->setEnabled(false);
 	_ui->actionStop->setEnabled(false);
@@ -819,6 +821,12 @@ void Controller::stop()
 	_ui->actionSingleStep->setEnabled(true);
 
 	setInteractive(true);
+}
+
+void Controller::fitToView()
+{
+	_ui->graphicsView->fitInView(_nodeScene->sceneRect(),
+		Qt::KeepAspectRatio);
 }
 
 void Controller::processAutoRefresh()

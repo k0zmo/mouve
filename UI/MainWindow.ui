@@ -18,7 +18,16 @@
     <property name="spacing">
      <number>0</number>
     </property>
-    <property name="margin">
+    <property name="leftMargin">
+     <number>0</number>
+    </property>
+    <property name="topMargin">
+     <number>0</number>
+    </property>
+    <property name="rightMargin">
+     <number>0</number>
+    </property>
+    <property name="bottomMargin">
      <number>0</number>
     </property>
     <item>
@@ -111,6 +120,8 @@
    <addaction name="actionPlay"/>
    <addaction name="actionPause"/>
    <addaction name="actionStop"/>
+   <addaction name="separator"/>
+   <addaction name="actionFitToView"/>
   </widget>
   <widget class="QDockWidget" name="propertiesDockWidget">
    <property name="windowTitle">
@@ -124,7 +135,16 @@
      <property name="spacing">
       <number>0</number>
      </property>
-     <property name="margin">
+     <property name="leftMargin">
+      <number>0</number>
+     </property>
+     <property name="topMargin">
+      <number>0</number>
+     </property>
+     <property name="rightMargin">
+      <number>0</number>
+     </property>
+     <property name="bottomMargin">
       <number>0</number>
      </property>
      <item>
@@ -179,7 +199,16 @@
      <property name="spacing">
       <number>0</number>
      </property>
-     <property name="margin">
+     <property name="leftMargin">
+      <number>0</number>
+     </property>
+     <property name="topMargin">
+      <number>0</number>
+     </property>
+     <property name="rightMargin">
+      <number>0</number>
+     </property>
+     <property name="bottomMargin">
       <number>0</number>
      </property>
     </layout>
@@ -299,6 +328,18 @@
    </property>
    <property name="toolTip">
     <string>Save tree as ...</string>
+   </property>
+  </action>
+  <action name="actionFitToView">
+   <property name="icon">
+    <iconset resource="Editor.qrc">
+     <normaloff>:/images/button-fit.png</normaloff>:/images/button-fit.png</iconset>
+   </property>
+   <property name="text">
+    <string>Fit to view</string>
+   </property>
+   <property name="toolTip">
+    <string>Fit to view</string>
    </property>
   </action>
  </widget>
