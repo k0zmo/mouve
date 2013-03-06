@@ -834,6 +834,11 @@ bool Controller::openTreeFromFileImpl(const QString& filePath)
 	loadNodes(nodesVariant.toList(), oldToNewNodeID);
 	loadLinks(linksVariant.toList(), oldToNewNodeID);
 
+	if(_nodeTree->isTreeStateless())
+		switchToImageMode();
+	else
+		switchToVideoMode();
+
 	return true;
 }
 
@@ -1132,18 +1137,18 @@ void Controller::sceneSelectionChanged()
 
 				if(selectionModel)
 					selectionModel->deleteLater();
+
+				return;
 			}
 		}
 	}
-	// Deselected or selected more than 1
-	else/* if(items.isEmpty()) */
-	{
-		auto selectionModel = _ui->propertiesTreeView->selectionModel();
-		_ui->propertiesTreeView->setModel(nullptr);
 
-		if(selectionModel)
-			selectionModel->deleteLater();
-	}
+	// Deselected or selected more than 1 items or selected something else than node 
+	auto selectionModel = _ui->propertiesTreeView->selectionModel();
+	_ui->propertiesTreeView->setModel(nullptr);
+
+	if(selectionModel)
+		selectionModel->deleteLater();
 }
 
 void Controller::changeProperty(NodeID nodeID,
