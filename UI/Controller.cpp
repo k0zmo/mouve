@@ -1299,27 +1299,25 @@ void Controller::autoRefresh()
 
 void Controller::play()
 {
-	if(!_currentlyPlaying)
-	{
-		_currentlyPlaying = true;
-		_videoTimer->start(50);
-	}
+	if(_currentlyPlaying)
+		return;
+
+	_currentlyPlaying = true;
+	_videoTimer->start(10);
 
 	_ui->actionPause->setEnabled(true);
 	_ui->actionStop->setEnabled(true);
 	_ui->actionPlay->setEnabled(false);
 	_ui->actionSingleStep->setEnabled(false);
-
-	setInteractive(false);
 }
 
 void Controller::pause()
 {
-	if(_currentlyPlaying)
-	{
-		_currentlyPlaying = false;
-		_videoTimer->stop();
-	}
+	if(!_currentlyPlaying)
+		return;
+
+	_videoTimer->stop();
+	_currentlyPlaying = false;	
 
 	_ui->actionPause->setEnabled(false);
 	_ui->actionStop->setEnabled(true);
@@ -1329,11 +1327,11 @@ void Controller::pause()
 
 void Controller::stop()
 {
-	if(_currentlyPlaying)
-	{
-		_currentlyPlaying = false;
-		_videoTimer->stop();
-	}
+	if(!_currentlyPlaying)
+		return;
+
+	_videoTimer->stop();
+	_currentlyPlaying = false;	
 
 	_startWithInit = true;
 

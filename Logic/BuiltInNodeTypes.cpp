@@ -2,7 +2,8 @@
 #include "NodeType.h"
 #include "NodeFactory.h"
 
-#include <QStringList>
+#include <chrono>
+#include <thread>
 
 #include <opencv2/core/core.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
@@ -64,6 +65,7 @@ public:
 		_frameInterval = (fps != 0)
 			? _frameInterval = unsigned(ceil(1000.0 / fps))
 			: 0;
+		_timeStamp = std::chrono::high_resolution_clock::time_point();
 
 		return true;
 	}
@@ -75,8 +77,27 @@ public:
 		cv::Mat& output = writer.lockSocket(0);
 		if(!_capture.isOpened())
 			return ExecutionStatus(EStatus::NoMoreData);
-		
-		_capture.read(output);
+
+		if(_frameInterval == 0)
+		{
+			_capture.read(output);
+		}
+		else
+		{
+			using namespace std::chrono;
+
+			high_resolution_clock::time_point s = high_resolution_clock::now();
+			milliseconds dura = duration_cast<milliseconds>(s - _timeStamp);
+			if(dura.count() < _frameInterval)
+			{
+				milliseconds waitDuration = milliseconds(_frameInterval) - dura;
+				std::this_thread::sleep_for(waitDuration);
+			}
+
+			_capture.read(output);
+
+			_timeStamp = std::chrono::high_resolution_clock::now();
+		}
 
 		if(output.data)
 		{
@@ -119,6 +140,7 @@ private:
 	cv::VideoCapture _capture;
 	unsigned _startFrame;
 	unsigned _frameInterval;
+	std::chrono::high_resolution_clock::time_point _timeStamp;
 };
 
 class MixtureOfGaussianNodeType : public NodeType
