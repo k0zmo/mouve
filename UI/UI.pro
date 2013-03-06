@@ -22,6 +22,7 @@ HEADERS += \
 	PropertyManager.h \
 	PropertyModel.h \
 	PropertyWidgets.h \
+	TreeWorker.h
 
 SOURCES += \
 	Application.cpp \
@@ -40,7 +41,8 @@ SOURCES += \
 	PropertyDelegate.cpp \
 	PropertyManager.cpp \
 	PropertyModel.cpp \
-	PropertyWidgets.cpp
+	PropertyWidgets.cpp \
+	TreeWorker.cpp
 	
 FORMS += \
     MainWindow.ui \

@@ -4,8 +4,8 @@
 
 PropertyModel::PropertyModel(NodeID nodeID, QObject* parent)
 	: QAbstractItemModel(parent)
-	, _nodeID(nodeID)
 	, _root(new Property("Name", "Value", EPropertyType::String, nullptr))
+	, _nodeID(nodeID)
 	, _currentGroup(_root.data())
 {
 }

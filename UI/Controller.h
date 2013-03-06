@@ -9,6 +9,7 @@
 namespace Ui {
 	class MainWindow;
 }
+class QGraphicsScene;
 class QGraphicsWidget;
 class QLabel;
 class TreeWorker;

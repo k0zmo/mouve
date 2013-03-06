@@ -63,7 +63,7 @@ public:
 		double fps = _capture.get(CV_CAP_PROP_FPS);
 
 		_frameInterval = (fps != 0)
-			? _frameInterval = unsigned(ceil(1000.0 / fps))
+			? unsigned(ceil(1000.0 / fps))
 			: 0;
 		_timeStamp = std::chrono::high_resolution_clock::time_point();
 
