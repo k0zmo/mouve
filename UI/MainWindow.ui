@@ -214,6 +214,7 @@
     </layout>
    </widget>
   </widget>
+  <widget class="QStatusBar" name="statusBar"/>
   <action name="actionPlay">
    <property name="icon">
     <iconset resource="Editor.qrc">

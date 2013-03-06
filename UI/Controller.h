@@ -4,11 +4,19 @@
 #include "Common/Singleton.h"
 
 #include <QMainWindow>
-#include <QGraphicsWidget>
 
 namespace Ui {
 	class MainWindow;
 }
+class QGraphicsWidget;
+class QLabel;
+
+enum class EState
+{
+	Stopped,
+	Playing,
+	Paused
+};
 
 class Controller
 	: public QMainWindow
@@ -42,6 +50,8 @@ private:
 	// Enables (disables) video or image control toolbar buttons
 	void switchToVideoMode();
 	void switchToImageMode();
+
+	void updateStatusBar(EState state);
 
 	// Auto-refresh functionality
 	bool isAutoRefresh();
@@ -95,6 +105,7 @@ private slots:
 
 	// Image mode toolbar
 	void singleStep();
+	void step();
 	void autoRefresh();
 
 	// Video mode toolbar
@@ -124,8 +135,9 @@ private:
 	Ui::MainWindow* _ui;
 	PreviewWidget* _previewWidget;
 
+	QLabel* _stateLabel;
+	EState _state;
 	bool _videoMode;
-	bool _currentlyPlaying;
 	bool _startWithInit;
 
 	QString _nodeTreeFilePath;

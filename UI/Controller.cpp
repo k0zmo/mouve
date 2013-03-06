@@ -24,6 +24,8 @@
 
 #include <QMessageBox>
 #include <QMenu>
+#include <QLabel>
+#include <QGraphicsWidget>
 
 #include <QJsonDocument>
 #include <QJsonObject>
@@ -48,11 +50,11 @@ Controller::Controller(QWidget* parent, Qt::WindowFlags flags)
 	, _videoTimer(new QTimer(this))
 	, _ui(new Ui::MainWindow())
 	, _videoMode(false)
-	, _currentlyPlaying(false)
 	, _startWithInit(true)
 	, _nodeTreeDirty(false)
 {
 	setupUi();
+	updateStatusBar(EState::Stopped);
 	updateTitleBar();
 	createNewNodeScene();	
 
@@ -76,7 +78,7 @@ Controller::Controller(QWidget* parent, Qt::WindowFlags flags)
 		_addNodesActions.append(action);
 	}
 
-	connect(_videoTimer, &QTimer::timeout, this, &Controller::singleStep);
+	connect(_videoTimer, &QTimer::timeout, this, &Controller::step);
 }
 
 Controller::~Controller()
@@ -88,7 +90,7 @@ Controller::~Controller()
 
 void Controller::closeEvent(QCloseEvent* event)
 {
-	if(_currentlyPlaying)
+	if(_state == EState::Playing)
 		stop();
 
 	if (canQuit())
@@ -432,6 +434,10 @@ void Controller::setupUi()
 	_previewWidget = new PreviewWidget(this);
 	_previewWidget->showDummy();
 	_ui->previewDockWidget->setWidget(_previewWidget);
+
+	// Init status bar
+	_stateLabel = new QLabel(this);
+	_ui->statusBar->addPermanentWidget(_stateLabel);
 }
 
 void Controller::showErrorMessage(const QString& message)
@@ -463,6 +469,25 @@ void Controller::switchToImageMode()
 	_ui->actionStop->setEnabled(false);
 
 	_videoMode = false;
+}
+
+void Controller::updateStatusBar(EState state)
+{
+	_state  = state;
+
+	switch(_state)
+	{
+	case EState::Stopped:
+		_stateLabel->setText("Stopped (Editing allowed)");
+		break;
+	case EState::Playing:
+		_stateLabel->setText("Playing");
+		break;
+	case EState::Paused:
+		_stateLabel->setText("Paused");
+		break;
+	}
+	
 }
 
 bool Controller::isAutoRefresh()
@@ -1269,33 +1294,50 @@ bool Controller::saveTreeAs()
 
 void Controller::singleStep()
 {
-	/// TODO: Cleanup, this is only temporary (as well as "timer driven" video)
+	_nodeTree->prepareList();
+	auto executeList = _nodeTree->executeList();
+
+	if(executeList.empty())
+			return;
+
+	// Single step in image mode
 	if(!_videoMode)
 	{
-		_nodeTree->prepareList();
-		_nodeTree->execute();
-
-		updatePreview();
+		_nodeTree->execute(false);
 	}
+	// Single step in video mode 
 	else
 	{
-		_nodeTree->prepareList();
-		auto executeList = _nodeTree->executeList();
-		if(executeList.empty())
+		if(_state == EState::Stopped)
 		{
-			stop();
-			return;
+			// If we started playing using "Step" button we need to update these
+			updateStatusBar(EState::Paused);
+			setInteractive(false);
+			_ui->actionStop->setEnabled(true);
 		}
-
-		setInteractive(false);
 		
 		_nodeTree->execute(_startWithInit);
 		_startWithInit = false;
-
-		_ui->actionStop->setEnabled(true);
-
-		updatePreview();
 	}
+
+	updatePreview();
+}
+
+void Controller::step()
+{
+	_nodeTree->prepareList();
+	auto executeList = _nodeTree->executeList();
+
+	if(executeList.empty())
+	{
+		stop();
+		return;
+	}
+
+	_nodeTree->execute(_startWithInit);
+	_startWithInit = false;
+
+	updatePreview();
 }
 
 void Controller::autoRefresh()
@@ -1306,48 +1348,53 @@ void Controller::autoRefresh()
 
 void Controller::play()
 {
-	if(!_currentlyPlaying)
+	if(_state != EState::Playing)
 	{
 		_videoTimer->start(10);
-		_currentlyPlaying = true;
-	}
 
-	_ui->actionPause->setEnabled(true);
-	_ui->actionStop->setEnabled(true);
-	_ui->actionPlay->setEnabled(false);
-	_ui->actionSingleStep->setEnabled(false);
+		updateStatusBar(EState::Playing);
+
+		_ui->actionPause->setEnabled(true);
+		_ui->actionStop->setEnabled(true);
+		_ui->actionPlay->setEnabled(false);
+		_ui->actionSingleStep->setEnabled(false);
+
+		setInteractive(false);
+	}
 }
 
 void Controller::pause()
 {
-	if(_currentlyPlaying)
+	if(_state == EState::Playing)
 	{
 		_videoTimer->stop();
-		_currentlyPlaying = false;		
-	}
 
-	_ui->actionPause->setEnabled(false);
-	_ui->actionStop->setEnabled(true);
-	_ui->actionPlay->setEnabled(true);
-	_ui->actionSingleStep->setEnabled(true);
+		updateStatusBar(EState::Paused);
+
+		_ui->actionPause->setEnabled(false);
+		_ui->actionStop->setEnabled(true);
+		_ui->actionPlay->setEnabled(true);
+		_ui->actionSingleStep->setEnabled(true);
+	}
 }
 
 void Controller::stop()
 {
-	if(_currentlyPlaying)
+	if(_state != EState::Stopped)
 	{
 		_videoTimer->stop();
-		_currentlyPlaying = false;
+
+		_startWithInit = true;
+
+		updateStatusBar(EState::Stopped);
+
+		_ui->actionPause->setEnabled(false);
+		_ui->actionStop->setEnabled(false);
+		_ui->actionPlay->setEnabled(true);
+		_ui->actionSingleStep->setEnabled(true);
+
+		setInteractive(true);
 	}
-
-	_startWithInit = true;
-
-	_ui->actionPause->setEnabled(false);
-	_ui->actionStop->setEnabled(false);
-	_ui->actionPlay->setEnabled(true);
-	_ui->actionSingleStep->setEnabled(true);
-
-	setInteractive(true);
 }
 
 void Controller::fitToView()
