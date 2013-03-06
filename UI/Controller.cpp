@@ -1103,7 +1103,7 @@ void Controller::mouseDoubleClickNodeView(NodeView* nodeView)
 
 void Controller::updatePreview()
 {
-	std::vector<NodeID>execList = _nodeTree->executeList();
+	std::vector<NodeID> execList = _nodeTree->executeList();
 
 	qDebug() << "Execute list: " << QVector<NodeID>::fromStdVector(execList);
 
@@ -1265,8 +1265,7 @@ void Controller::singleStep()
 		_nodeTree->prepareList();
 		_nodeTree->execute();
 
-		if(shouldUpdatePreview(_nodeTree->executeList()))
-			updatePreviewImpl();
+		updatePreview();
 	}
 	else
 	{
@@ -1283,8 +1282,7 @@ void Controller::singleStep()
 
 		_ui->actionStop->setEnabled(true);
 
-		if(shouldUpdatePreview(_nodeTree->executeList()))
-			updatePreviewImpl();
+		updatePreview();
 	}
 }
 
