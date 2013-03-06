@@ -531,7 +531,12 @@ void Controller::setInteractive(bool allowed)
 	{
 		_nodeScene->setBackgroundBrush(NodeStyle::SceneBlockedBackground);
 		_ui->propertiesTreeView->setEditTriggers(QAbstractItemView::NoEditTriggers);
-	}	
+	}
+
+	_ui->actionNewTree->setEnabled(allowed);
+	_ui->actionOpenTree->setEnabled(allowed);
+	_ui->actionSaveTree->setEnabled(allowed);
+	_ui->actionSaveTreeAs->setEnabled(allowed);
 }
 
 void Controller::updateTitleBar()
@@ -1280,11 +1285,6 @@ void Controller::singleStep()
 		_nodeTree->execute(_startWithInit);
 		_startWithInit = false;
 
-		_ui->actionNewTree->setEnabled(false);
-		_ui->actionOpenTree->setEnabled(false);
-		_ui->actionSaveTree->setEnabled(false);
-		_ui->actionSaveTreeAs->setEnabled(false);
-
 		_ui->actionStop->setEnabled(true);
 
 		updatePreview();
@@ -1336,11 +1336,6 @@ void Controller::stop()
 	}
 
 	_startWithInit = true;
-
-	_ui->actionNewTree->setEnabled(true);
-	_ui->actionOpenTree->setEnabled(true);
-	_ui->actionSaveTree->setEnabled(true);
-	_ui->actionSaveTreeAs->setEnabled(true);
 
 	_ui->actionPause->setEnabled(false);
 	_ui->actionStop->setEnabled(false);
