@@ -1,21 +1,26 @@
 #include "Controller.h"
-#include "NodeView.h"
-#include "NodeLinkView.h"
-#include "NodeSocketView.h"
 
-#include "PropertyDelegate.h"
-#include "PropertyManager.h"
-#include "PropertyModel.h"
-
-#include "LogView.h"
-#include "NodeStyle.h"
-#include "PreviewWidget.h"
-
+// Model part
 #include "Logic/NodeSystem.h"
 #include "Logic/NodeTree.h"
 #include "Logic/NodeType.h"
 #include "Logic/NodeLink.h"
 #include "Logic/Node.h"
+
+// Views
+#include "NodeView.h"
+#include "NodeLinkView.h"
+#include "NodeSocketView.h"
+#include "NodeStyle.h"
+
+// Properties
+#include "PropertyDelegate.h"
+#include "PropertyManager.h"
+#include "PropertyModel.h"
+
+// Additional widgets
+#include "LogView.h"
+#include "PreviewWidget.h"
 
 #include <QMessageBox>
 #include <QMenu>
@@ -29,13 +34,8 @@
 
 /// TODO: Temporary for preview
 #include <opencv2/core/core.hpp>
-#include <opencv2/imgproc/imgproc.hpp>
 
 #include "ui_MainWindow.h"
-
-static bool DEBUG_LINKS = false;
-static const int maxImageWidth = 400;
-static const int maxImageHeight = 400;
 
 static const QString applicationTitle = QStringLiteral("mouve");
 template<> Controller* Singleton<Controller>::_singleton = nullptr;
@@ -100,114 +100,6 @@ void Controller::closeEvent(QCloseEvent* event)
 	{
 		event->ignore();
 	}
-}
-
-void Controller::setupUi()
-{
-	_ui->setupUi(this);
-
-	// Menu bar actions
-	_ui->actionQuit->setShortcuts(QKeySequence::Quit);
-	connect(_ui->actionQuit, &QAction::triggered, this, &QMainWindow::close);
-
-	QAction* actionProperties = _ui->propertiesDockWidget->toggleViewAction();
-	actionProperties->setShortcut(tr("Ctrl+1"));
-
-	QAction* actionPreview = _ui->previewDockWidget->toggleViewAction();
-	actionPreview->setShortcut(tr("Ctrl+2"));
-
-	QAction* actionLog = _ui->logDockWidget->toggleViewAction();
-	actionLog->setShortcut(tr("Ctrl+3"));
-
-	// Create log view
-	LogView* logView = new LogView(this);
-	_ui->logDockWidget->setWidget(logView);
-	// Hide log on default
-	_ui->logDockWidget->hide();
-
-	setCorner(Qt::BottomRightCorner, Qt::RightDockWidgetArea);
-	setCorner(Qt::BottomLeftCorner, Qt::LeftDockWidgetArea);
-	setCorner(Qt::TopRightCorner, Qt::RightDockWidgetArea);
-	setCorner(Qt::TopLeftCorner, Qt::LeftDockWidgetArea);
-	/// tabifyDockWidget(_ui->propertiesDockWidget, _ui->previewDockWidget);
-
-	// Init menu bar and its 'view' menu
-	_ui->menuView->addAction(actionProperties);
-	_ui->menuView->addAction(actionPreview);
-	_ui->menuView->addAction(actionLog);
-
-	QAction* actionAboutQt = new QAction(
-		QIcon(":/qt-project.org/qmessagebox/images/qtlogo-64.png"), 
-		tr("About &Qt"), this);
-	actionAboutQt->setToolTip(tr("Show information about Qt"));
-	actionAboutQt->setMenuRole(QAction::AboutQtRole);
-	connect(actionAboutQt, SIGNAL(triggered()), qApp, SLOT(aboutQt()));
-	_ui->menuHelp->addAction(actionAboutQt);
-
-	_ui->actionNewTree->setShortcut(QKeySequence(QKeySequence::New));
-	_ui->actionOpenTree->setShortcut(QKeySequence(QKeySequence::Open));
-	_ui->actionSaveTree->setShortcut(QKeySequence(QKeySequence::Save));
-
-	// Connect actions from a toolbar
-	connect(_ui->actionNewTree, &QAction::triggered, this, &Controller::newTree);
-	connect(_ui->actionOpenTree, &QAction::triggered, this, &Controller::openTree);
-	connect(_ui->actionSaveTree, &QAction::triggered, this, &Controller::saveTree);
-	connect(_ui->actionSaveTreeAs, &QAction::triggered, this, &Controller::saveTreeAs);
-
-	connect(_ui->actionSingleStep, &QAction::triggered, this, &Controller::singleStep);
-	connect(_ui->actionAutoRefresh, &QAction::triggered, this, &Controller::autoRefresh);
-	connect(_ui->actionPlay, &QAction::triggered, this, &Controller::play);
-	connect(_ui->actionPause, &QAction::triggered, this, &Controller::pause);
-	connect(_ui->actionStop, &QAction::triggered, this, &Controller::stop);
-
-	connect(_ui->actionFitToView, &QAction::triggered, this, &Controller::fitToView);
-
-	_ui->actionPlay->setEnabled(false);
-	_ui->actionPause->setEnabled(false);
-	_ui->actionStop->setEnabled(false);
-
-	// Init properties window
-	PropertyDelegate* delegate = new PropertyDelegate(this);
-	delegate->setImmediateUpdate(false);
-	_ui->propertiesTreeView->setItemDelegateForColumn(1, delegate);
-	_ui->propertiesTreeView->header()->setSectionResizeMode(
-		QHeaderView::ResizeToContents);
-
-	// Init preview window
-	_previewWidget = new PreviewWidget(this);
-	_previewWidget->showDummy();
-	_ui->previewDockWidget->setWidget(_previewWidget);
-}
-
-bool Controller::isAutoRefresh()
-{
-	return _ui->actionAutoRefresh->isChecked();
-}
-
-void Controller::switchToVideoMode()
-{
-	if(_videoMode)
-		return;
-
-	_ui->actionAutoRefresh->setEnabled(false);
-	_ui->actionPlay->setEnabled(true);
-	_ui->actionPause->setEnabled(false);
-	_ui->actionStop->setEnabled(false);
-
-	_videoMode = true;
-}
-
-void Controller::switchToImageMode()
-{
-	if(!_videoMode)
-		return;
-
-	_ui->actionAutoRefresh->setEnabled(true);
-	_ui->actionPlay->setEnabled(false);
-	_ui->actionPause->setEnabled(false);
-	_ui->actionStop->setEnabled(false);
-
-	_videoMode = false;
 }
 
 void Controller::addNode(NodeTypeID nodeTypeID, const QPointF& scenePos)
@@ -362,7 +254,7 @@ void Controller::linkNodesView(NodeSocketView* from, NodeSocketView* to)
 
 	// Create new link view 
 	NodeLinkView* link = new NodeLinkView(from, to, nullptr);
-	link->setDrawDebug(DEBUG_LINKS);
+	link->setDrawDebug(false);
 	from->addLink(link);
 	to->addLink(link);
 
@@ -406,7 +298,6 @@ void Controller::unlinkNodes(NodeLinkView* linkView)
 	updateTitleBar();
 	processAutoRefresh();
 }
-
 
 void Controller::deleteNode(NodeView* nodeView)
 {
@@ -457,7 +348,7 @@ void Controller::deleteNode(NodeView* nodeView)
 	if(_previewSelectedNodeView == nodeView)
 	{
 		_previewSelectedNodeView = nullptr;
-		updatePreview();
+		updatePreviewImpl();
 	}
 	nodeView->deleteLater();
 
@@ -466,120 +357,81 @@ void Controller::deleteNode(NodeView* nodeView)
 	processAutoRefresh();
 }
 
-void Controller::draggingLinkDrop(QGraphicsWidget* from, QGraphicsWidget* to)
+void Controller::setupUi()
 {
-	if(!_ui->graphicsView->isPseudoInteractive())
-	{
-		auto fromSocket = static_cast<NodeSocketView*>(from);
-		auto toSocket = static_cast<NodeSocketView*>(to);
+	_ui->setupUi(this);
 
-		Q_ASSERT(fromSocket);
-		Q_ASSERT(toSocket);
-		Q_ASSERT(fromSocket->nodeView());
-		Q_ASSERT(toSocket->nodeView());
+	// Menu bar actions
+	_ui->actionQuit->setShortcuts(QKeySequence::Quit);
+	connect(_ui->actionQuit, &QAction::triggered, this, &QMainWindow::close);
 
-		linkNodes(fromSocket->nodeView()->nodeKey(),
-			fromSocket->socketKey(),
-			toSocket->nodeView()->nodeKey(),
-			toSocket->socketKey());
-	}
-}
+	QAction* actionProperties = _ui->propertiesDockWidget->toggleViewAction();
+	actionProperties->setShortcut(tr("Ctrl+1"));
 
-void Controller::contextMenu(const QPoint& globalPos,
-	const QPointF& scenePos)
-{
-	QList<QGraphicsItem*> items = _nodeScene->items(scenePos, 
-		Qt::ContainsItemShape, Qt::AscendingOrder);
+	QAction* actionPreview = _ui->previewDockWidget->toggleViewAction();
+	actionPreview->setShortcut(tr("Ctrl+2"));
 
-	// If the user clicked onto empty space
-	if(items.isEmpty())
-	{
-		QMenu menu;
-		//QMenu* menuAddNode = menu.addMenu("Add node");
-		foreach(QAction* a, _addNodesActions)
-			menu.addAction(a);
-		QAction* ret = menu.exec(globalPos);
-		if(ret != nullptr)
-			addNode(ret->data().toInt(), scenePos);
-	}
-	else
-	{
-		for(int i = 0; i < items.size(); ++i)
-		{
-			auto item = items[i];
+	QAction* actionLog = _ui->logDockWidget->toggleViewAction();
+	actionLog->setShortcut(tr("Ctrl+3"));
 
-			if(item->type() == NodeView::Type)
-			{
-				QAction action("Remove node", nullptr);
-				QMenu menu;
-				menu.addAction(&action);
-				QAction* ret = menu.exec(globalPos);
-				if(ret != nullptr)
-				{
-					NodeView* nodeView = static_cast<NodeView*>(item);
-					deleteNode(nodeView);
-				}
-				return;
-			}
-		}
-	}
-}
+	// Create log view
+	LogView* logView = new LogView(this);
+	_ui->logDockWidget->setWidget(logView);
+	// Hide log on default
+	_ui->logDockWidget->hide();
 
-void Controller::keyPress(QKeyEvent* event)
-{
-	if(event->key() == Qt::Key_Delete)
-	{
-		QList<QGraphicsItem*> selectedItems = _nodeScene->selectedItems();
-		QList<QGraphicsItem*> selectedNodeViews;
-		_nodeScene->clearSelection();
+	setCorner(Qt::BottomRightCorner, Qt::RightDockWidgetArea);
+	setCorner(Qt::BottomLeftCorner, Qt::LeftDockWidgetArea);
+	setCorner(Qt::TopRightCorner, Qt::RightDockWidgetArea);
+	setCorner(Qt::TopLeftCorner, Qt::LeftDockWidgetArea);
+	/// tabifyDockWidget(_ui->propertiesDockWidget, _ui->previewDockWidget);
 
-		// First remove all selected link
-		for(int i = 0; i < selectedItems.size(); ++i)
-		{
-			auto item = selectedItems[i];
+	// Init menu bar and its 'view' menu
+	_ui->menuView->addAction(actionProperties);
+	_ui->menuView->addAction(actionPreview);
+	_ui->menuView->addAction(actionLog);
 
-			if(item->type() == NodeLinkView::Type)
-			{
-				NodeLinkView* linkView = static_cast<NodeLinkView*>(item);
-				unlinkNodes(linkView);
-			}
-			else
-			{
-				selectedNodeViews.append(item);
-			}
-		}
+	QAction* actionAboutQt = new QAction(
+		QIcon(":/qt-project.org/qmessagebox/images/qtlogo-64.png"), 
+		tr("About &Qt"), this);
+	actionAboutQt->setToolTip(tr("Show information about Qt"));
+	actionAboutQt->setMenuRole(QAction::AboutQtRole);
+	connect(actionAboutQt, SIGNAL(triggered()), qApp, SLOT(aboutQt()));
+	_ui->menuHelp->addAction(actionAboutQt);
 
-		// Then remove all selected nodes
-		for(int i = 0; i < selectedNodeViews.size(); ++i)
-		{
-			auto item = selectedNodeViews[i];
+	_ui->actionNewTree->setShortcut(QKeySequence(QKeySequence::New));
+	_ui->actionOpenTree->setShortcut(QKeySequence(QKeySequence::Open));
+	_ui->actionSaveTree->setShortcut(QKeySequence(QKeySequence::Save));
 
-			if(item->type() == NodeView::Type)
-			{
-				NodeView* nodeView = static_cast<NodeView*>(item);
-				deleteNode(nodeView);
-			}
-		}
+	// Connect actions from a toolbar
+	connect(_ui->actionNewTree, &QAction::triggered, this, &Controller::newTree);
+	connect(_ui->actionOpenTree, &QAction::triggered, this, &Controller::openTree);
+	connect(_ui->actionSaveTree, &QAction::triggered, this, &Controller::saveTree);
+	connect(_ui->actionSaveTreeAs, &QAction::triggered, this, &Controller::saveTreeAs);
 
-		event->accept();
-	}
-}
+	connect(_ui->actionSingleStep, &QAction::triggered, this, &Controller::singleStep);
+	connect(_ui->actionAutoRefresh, &QAction::triggered, this, &Controller::autoRefresh);
+	connect(_ui->actionPlay, &QAction::triggered, this, &Controller::play);
+	connect(_ui->actionPause, &QAction::triggered, this, &Controller::pause);
+	connect(_ui->actionStop, &QAction::triggered, this, &Controller::stop);
 
-void Controller::mouseDoubleClickNodeView(NodeView* nodeView)
-{
-	if(_previewSelectedNodeView != nodeView)
-	{
-		// Deselect previous one
-		if(_previewSelectedNodeView != nullptr)
-			_previewSelectedNodeView->selectPreview(false);
-		_previewSelectedNodeView = nodeView;
+	connect(_ui->actionFitToView, &QAction::triggered, this, &Controller::fitToView);
 
-		if(_previewSelectedNodeView != nullptr)
-		{
-			_previewSelectedNodeView->selectPreview(true);
-			updatePreview();
-		}
-	}
+	_ui->actionPlay->setEnabled(false);
+	_ui->actionPause->setEnabled(false);
+	_ui->actionStop->setEnabled(false);
+
+	// Init properties window
+	PropertyDelegate* delegate = new PropertyDelegate(this);
+	delegate->setImmediateUpdate(false);
+	_ui->propertiesTreeView->setItemDelegateForColumn(1, delegate);
+	_ui->propertiesTreeView->header()->setSectionResizeMode(
+		QHeaderView::ResizeToContents);
+
+	// Init preview window
+	_previewWidget = new PreviewWidget(this);
+	_previewWidget->showDummy();
+	_ui->previewDockWidget->setWidget(_previewWidget);
 }
 
 void Controller::showErrorMessage(const QString& message)
@@ -587,246 +439,35 @@ void Controller::showErrorMessage(const QString& message)
 	QMessageBox::critical(nullptr, "mouve", message);
 }
 
-void Controller::sceneSelectionChanged()
+void Controller::switchToVideoMode()
 {
-	auto items = _nodeScene->selectedItems();
-
-	if(items.count() == 1)
-	{
-		// User selected one node 
-		if(items[0]->type() == NodeView::Type)
-		{
-			auto nodeView = static_cast<NodeView*>(items[0]);
-			auto propModel = _propManager->propertyModel(nodeView->nodeKey());
-
-			if(propModel)
-			{
-				// Setting new model for a view enforces us to delete old selection model by ourselves
-				auto selectionModel = _ui->propertiesTreeView->selectionModel();
-				_ui->propertiesTreeView->setModel(propModel);
-				_ui->propertiesTreeView->expandToDepth(0);
-
-				if(selectionModel)
-					selectionModel->deleteLater();
-			}
-		}
-	}
-	// Deselected or selected more than 1
-	else/* if(items.isEmpty()) */
-	{
-		auto selectionModel = _ui->propertiesTreeView->selectionModel();
-		_ui->propertiesTreeView->setModel(nullptr);
-
-		if(selectionModel)
-			selectionModel->deleteLater();
-	}
-}
-
-void Controller::changeProperty(NodeID nodeID,
-								PropertyID propID, 
-								const QVariant& newValue,
-								bool* ok)
-{
-	qDebug() << "Property changed! details: nodeID:" << nodeID << ", propID:" << propID << "newValue:" << newValue;
-
-	// 'System' property
-	if(propID < 0)
-	{
-		switch(propID)
-		{
-		/// TODO: Use enum
-		case -1:
-			if(newValue.type() == QVariant::String)
-			{
-				QString name = newValue.toString();
-				std::string nameStd = name.toStdString();
-
-				if(_nodeTree->nodeName(nodeID) == nameStd 
-					|| name.isEmpty())
-				{
-					*ok = false;
-					// No change
-					return;
-				}
-
-				if(_nodeTree->resolveNode(nameStd) == InvalidNodeID)
-				{
-					_nodeTree->setNodeName(nodeID, nameStd);
-					_nodeViews[nodeID]->setNodeViewName(name);
-					_nodeTreeDirty = true;
-					updateTitleBar();
-				}
-				else
-				{
-					*ok = false;
-					showErrorMessage("Name already taken");
-				}
-			}
-			return;
-		}
-	}
-
-	if(_nodeTree->nodeSetProperty(nodeID, propID, newValue))
-	{
-		_nodeTree->tagNode(nodeID);
-		_nodeTreeDirty = true;
-		updateTitleBar();
-		processAutoRefresh();
-	}
-	else
-	{
-		qWarning() << "Bad value for nodeID:" << nodeID << 
-			", propertyID:" << propID << ", newValue:" << newValue;
-	}
-}
-
-void Controller::newTree()
-{
-	if(canQuit())
-		createNewTree();
-}
-
-void Controller::openTree()
-{
-	if(!canQuit())
+	if(_videoMode)
 		return;
 
-	QString filePath = QFileDialog::getOpenFileName(
-		this, tr("Open file"), QString(), "Node tree files (*.tree)");
-	if(filePath.isEmpty())
-		return;
-
-	createNewTree();
-
-	if(openTreeFromFileImpl(filePath))
-	{
-		_nodeTreeFilePath = filePath;
-		_nodeTreeDirty = false;
-		updateTitleBar();
-		qDebug() << "Tree successfully opened from file:" << filePath;
-	}
-	else
-	{
-		showErrorMessage("Error occured during opening file! Check logs for more details.");
-		qCritical() << "Couldn't open node tree from file:" << filePath;
-	}
-}
-
-bool Controller::saveTree()
-{
-	// if current tree isn't associated with any file we need to act as "save as"
-	if(_nodeTreeFilePath.isEmpty())
-	{
-		return saveTreeAs();
-	}
-
-	return saveTreeToFile(_nodeTreeFilePath);
-}
-
-bool Controller::saveTreeAs()
-{
-	QString filePath = QFileDialog::getSaveFileName(
-		this, tr("Save file as..."),QString(), "Node tree files (*.tree)"); 
-	if(filePath.isEmpty())
-		return false;
-
-	return saveTreeToFile(filePath);
-}
-
-void Controller::singleStep()
-{
-	/// TODO: Cleanup, this is only temporary (as well as "timer driven" video)
-	if(!_videoMode)
-	{
-		_nodeTree->prepareList();
-		_nodeTree->execute();
-
-		if(shouldUpdatePreview(_nodeTree->executeList()))
-			updatePreview();
-	}
-	else
-	{
-		setInteractive(false);
-
-		_nodeTree->prepareList();
-		_nodeTree->execute(_startWithInit);
-		_startWithInit = false;
-
-		_ui->actionNewTree->setEnabled(false);
-		_ui->actionOpenTree->setEnabled(false);
-		_ui->actionSaveTree->setEnabled(false);
-		_ui->actionSaveTreeAs->setEnabled(false);
-
-		_ui->actionStop->setEnabled(true);
-
-		if(shouldUpdatePreview(_nodeTree->executeList()))
-			updatePreview();
-	}
-}
-
-void Controller::autoRefresh()
-{
-	/// TODO: change itemdelegate updateimmediate
-	processAutoRefresh();
-}
-
-void Controller::play()
-{
-	if(!_currentlyPlaying)
-	{
-		_currentlyPlaying = true;
-		_videoTimer->start(50);
-	}
-
-	_ui->actionPause->setEnabled(true);
-	_ui->actionStop->setEnabled(true);
-	_ui->actionPlay->setEnabled(false);
-	_ui->actionSingleStep->setEnabled(false);
-
-	setInteractive(false);
-}
-
-void Controller::pause()
-{
-	if(_currentlyPlaying)
-	{
-		_currentlyPlaying = false;
-		_videoTimer->stop();
-	}
-
-	_ui->actionPause->setEnabled(false);
-	_ui->actionStop->setEnabled(true);
+	_ui->actionAutoRefresh->setEnabled(false);
 	_ui->actionPlay->setEnabled(true);
-	_ui->actionSingleStep->setEnabled(true);
-}
-
-void Controller::stop()
-{
-	if(_currentlyPlaying)
-	{
-		_currentlyPlaying = false;
-		_videoTimer->stop();
-	}
-
-	_startWithInit = true;
-
-	_ui->actionNewTree->setEnabled(true);
-	_ui->actionOpenTree->setEnabled(true);
-	_ui->actionSaveTree->setEnabled(true);
-	_ui->actionSaveTreeAs->setEnabled(true);
-
 	_ui->actionPause->setEnabled(false);
 	_ui->actionStop->setEnabled(false);
-	_ui->actionPlay->setEnabled(true);
-	_ui->actionSingleStep->setEnabled(true);
 
-	setInteractive(true);
+	_videoMode = true;
 }
 
-void Controller::fitToView()
+void Controller::switchToImageMode()
 {
-	_ui->graphicsView->fitInView(_nodeScene->sceneRect(),
-		Qt::KeepAspectRatio);
+	if(!_videoMode)
+		return;
+
+	_ui->actionAutoRefresh->setEnabled(true);
+	_ui->actionPlay->setEnabled(false);
+	_ui->actionPause->setEnabled(false);
+	_ui->actionStop->setEnabled(false);
+
+	_videoMode = false;
+}
+
+bool Controller::isAutoRefresh()
+{
+	return _ui->actionAutoRefresh->isChecked();
 }
 
 void Controller::processAutoRefresh()
@@ -834,10 +475,11 @@ void Controller::processAutoRefresh()
 	// Execute if auto refresh is on
 	if(!_videoMode && isAutoRefresh())
 	{
+		_nodeTree->prepareList();
 		_nodeTree->execute();
 
 		if(shouldUpdatePreview(_nodeTree->executeList()))
-			updatePreview();
+			updatePreviewImpl();
 	}
 }
 
@@ -857,7 +499,7 @@ bool Controller::shouldUpdatePreview(const std::vector<NodeID>& executedNodes)
 	return false;
 }
 
-void Controller::updatePreview()
+void Controller::updatePreviewImpl()
 {
 	if(_previewSelectedNodeView != nullptr)
 	{
@@ -995,7 +637,7 @@ void Controller::createNewTree()
 	createNewNodeScene();
 
 	updateTitleBar();
-	updatePreview();
+	updatePreviewImpl();
 	switchToImageMode();
 }
 
@@ -1341,4 +983,372 @@ void Controller::loadLinks(const QVariantList& links,
 			oldToNewNodeID[toNode],
 			toSocket);
 	}
+}
+
+void Controller::draggingLinkDrop(QGraphicsWidget* from, QGraphicsWidget* to)
+{
+	if(!_ui->graphicsView->isPseudoInteractive())
+	{
+		auto fromSocket = static_cast<NodeSocketView*>(from);
+		auto toSocket = static_cast<NodeSocketView*>(to);
+
+		Q_ASSERT(fromSocket);
+		Q_ASSERT(toSocket);
+		Q_ASSERT(fromSocket->nodeView());
+		Q_ASSERT(toSocket->nodeView());
+
+		linkNodes(fromSocket->nodeView()->nodeKey(),
+			fromSocket->socketKey(),
+			toSocket->nodeView()->nodeKey(),
+			toSocket->socketKey());
+	}
+}
+
+void Controller::contextMenu(const QPoint& globalPos,
+	const QPointF& scenePos)
+{
+	QList<QGraphicsItem*> items = _nodeScene->items(scenePos, 
+		Qt::ContainsItemShape, Qt::AscendingOrder);
+
+	// If the user clicked onto empty space
+	if(items.isEmpty())
+	{
+		QMenu menu;
+		//QMenu* menuAddNode = menu.addMenu("Add node");
+		foreach(QAction* a, _addNodesActions)
+			menu.addAction(a);
+		QAction* ret = menu.exec(globalPos);
+		if(ret != nullptr)
+			addNode(ret->data().toInt(), scenePos);
+	}
+	else
+	{
+		for(int i = 0; i < items.size(); ++i)
+		{
+			auto item = items[i];
+
+			if(item->type() == NodeView::Type)
+			{
+				QAction action("Remove node", nullptr);
+				QMenu menu;
+				menu.addAction(&action);
+				QAction* ret = menu.exec(globalPos);
+				if(ret != nullptr)
+				{
+					NodeView* nodeView = static_cast<NodeView*>(item);
+					deleteNode(nodeView);
+				}
+				return;
+			}
+		}
+	}
+}
+
+void Controller::keyPress(QKeyEvent* event)
+{
+	if(event->key() == Qt::Key_Delete)
+	{
+		QList<QGraphicsItem*> selectedItems = _nodeScene->selectedItems();
+		QList<QGraphicsItem*> selectedNodeViews;
+		_nodeScene->clearSelection();
+
+		// First remove all selected link
+		for(int i = 0; i < selectedItems.size(); ++i)
+		{
+			auto item = selectedItems[i];
+
+			if(item->type() == NodeLinkView::Type)
+			{
+				NodeLinkView* linkView = static_cast<NodeLinkView*>(item);
+				unlinkNodes(linkView);
+			}
+			else
+			{
+				selectedNodeViews.append(item);
+			}
+		}
+
+		// Then remove all selected nodes
+		for(int i = 0; i < selectedNodeViews.size(); ++i)
+		{
+			auto item = selectedNodeViews[i];
+
+			if(item->type() == NodeView::Type)
+			{
+				NodeView* nodeView = static_cast<NodeView*>(item);
+				deleteNode(nodeView);
+			}
+		}
+
+		event->accept();
+	}
+}
+
+void Controller::mouseDoubleClickNodeView(NodeView* nodeView)
+{
+	if(_previewSelectedNodeView != nodeView)
+	{
+		// Deselect previous one
+		if(_previewSelectedNodeView != nullptr)
+			_previewSelectedNodeView->selectPreview(false);
+		_previewSelectedNodeView = nodeView;
+
+		if(_previewSelectedNodeView != nullptr)
+		{
+			_previewSelectedNodeView->selectPreview(true);
+			updatePreviewImpl();
+		}
+	}
+}
+
+void Controller::updatePreview()
+{
+	std::vector<NodeID>execList = _nodeTree->executeList();
+
+	qDebug() << "Execute list: " << QVector<NodeID>::fromStdVector(execList);
+
+	if(shouldUpdatePreview(execList))
+		updatePreviewImpl();
+}
+
+void Controller::sceneSelectionChanged()
+{
+	auto items = _nodeScene->selectedItems();
+
+	if(items.count() == 1)
+	{
+		// User selected one node 
+		if(items[0]->type() == NodeView::Type)
+		{
+			auto nodeView = static_cast<NodeView*>(items[0]);
+			auto propModel = _propManager->propertyModel(nodeView->nodeKey());
+
+			if(propModel)
+			{
+				// Setting new model for a view enforces us to delete old selection model by ourselves
+				auto selectionModel = _ui->propertiesTreeView->selectionModel();
+				_ui->propertiesTreeView->setModel(propModel);
+				_ui->propertiesTreeView->expandToDepth(0);
+
+				if(selectionModel)
+					selectionModel->deleteLater();
+			}
+		}
+	}
+	// Deselected or selected more than 1
+	else/* if(items.isEmpty()) */
+	{
+		auto selectionModel = _ui->propertiesTreeView->selectionModel();
+		_ui->propertiesTreeView->setModel(nullptr);
+
+		if(selectionModel)
+			selectionModel->deleteLater();
+	}
+}
+
+void Controller::changeProperty(NodeID nodeID,
+								PropertyID propID, 
+								const QVariant& newValue,
+								bool* ok)
+{
+	qDebug() << "Property changed! details: nodeID:" << nodeID << ", propID:" << propID << "newValue:" << newValue;
+
+	// 'System' property
+	if(propID < 0)
+	{
+		switch(propID)
+		{
+		/// TODO: Use enum
+		case -1:
+			if(newValue.type() == QVariant::String)
+			{
+				QString name = newValue.toString();
+				std::string nameStd = name.toStdString();
+
+				if(_nodeTree->nodeName(nodeID) == nameStd 
+					|| name.isEmpty())
+				{
+					*ok = false;
+					// No change
+					return;
+				}
+
+				if(_nodeTree->resolveNode(nameStd) == InvalidNodeID)
+				{
+					_nodeTree->setNodeName(nodeID, nameStd);
+					_nodeViews[nodeID]->setNodeViewName(name);
+					_nodeTreeDirty = true;
+					updateTitleBar();
+				}
+				else
+				{
+					*ok = false;
+					showErrorMessage("Name already taken");
+				}
+			}
+			return;
+		}
+	}
+
+	if(_nodeTree->nodeSetProperty(nodeID, propID, newValue))
+	{
+		_nodeTree->tagNode(nodeID);
+		_nodeTreeDirty = true;
+		updateTitleBar();
+		processAutoRefresh();
+	}
+	else
+	{
+		qWarning() << "Bad value for nodeID:" << nodeID << 
+			", propertyID:" << propID << ", newValue:" << newValue;
+	}
+}
+
+void Controller::newTree()
+{
+	if(canQuit())
+		createNewTree();
+}
+
+void Controller::openTree()
+{
+	if(!canQuit())
+		return;
+
+	QString filePath = QFileDialog::getOpenFileName(
+		this, tr("Open file"), QString(), "Node tree files (*.tree)");
+	if(filePath.isEmpty())
+		return;
+
+	createNewTree();
+
+	if(openTreeFromFileImpl(filePath))
+	{
+		_nodeTreeFilePath = filePath;
+		_nodeTreeDirty = false;
+		updateTitleBar();
+		qDebug() << "Tree successfully opened from file:" << filePath;
+	}
+	else
+	{
+		showErrorMessage("Error occured during opening file! Check logs for more details.");
+		qCritical() << "Couldn't open node tree from file:" << filePath;
+	}
+}
+
+bool Controller::saveTree()
+{
+	// if current tree isn't associated with any file we need to act as "save as"
+	if(_nodeTreeFilePath.isEmpty())
+	{
+		return saveTreeAs();
+	}
+
+	return saveTreeToFile(_nodeTreeFilePath);
+}
+
+bool Controller::saveTreeAs()
+{
+	QString filePath = QFileDialog::getSaveFileName(
+		this, tr("Save file as..."),QString(), "Node tree files (*.tree)"); 
+	if(filePath.isEmpty())
+		return false;
+
+	return saveTreeToFile(filePath);
+}
+
+void Controller::singleStep()
+{
+	/// TODO: Cleanup, this is only temporary (as well as "timer driven" video)
+	if(!_videoMode)
+	{
+		_nodeTree->prepareList();
+		_nodeTree->execute();
+
+		if(shouldUpdatePreview(_nodeTree->executeList()))
+			updatePreviewImpl();
+	}
+	else
+	{
+		setInteractive(false);
+
+		_nodeTree->prepareList();
+		_nodeTree->execute(_startWithInit);
+		_startWithInit = false;
+
+		_ui->actionNewTree->setEnabled(false);
+		_ui->actionOpenTree->setEnabled(false);
+		_ui->actionSaveTree->setEnabled(false);
+		_ui->actionSaveTreeAs->setEnabled(false);
+
+		_ui->actionStop->setEnabled(true);
+
+		if(shouldUpdatePreview(_nodeTree->executeList()))
+			updatePreviewImpl();
+	}
+}
+
+void Controller::autoRefresh()
+{
+	/// TODO: change itemdelegate updateimmediate
+	processAutoRefresh();
+}
+
+void Controller::play()
+{
+	if(!_currentlyPlaying)
+	{
+		_currentlyPlaying = true;
+		_videoTimer->start(50);
+	}
+
+	_ui->actionPause->setEnabled(true);
+	_ui->actionStop->setEnabled(true);
+	_ui->actionPlay->setEnabled(false);
+	_ui->actionSingleStep->setEnabled(false);
+
+	setInteractive(false);
+}
+
+void Controller::pause()
+{
+	if(_currentlyPlaying)
+	{
+		_currentlyPlaying = false;
+		_videoTimer->stop();
+	}
+
+	_ui->actionPause->setEnabled(false);
+	_ui->actionStop->setEnabled(true);
+	_ui->actionPlay->setEnabled(true);
+	_ui->actionSingleStep->setEnabled(true);
+}
+
+void Controller::stop()
+{
+	if(_currentlyPlaying)
+	{
+		_currentlyPlaying = false;
+		_videoTimer->stop();
+	}
+
+	_startWithInit = true;
+
+	_ui->actionNewTree->setEnabled(true);
+	_ui->actionOpenTree->setEnabled(true);
+	_ui->actionSaveTree->setEnabled(true);
+	_ui->actionSaveTreeAs->setEnabled(true);
+
+	_ui->actionPause->setEnabled(false);
+	_ui->actionStop->setEnabled(false);
+	_ui->actionPlay->setEnabled(true);
+	_ui->actionSingleStep->setEnabled(true);
+
+	setInteractive(true);
+}
+
+void Controller::fitToView()
+{
+	_ui->graphicsView->fitInView(_nodeScene->sceneRect(),
+		Qt::KeepAspectRatio);
 }

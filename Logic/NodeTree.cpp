@@ -71,8 +71,6 @@ void NodeTree::prepareList()
 		}		
 	}
 
-	qDebug() << "Execute list: " << QVector<NodeID>::fromStdVector(_executeList);
-
 	_executeListDirty = false;
 }
 
