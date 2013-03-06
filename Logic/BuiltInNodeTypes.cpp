@@ -1198,6 +1198,131 @@ private:
 	EMorphologyOperation _op;
 };
 
+#include <opencv2/features2d/features2d.hpp>
+#include <opencv2/nonfree/features2d.hpp>
+
+#ifdef _DEBUG
+#  pragma comment(lib, "opencv_video243d.lib")
+#  pragma comment(lib, "opencv_features2d243d.lib")
+#  pragma comment(lib, "opencv_nonfree243d.lib")
+#else
+#  pragma comment(lib, "opencv_video243.lib")
+#  pragma comment(lib, "opencv_features2d243.lib")
+#  pragma comment(lib, "opencv_nonfree243.lib")
+#endif
+
+class SurfFeatureDetectorNodeType : public NodeType
+{
+public:
+	SurfFeatureDetectorNodeType()
+		: _hessianThreshold(400.0)
+		, _nOctaves(4)
+		, _nOctaveLayers(2)
+		, _extended(true)
+		, _upright(false)
+	{
+	}
+
+	bool setProperty(PropertyID propId, const QVariant& newValue) override
+	{
+		switch(propId)
+		{
+		case ID_HessianThreshold:
+			_hessianThreshold = newValue.toDouble();
+			return true;
+		case ID_NumOctaves:
+			_nOctaves = newValue.toInt();
+			return true;
+		case ID_NumOctaveLayers:
+			_nOctaveLayers = newValue.toInt();
+			return true;
+		case ID_Extended:
+			_extended = newValue.toBool();
+			return true;
+		case ID_Upright:
+			_upright = newValue.toBool();
+			return true;
+		}
+
+		return false;
+	}
+
+	QVariant property(PropertyID propId) const override
+	{
+		switch(propId)
+		{
+		case ID_HessianThreshold: return _hessianThreshold;
+		case ID_NumOctaves: return _nOctaves;
+		case ID_NumOctaveLayers: return _nOctaveLayers;
+		case ID_Extended: return _extended;
+		case ID_Upright: return _upright;
+		}
+
+		return QVariant();
+	}
+
+	ExecutionStatus execute(NodeSocketReader& reader, NodeSocketWriter& writer) override
+	{
+		const cv::Mat& src = reader.readSocket(0);
+		cv::Mat& dst = writer.lockSocket(0);
+
+		if(src.rows == 0 || src.cols == 0)
+			return ExecutionStatus(EStatus::Ok);
+
+		cv::SurfFeatureDetector detector(_hessianThreshold, _nOctaves,
+			_nOctaveLayers, _extended, _upright);
+		std::vector<cv::KeyPoint> keypoints;
+		detector.detect(src, keypoints);
+		cv::drawKeypoints(src, keypoints, dst, cv::Scalar::all(1), cv::DrawMatchesFlags::DEFAULT);
+		cv::cvtColor(dst, dst, CV_BGR2GRAY);
+
+		return ExecutionStatus(EStatus::Ok);
+	}
+
+	void configuration(NodeConfig& nodeConfig) const override
+	{
+		static const InputSocketConfig in_config[] = {
+			{ "source", "Source", "" },
+			{ "", "", "" }
+		};
+		static const OutputSocketConfig out_config[] = {
+			{ "output", "Output", "" },
+			{ "", "", "" }
+		};
+		static const PropertyConfig prop_config[] = {
+			{ EPropertyType::Double, "Hessian threshold", "" },
+			{ EPropertyType::Integer, "Number of octaves", "" },
+			{ EPropertyType::Integer, "Number of octave layers", "" },
+			{ EPropertyType::Boolean, "Extended", "" },
+			{ EPropertyType::Boolean, "Upright", "" },
+			{ EPropertyType::Unknown, "", "" }
+		};
+
+		nodeConfig.description = "";
+		nodeConfig.pInputSockets = in_config;
+		nodeConfig.pOutputSockets = out_config;
+		nodeConfig.pProperties = prop_config;
+	}
+
+private:
+	enum EPropertyID
+	{
+		ID_HessianThreshold,
+		ID_NumOctaves,
+		ID_NumOctaveLayers,
+		ID_Extended,
+		ID_Upright
+	};
+
+	double _hessianThreshold;
+	int _nOctaves;
+	int _nOctaveLayers;
+	bool _extended;
+	bool _upright;
+};
+
+
+REGISTER_NODE("SURF Feature detector", SurfFeatureDetectorNodeType);
 
 REGISTER_NODE("Mixture of Gaussians", MixtureOfGaussianNodeType)
 REGISTER_NODE("Canny edge detector", CannyEdgeDetectorNodeType)
@@ -1218,3 +1343,4 @@ REGISTER_NODE("Add", AddNodeType)
 REGISTER_NODE("Structuring element", StructuringElementNodeType)
 REGISTER_NODE("Video from file", VideoFromFileNodeType)
 REGISTER_NODE("Image from file", ImageFromFileNodeType)
+
