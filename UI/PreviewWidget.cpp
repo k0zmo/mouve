@@ -60,6 +60,8 @@ void PreviewWidget::changeBehavior(bool checked)
 void PreviewWidget::setToolbarEnabled(bool enabled)
 {
 	_ui->toolButtonBehavior->setEnabled(enabled);
-	_ui->toolButtonZoomIn->setEnabled(enabled);
-	_ui->toolButtonZoomOut->setEnabled(enabled);
+
+	bool zoomEnabled = enabled && !_ui->toolButtonBehavior->isChecked();
+	_ui->toolButtonZoomIn->setEnabled(zoomEnabled);
+	_ui->toolButtonZoomOut->setEnabled(zoomEnabled);
 }
