@@ -94,7 +94,7 @@ void NodeTree::execute(bool withInit)
 			/// TODO:
 			/*bool res = */nodeRef.initialize();
 		}
-		nodeRef.execute(&reader, &writer);
+		nodeRef.execute(reader, writer);
 	}
 
 	// Clean

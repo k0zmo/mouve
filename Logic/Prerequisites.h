@@ -53,6 +53,7 @@ static const NodeTypeID InvalidNodeTypeID = NodeTypeID(0);
 struct InputSocketConfig;
 struct OutputSocketConfig;
 struct NodeConfig;
+struct ExecutionStatus;
 
 class Node;
 class NodeType;

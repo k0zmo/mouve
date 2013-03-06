@@ -15,6 +15,7 @@ public:
 	VideoFromFileNodeType()
 		: _videoPath("video-4.mkv")
 		, _startFrame(0)
+		, _frameInterval(0)
 	{
 	}
 
@@ -57,23 +58,36 @@ public:
 
 		if(_startFrame > 0)
 			_capture.set(CV_CAP_PROP_POS_FRAMES, _startFrame);
+
+		double fps = _capture.get(CV_CAP_PROP_FPS);
+
+		_frameInterval = (fps != 0)
+			? _frameInterval = unsigned(ceil(1000.0 / fps))
+			: 0;
+
 		return true;
 	}
 
-	void execute(NodeSocketReader* reader, NodeSocketWriter* writer) override
+	ExecutionStatus execute(NodeSocketReader& reader, NodeSocketWriter& writer) override
 	{
 		Q_UNUSED(reader);
 
-		cv::Mat& output = writer->lockSocket(0);
+		cv::Mat& output = writer.lockSocket(0);
 		if(!_capture.isOpened())
-		{
-			output = cv::Mat();
-			return;
-		}
+			return ExecutionStatus(EStatus::NoMoreData);
 		
 		_capture.read(output);
+
 		if(output.data)
+		{
 			cv::cvtColor(output, output, CV_BGR2GRAY);
+			return ExecutionStatus(EStatus::Ok);
+		}
+		else
+		{
+			// No more data 
+			return ExecutionStatus(EStatus::NoMoreData);
+		}
 	}
 
 	void configuration(NodeConfig& nodeConfig) const override
@@ -104,6 +118,7 @@ private:
 	std::string _videoPath;
 	cv::VideoCapture _capture;
 	unsigned _startFrame;
+	unsigned _frameInterval;
 };
 
 class MixtureOfGaussianNodeType : public NodeType
@@ -157,11 +172,17 @@ public:
 		return true;
 	}
 
-	void execute(NodeSocketReader* reader, NodeSocketWriter* writer) override
+	ExecutionStatus execute(NodeSocketReader& reader, NodeSocketWriter& writer) override
 	{
-		const cv::Mat& source = reader->readSocket(0);
-		cv::Mat& output = writer->lockSocket(0);
+		const cv::Mat& source = reader.readSocket(0);
+		cv::Mat& output = writer.lockSocket(0);
+
+		if(!source.data)
+			return ExecutionStatus(EStatus::Ok);
+
 		_mog(source, output, _learningRate);
+
+		return ExecutionStatus(EStatus::Ok);
 	}
 
 	void configuration(NodeConfig& nodeConfig) const override
@@ -233,13 +254,16 @@ public:
 		return QVariant();
 	}
 
-	void execute(NodeSocketReader* reader, NodeSocketWriter* writer) override
+	ExecutionStatus execute(NodeSocketReader&, NodeSocketWriter& writer) override
 	{
-		Q_UNUSED(reader);
-
-		cv::Mat& output = writer->lockSocket(0);
+		cv::Mat& output = writer.lockSocket(0);
 
 		output = cv::imread(_filePath, CV_LOAD_IMAGE_GRAYSCALE);
+
+		if(output.data && output.rows > 0 && output.cols > 0)
+			return ExecutionStatus(EStatus::Ok);
+		else
+			return ExecutionStatus(EStatus::Error, "File not found");
 	}
 
 	void configuration(NodeConfig& nodeConfig) const override
@@ -306,12 +330,17 @@ public:
 		return QVariant();
 	}
 
-	void execute(NodeSocketReader* reader, NodeSocketWriter* writer) override
+	ExecutionStatus execute(NodeSocketReader& reader, NodeSocketWriter& writer) override
 	{
-		const cv::Mat& input = reader->readSocket(0);
-		cv::Mat& output = writer->lockSocket(0);
+		const cv::Mat& input = reader.readSocket(0);
+		cv::Mat& output = writer.lockSocket(0);
+
+		if(!input.data)
+			return ExecutionStatus(EStatus::Ok);
 
 		cv::GaussianBlur(input, output, cv::Size(_kernelRadius*2+1,_kernelRadius*2+1), _sigma, 0);
+
+		return ExecutionStatus(EStatus::Ok);
 	}
 
 	void configuration(NodeConfig& nodeConfig) const override
@@ -355,16 +384,13 @@ public:
 	{
 	}
 
-	void execute(NodeSocketReader* reader, NodeSocketWriter* writer) override
+	ExecutionStatus execute(NodeSocketReader& reader, NodeSocketWriter& writer) override
 	{
-		const cv::Mat& input = reader->readSocket(0);
-		cv::Mat& output = writer->lockSocket(0);
+		const cv::Mat& input = reader.readSocket(0);
+		cv::Mat& output = writer.lockSocket(0);
 
 		if(input.rows == 0 || input.cols == 0)
-		{
-			output = cv::Mat();
-			return;
-		}
+			return ExecutionStatus(EStatus::Ok);
 
 		cv::Mat xgrad;
 		cv::Sobel(input, xgrad, CV_16S, 1, 0, 3);
@@ -375,6 +401,8 @@ public:
 		cv::convertScaleAbs(ygrad, ygrad);
 
 		cv::addWeighted(xgrad, 0.5, ygrad, 0.5, 0, output);
+
+		return ExecutionStatus(EStatus::Ok);
 	}
 
 	void configuration(NodeConfig& nodeConfig) const override
@@ -429,18 +457,17 @@ public:
 		return false;
 	}
 
-	void execute(NodeSocketReader* reader, NodeSocketWriter* writer) override
+	ExecutionStatus execute(NodeSocketReader& reader, NodeSocketWriter& writer) override
 	{
-		const cv::Mat& input = reader->readSocket(0);
-		cv::Mat& output = writer->lockSocket(0);
+		const cv::Mat& input = reader.readSocket(0);
+		cv::Mat& output = writer.lockSocket(0);
 
 		if(input.rows == 0 || input.cols == 0)
-		{
-			output = cv::Mat();
-			return;
-		}
+			return ExecutionStatus(EStatus::Ok);;
 
 		cv::Canny(input, output, _threshold, _threshold*_ratio, 3);
+
+		return ExecutionStatus(EStatus::Ok);
 	}
 
 
@@ -512,27 +539,27 @@ public:
 		return QVariant();
 	}
 
-	void execute(NodeSocketReader* reader, NodeSocketWriter* writer) override
+	ExecutionStatus execute(NodeSocketReader& reader, NodeSocketWriter& writer) override
 	{
-		const cv::Mat& src1 = reader->readSocket(0);
-		const cv::Mat& src2 = reader->readSocket(1);
-		cv::Mat& dst = writer->lockSocket(0);
+		const cv::Mat& src1 = reader.readSocket(0);
+		const cv::Mat& src2 = reader.readSocket(1);
+		cv::Mat& dst = writer.lockSocket(0);
 
 		if((src1.rows == 0 || src1.cols == 0) ||
 			(src2.rows == 0 || src2.cols == 0))
 		{
-			dst = cv::Mat();
-			return;
+			return ExecutionStatus(EStatus::Ok);
 		}
 
 		if(src1.rows != src2.rows
 			|| src1.cols != src2.cols)
 		{
-			dst = cv::Mat();
-			return;
+			return ExecutionStatus(EStatus::Error, "Inputs with different sizes");
 		}
 
 		cv::addWeighted(src1, _alpha, src2, _beta, 0, dst);
+
+		return ExecutionStatus(EStatus::Ok);
 	}
 
 	void configuration(NodeConfig& nodeConfig) const override
@@ -572,18 +599,17 @@ private:
 class AbsoluteNodeType : public NodeType
 {
 public:
-	void execute(NodeSocketReader* reader, NodeSocketWriter* writer) override
+	ExecutionStatus execute(NodeSocketReader& reader, NodeSocketWriter& writer) override
 	{
-		const cv::Mat& src = reader->readSocket(0);
-		cv::Mat& dst = writer->lockSocket(0);
+		const cv::Mat& src = reader.readSocket(0);
+		cv::Mat& dst = writer.lockSocket(0);
 
 		if(src.rows == 0 || src.cols == 0)
-		{
-			dst = cv::Mat();
-			return;
-		}
+			return ExecutionStatus(EStatus::Ok);
 
 		dst = cv::abs(src);
+
+		return ExecutionStatus(EStatus::Ok);
 	}
 
 	void configuration(NodeConfig& nodeConfig) const override
@@ -606,27 +632,27 @@ public:
 class SubtractNodeType : public NodeType
 {
 public:
-	void execute(NodeSocketReader* reader, NodeSocketWriter* writer) override
+	ExecutionStatus execute(NodeSocketReader& reader, NodeSocketWriter& writer) override
 	{
-		const cv::Mat& src1 = reader->readSocket(0);
-		const cv::Mat& src2 = reader->readSocket(1);
-		cv::Mat& dst = writer->lockSocket(0);
+		const cv::Mat& src1 = reader.readSocket(0);
+		const cv::Mat& src2 = reader.readSocket(1);
+		cv::Mat& dst = writer.lockSocket(0);
 
 		if((src1.rows == 0 || src1.cols == 0) ||
 		   (src2.rows == 0 || src2.cols == 0))
 		{
-			dst = cv::Mat();
-			return;
+			return ExecutionStatus(EStatus::Ok);
 		}
 
 		if(src1.rows != src2.rows
 			|| src1.cols != src2.cols)
 		{
-			dst = cv::Mat();
-			return;
+			return ExecutionStatus(EStatus::Error, "Inputs with different sizes");
 		}
 
 		cv::subtract(src1, src2, dst);
+
+		return ExecutionStatus(EStatus::Ok);
 	}
 
 	void configuration(NodeConfig& nodeConfig) const override
@@ -650,27 +676,27 @@ public:
 class AbsoluteDifferenceNodeType : public NodeType
 {
 public:
-	void execute(NodeSocketReader* reader, NodeSocketWriter* writer) override
+	ExecutionStatus execute(NodeSocketReader& reader, NodeSocketWriter& writer) override
 	{
-		const cv::Mat& src1 = reader->readSocket(0);
-		const cv::Mat& src2 = reader->readSocket(1);
-		cv::Mat& dst = writer->lockSocket(0);
+		const cv::Mat& src1 = reader.readSocket(0);
+		const cv::Mat& src2 = reader.readSocket(1);
+		cv::Mat& dst = writer.lockSocket(0);
 
 		if((src1.rows == 0 || src1.cols == 0) ||
 		   (src2.rows == 0 || src2.cols == 0))
 		{
-			dst = cv::Mat();
-			return;
+			return ExecutionStatus(EStatus::Ok);;
 		}
 
 		if(src1.rows != src2.rows
 			|| src1.cols != src2.cols)
 		{
-			dst = cv::Mat();
-			return;
+			return ExecutionStatus(EStatus::Error, "Inputs with different sizes");
 		}
 
 		cv::absdiff(src1, src2, dst);
+
+		return ExecutionStatus(EStatus::Ok);
 	}
 
 	void configuration(NodeConfig& nodeConfig) const override
@@ -694,13 +720,15 @@ public:
 class NegateNodeType : public NodeType
 {
 public:
-	void execute(NodeSocketReader* reader, NodeSocketWriter* writer) override
+	ExecutionStatus execute(NodeSocketReader& reader, NodeSocketWriter& writer) override
 	{
-		const cv::Mat& src = reader->readSocket(0);
-		cv::Mat& dst = writer->lockSocket(0);
+		const cv::Mat& src = reader.readSocket(0);
+		cv::Mat& dst = writer.lockSocket(0);
 
 		if(dst.type() == CV_8U)
 			dst = 255 - src;
+
+		return ExecutionStatus(EStatus::Ok);
 	}
 
 	void configuration(NodeConfig& nodeConfig) const override
@@ -755,19 +783,21 @@ public:
 		return QVariant();
 	}
 
-	void execute(NodeSocketReader* reader, NodeSocketWriter* writer) override
+	ExecutionStatus execute(NodeSocketReader& reader, NodeSocketWriter& writer) override
 	{
-		const cv::Mat& src = reader->readSocket(0);
-		cv::Mat& dst = writer->lockSocket(0);
+		const cv::Mat& src = reader.readSocket(0);
+		cv::Mat& dst = writer.lockSocket(0);
 
-		if(src.rows == 0 || src.cols == 0 || _threshold < 0 || _threshold > 255)
-		{
-			dst = cv::Mat();
-			return;
-		}
+		if(src.rows == 0 || src.cols == 0)
+			return ExecutionStatus(EStatus::Ok);
+
+		if(_threshold < 0 || _threshold > 255)
+			return ExecutionStatus(EStatus::Error, "Bad threshold value");
 
 		int type = _inv ? cv::THRESH_BINARY_INV : cv::THRESH_BINARY;
 		cv::threshold(src, dst, (double) _threshold, 255, type);
+
+		return ExecutionStatus(EStatus::Ok);
 	}
 
 	void configuration(NodeConfig& nodeConfig) const override
@@ -838,10 +868,10 @@ public:
 		return QVariant();
 	}
 
-	void execute(NodeSocketReader* reader, NodeSocketWriter* writer) override
+	ExecutionStatus execute(NodeSocketReader& reader, NodeSocketWriter& writer) override
 	{
-		const cv::Mat& src = reader->readSocket(0);
-		cv::Mat& dst = writer->lockSocket(0);
+		const cv::Mat& src = reader.readSocket(0);
+		cv::Mat& dst = writer.lockSocket(0);
 
 		int ddepth = _scaleAbs ? CV_16S : -1;
 
@@ -850,6 +880,8 @@ public:
 
 		if(_scaleAbs)
 			cv::convertScaleAbs(dst, dst);
+
+		return ExecutionStatus(EStatus::Ok);
 	}
 
 	void configuration(NodeConfig& nodeConfig) const override
@@ -917,10 +949,10 @@ public:
 		return QVariant();
 	}
 
-	void execute(NodeSocketReader* reader, NodeSocketWriter* writer) override
+	ExecutionStatus execute(NodeSocketReader& reader, NodeSocketWriter& writer) override
 	{
-		const cv::Mat& src = reader->readSocket(0);
-		cv::Mat& dst = writer->lockSocket(0);
+		const cv::Mat& src = reader.readSocket(0);
+		cv::Mat& dst = writer.lockSocket(0);
 
 		cv::Mat kernel = cvu::predefinedConvolutionKernel(_filterType);
 		bool weight0 = cv::sum(kernel) == cv::Scalar(0);
@@ -930,6 +962,8 @@ public:
 
 		if(weight0)
 			cv::convertScaleAbs(dst, dst);
+
+		return ExecutionStatus(EStatus::Ok);
 	}
 
 	void configuration(NodeConfig& nodeConfig) const override
@@ -1007,17 +1041,16 @@ public:
 		return QVariant();
 	}
 
-	void execute(NodeSocketReader*, NodeSocketWriter* writer) override
+	ExecutionStatus execute(NodeSocketReader&, NodeSocketWriter& writer) override
 	{
-		cv::Mat& kernel = writer->lockSocket(0);
+		cv::Mat& kernel = writer.lockSocket(0);
 
 		if(_xradius == 0 || _yradius == 0)
-		{
-			kernel = cv::Mat();
-			return;
-		}
+			return ExecutionStatus(EStatus::Ok);
 
 		kernel = cvu::standardStructuringElement(_xradius, _yradius, _se, _rotation);
+
+		return ExecutionStatus(EStatus::Ok);
 	}
 
 	void configuration(NodeConfig& nodeConfig) const override
@@ -1085,19 +1118,18 @@ public:
 		return QVariant();
 	}
 
-	void execute(NodeSocketReader* reader, NodeSocketWriter* writer) override
+	ExecutionStatus execute(NodeSocketReader& reader, NodeSocketWriter& writer) override
 	{
-		const cv::Mat& src = reader->readSocket(0);
-		const cv::Mat& se = reader->readSocket(1);
-		cv::Mat& dst = writer->lockSocket(0);
+		const cv::Mat& src = reader.readSocket(0);
+		const cv::Mat& se = reader.readSocket(1);
+		cv::Mat& dst = writer.lockSocket(0);
 
 		if(se.cols == 0 || se.rows == 0 || src.rows == 0 || src.cols == 0)
-		{
-			dst = cv::Mat();
-			return;
-		}
+			return ExecutionStatus(EStatus::Ok);
 		
 		cv::morphologyEx(src, dst, _op, se);
+
+		return ExecutionStatus(EStatus::Ok);
 	}
 
 	void configuration(NodeConfig& nodeConfig) const override

@@ -89,10 +89,10 @@ void Node::configuration(NodeConfig& nodeConfig) const
 	_nodeType->configuration(nodeConfig);
 }
 
-void Node::execute(NodeSocketReader* reader, NodeSocketWriter* writer)
+ExecutionStatus Node::execute(NodeSocketReader& reader, NodeSocketWriter& writer)
 {
-	writer->setOutputSockets(_outputSockets);
-	_nodeType->execute(reader, writer);
+	writer.setOutputSockets(_outputSockets);
+	return _nodeType->execute(reader, writer);
 }
 
 bool Node::setProperty(PropertyID propID, const QVariant& value)

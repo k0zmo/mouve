@@ -126,6 +126,32 @@ struct NodeConfig
 	}
 };
 
+enum class EStatus
+{
+	Ok,
+	Error,
+	NoMoreData
+};
+
+struct ExecutionStatus
+{
+	ExecutionStatus()
+		: status(EStatus::Ok)
+		, errorMessage()
+	{
+	}
+
+	ExecutionStatus(EStatus status, 
+		const std::string& errorMessage = std::string())
+		: status(status)
+		, errorMessage(errorMessage)
+	{
+	}
+
+	EStatus status;
+	std::string errorMessage;
+};
+
 class NodeType
 {
 public:
@@ -133,7 +159,7 @@ public:
 
 	// Required methods
 	virtual void configuration(NodeConfig& nodeConfig) const = 0;
-	virtual void execute(NodeSocketReader* reader, NodeSocketWriter* writer) = 0;
+	virtual ExecutionStatus execute(NodeSocketReader& reader, NodeSocketWriter& writer) = 0;
 
 	// Optional methods
 	virtual bool setProperty(PropertyID propId, const QVariant& newValue);

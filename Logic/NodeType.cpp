@@ -84,5 +84,8 @@ cv::Mat& NodeSocketWriter::lockSocket(SocketID socketID)
 	Q_ASSERT(socketID < static_cast<int>(_outputs->size()));
 
 	/// xXx: To throw or not to throw ?
-	return _outputs->at(socketID);
+	cv::Mat& output = _outputs->at(socketID);
+	output = cv::Mat();
+
+	return output;
 }
