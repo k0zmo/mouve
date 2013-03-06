@@ -32,12 +32,11 @@
 #include <QJsonArray>
 #include <QFileDialog>
 
-#include <QTimer>
-
 /// TODO: Temporary for preview
 #include <opencv2/core/core.hpp>
 
 #include "ui_MainWindow.h"
+#include "TreeWorker.h"
 
 static const QString applicationTitle = QStringLiteral("mouve");
 template<> Controller* Singleton<Controller>::_singleton = nullptr;
@@ -47,7 +46,7 @@ Controller::Controller(QWidget* parent, Qt::WindowFlags flags)
 	, _previewSelectedNodeView(nullptr)
 	, _propManager(new PropertyManager(this))
 	, _nodeSystem(new NodeSystem())
-	, _videoTimer(new QTimer(this))
+	, _treeWorker(new TreeWorker())
 	, _ui(new Ui::MainWindow())
 	, _videoMode(false)
 	, _startWithInit(true)
@@ -56,7 +55,7 @@ Controller::Controller(QWidget* parent, Qt::WindowFlags flags)
 	setupUi();
 	updateStatusBar(EState::Stopped);
 	updateTitleBar();
-	createNewNodeScene();	
+	createNewNodeScene();
 
 	/// MB: Use eventFilter?
 	// Context menu from node graphics view
@@ -78,12 +77,22 @@ Controller::Controller(QWidget* parent, Qt::WindowFlags flags)
 		_addNodesActions.append(action);
 	}
 
-	connect(_videoTimer, &QTimer::timeout, this, &Controller::step);
+	_treeWorker->moveToThread(&_workerThread);
+
+	connect(&_workerThread, &QThread::finished,
+		_treeWorker, &QObject::deleteLater);
+	connect(_treeWorker, &TreeWorker::completed,
+		this, &Controller::updatePreview);
+
+	_workerThread.start();
 }
 
 Controller::~Controller()
 {
 	clearTreeView();
+
+	_workerThread.quit();
+	_workerThread.wait();
 
 	delete _ui;
 }
@@ -635,6 +644,7 @@ void Controller::createNewNodeScene()
 
 	// Create new tree model
 	_nodeTree = _nodeSystem->createNodeTree();
+	_treeWorker->setNodeTree(_nodeTree);
 
 	// Create new tree view (node scene)
 	_nodeScene = new QGraphicsScene(this);
@@ -1140,10 +1150,25 @@ void Controller::updatePreview()
 {
 	std::vector<NodeID> execList = _nodeTree->executeList();
 
-	qDebug() << "Execute list: " << QVector<NodeID>::fromStdVector(execList);
+	//qDebug() << "Execute list: " << QVector<NodeID>::fromStdVector(execList);
 
 	if(shouldUpdatePreview(execList))
 		updatePreviewImpl();
+
+	if(!_videoMode)
+	{
+		setInteractive(true);
+	}
+	else
+	{
+		if(_state == EState::Playing)
+		{
+			// Keep playing 
+			QMetaObject::invokeMethod(_treeWorker, 
+				"process", Qt::QueuedConnection,
+				Q_ARG(bool, false));
+		}
+	}
 }
 
 void Controller::sceneSelectionChanged()
@@ -1303,7 +1328,10 @@ void Controller::singleStep()
 	// Single step in image mode
 	if(!_videoMode)
 	{
-		_nodeTree->execute(false);
+		setInteractive(false);
+		QMetaObject::invokeMethod(_treeWorker, 
+			"process", Qt::QueuedConnection,
+			Q_ARG(bool, false));
 	}
 	// Single step in video mode 
 	else
@@ -1315,12 +1343,12 @@ void Controller::singleStep()
 			setInteractive(false);
 			_ui->actionStop->setEnabled(true);
 		}
-		
-		_nodeTree->execute(_startWithInit);
+
+		QMetaObject::invokeMethod(_treeWorker, 
+			"process", Qt::QueuedConnection,
+			Q_ARG(bool, _startWithInit));
 		_startWithInit = false;
 	}
-
-	updatePreview();
 }
 
 void Controller::step()
@@ -1350,7 +1378,10 @@ void Controller::play()
 {
 	if(_state != EState::Playing)
 	{
-		_videoTimer->start(10);
+		QMetaObject::invokeMethod(_treeWorker, 
+			"process", Qt::QueuedConnection,
+			Q_ARG(bool, _startWithInit));
+		_startWithInit = false;
 
 		updateStatusBar(EState::Playing);
 
@@ -1367,8 +1398,7 @@ void Controller::pause()
 {
 	if(_state == EState::Playing)
 	{
-		_videoTimer->stop();
-
+		// On next time process() won't be invoke
 		updateStatusBar(EState::Paused);
 
 		_ui->actionPause->setEnabled(false);
@@ -1382,11 +1412,10 @@ void Controller::stop()
 {
 	if(_state != EState::Stopped)
 	{
-		_videoTimer->stop();
+		// On next time process() won't be invoke
+		updateStatusBar(EState::Stopped);
 
 		_startWithInit = true;
-
-		updateStatusBar(EState::Stopped);
 
 		_ui->actionPause->setEnabled(false);
 		_ui->actionStop->setEnabled(false);

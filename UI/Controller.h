@@ -4,12 +4,14 @@
 #include "Common/Singleton.h"
 
 #include <QMainWindow>
+#include <QThread>
 
 namespace Ui {
 	class MainWindow;
 }
 class QGraphicsWidget;
 class QLabel;
+class TreeWorker;
 
 enum class EState
 {
@@ -128,9 +130,11 @@ private:
 	std::unique_ptr<NodeSystem> _nodeSystem;
 	std::shared_ptr<NodeTree> _nodeTree;
 
+	QThread _workerThread;
+	TreeWorker* _treeWorker;
+
 	// Temporary
 	QList<QAction*> _addNodesActions;
-	QTimer* _videoTimer;
 
 	Ui::MainWindow* _ui;
 	PreviewWidget* _previewWidget;
