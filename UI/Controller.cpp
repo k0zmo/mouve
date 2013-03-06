@@ -1279,9 +1279,16 @@ void Controller::singleStep()
 	}
 	else
 	{
-		setInteractive(false);
-
 		_nodeTree->prepareList();
+		auto executeList = _nodeTree->executeList();
+		if(executeList.empty())
+		{
+			stop();
+			return;
+		}
+
+		setInteractive(false);
+		
 		_nodeTree->execute(_startWithInit);
 		_startWithInit = false;
 
@@ -1299,11 +1306,11 @@ void Controller::autoRefresh()
 
 void Controller::play()
 {
-	if(_currentlyPlaying)
-		return;
-
-	_currentlyPlaying = true;
-	_videoTimer->start(10);
+	if(!_currentlyPlaying)
+	{
+		_videoTimer->start(10);
+		_currentlyPlaying = true;
+	}
 
 	_ui->actionPause->setEnabled(true);
 	_ui->actionStop->setEnabled(true);
@@ -1313,11 +1320,11 @@ void Controller::play()
 
 void Controller::pause()
 {
-	if(!_currentlyPlaying)
-		return;
-
-	_videoTimer->stop();
-	_currentlyPlaying = false;	
+	if(_currentlyPlaying)
+	{
+		_videoTimer->stop();
+		_currentlyPlaying = false;		
+	}
 
 	_ui->actionPause->setEnabled(false);
 	_ui->actionStop->setEnabled(true);
@@ -1327,11 +1334,11 @@ void Controller::pause()
 
 void Controller::stop()
 {
-	if(!_currentlyPlaying)
-		return;
-
-	_videoTimer->stop();
-	_currentlyPlaying = false;	
+	if(_currentlyPlaying)
+	{
+		_videoTimer->stop();
+		_currentlyPlaying = false;
+	}
 
 	_startWithInit = true;
 

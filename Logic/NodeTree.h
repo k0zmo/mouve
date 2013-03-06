@@ -75,7 +75,6 @@ private:
 	std::vector<NodeID> _executeList;
 	std::unordered_map<std::string, NodeID> _nodeNameToNodeID;
 	std::set<NodeID> _stateNodes; // assuming small size of it
-	std::set<NodeID> _selfTaggingNodes;
 	NodeSystem* _nodeSystem;
 	bool _executeListDirty;
 

@@ -76,7 +76,7 @@ public:
 
 		cv::Mat& output = writer.lockSocket(0);
 		if(!_capture.isOpened())
-			return ExecutionStatus(EStatus::NoMoreData);
+			return ExecutionStatus(EStatus::Ok);
 
 		if(_frameInterval == 0)
 		{
@@ -102,12 +102,12 @@ public:
 		if(output.data)
 		{
 			cv::cvtColor(output, output, CV_BGR2GRAY);
-			return ExecutionStatus(EStatus::Ok);
+			return ExecutionStatus(EStatus::Tag);
 		}
 		else
 		{
 			// No more data 
-			return ExecutionStatus(EStatus::NoMoreData);
+			return ExecutionStatus(EStatus::Ok);
 		}
 	}
 
@@ -126,7 +126,7 @@ public:
 		nodeConfig.description = "Provides video frames from specified stream";
 		nodeConfig.pOutputSockets = out_config;
 		nodeConfig.pProperties = prop_config;
-		nodeConfig.flags = Node_State | Node_SelfTagging;
+		nodeConfig.flags = Node_State;
 	}
 
 private:

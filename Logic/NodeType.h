@@ -103,7 +103,6 @@ enum ENodeFlags
 {
 	Node_Stateless   = 0, // default 
 	Node_State       = 1 << 0,
-	Node_SelfTagging = 1 << 1
 };
 Q_DECLARE_FLAGS(NodeFlags, ENodeFlags);
 Q_DECLARE_OPERATORS_FOR_FLAGS(NodeFlags)
@@ -130,7 +129,7 @@ enum class EStatus
 {
 	Ok,
 	Error,
-	NoMoreData
+	Tag
 };
 
 struct ExecutionStatus

@@ -82,19 +82,24 @@ void NodeTree::execute(bool withInit)
 	NodeSocketReader reader(this);
 	NodeSocketWriter writer;
 
-	// Traverse through just-built exec list and process each node
+	std::vector<NodeID> selfTagging;
+
+	// Traverse through just-built exec list and process each node 
 	for(NodeID nodeID : _executeList)
 	{
-		auto& nodeRef = _nodes[nodeID];
+		Node& node = _nodes[nodeID];
 
-		reader.setNode(nodeID, nodeRef.numInputSockets());
+		reader.setNode(nodeID, node.numInputSockets());
 
 		if(withInit && _stateNodes.find(nodeID) != _stateNodes.end())
 		{
 			/// TODO:
-			/*bool res = */nodeRef.initialize();
+			/*bool res = */node.initialize();
 		}
-		nodeRef.execute(reader, writer);
+
+		ExecutionStatus ret = node.execute(reader, writer);
+		if(ret.status == EStatus::Tag)
+			selfTagging.push_back(nodeID);
 	}
 
 	// Clean
@@ -102,7 +107,7 @@ void NodeTree::execute(bool withInit)
 	_executeListDirty = true;
 
 	// tag all self-tagging nodes
-	for(auto id : _selfTaggingNodes)
+	for(auto id : selfTagging)
 		tagNode(id);
 }
 
@@ -145,8 +150,6 @@ NodeID NodeTree::createNode(NodeTypeID typeID, const std::string& name)
 	_nodes[id].configuration(nodeConfig);
 	if(nodeConfig.flags & Node_State)
 		_stateNodes.insert(id);
-	if(nodeConfig.flags & Node_SelfTagging)
-		_selfTaggingNodes.insert(id);
 
 	return id;
 }
@@ -427,7 +430,6 @@ void NodeTree::deallocateNodeID(NodeID id)
 	_nodes[id] = Node();
 
 	_stateNodes.erase(id);
-	_selfTaggingNodes.erase(id);
 
 	// Add NodeID to recycled ones
 	_recycledIDs.push_back(id);
