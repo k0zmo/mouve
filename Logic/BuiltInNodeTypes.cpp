@@ -126,7 +126,7 @@ public:
 		nodeConfig.description = "Provides video frames from specified stream";
 		nodeConfig.pOutputSockets = out_config;
 		nodeConfig.pProperties = prop_config;
-		nodeConfig.flags = Node_State;
+		nodeConfig.flags = Node_HasState | Node_AutoTag;
 	}
 
 private:
@@ -230,7 +230,7 @@ public:
 		nodeConfig.pInputSockets = in_config;
 		nodeConfig.pOutputSockets = out_config;
 		nodeConfig.pProperties = prop_config;
-		nodeConfig.flags = Node_State;
+		nodeConfig.flags = Node_HasState;
 	}
 
 private:

@@ -55,6 +55,7 @@ public:
 	std::unique_ptr<NodeLinkIterator> createNodeLinkIterator();
 
 	bool isTreeStateless() const;
+	void tagAutoNodes();
 
 private:
 	NodeID allocateNodeID();
@@ -75,6 +76,7 @@ private:
 	std::vector<NodeID> _executeList;
 	std::unordered_map<std::string, NodeID> _nodeNameToNodeID;
 	std::set<NodeID> _stateNodes; // assuming small size of it
+	std::vector<NodeID> _autoTaggedNodes;
 	NodeSystem* _nodeSystem;
 	bool _executeListDirty;
 

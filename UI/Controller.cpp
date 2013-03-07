@@ -1174,31 +1174,6 @@ void Controller::mouseDoubleClickNodeView(NodeView* nodeView)
 	}
 }
 
-void Controller::updatePreview()
-{
-	std::vector<NodeID> execList = _nodeTree->executeList();
-
-	//qDebug() << "Execute list: " << QVector<NodeID>::fromStdVector(execList);
-
-	if(shouldUpdatePreview(execList))
-		updatePreviewImpl();
-
-	if(!_videoMode)
-	{
-		setInteractive(true);
-	}
-	else
-	{
-		if(_state == EState::Playing)
-		{
-			// Keep playing 
-			QMetaObject::invokeMethod(_treeWorker, 
-				"process", Qt::QueuedConnection,
-				Q_ARG(bool, false));
-		}
-	}
-}
-
 void Controller::sceneSelectionChanged()
 {
 	auto items = _nodeScene->selectedItems();
@@ -1345,17 +1320,55 @@ bool Controller::saveTreeAs()
 	return saveTreeToFile(filePath);
 }
 
+void Controller::updatePreview()
+{
+	std::vector<NodeID> execList = _nodeTree->executeList();
+
+	if(shouldUpdatePreview(execList))
+		updatePreviewImpl();
+
+	if(!_videoMode)
+	{
+		setInteractive(true);
+	}
+	else
+	{
+		if(_state != EState::Stopped)
+		{
+			_nodeTree->prepareList();
+			auto executeList = _nodeTree->executeList();
+
+			if(executeList.empty())
+			{
+				stop();
+				return;
+			}
+		}
+
+		if(_state == EState::Playing)
+		{
+			// Keep playing 
+			QMetaObject::invokeMethod(_treeWorker, 
+				"process", Qt::QueuedConnection,
+				Q_ARG(bool, false));
+		}
+	}
+}
+
 void Controller::singleStep()
 {
 	_nodeTree->prepareList();
 	auto executeList = _nodeTree->executeList();
 
 	if(executeList.empty())
-			return;
+		return;
 
 	// Single step in image mode
 	if(!_videoMode)
 	{
+		if(_ui->graphicsView->isPseudoInteractive())
+			return;
+
 		setInteractive(false);
 		QMetaObject::invokeMethod(_treeWorker, 
 			"process", Qt::QueuedConnection,
@@ -1377,23 +1390,6 @@ void Controller::singleStep()
 			Q_ARG(bool, _startWithInit));
 		_startWithInit = false;
 	}
-}
-
-void Controller::step()
-{
-	_nodeTree->prepareList();
-	auto executeList = _nodeTree->executeList();
-
-	if(executeList.empty())
-	{
-		stop();
-		return;
-	}
-
-	_nodeTree->execute(_startWithInit);
-	_startWithInit = false;
-
-	updatePreview();
 }
 
 void Controller::autoRefresh()
@@ -1444,6 +1440,8 @@ void Controller::stop()
 		updateStatusBar(EState::Stopped);
 
 		_startWithInit = true;
+
+		_nodeTree->tagAutoNodes();
 
 		_ui->actionPause->setEnabled(false);
 		_ui->actionStop->setEnabled(false);

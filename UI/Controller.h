@@ -93,9 +93,6 @@ private slots:
 	void keyPress(QKeyEvent* event);
 	void mouseDoubleClickNodeView(NodeView* nodeView);
 
-	// Called after node tree execution has been finished
-	void updatePreview();
-
 	void sceneSelectionChanged();
 	void changeProperty(NodeID nodeID, PropertyID propID, 
 		const QVariant& newValue, bool* ok);
@@ -106,9 +103,11 @@ private slots:
 	bool saveTree();
 	bool saveTreeAs();
 
+	// Called after node tree execution has been finished
+	void updatePreview();
+
 	// Image mode toolbar
 	void singleStep();
-	void step();
 	void autoRefresh();
 
 	// Video mode toolbar

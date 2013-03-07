@@ -148,8 +148,10 @@ NodeID NodeTree::createNode(NodeTypeID typeID, const std::string& name)
 	// Check if this is a stateless node or not
 	NodeConfig nodeConfig;
 	_nodes[id].configuration(nodeConfig);
-	if(nodeConfig.flags & Node_State)
+	if(nodeConfig.flags & Node_HasState)
 		_stateNodes.insert(id);
+	if(nodeConfig.flags & Node_AutoTag)
+		stlu::push_back_unique(&_autoTaggedNodes, id);
 
 	return id;
 }
@@ -430,6 +432,7 @@ void NodeTree::deallocateNodeID(NodeID id)
 	_nodes[id] = Node();
 
 	_stateNodes.erase(id);
+	stlu::remove_first_value(&_autoTaggedNodes, id);
 
 	// Add NodeID to recycled ones
 	_recycledIDs.push_back(id);
@@ -528,6 +531,12 @@ bool NodeTree::validateNode(NodeID nodeID) const
 bool NodeTree::isTreeStateless() const
 {
 	return _stateNodes.empty();
+}
+
+void NodeTree::tagAutoNodes()
+{
+	for(NodeID nodeID : _autoTaggedNodes)
+		tagNode(nodeID);
 }
 
 // -----------------------------------------------------------------------------
