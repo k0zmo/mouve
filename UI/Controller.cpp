@@ -26,6 +26,8 @@
 #include <QMenu>
 #include <QLabel>
 #include <QGraphicsWidget>
+#include <QSettings>
+#include <QDesktopWidget>
 
 #include <QJsonDocument>
 #include <QJsonObject>
@@ -52,6 +54,9 @@ Controller::Controller(QWidget* parent, Qt::WindowFlags flags)
 	, _startWithInit(true)
 	, _nodeTreeDirty(false)
 {
+	QCoreApplication::setApplicationName(applicationTitle);
+	QCoreApplication::setOrganizationName(applicationTitle);
+
 	setupUi();
 	updateStatusBar(EState::Stopped);
 	updateTitleBar();
@@ -104,7 +109,10 @@ void Controller::closeEvent(QCloseEvent* event)
 
 	if (canQuit())
 	{
-		// QMainWindow::saveState?
+		QSettings settings;
+		settings.setValue("geometry", saveGeometry());
+		settings.setValue("windowState", saveState());
+
 		event->accept();
 	} 
 	else
@@ -371,6 +379,26 @@ void Controller::deleteNode(NodeView* nodeView)
 void Controller::setupUi()
 {
 	_ui->setupUi(this);
+
+	QSettings settings;
+	QVariant varGeometry = settings.value("geometry");
+	QVariant varState = settings.value("windowState");
+	if(varGeometry.isValid() && varState.isValid())
+	{
+		restoreGeometry(varGeometry.toByteArray());
+		restoreState(varState.toByteArray());
+	}
+	else
+	{
+		QDesktopWidget* desktop = QApplication::desktop();
+		int screen = desktop->screenNumber(this);
+		QRect rect(desktop->availableGeometry(screen));
+		resize(int(rect.width() * .85), int(rect.height() * .85));
+		move(rect.width()/2 - frameGeometry().width()/2,
+			rect.height()/2 - frameGeometry().height()/2);
+
+		showMaximized();
+	}
 
 	// Menu bar actions
 	_ui->actionQuit->setShortcuts(QKeySequence::Quit);
