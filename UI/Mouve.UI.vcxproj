@@ -614,6 +614,12 @@
       <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">"$(QTDIR)\bin\uic.exe" -o ".\GeneratedFiles\ui_%(Filename).h" "%(FullPath)"</Command>
     </CustomBuild>
   </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="Mouve.UI.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="Mouve.UI.ico" />
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{51F34DAC-D745-438A-88A2-B1F28A174E23}</ProjectGuid>
     <Keyword>Qt4VSv1.0</Keyword>

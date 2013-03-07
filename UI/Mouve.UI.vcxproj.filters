@@ -247,4 +247,14 @@
       <Filter>Generated Files</Filter>
     </ClInclude>
   </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="Mouve.UI.rc">
+      <Filter>Common Files</Filter>
+    </ResourceCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="Mouve.UI.ico">
+      <Filter>Common Files</Filter>
+    </Image>
+  </ItemGroup>
 </Project>
