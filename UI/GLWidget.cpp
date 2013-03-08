@@ -168,8 +168,25 @@ void GLWidget::show(const cv::Mat& image)
 		return;
 	}
 
-	glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, image.cols, image.rows,
-		0, format, type, image.data);
+	if(image.cols != image.step)
+	{
+		// TODO: Use PBO? or something else to skip pointless copying because of step size
+		char* data = new char[image.elemSize() * image.rows * image.cols];
+		
+		for(int y = 0; y < image.rows; ++y)
+			memcpy(data + y * image.cols * image.elemSize(),
+				image.data + y * image.step, image.elemSize() * image.cols);
+
+		glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, image.cols, image.rows,
+			0, format, type, data);
+
+		delete [] data;
+	}
+	else
+	{
+		glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, image.cols, image.rows,
+			0, format, type, image.data);
+	}
 
 	bool sizeChanged = _textureWidth != image.cols
 		|| _textureHeight != image.rows;
