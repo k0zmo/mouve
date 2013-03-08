@@ -1080,6 +1080,11 @@ void Controller::draggingLinkDrop(QGraphicsWidget* from, QGraphicsWidget* to)
 void Controller::contextMenu(const QPoint& globalPos,
 	const QPointF& scenePos)
 {
+	_ui->statusBar->showMessage(QString("Scene position: %1, %2")
+		.arg(scenePos.x())
+		.arg(scenePos.y())
+	);
+
 	QList<QGraphicsItem*> items = _nodeScene->items(scenePos, 
 		Qt::ContainsItemShape, Qt::AscendingOrder);
 
@@ -1454,6 +1459,25 @@ void Controller::stop()
 
 void Controller::fitToView()
 {
-	_ui->graphicsView->fitInView(_nodeScene->sceneRect(),
-		Qt::KeepAspectRatio);
+	QList<QGraphicsItem*> items = _nodeScene->items();
+	if(items.isEmpty())
+		return;
+
+	QRectF sceneRect = items[0]->sceneBoundingRect();
+
+	for(auto* item : items)
+	{
+		const QRectF& brect = item->sceneBoundingRect();
+		sceneRect.setTop(qMin(sceneRect.top(), brect.top()));
+		sceneRect.setLeft(qMin(sceneRect.left(), brect.left()));
+		sceneRect.setBottom(qMax(sceneRect.bottom(), brect.bottom()));
+		sceneRect.setRight(qMax(sceneRect.right(), brect.right()));
+	}
+
+	_ui->graphicsView->fitInView(sceneRect, Qt::KeepAspectRatio);
+
+	// We assume there's no rotation
+	QTransform t = _ui->graphicsView->transform();
+	
+	_ui->graphicsView->setZoom(t.m11());
 }

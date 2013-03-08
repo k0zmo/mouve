@@ -22,8 +22,10 @@ void NodeEditorView::setZoom(float zoom)
 {
 	if(scene() != nullptr)
 	{
+		mZoom = zoom;
+
 		QTransform transformation;
-		transformation.scale(zoom, zoom);
+		transformation.scale(mZoom, mZoom);
 		setTransform(transformation);
 	}
 }
@@ -78,9 +80,9 @@ void NodeEditorView::wheelEvent(QWheelEvent* event)
 {
 	if(event->orientation() == Qt::Vertical)
 	{
-		mZoom += event->delta() * 0.001f;
-		mZoom = qMin(qMax(mZoom, 0.3f), 3.0f);
-		setZoom(mZoom);
+		float zoom = mZoom + event->delta() * 0.001f;
+		zoom = qMin(qMax(zoom, 0.3f), 3.0f);
+		setZoom(zoom);
 	}
 }
 
