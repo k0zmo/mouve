@@ -197,6 +197,9 @@ public:
 private slots:
 	void showDialog();
 
+signals:
+	void commitData();
+
 private:
 	Matrix3x3 _matrix;
 };

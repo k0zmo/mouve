@@ -114,8 +114,6 @@ QSize PropertyDelegate::sizeHint(const QStyleOptionViewItem& option,
 
 bool PropertyDelegate::eventFilter(QObject* obj, QEvent* event)
 {
-	//qDebug() << "eventFilter:" << event->type();
-
 	if(_immediateUpdate && event->type() == QEvent::FocusOut)
 	{
 		if(obj->metaObject()->indexOfSignal("commitData()") >= 0)

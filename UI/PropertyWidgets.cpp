@@ -368,6 +368,8 @@ void PropertyMatrixButton::showDialog()
 void PropertyMatrixButton::setMatrix(const Matrix3x3& mat)
 {
 	_matrix = mat;
+
+	emit commitData();
 }
 
 Matrix3x3 PropertyMatrixButton::matrix() const
