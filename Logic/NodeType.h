@@ -111,14 +111,14 @@ struct PropertyConfig
 	std::string uiHint;
 };
 
-enum ENodeFlags
+enum ENodeConfigurationFlags
 {
-	Node_Stateless   = 0, // default 
-	Node_HasState    = 1 << 0,
-	Node_AutoTag     = 1 << 1
+	Node_NoFlags     = 0, // default 
+	Node_HasState    = BIT(0),
+	Node_AutoTag     = BIT(1)
 };
-Q_DECLARE_FLAGS(NodeFlags, ENodeFlags);
-Q_DECLARE_OPERATORS_FOR_FLAGS(NodeFlags)
+Q_DECLARE_FLAGS(NodeConfigurationFlags, ENodeConfigurationFlags);
+Q_DECLARE_OPERATORS_FOR_FLAGS(NodeConfigurationFlags)
 
 struct NodeConfig
 {
@@ -126,14 +126,14 @@ struct NodeConfig
 	const OutputSocketConfig* pOutputSockets;
 	const PropertyConfig* pProperties;
 	std::string description;
-	NodeFlags flags;
+	NodeConfigurationFlags flags;
 
 	NodeConfig()
 		: pInputSockets(nullptr)
 		, pOutputSockets(nullptr)
 		, pProperties(nullptr)
 		, description()
-		, flags(Node_Stateless)
+		, flags(Node_NoFlags)
 	{
 	}
 };
