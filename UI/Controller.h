@@ -60,6 +60,7 @@ private:
 	bool isAutoRefresh();
 	void processAutoRefresh();
 
+	void queueProcessing(bool withInit = false);
 	bool shouldUpdatePreview(const std::vector<NodeID>& executedNodes);
 	void updatePreviewImpl();
 	void setInteractive(bool allowed);

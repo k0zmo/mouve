@@ -545,6 +545,13 @@ void Controller::processAutoRefresh()
 	}
 }
 
+void Controller::queueProcessing(bool withInit)
+{
+	QMetaObject::invokeMethod(_treeWorker, 
+		"process", Qt::QueuedConnection,
+		Q_ARG(bool, withInit));
+}
+
 bool Controller::shouldUpdatePreview(const std::vector<NodeID>& executedNodes)
 {
 	if(_previewSelectedNodeView)
@@ -565,9 +572,12 @@ void Controller::updatePreviewImpl()
 {
 	if(_previewSelectedNodeView != nullptr)
 	{
+		NodeID nodeID = _previewSelectedNodeView->nodeKey();
 		/// xXx: For now we preview only first output socket
-		///      This shouldn't be much a problem
-		const cv::Mat& mat = _nodeTree->outputSocket(_previewSelectedNodeView->nodeKey(), 0);
+		///      This shouldn't be much a problem for now
+		SocketID socketID = 0;
+
+		const cv::Mat& mat = _nodeTree->outputSocket(nodeID, socketID);
 
 		if(mat.data)
 			_previewWidget->show(mat);
@@ -1353,9 +1363,7 @@ void Controller::updatePreview()
 		if(_state == EState::Playing)
 		{
 			// Keep playing 
-			QMetaObject::invokeMethod(_treeWorker, 
-				"process", Qt::QueuedConnection,
-				Q_ARG(bool, false));
+			queueProcessing(false);
 		}
 	}
 }
@@ -1375,9 +1383,7 @@ void Controller::singleStep()
 			return;
 
 		setInteractive(false);
-		QMetaObject::invokeMethod(_treeWorker, 
-			"process", Qt::QueuedConnection,
-			Q_ARG(bool, false));
+		queueProcessing(false);
 	}
 	// Single step in video mode 
 	else
@@ -1390,9 +1396,7 @@ void Controller::singleStep()
 			_ui->actionStop->setEnabled(true);
 		}
 
-		QMetaObject::invokeMethod(_treeWorker, 
-			"process", Qt::QueuedConnection,
-			Q_ARG(bool, _startWithInit));
+		queueProcessing(_startWithInit);
 		_startWithInit = false;
 	}
 }
@@ -1407,9 +1411,7 @@ void Controller::play()
 {
 	if(_state != EState::Playing)
 	{
-		QMetaObject::invokeMethod(_treeWorker, 
-			"process", Qt::QueuedConnection,
-			Q_ARG(bool, _startWithInit));
+		queueProcessing(_startWithInit);
 		_startWithInit = false;
 
 		updateStatusBar(EState::Playing);
