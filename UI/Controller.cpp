@@ -536,13 +536,7 @@ void Controller::processAutoRefresh()
 {
 	// Execute if auto refresh is on
 	if(!_videoMode && isAutoRefresh())
-	{
-		_nodeTree->prepareList();
-		_nodeTree->execute();
-
-		if(shouldUpdatePreview(_nodeTree->executeList()))
-			updatePreviewImpl();
-	}
+		singleStep();
 }
 
 void Controller::queueProcessing(bool withInit)
