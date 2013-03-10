@@ -48,7 +48,7 @@ Node::Node(std::unique_ptr<NodeType> nodeType,
 	_outputSockets.clear();
 	for(int i = 0; i < _numOutputs; ++i)
 	{
-		_outputSockets.emplace_back(ENodeFlowDataType::ImageGray, cv::Mat());
+		_outputSockets.emplace_back(ENodeFlowDataType::Image, cv::Mat());
 	}
 }
 

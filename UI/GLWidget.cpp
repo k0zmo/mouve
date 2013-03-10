@@ -29,7 +29,10 @@ GLWidget::~GLWidget()
 void GLWidget::show(const QImage& image)
 {
 	if(image.isNull())
+	{
+		showDummy();
 		return;
+	}
 
 	glBindTexture(GL_TEXTURE_2D, _textureId);
 
@@ -116,7 +119,10 @@ void GLWidget::show(const QImage& image)
 void GLWidget::show(const cv::Mat& image)
 {
 	if(!image.data || image.rows == 0 || image.cols == 0)
+	{
+		showDummy();
 		return;
+	}
 
 	glBindTexture(GL_TEXTURE_2D, _textureId);
 

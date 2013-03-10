@@ -136,7 +136,7 @@ void NodeTree::execute(bool withInit)
 		}
 		catch(boost::bad_get& ex)
 		{
-
+			/// TODO: Show some error/warning message
 		}
 	}
 

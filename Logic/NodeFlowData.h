@@ -13,9 +13,13 @@ typedef boost::variant<cv::Mat>
 enum class ENodeFlowDataType
 {
 	Invalid,
-	ImageRgb,
-	ImageGray,
-	ImageBinary
+	Image,
+	Keypoints,
+	Matches,
+	Array
+	/// TODO: OpenCL
+	//DeviceImage,
+	//DeviceKeypoints, ...
 };
 
 class MOUVE_LOGIC_EXPORT NodeFlowData
