@@ -34,9 +34,6 @@
 #include <QJsonArray>
 #include <QFileDialog>
 
-/// TODO: Temporary for preview
-#include <opencv2/core/core.hpp>
-
 #include "ui_MainWindow.h"
 #include "TreeWorker.h"
 
@@ -578,10 +575,10 @@ void Controller::updatePreviewImpl()
 		///      This shouldn't be much a problem for now
 		SocketID socketID = 0;
 
-		const cv::Mat& mat = _nodeTree->outputSocket(nodeID, socketID);
+		const NodeFlowData& outputData = _nodeTree->outputSocket(nodeID, socketID);
 
-		if(mat.data)
-			_previewWidget->show(mat);
+		if(outputData.isValid())
+			_previewWidget->show(outputData.getImage());
 		else
 			_previewWidget->showDummy();
 	}

@@ -1,7 +1,7 @@
 #include "GLWidget.h"
 
 #include <opencv2/core/core.hpp>
-
+#include <QImage>
 #include <QWheelEvent>
 
 GLWidget::GLWidget(QWidget* parent)

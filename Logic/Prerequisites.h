@@ -8,6 +8,11 @@
 #  define MOUVE_LOGIC_EXPORT Q_DECL_IMPORT
 #endif
 
+// Disable annoying warnings about using deprecated functions
+#if defined(Q_CC_MSVC)
+#  pragma warning(disable : 4996)
+#endif
+
 #define BIT(x) 1 << x
 
 // CRT
@@ -21,30 +26,22 @@
 #include <string>
 #include <vector>
 #include <unordered_map>
-#include <set>
 #include <memory>
 #include <functional>
 #include <algorithm>
 
-// QTL
-#include <QString>
-#include <QList>
-#include <QHash>
-#include <QDebug>
+// Property system
+#include <QVariant>
 
-// Disable annoying warnings about using deprecated functions
-#if defined(Q_CC_MSVC)
-#  pragma warning(disable : 4996)
-#endif
 
 // Id of a socket - unique in each node
-typedef std::uint8_t  SocketID;
+typedef std::uint8_t SocketID;
 // Id of a node - unique in each tree
 typedef std::uint16_t NodeID;
 // Id of a node type - just unique
 typedef std::uint16_t NodeTypeID;
 // Id of a property - unique in each node
-typedef std::int8_t  PropertyID;
+typedef std::int8_t PropertyID;
 
 static const NodeID InvalidNodeID         = ~NodeID(0);
 static const SocketID InvalidSocketID     = ~SocketID(0);
@@ -61,6 +58,7 @@ struct ExecutionStatus;
 class Node;
 class NodeType;
 class NodeSocket;
+class NodeFlowData;
 class NodeSocketReader;
 class NodeSocketWriter;
 class NodeTree;
@@ -73,6 +71,3 @@ struct SocketAddress;
 class NodeIterator;
 class NodeLinkIterator;
 class NodeTypeIterator;
-
-/// xXx: Temporary here
-namespace cv { class Mat; }

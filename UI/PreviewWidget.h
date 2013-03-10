@@ -5,7 +5,10 @@
 #include <QWidget>
 
 namespace Ui {
-	class PreviewWidget;
+class PreviewWidget;
+}
+namespace cv {
+class Mat;
 }
 
 class PreviewWidget : public QWidget

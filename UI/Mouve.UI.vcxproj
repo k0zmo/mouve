@@ -650,6 +650,7 @@
     <Import Project="..\Mouve.Common.props" />
     <Import Project="..\OpenCV.Debug.props" />
     <Import Project="..\VisualLeakDetector.props" />
+    <Import Project="..\Boost.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
@@ -657,18 +658,21 @@
     <Import Project="..\Mouve.Common.props" />
     <Import Project="..\VisualLeakDetector.props" />
     <Import Project="..\OpenCV.Debug.x64.props" />
+    <Import Project="..\Boost.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
     <Import Project="..\Mouve.Common.props" />
     <Import Project="..\Mouve.Logic.props" />
     <Import Project="..\OpenCV.Release.props" />
+    <Import Project="..\Boost.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
     <Import Project="..\Mouve.Common.props" />
     <Import Project="..\Mouve.Logic.props" />
     <Import Project="..\OpenCV.Release.x64.props" />
+    <Import Project="..\Boost.props" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup>

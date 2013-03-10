@@ -2,7 +2,7 @@
 #include "NodeType.h"
 #include "NodeTree.h"
 
-/// xXx: Change this to some neat logging system
+/// TODO: Change this to some neat logging system
 #include <iostream>
 
 static const std::string InvalidType("InvalidType");
@@ -26,7 +26,7 @@ NodeTypeID NodeSystem::registerNodeType(const std::string& nodeTypeName,
 	auto iter = _typeNameToTypeID.find(nodeTypeName);
 	if(iter == _typeNameToTypeID.end())
 	{
-		/// xXx: Should we protect ourselves from too much node types being registered?
+		/// TODO: Should we protect ourselves from too much node types being registered?
 
 		// New type of node
 		size_t nodeTypeID = _registeredNodeTypes.size();
@@ -39,7 +39,7 @@ NodeTypeID NodeSystem::registerNodeType(const std::string& nodeTypeName,
 	}
 	else
 	{
-		/// xXx: return invalid typeID or just override previous one?
+		/// TODO: return invalid typeID or just override previous one?
 		NodeTypeID nodeTypeID = iter->second;
 
 		std::cout << "NodeSystem::registerNodeType: Type '" << nodeTypeName << "' Id='"

@@ -2,9 +2,6 @@
 #include "NodeType.h"
 #include "NodeException.h"
 
-/// xXx: Temporary here
-#include <opencv2/core/core.hpp>
-
 Node::Node()
 	: _nodeType(nullptr)
 	, _outputSockets(0)
@@ -17,8 +14,8 @@ Node::Node()
 }
 
 Node::Node(std::unique_ptr<NodeType> nodeType,
-           const std::string& nodeName,
-           NodeTypeID nodeTypeID)
+		   const std::string& nodeName,
+		   NodeTypeID nodeTypeID)
 	: _nodeType(std::move(nodeType))
 	, _nodeName(nodeName)
 	, _numInputs(0)
@@ -48,7 +45,11 @@ Node::Node(std::unique_ptr<NodeType> nodeType,
 			_numOutputs++;
 	} 
 
-	_outputSockets.resize(_numOutputs);
+	_outputSockets.clear();
+	for(int i = 0; i < _numOutputs; ++i)
+	{
+		_outputSockets.emplace_back(ENodeFlowDataType::ImageGray, cv::Mat());
+	}
 }
 
 Node::~Node()
@@ -75,7 +76,7 @@ Node& Node::operator=(Node&& rhs)
 	return *this;
 }
 
-cv::Mat& Node::outputSocket(SocketID socketID)
+NodeFlowData& Node::outputSocket(SocketID socketID)
 {
 	Q_ASSERT(socketID < numOutputSockets());
 	if(!validateSocket(socketID, true))
@@ -84,7 +85,7 @@ cv::Mat& Node::outputSocket(SocketID socketID)
 	return _outputSockets[socketID];
 }
 
-const cv::Mat& Node::outputSocket(SocketID socketID) const
+const NodeFlowData& Node::outputSocket(SocketID socketID) const
 {
 	Q_ASSERT(socketID < numOutputSockets());
 	if(!validateSocket(socketID, true))

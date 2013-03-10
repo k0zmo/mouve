@@ -46,8 +46,8 @@ public:
 
 	// Returns output socket address from which given input socket is connected to
 	SocketAddress connectedFrom(SocketAddress iSocketAddress) const;
-	const cv::Mat& outputSocket(NodeID nodeID, SocketID socketID) const;
-	const cv::Mat& inputSocket(NodeID nodeID, SocketID socketID) const;
+	const NodeFlowData& outputSocket(NodeID nodeID, SocketID socketID) const;
+	const NodeFlowData& inputSocket(NodeID nodeID, SocketID socketID) const;
 
 	// Returns true if given input socket is connected 
 	bool isInputSocketConnected(NodeID nodeID, SocketID socketID) const;

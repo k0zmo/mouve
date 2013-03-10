@@ -3,9 +3,6 @@
 #include "NodeLink.h"
 #include "NodeException.h"
 
-/// xXx: Temporary here
-#include <opencv2/core/core.hpp>
-
 void NodeSocketReader::setNode(NodeID nodeID, SocketID numInputSockets)
 {
 	Q_ASSERT(nodeID != InvalidNodeID);
@@ -13,7 +10,7 @@ void NodeSocketReader::setNode(NodeID nodeID, SocketID numInputSockets)
 	_numInputSockets = numInputSockets;
 }
 
-const cv::Mat& NodeSocketReader::readSocket(SocketID socketID) const
+const NodeFlowData& NodeSocketReader::readSocket(SocketID socketID) const
 {
 	Q_ASSERT(_nodeTree != nullptr);
 	Q_ASSERT(_numInputSockets > 0);
@@ -31,10 +28,9 @@ const cv::Mat& NodeSocketReader::readSocket(SocketID socketID) const
 		// Socket is not connected
 		else
 		{
-			/// xXx: For now, just return empty matrix
-			/// This should be taken care by NodeTree in near future! 
-			static cv::Mat emptyMatrix = cv::Mat();
-			return emptyMatrix;
+			// Return an empty NodeFlowData
+			static NodeFlowData default = NodeFlowData();
+			return default;
 		}
 	}
 	else
@@ -43,12 +39,17 @@ const cv::Mat& NodeSocketReader::readSocket(SocketID socketID) const
 	}
 }
 
-void NodeSocketWriter::setOutputSockets(std::vector<cv::Mat>& outputs)
+const cv::Mat& NodeSocketReader::readSocketImage(SocketID socketID) const
+{
+	return readSocket(socketID).getImage();
+}
+
+void NodeSocketWriter::setOutputSockets(std::vector<NodeFlowData>& outputs)
 {
 	_outputs = &outputs;
 }
 
-void NodeSocketWriter::writeSocket(SocketID socketID, cv::Mat& image)
+void NodeSocketWriter::writeSocket(SocketID socketID, NodeFlowData&& image)
 {
 	Q_ASSERT(_outputs != nullptr);
 	Q_ASSERT(socketID < static_cast<int>(_outputs->size()));
@@ -59,7 +60,7 @@ void NodeSocketWriter::writeSocket(SocketID socketID, cv::Mat& image)
 	_outputs->at(socketID) = std::move(image);
 }
 
-cv::Mat& NodeSocketWriter::acquireSocket(SocketID socketID)
+NodeFlowData& NodeSocketWriter::acquireSocket(SocketID socketID)
 {
 	Q_ASSERT(_outputs != nullptr);
 	Q_ASSERT(socketID < static_cast<int>(_outputs->size()));

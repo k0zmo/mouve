@@ -65,6 +65,9 @@
     <ClCompile Include="BuiltInNodeTypes.cpp">
       <Filter>CV</Filter>
     </ClCompile>
+    <ClCompile Include="NodeFlowData.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="Node.h">
@@ -97,6 +100,9 @@
       <Filter>CV</Filter>
     </ClInclude>
     <ClInclude Include="NodeException.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="NodeFlowData.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

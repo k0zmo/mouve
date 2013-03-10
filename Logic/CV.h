@@ -2,6 +2,10 @@
 
 #include "Prerequisites.h"
 
+namespace cv {
+class Mat;
+}
+
 namespace cvu  {
 
 enum class EStructuringElementType
@@ -12,9 +16,7 @@ enum class EStructuringElementType
 };
 
 MOUVE_LOGIC_EXPORT cv::Mat standardStructuringElement(int xradius,
-								   int yradius,
-								   EStructuringElementType type, 
-								   int rotation);
+ int yradius, EStructuringElementType type, int rotation);
 
 enum class EPredefinedConvolutionType
 {

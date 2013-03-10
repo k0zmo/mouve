@@ -7,7 +7,7 @@
 #include <QThread>
 
 namespace Ui {
-	class MainWindow;
+class MainWindow;
 }
 class QGraphicsScene;
 class QGraphicsWidget;

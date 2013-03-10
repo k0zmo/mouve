@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Prerequisites.h"
+#include "NodeFlowData.h"
 
 class MOUVE_LOGIC_EXPORT NodeSocketReader
 {
@@ -15,7 +16,8 @@ public:
 	{
 	}
 
-	const cv::Mat& readSocket(SocketID socketID) const;
+	const NodeFlowData& readSocket(SocketID socketID) const;
+	const cv::Mat& readSocketImage(SocketID socketID) const;
 
 private:
 	void setNode(NodeID nodeID, SocketID numInputSockets);
@@ -37,14 +39,14 @@ public:
 	{
 	}
 
-	void writeSocket(SocketID socketID, cv::Mat& image);
-	cv::Mat& acquireSocket(SocketID socketID);
+	void writeSocket(SocketID socketID, NodeFlowData&& image);
+	NodeFlowData& acquireSocket(SocketID socketID);
 
 private:
-	void setOutputSockets(std::vector<cv::Mat>& outputs);
+	void setOutputSockets(std::vector<NodeFlowData>& outputs);
 
 private:
-	std::vector<cv::Mat>* _outputs;
+	std::vector<NodeFlowData>* _outputs;
 };
 
 struct Matrix3x3

@@ -32,8 +32,8 @@ public:
 	// Returns underlying NodeType implementation (supplied by the user)
 	const std::unique_ptr<NodeType>& nodeType() const;
 
-	cv::Mat& outputSocket(SocketID socketID);
-	const cv::Mat& outputSocket(SocketID socketID) const;
+	NodeFlowData& outputSocket(SocketID socketID);
+	const NodeFlowData& outputSocket(SocketID socketID) const;
 
 	const std::string& nodeName() const;
 	void setNodeName(const std::string& nodeName);
@@ -56,7 +56,7 @@ public:
 private:
 	// NOTE: If you add any new fields be sure to also handle them in move constructor/operator
 	std::unique_ptr<NodeType> _nodeType;
-	std::vector<cv::Mat> _outputSockets;
+	std::vector<NodeFlowData> _outputSockets;
 	std::string _nodeName;
 	SocketID _numInputs;
 	SocketID _numOutputs;

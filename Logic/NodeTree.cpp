@@ -122,15 +122,22 @@ void NodeTree::execute(bool withInit)
 
 		reader.setNode(nodeID, node.numInputSockets());
 
-		if(withInit && _nodes[nodeID].flag(ENodeFlags::StateNode))
+		try
 		{
-			/// TODO:
-			/*bool res = */node.initialize(/*reader, writer*/);
-		}
+			if(withInit && _nodes[nodeID].flag(ENodeFlags::StateNode))
+			{
+				/// TODO:
+				/*bool res = */node.initialize(/*reader, writer*/);
+			}
 
-		ExecutionStatus ret = node.execute(reader, writer);
-		if(ret.status == EStatus::Tag)
-			selfTagging.push_back(nodeID);
+			ExecutionStatus ret = node.execute(reader, writer);
+			if(ret.status == EStatus::Tag)
+				selfTagging.push_back(nodeID);
+		}
+		catch(boost::bad_get& ex)
+		{
+
+		}
 	}
 
 	// Clean
@@ -363,22 +370,23 @@ SocketAddress NodeTree::connectedFrom(SocketAddress iSocketAddr) const
 	return ret;
 }
 
-const cv::Mat& NodeTree::outputSocket(NodeID nodeID, SocketID socketID) const
+const NodeFlowData& NodeTree::outputSocket(NodeID nodeID, SocketID socketID) const
 {
 	if(!validateNode(nodeID))
 		throw node_bad_node();
 
 	if(!allRequiredInputSocketConnected(nodeID))
 	{
-		static cv::Mat empty;
-		return empty;
+		/// TODO: Transform this to a method (same as NodeType::readSocket())
+		static NodeFlowData default = NodeFlowData();
+		return default;
 	}
 
 	// outputSocket verifies socketID
 	return _nodes[nodeID].outputSocket(socketID);
 }
 
-const cv::Mat& NodeTree::inputSocket(NodeID nodeID, SocketID socketID) const
+const NodeFlowData& NodeTree::inputSocket(NodeID nodeID, SocketID socketID) const
 {
 	if(!validateNode(nodeID))
 		throw node_bad_node();

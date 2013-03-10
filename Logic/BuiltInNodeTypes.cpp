@@ -70,22 +70,23 @@ public:
 		return true;
 	}
 
-	ExecutionStatus execute(NodeSocketReader& reader, NodeSocketWriter& writer) override
+	ExecutionStatus execute(NodeSocketReader&, NodeSocketWriter& writer) override
 	{
-		Q_UNUSED(reader);
-
-		cv::Mat& output = writer.acquireSocket(0);
 		if(!_capture.isOpened())
 			return ExecutionStatus(EStatus::Ok);
 
+		// We need this so we won't replace previous good frame with current bad (for instance - end of video)
+		cv::Mat buffer; 
+
 		if(_frameInterval == 0)
 		{
-			_capture.read(output);
+			_capture.read(buffer);
 		}
 		else
 		{
 			using namespace std::chrono;
 
+			// This should keep FPS in sync
 			high_resolution_clock::time_point s = high_resolution_clock::now();
 			milliseconds dura = duration_cast<milliseconds>(s - _timeStamp);
 			if(dura.count() < _frameInterval)
@@ -94,14 +95,16 @@ public:
 				std::this_thread::sleep_for(waitDuration);
 			}
 
-			_capture.read(output);
+			_capture.read(buffer);
 
 			_timeStamp = std::chrono::high_resolution_clock::now();
 		}
 
-		if(output.data)
+		cv::Mat& output = writer.acquireSocket(0).getImage();
+
+		if(buffer.data)
 		{
-			cv::cvtColor(output, output, CV_BGR2GRAY);
+			cv::cvtColor(buffer, output, CV_BGR2GRAY);
 			return ExecutionStatus(EStatus::Tag);
 		}
 		else
@@ -196,8 +199,8 @@ public:
 
 	ExecutionStatus execute(NodeSocketReader& reader, NodeSocketWriter& writer) override
 	{
-		const cv::Mat& source = reader.readSocket(0);
-		cv::Mat& output = writer.acquireSocket(0);
+		const cv::Mat& source = reader.readSocket(0).getImage();
+		cv::Mat& output = writer.acquireSocket(0).getImage();
 
 		if(!source.data)
 			return ExecutionStatus(EStatus::Ok);
@@ -278,7 +281,7 @@ public:
 
 	ExecutionStatus execute(NodeSocketReader&, NodeSocketWriter& writer) override
 	{
-		cv::Mat& output = writer.acquireSocket(0);
+		cv::Mat& output = writer.acquireSocket(0).getImage();
 
 		output = cv::imread(_filePath, CV_LOAD_IMAGE_GRAYSCALE);
 
@@ -354,8 +357,8 @@ public:
 
 	ExecutionStatus execute(NodeSocketReader& reader, NodeSocketWriter& writer) override
 	{
-		const cv::Mat& input = reader.readSocket(0);
-		cv::Mat& output = writer.acquireSocket(0);
+		const cv::Mat& input = reader.readSocket(0).getImage();
+		cv::Mat& output = writer.acquireSocket(0).getImage();
 
 		if(!input.data)
 			return ExecutionStatus(EStatus::Ok);
@@ -376,7 +379,7 @@ public:
 			{ "", "", "" }
 		};
 		static const PropertyConfig prop_config[] = {
-			// TODO: In future we might use slider
+			/// TODO: In future we might use slider
 			{ EPropertyType::Integer, "Kernel radius", "min:1, max:20, step:1" },
 			{ EPropertyType::Double, "Sigma", "min:0.0" },
 			{ EPropertyType::Unknown, "", "" }
@@ -408,8 +411,8 @@ public:
 
 	ExecutionStatus execute(NodeSocketReader& reader, NodeSocketWriter& writer) override
 	{
-		const cv::Mat& input = reader.readSocket(0);
-		cv::Mat& output = writer.acquireSocket(0);
+		const cv::Mat& input = reader.readSocket(0).getImage();
+		cv::Mat& output = writer.acquireSocket(0).getImage();
 
 		if(input.rows == 0 || input.cols == 0)
 			return ExecutionStatus(EStatus::Ok);
@@ -481,8 +484,8 @@ public:
 
 	ExecutionStatus execute(NodeSocketReader& reader, NodeSocketWriter& writer) override
 	{
-		const cv::Mat& input = reader.readSocket(0);
-		cv::Mat& output = writer.acquireSocket(0);
+		const cv::Mat& input = reader.readSocket(0).getImage();
+		cv::Mat& output = writer.acquireSocket(0).getImage();
 
 		if(input.rows == 0 || input.cols == 0)
 			return ExecutionStatus(EStatus::Ok);;
@@ -563,9 +566,9 @@ public:
 
 	ExecutionStatus execute(NodeSocketReader& reader, NodeSocketWriter& writer) override
 	{
-		const cv::Mat& src1 = reader.readSocket(0);
-		const cv::Mat& src2 = reader.readSocket(1);
-		cv::Mat& dst = writer.acquireSocket(0);
+		const cv::Mat& src1 = reader.readSocket(0).getImage();
+		const cv::Mat& src2 = reader.readSocket(1).getImage();
+		cv::Mat& dst = writer.acquireSocket(0).getImage();
 
 		if((src1.rows == 0 || src1.cols == 0) ||
 			(src2.rows == 0 || src2.cols == 0))
@@ -623,8 +626,8 @@ class AbsoluteNodeType : public NodeType
 public:
 	ExecutionStatus execute(NodeSocketReader& reader, NodeSocketWriter& writer) override
 	{
-		const cv::Mat& src = reader.readSocket(0);
-		cv::Mat& dst = writer.acquireSocket(0);
+		const cv::Mat& src = reader.readSocket(0).getImage();
+		cv::Mat& dst = writer.acquireSocket(0).getImage();
 
 		if(src.rows == 0 || src.cols == 0)
 			return ExecutionStatus(EStatus::Ok);
@@ -656,9 +659,9 @@ class SubtractNodeType : public NodeType
 public:
 	ExecutionStatus execute(NodeSocketReader& reader, NodeSocketWriter& writer) override
 	{
-		const cv::Mat& src1 = reader.readSocket(0);
-		const cv::Mat& src2 = reader.readSocket(1);
-		cv::Mat& dst = writer.acquireSocket(0);
+		const cv::Mat& src1 = reader.readSocket(0).getImage();
+		const cv::Mat& src2 = reader.readSocket(1).getImage();
+		cv::Mat& dst = writer.acquireSocket(0).getImage();
 
 		if((src1.rows == 0 || src1.cols == 0) ||
 		   (src2.rows == 0 || src2.cols == 0))
@@ -700,9 +703,9 @@ class AbsoluteDifferenceNodeType : public NodeType
 public:
 	ExecutionStatus execute(NodeSocketReader& reader, NodeSocketWriter& writer) override
 	{
-		const cv::Mat& src1 = reader.readSocket(0);
-		const cv::Mat& src2 = reader.readSocket(1);
-		cv::Mat& dst = writer.acquireSocket(0);
+		const cv::Mat& src1 = reader.readSocket(0).getImage();
+		const cv::Mat& src2 = reader.readSocket(1).getImage();
+		cv::Mat& dst = writer.acquireSocket(0).getImage();
 
 		if((src1.rows == 0 || src1.cols == 0) ||
 		   (src2.rows == 0 || src2.cols == 0))
@@ -744,8 +747,8 @@ class NegateNodeType : public NodeType
 public:
 	ExecutionStatus execute(NodeSocketReader& reader, NodeSocketWriter& writer) override
 	{
-		const cv::Mat& src = reader.readSocket(0);
-		cv::Mat& dst = writer.acquireSocket(0);
+		const cv::Mat& src = reader.readSocket(0).getImage();
+		cv::Mat& dst = writer.acquireSocket(0).getImage();
 
 		if(dst.type() == CV_8U)
 			dst = 255 - src;
@@ -807,8 +810,8 @@ public:
 
 	ExecutionStatus execute(NodeSocketReader& reader, NodeSocketWriter& writer) override
 	{
-		const cv::Mat& src = reader.readSocket(0);
-		cv::Mat& dst = writer.acquireSocket(0);
+		const cv::Mat& src = reader.readSocket(0).getImage();
+		cv::Mat& dst = writer.acquireSocket(0).getImage();
 
 		if(src.rows == 0 || src.cols == 0)
 			return ExecutionStatus(EStatus::Ok);
@@ -892,8 +895,8 @@ public:
 
 	ExecutionStatus execute(NodeSocketReader& reader, NodeSocketWriter& writer) override
 	{
-		const cv::Mat& src = reader.readSocket(0);
-		cv::Mat& dst = writer.acquireSocket(0);
+		const cv::Mat& src = reader.readSocket(0).getImage();
+		cv::Mat& dst = writer.acquireSocket(0).getImage();
 
 		int ddepth = _scaleAbs ? CV_16S : -1;
 
@@ -973,8 +976,8 @@ public:
 
 	ExecutionStatus execute(NodeSocketReader& reader, NodeSocketWriter& writer) override
 	{
-		const cv::Mat& src = reader.readSocket(0);
-		cv::Mat& dst = writer.acquireSocket(0);
+		const cv::Mat& src = reader.readSocket(0).getImage();
+		cv::Mat& dst = writer.acquireSocket(0).getImage();
 
 		cv::Mat kernel = cvu::predefinedConvolutionKernel(_filterType);
 		bool weight0 = cv::sum(kernel) == cv::Scalar(0);
@@ -1065,7 +1068,7 @@ public:
 
 	ExecutionStatus execute(NodeSocketReader&, NodeSocketWriter& writer) override
 	{
-		cv::Mat& kernel = writer.acquireSocket(0);
+		cv::Mat& kernel = writer.acquireSocket(0).getImage();
 
 		if(_xradius == 0 || _yradius == 0)
 			return ExecutionStatus(EStatus::Ok);
@@ -1142,9 +1145,9 @@ public:
 
 	ExecutionStatus execute(NodeSocketReader& reader, NodeSocketWriter& writer) override
 	{
-		const cv::Mat& src = reader.readSocket(0);
-		const cv::Mat& se = reader.readSocket(1);
-		cv::Mat& dst = writer.acquireSocket(0);
+		const cv::Mat& src = reader.readSocket(0).getImage();
+		const cv::Mat& se = reader.readSocket(1).getImage();
+		cv::Mat& dst = writer.acquireSocket(0).getImage();
 
 		if(se.cols == 0 || se.rows == 0 || src.rows == 0 || src.cols == 0)
 			return ExecutionStatus(EStatus::Ok);
@@ -1202,11 +1205,9 @@ private:
 #include <opencv2/nonfree/features2d.hpp>
 
 #ifdef _DEBUG
-#  pragma comment(lib, "opencv_video243d.lib")
 #  pragma comment(lib, "opencv_features2d243d.lib")
 #  pragma comment(lib, "opencv_nonfree243d.lib")
 #else
-#  pragma comment(lib, "opencv_video243.lib")
 #  pragma comment(lib, "opencv_features2d243.lib")
 #  pragma comment(lib, "opencv_nonfree243.lib")
 #endif
@@ -1263,8 +1264,8 @@ public:
 
 	ExecutionStatus execute(NodeSocketReader& reader, NodeSocketWriter& writer) override
 	{
-		const cv::Mat& src = reader.readSocket(0);
-		cv::Mat& dst = writer.acquireSocket(0);
+		const cv::Mat& src = reader.readSocket(0).getImage();
+		cv::Mat& dst = writer.acquireSocket(0).getImage();
 
 		if(src.rows == 0 || src.cols == 0)
 			return ExecutionStatus(EStatus::Ok);

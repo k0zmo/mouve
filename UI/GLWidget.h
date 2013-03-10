@@ -3,7 +3,11 @@
 #include "Prerequisites.h"
 
 #include <QGLWidget>
-#include <QImage>
+
+namespace cv {
+class Mat;
+}
+class QImage;
 
 enum class EResizeBehavior
 {
