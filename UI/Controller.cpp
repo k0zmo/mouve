@@ -171,7 +171,7 @@ void Controller::addNodeView(const QString& nodeTitle,
 	SocketID socketID = 0;
 	if(nodeConfig.pInputSockets)
 	{
-		while(nodeConfig.pInputSockets[socketID].name.length() > 0)
+		while(nodeConfig.pInputSockets[socketID].dataType != ENodeFlowDataType::Invalid)
 		{
 			auto& input = nodeConfig.pInputSockets[socketID];
 
@@ -187,7 +187,7 @@ void Controller::addNodeView(const QString& nodeTitle,
 	socketID = 0;
 	if(nodeConfig.pOutputSockets)
 	{
-		while(nodeConfig.pOutputSockets[socketID].name.length() > 0)
+		while(nodeConfig.pOutputSockets[socketID].dataType != ENodeFlowDataType::Invalid)
 		{
 			auto& output = nodeConfig.pOutputSockets[socketID];
 
@@ -578,14 +578,18 @@ void Controller::updatePreviewImpl()
 		const NodeFlowData& outputData = _nodeTree->outputSocket(nodeID, socketID);
 
 		if(outputData.isValid())
-			_previewWidget->show(outputData.getImage());
-		else
-			_previewWidget->showDummy();
+		{	
+			switch(outputData.type())
+			{
+			case ENodeFlowDataType::Image:
+				_previewWidget->show(outputData.getImage());
+				return;
+			}
+		}
 	}
-	else
-	{
-		_previewWidget->showDummy();
-	}
+
+	// Fallback
+	_previewWidget->showDummy();
 }
 
 void Controller::setInteractive(bool allowed)

@@ -6,9 +6,18 @@
 
 // OpenCV
 #include <opencv2/core/core.hpp>
+#include <opencv2/features2d/features2d.hpp>
 
-typedef boost::variant<cv::Mat> 
-	flow_data;
+namespace cv {
+typedef std::vector<KeyPoint> KeyPoints;
+typedef std::vector<DMatch> DMatches;
+}
+
+typedef boost::variant<
+	cv::Mat,
+	cv::KeyPoints,
+	cv::DMatches
+> flow_data;
 
 enum class ENodeFlowDataType
 {
@@ -26,7 +35,7 @@ class MOUVE_LOGIC_EXPORT NodeFlowData
 {
 public:
 	NodeFlowData();
-	NodeFlowData(ENodeFlowDataType type, const cv::Mat& value);
+	NodeFlowData(ENodeFlowDataType dataType);
 	
 	//NodeFlowData& operator=(const NodeFlowData& other);
 	//NodeFlowData& operator=(NodeFlowData&& other);
@@ -38,6 +47,15 @@ public:
 	cv::Mat& getImage();
 	const cv::Mat& getImage() const;
 
+	cv::KeyPoints& getKeypoints();
+	const cv::KeyPoints& getKeypoints() const;
+
+	cv::DMatches& getMatches();
+	const cv::DMatches& getMatches() const;
+
+	cv::Mat& getArray();
+	const cv::Mat& getArray() const;
+
 	bool isValid() const;
 	bool canReturn(ENodeFlowDataType type) const;
 
@@ -47,6 +65,7 @@ public:
 
 private:
 	ENodeFlowDataType _type;
+	/// TODO: These are always 0 for now
 	int _width;
 	int _height;
 	int _elemSize;

@@ -117,8 +117,8 @@ public:
 	void configuration(NodeConfig& nodeConfig) const override
 	{
 		static const OutputSocketConfig out_config[] = {
-			{ "output", "Output", "" },
-			{ "", "", "" }
+			{ ENodeFlowDataType::Image, "output", "Output", "" },
+			{ ENodeFlowDataType::Invalid, "", "", "" }
 		};
 		static const PropertyConfig prop_config[] = {
 			{ EPropertyType::Filepath, "Video path", "filter:Video files (*.mkv *.mp4 *.avi)" },
@@ -213,12 +213,12 @@ public:
 	void configuration(NodeConfig& nodeConfig) const override
 	{
 		static const InputSocketConfig in_config[] = {
-			{ "input", "Input", "" },
-			{ "", "", "" }
+			{ ENodeFlowDataType::Image, "input", "Input", "" },
+			{ ENodeFlowDataType::Invalid, "", "", "" }
 		};
 		static const OutputSocketConfig out_config[] = {
-			{ "output", "Output", "" },
-			{ "", "", "" }
+			{ ENodeFlowDataType::Image, "output", "Output", "" },
+			{ ENodeFlowDataType::Invalid, "", "", "" }
 		};
 
 		static const PropertyConfig prop_config[] = {
@@ -294,8 +294,8 @@ public:
 	void configuration(NodeConfig& nodeConfig) const override
 	{
 		static const OutputSocketConfig out_config[] = {
-			{ "output", "Output", "" },
-			{ "", "", "" }
+			{ ENodeFlowDataType::Image, "output", "Output", "" },
+			{ ENodeFlowDataType::Invalid, "", "", "" }
 		};
 		static const PropertyConfig prop_config[] = {
 			{ EPropertyType::Filepath, "File path", "filter:"
@@ -371,12 +371,12 @@ public:
 	void configuration(NodeConfig& nodeConfig) const override
 	{
 		static const InputSocketConfig in_config[] = {
-			{ "input", "Input", "" },
-			{ "", "", "" }
+			{ ENodeFlowDataType::Image, "input", "Input", "" },
+			{ ENodeFlowDataType::Invalid, "", "", "" }
 		};
 		static const OutputSocketConfig out_config[] = {
-			{ "output", "Output", "" },
-			{ "", "", "" }
+			{ ENodeFlowDataType::Image, "output", "Output", "" },
+			{ ENodeFlowDataType::Invalid, "", "", "" }
 		};
 		static const PropertyConfig prop_config[] = {
 			/// TODO: In future we might use slider
@@ -433,12 +433,12 @@ public:
 	void configuration(NodeConfig& nodeConfig) const override
 	{
 		static const InputSocketConfig in_config[] = {
-			{ "input", "Input", "" },
-			{ "", "", "" }
+			{ ENodeFlowDataType::Image, "input", "Input", "" },
+			{ ENodeFlowDataType::Invalid, "", "", "" }
 		};
 		static const OutputSocketConfig out_config[] = {
-			{ "output", "Output", "" },
-			{ "", "", "" }
+			{ ENodeFlowDataType::Image, "output", "Output", "" },
+			{ ENodeFlowDataType::Invalid, "", "", "" }
 		};
 
 		nodeConfig.description = "Calculates the first image derivatives using Sobel operator";
@@ -499,12 +499,12 @@ public:
 	void configuration(NodeConfig& nodeConfig) const override
 	{
 		static const InputSocketConfig in_config[] = {
-			{ "input", "Input", "" },
-			{ "", "", "" }
+			{ ENodeFlowDataType::Image, "input", "Input", "" },
+			{ ENodeFlowDataType::Invalid, "", "", "" }
 		};
 		static const OutputSocketConfig out_config[] = {
-			{ "output", "Output", "" },
-			{ "", "", "" }
+			{ ENodeFlowDataType::Image, "output", "Output", "" },
+			{ ENodeFlowDataType::Invalid, "", "", "" }
 		};
 		static const PropertyConfig prop_config[] = {
 			{ EPropertyType::Double, "Threshold", "min:0.0, max:100.0, decimals:3" },
@@ -590,13 +590,13 @@ public:
 	void configuration(NodeConfig& nodeConfig) const override
 	{
 		static const InputSocketConfig in_config[] = {
-			{ "source1", "X", "" },
-			{ "source2", "Y", "" },
-			{ "", "", "" }
+			{ ENodeFlowDataType::Image, "source1", "X", "" },
+			{ ENodeFlowDataType::Image, "source2", "Y", "" },
+			{ ENodeFlowDataType::Invalid, "", "", "" }
 		};
 		static const OutputSocketConfig out_config[] = {
-			{ "output", "Output", "" },
-			{ "", "", "" }
+			{ ENodeFlowDataType::Image, "output", "Output", "" },
+			{ ENodeFlowDataType::Invalid, "", "", "" }
 		};
 		static const PropertyConfig prop_config[] = {
 			{ EPropertyType::Double, "Alpha", "min:0.0, max:1.0, decimals:3, step:0.1" },
@@ -640,12 +640,12 @@ public:
 	void configuration(NodeConfig& nodeConfig) const override
 	{
 		static const InputSocketConfig in_config[] = {
-			{ "source", "Source", "" },
-			{ "", "", "" }
+			{ ENodeFlowDataType::Image, "source", "Source", "" },
+			{ ENodeFlowDataType::Invalid, "", "", "" }
 		};
 		static const OutputSocketConfig out_config[] = {
-			{ "output", "Output", "" },
-			{ "", "", "" }
+			{ ENodeFlowDataType::Image, "output", "Output", "" },
+			{ ENodeFlowDataType::Invalid, "", "", "" }
 		};
 
 		nodeConfig.description = "Calculates absolute value of a given image: y = abs(x)";
@@ -683,13 +683,13 @@ public:
 	void configuration(NodeConfig& nodeConfig) const override
 	{
 		static const InputSocketConfig in_config[] = {
-			{ "source1", "X", "" },
-			{ "source2", "Y", "" },
-			{ "", "", "" }
+			{ ENodeFlowDataType::Image, "source1", "X", "" },
+			{ ENodeFlowDataType::Image, "source2", "Y", "" },
+			{ ENodeFlowDataType::Invalid, "", "", "" }
 		};
 		static const OutputSocketConfig out_config[] = {
-			{ "output", "Output", "" },
-			{ "", "", "" }
+			{ ENodeFlowDataType::Image, "output", "Output", "" },
+			{ ENodeFlowDataType::Invalid, "", "", "" }
 		};
 
 		nodeConfig.description = "Subtracts one image from another: x - y";
@@ -727,13 +727,13 @@ public:
 	void configuration(NodeConfig& nodeConfig) const override
 	{
 		static const InputSocketConfig in_config[] = {
-			{ "source1", "X", "" },
-			{ "source2", "Y", "" },
-			{ "", "", "" }
+			{ ENodeFlowDataType::Image, "source1", "X", "" },
+			{ ENodeFlowDataType::Image, "source2", "Y", "" },
+			{ ENodeFlowDataType::Invalid, "", "", "" }
 		};
 		static const OutputSocketConfig out_config[] = {
-			{ "output", "Output", "" },
-			{ "", "", "" }
+			{ ENodeFlowDataType::Image, "output", "Output", "" },
+			{ ENodeFlowDataType::Invalid, "", "", "" }
 		};
 
 		nodeConfig.description = "Calculates absolute values from difference of two images: |x - y|";
@@ -759,12 +759,12 @@ public:
 	void configuration(NodeConfig& nodeConfig) const override
 	{
 		static const InputSocketConfig in_config[] = {
-			{ "source", "Source", "" },
-			{ "", "", "" }
+			{ ENodeFlowDataType::Image, "source", "Source", "" },
+			{ ENodeFlowDataType::Invalid, "", "", "" }
 		};
 		static const OutputSocketConfig out_config[] = {
-			{ "output", "Output", "" },
-			{ "", "", "" }
+			{ ENodeFlowDataType::Image, "output", "Output", "" },
+			{ ENodeFlowDataType::Invalid, "", "", "" }
 		};
 
 		nodeConfig.description = "Negates image";
@@ -828,12 +828,12 @@ public:
 	void configuration(NodeConfig& nodeConfig) const override
 	{
 		static const InputSocketConfig in_config[] = {
-			{ "source", "Source", "" },
-			{ "", "", "" }
+			{ ENodeFlowDataType::Image, "source", "Source", "" },
+			{ ENodeFlowDataType::Invalid, "", "", "" }
 		};
 		static const OutputSocketConfig out_config[] = {
-			{ "output", "Output", "" },
-			{ "", "", "" }
+			{ ENodeFlowDataType::Image, "output", "Output", "" },
+			{ ENodeFlowDataType::Invalid, "", "", "" }
 		};
 		static const PropertyConfig prop_config[] = {
 			{ EPropertyType::Integer, "Threshold", "min:0, max:255" },
@@ -912,12 +912,12 @@ public:
 	void configuration(NodeConfig& nodeConfig) const override
 	{
 		static const InputSocketConfig in_config[] = {
-			{ "source", "Source", "" },
-			{ "", "", "" }
+			{ ENodeFlowDataType::Image, "source", "Source", "" },
+			{ ENodeFlowDataType::Invalid, "", "", "" }
 		};
 		static const OutputSocketConfig out_config[] = {
-			{ "output", "Output", "" },
-			{ "", "", "" }
+			{ ENodeFlowDataType::Image, "output", "Output", "" },
+			{ ENodeFlowDataType::Invalid, "", "", "" }
 		};
 		static const PropertyConfig prop_config[] = {
 			{ EPropertyType::Matrix, "Coefficients", "" },
@@ -994,12 +994,12 @@ public:
 	void configuration(NodeConfig& nodeConfig) const override
 	{
 		static const InputSocketConfig in_config[] = {
-			{ "source", "Source", "" },
-			{ "", "", "" }
+			{ ENodeFlowDataType::Image, "source", "Source", "" },
+			{ ENodeFlowDataType::Invalid, "", "", "" }
 		};
 		static const OutputSocketConfig out_config[] = {
-			{ "output", "Output", "" },
-			{ "", "", "" }
+			{ ENodeFlowDataType::Image, "output", "Output", "" },
+			{ ENodeFlowDataType::Invalid, "", "", "" }
 		};
 		static const PropertyConfig prop_config[] = {
 			{ EPropertyType::Enum, "Kernel",
@@ -1081,8 +1081,8 @@ public:
 	void configuration(NodeConfig& nodeConfig) const override
 	{
 		static const OutputSocketConfig out_config[] = {
-			{ "structuringElement", "Structuring element", "" },
-			{ "", "", "" }
+			{ ENodeFlowDataType::Image, "structuringElement", "Structuring element", "" },
+			{ ENodeFlowDataType::Invalid, "", "", "" }
 		};
 		static const PropertyConfig prop_config[] = {
 			{ EPropertyType::Enum, "SE shape", "item: Rectangle, item: Ellipse, item: Cross" },
@@ -1160,13 +1160,13 @@ public:
 	void configuration(NodeConfig& nodeConfig) const override
 	{
 		static const InputSocketConfig in_config[] = {
-			{ "source", "Source", "" },
-			{ "source", "Structuring element", "" },
-			{ "", "", "" }
+			{ ENodeFlowDataType::Image, "source", "Source", "" },
+			{ ENodeFlowDataType::Image, "source", "Structuring element", "" },
+			{ ENodeFlowDataType::Invalid, "", "", "" }
 		};
 		static const OutputSocketConfig out_config[] = {
-			{ "output", "Output", "" },
-			{ "", "", "" }
+			{ ENodeFlowDataType::Image, "output", "Output", "" },
+			{ ENodeFlowDataType::Invalid, "", "", "" }
 		};
 		static const PropertyConfig prop_config[] = {
 			{ EPropertyType::Enum, "Operation type", 
@@ -1199,6 +1199,105 @@ private:
 	};
 
 	EMorphologyOperation _op;
+};
+
+class EqualizeHistogramNodeType : public NodeType
+{
+public:
+	ExecutionStatus execute(NodeSocketReader& reader, NodeSocketWriter& writer) override
+	{
+		const cv::Mat& src = reader.readSocket(0).getImage();
+		cv::Mat& dst = writer.acquireSocket(0).getImage();
+
+		if(src.rows == 0 || src.cols == 0)
+			return ExecutionStatus(EStatus::Ok);
+
+		cv::equalizeHist(src, dst);
+
+		return ExecutionStatus(EStatus::Ok);
+	}
+
+	void configuration(NodeConfig& nodeConfig) const override
+	{
+		static const InputSocketConfig in_config[] = {
+			{ ENodeFlowDataType::Image, "source", "Source", "" },
+			{ ENodeFlowDataType::Invalid, "", "", "" }
+		};
+		static const OutputSocketConfig out_config[] = {
+			{ ENodeFlowDataType::Image, "output", "Output", "" },
+			{ ENodeFlowDataType::Invalid, "", "", "" }
+		};
+
+		nodeConfig.description = "";
+		nodeConfig.pInputSockets = in_config;
+		nodeConfig.pOutputSockets = out_config;
+	}
+};
+
+class DownsampleNodeType : public NodeType
+{
+public:
+	ExecutionStatus execute(NodeSocketReader& reader, NodeSocketWriter& writer) override
+	{
+		const cv::Mat& src = reader.readSocket(0).getImage();
+		cv::Mat& dst = writer.acquireSocket(0).getImage();
+
+		if(src.rows == 0 || src.cols == 0)
+			return ExecutionStatus(EStatus::Ok);
+
+		cv::pyrDown(src, dst, cv::Size(src.cols/2, src.rows/2));
+
+		return ExecutionStatus(EStatus::Ok);
+	}
+
+	void configuration(NodeConfig& nodeConfig) const override
+	{
+		static const InputSocketConfig in_config[] = {
+			{ ENodeFlowDataType::Image, "source", "Source", "" },
+			{ ENodeFlowDataType::Invalid, "", "", "" }
+		};
+		static const OutputSocketConfig out_config[] = {
+			{ ENodeFlowDataType::Image, "output", "Output", "" },
+			{ ENodeFlowDataType::Invalid, "", "", "" }
+		};
+
+		nodeConfig.description = "";
+		nodeConfig.pInputSockets = in_config;
+		nodeConfig.pOutputSockets = out_config;
+	}
+};
+
+class UpsampleNodeType : public NodeType
+{
+public:
+	ExecutionStatus execute(NodeSocketReader& reader, NodeSocketWriter& writer) override
+	{
+		const cv::Mat& src = reader.readSocket(0).getImage();
+		cv::Mat& dst = writer.acquireSocket(0).getImage();
+
+		if(src.rows == 0 || src.cols == 0)
+			return ExecutionStatus(EStatus::Ok);
+
+		cv::pyrUp(src, dst, cv::Size(src.cols*2, src.rows*2));
+
+		return ExecutionStatus(EStatus::Ok);
+	}
+
+	void configuration(NodeConfig& nodeConfig) const override
+	{
+		static const InputSocketConfig in_config[] = {
+			{ ENodeFlowDataType::Image, "source", "Source", "" },
+			{ ENodeFlowDataType::Invalid, "", "", "" }
+		};
+		static const OutputSocketConfig out_config[] = {
+			{ ENodeFlowDataType::Image, "output", "Output", "" },
+			{ ENodeFlowDataType::Invalid, "", "", "" }
+		};
+
+		nodeConfig.description = "";
+		nodeConfig.pInputSockets = in_config;
+		nodeConfig.pOutputSockets = out_config;
+	}
 };
 
 #include <opencv2/features2d/features2d.hpp>
@@ -1265,17 +1364,15 @@ public:
 	ExecutionStatus execute(NodeSocketReader& reader, NodeSocketWriter& writer) override
 	{
 		const cv::Mat& src = reader.readSocket(0).getImage();
-		cv::Mat& dst = writer.acquireSocket(0).getImage();
+		cv::KeyPoints dst = writer.acquireSocket(0).getKeypoints();
 
 		if(src.rows == 0 || src.cols == 0)
 			return ExecutionStatus(EStatus::Ok);
 
 		cv::SurfFeatureDetector detector(_hessianThreshold, _nOctaves,
 			_nOctaveLayers, _extended, _upright);
-		std::vector<cv::KeyPoint> keypoints;
+		cv::KeyPoints keypoints;
 		detector.detect(src, keypoints);
-		cv::drawKeypoints(src, keypoints, dst, cv::Scalar::all(1), cv::DrawMatchesFlags::DEFAULT);
-		cv::cvtColor(dst, dst, CV_BGR2GRAY);
 
 		return ExecutionStatus(EStatus::Ok);
 	}
@@ -1283,12 +1380,12 @@ public:
 	void configuration(NodeConfig& nodeConfig) const override
 	{
 		static const InputSocketConfig in_config[] = {
-			{ "source", "Source", "" },
-			{ "", "", "" }
+			{ ENodeFlowDataType::Image, "source", "Source", "" },
+			{ ENodeFlowDataType::Invalid, "", "", "" }
 		};
 		static const OutputSocketConfig out_config[] = {
-			{ "output", "Output", "" },
-			{ "", "", "" }
+			{ ENodeFlowDataType::Keypoints, "output", "Output", "" },
+			{ ENodeFlowDataType::Invalid, "", "", "" }
 		};
 		static const PropertyConfig prop_config[] = {
 			{ EPropertyType::Double, "Hessian threshold", "" },
@@ -1328,6 +1425,10 @@ REGISTER_NODE("SURF Feature detector", SurfFeatureDetectorNodeType);
 REGISTER_NODE("Mixture of Gaussians", MixtureOfGaussianNodeType)
 REGISTER_NODE("Canny edge detector", CannyEdgeDetectorNodeType)
 
+REGISTER_NODE("Upsample", UpsampleNodeType)
+REGISTER_NODE("Downsample", DownsampleNodeType)
+REGISTER_NODE("Equalize hist.", EqualizeHistogramNodeType)
+
 REGISTER_NODE("Convolution", CustomConvolutionNodeType)
 REGISTER_NODE("Predefined convolution", PredefinedConvolutionNodeType)
 REGISTER_NODE("Morphology op.", MorphologyNodeType)
@@ -1337,8 +1438,8 @@ REGISTER_NODE("Binarization", BinarizationNodeType)
 
 REGISTER_NODE("Negate", NegateNodeType)
 REGISTER_NODE("Absolute diff.", AbsoluteDifferenceNodeType)
-REGISTER_NODE("Subtract", SubtractNodeType)
-REGISTER_NODE("Absolute", AbsoluteNodeType)
+//REGISTER_NODE("Subtract", SubtractNodeType)
+//REGISTER_NODE("Absolute", AbsoluteNodeType)
 REGISTER_NODE("Add", AddNodeType)
 
 REGISTER_NODE("Structuring element", StructuringElementNodeType)

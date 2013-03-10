@@ -92,18 +92,18 @@ Q_DECLARE_METATYPE(Matrix3x3)
 
 struct InputSocketConfig
 {
+	ENodeFlowDataType dataType;
 	std::string name;
 	std::string humanName;
-	std::string description;
-	//NodeSocketData defaultData;
+	std::string description;	
 };
 
 struct OutputSocketConfig
 {
+	ENodeFlowDataType dataType;
 	std::string name;
 	std::string humanName;
-	std::string description;
-	//int type;
+	std::string description;	
 };
 
 struct PropertyConfig
