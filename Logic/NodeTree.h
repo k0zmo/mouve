@@ -54,6 +54,9 @@ public:
 	// Returns true if given output socket is connected
 	bool isOutputSocketConnected(NodeID nodeID, SocketID socketID) const;
 
+	bool allRequiredInputSocketConnected(NodeID nodeID) const;
+	bool tagButNotExecuted(NodeID nodeID) const;
+
 	bool nodeConfiguration(NodeID nodeID, NodeConfig& nodeConfig) const;
 	bool nodeSetProperty(NodeID nodeID, PropertyID propID, const QVariant& value);
 	QVariant nodeProperty(NodeID nodeID, PropertyID propID);

@@ -33,13 +33,8 @@ void NodeTree::tagNode(NodeID nodeID)
 	if(!validateNode(nodeID))
 		return;
 
-	auto& node = _nodes[nodeID];
-
-	if(!node.flag(ENodeFlags::Tagged))
-	{
-		node.setFlag(ENodeFlags::Tagged);
-		_executeListDirty = true;
-	}
+	_nodes[nodeID].setFlag(ENodeFlags::Tagged);
+	_executeListDirty = true;
 }
 
 void NodeTree::untagNode(NodeID nodeID)
@@ -97,11 +92,14 @@ void NodeTree::prepareList()
 		if(!validateNode(nodeID))
 			continue;
 
+		if(!allRequiredInputSocketConnected(nodeID))
+			continue;
+
 		if(!stlu::contains_value(_executeList, nodeID))
 		{
 			addToExecuteList(_executeList, nodeID);
 			traverseRecurs(_executeList, nodeID);
-		}		
+		}
 	}
 
 	_executeListDirty = false;
@@ -370,6 +368,12 @@ const cv::Mat& NodeTree::outputSocket(NodeID nodeID, SocketID socketID) const
 	if(!validateNode(nodeID))
 		throw node_bad_node();
 
+	if(!allRequiredInputSocketConnected(nodeID))
+	{
+		static cv::Mat empty;
+		return empty;
+	}
+
 	// outputSocket verifies socketID
 	return _nodes[nodeID].outputSocket(socketID);
 }
@@ -395,6 +399,36 @@ bool NodeTree::isInputSocketConnected(NodeID nodeID, SocketID socketID) const
 bool NodeTree::isOutputSocketConnected(NodeID nodeID, SocketID socketID) const
 {
 	return firstOutputLink(nodeID, socketID) != size_t(-1);
+}
+
+bool NodeTree::allRequiredInputSocketConnected(NodeID nodeID) const
+{
+	if(!validateNode(nodeID))
+		return false;
+
+	auto& node = _nodes[nodeID];
+
+	for(SocketID socketID = 0; socketID < node.numInputSockets(); ++socketID)
+	{
+		SocketAddress outputAddr = connectedFrom(SocketAddress(nodeID, socketID, false));
+		if(outputAddr.node == InvalidNodeID || outputAddr.socket == InvalidSocketID)
+			return false;
+	}
+
+	return true;
+}
+
+bool NodeTree::tagButNotExecuted(NodeID nodeID) const
+{
+	// Node is tagged ..
+	if(_nodes[nodeID].flag(ENodeFlags::Tagged)
+		// .. and isn't on the executed list
+		&& std::find(_executeList.begin(), _executeList.end(), nodeID) == _executeList.end())
+	{
+		return true;
+	}
+
+	return false;
 }
 
 bool NodeTree::nodeConfiguration(NodeID nodeID, NodeConfig& nodeConfig) const
@@ -502,8 +536,7 @@ void NodeTree::traverseRecurs(std::vector<NodeID>& execList, NodeID nodeID)
 	for(SocketID socketID = 0; socketID < numOutputSockets; ++socketID)
 	{
 		// Find first output link from this node and socket (can be more than 1)
-		size_t firstOutputLinkIndex = firstOutputLink
-			(nodeID, socketID, lastSocketID);
+		size_t firstOutputLinkIndex = firstOutputLink(nodeID, socketID, lastSocketID);
 		if(firstOutputLinkIndex == size_t(-1))
 			continue;
 		lastSocketID = firstOutputLinkIndex;
@@ -515,8 +548,13 @@ void NodeTree::traverseRecurs(std::vector<NodeID>& execList, NodeID nodeID)
 			  iter->fromNode == nodeID &&
 			  iter->fromSocket == socketID)
 		{
-			addToExecuteList(execList, iter->toNode);
-			traverseRecurs(execList, iter->toNode);
+			NodeID nodeID = iter->toNode;
+
+			if(allRequiredInputSocketConnected(nodeID))
+			{
+				addToExecuteList(execList, nodeID);
+				traverseRecurs(execList, nodeID);
+			}
 			++iter;
 		}
 	}

@@ -556,6 +556,13 @@ bool Controller::shouldUpdatePreview(const std::vector<NodeID>& executedNodes)
 {
 	if(_previewSelectedNodeView)
 	{
+		if(executedNodes.empty())
+		{
+			// Invalidate if selected node lost its input(s) 
+			if(_nodeTree->tagButNotExecuted(_previewSelectedNodeView->nodeKey()))
+				return true;
+		}
+
 		for(auto nodeID : executedNodes)
 		{
 			if(nodeID == _previewSelectedNodeView->nodeKey())
@@ -1374,7 +1381,12 @@ void Controller::singleStep()
 	auto executeList = _nodeTree->executeList();
 
 	if(executeList.empty())
+	{
+		// Should we invalidate current preview?
+		if(shouldUpdatePreview(executeList))
+			updatePreviewImpl();
 		return;
+	}
 
 	// Single step in image mode
 	if(!_videoMode)
