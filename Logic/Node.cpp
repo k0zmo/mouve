@@ -12,6 +12,7 @@ Node::Node()
 	, _numInputs(0)
 	, _numOutputs(0)
 	, _nodeTypeID(InvalidNodeTypeID)
+	, _flags(0)
 {
 }
 
@@ -23,9 +24,15 @@ Node::Node(std::unique_ptr<NodeType> nodeType,
 	, _numInputs(0)
 	, _numOutputs(0)
 	, _nodeTypeID(nodeTypeID)
+	, _flags(0)
 {
 	NodeConfig config;
 	_nodeType->configuration(config);
+
+	if(config.flags & Node_HasState)
+		setFlag(ENodeFlags::StateNode);
+	if(config.flags & Node_AutoTag)
+		setFlag(ENodeFlags::AutoTag);
 
 	// Count number of input sockets
 	if(config.pInputSockets)
@@ -63,6 +70,7 @@ Node& Node::operator=(Node&& rhs)
 		_numInputs = rhs._numInputs;
 		_numOutputs = rhs._numOutputs;
 		_nodeTypeID = rhs._nodeTypeID;
+		_flags = rhs._flags;
 	}
 	return *this;
 }

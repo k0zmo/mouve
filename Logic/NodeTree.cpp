@@ -22,41 +22,61 @@ void NodeTree::clear()
 {
 	_nodes.clear();
 	_recycledIDs.clear();
-	_taggedNodesID.clear();
 	_links.clear();
 	_executeList.clear();
 	_nodeNameToNodeID.clear();
-	_stateNodes.clear();
 	_executeListDirty = false;
 }
 
 void NodeTree::tagNode(NodeID nodeID)
 {
-	auto f = std::find(_taggedNodesID.begin(), _taggedNodesID.end(), nodeID);
-	if(f == _taggedNodesID.end())
+	if(!validateNode(nodeID))
+		return;
+
+	auto& node = _nodes[nodeID];
+
+	if(!node.flag(ENodeFlags::Tagged))
 	{
-		_taggedNodesID.push_back(nodeID);
+		node.setFlag(ENodeFlags::Tagged);
 		_executeListDirty = true;
 	}
 }
 
 void NodeTree::untagNode(NodeID nodeID)
 {
-	if(stlu::remove_value(&_taggedNodesID, nodeID))
+	if(!validateNode(nodeID))
+		return;
+
+	auto& node = _nodes[nodeID];
+
+	if(node.flag(ENodeFlags::Tagged))
 	{
+		node.unsetFlag(ENodeFlags::Tagged);
 		_executeListDirty = true;
 	}
 }
 
 void NodeTree::tagAutoNodes()
 {
-	for(NodeID nodeID : _autoTaggedNodes)
-		tagNode(nodeID);
+	for(NodeID nodeID = 0; nodeID < NodeID(_nodes.size()); ++nodeID)
+	{
+		if(!validateNode(nodeID))
+			continue;
+
+		if(_nodes[nodeID].flag(ENodeFlags::AutoTag))
+			tagNode(nodeID);
+	}
 }
 
 bool NodeTree::isTreeStateless() const
 {
-	return _stateNodes.empty();
+	for(const Node& node : _nodes)
+	{
+		if(node.flag(ENodeFlags::StateNode))
+			return false;
+	}
+
+	return true;
 }
 
 void NodeTree::prepareList()
@@ -69,8 +89,11 @@ void NodeTree::prepareList()
 	//std::sort(std::begin(links), std::end(links));
 	std::stable_sort(std::begin(_links), std::end(_links));
 
-	for(NodeID nodeID : _taggedNodesID)
+	for(NodeID nodeID = 0; nodeID < NodeID(_nodes.size()); ++nodeID)
 	{
+		if(!_nodes[nodeID].flag(ENodeFlags::Tagged))
+			continue;
+
 		if(!validateNode(nodeID))
 			continue;
 
@@ -101,10 +124,10 @@ void NodeTree::execute(bool withInit)
 
 		reader.setNode(nodeID, node.numInputSockets());
 
-		if(withInit && _stateNodes.find(nodeID) != _stateNodes.end())
+		if(withInit && _nodes[nodeID].flag(ENodeFlags::StateNode))
 		{
 			/// TODO:
-			/*bool res = */node.initialize();
+			/*bool res = */node.initialize(/*reader, writer*/);
 		}
 
 		ExecutionStatus ret = node.execute(reader, writer);
@@ -113,7 +136,8 @@ void NodeTree::execute(bool withInit)
 	}
 
 	// Clean
-	_taggedNodesID.clear();
+	for(Node& node : _nodes)
+		node.unsetFlag(ENodeFlags::Tagged);
 	_executeListDirty = true;
 
 	// tag all self-tagging nodes
@@ -154,14 +178,6 @@ NodeID NodeTree::createNode(NodeTypeID typeID, const std::string& name)
 	_nodeNameToNodeID.insert(std::make_pair(name, id));
 	// Tag it for next execution
 	tagNode(id);
-
-	// Check if this is a stateless node or not
-	NodeConfig nodeConfig;
-	_nodes[id].configuration(nodeConfig);
-	if(nodeConfig.flags & Node_HasState)
-		_stateNodes.insert(id);
-	if(nodeConfig.flags & Node_AutoTag)
-		stlu::push_back_unique(&_autoTaggedNodes, id);
 
 	return id;
 }
@@ -436,16 +452,13 @@ void NodeTree::deallocateNodeID(NodeID id)
 	// Remove mapping from node name to node ID
 	_nodeNameToNodeID.erase(_nodes[id].nodeName());
 
+	untagNode(id);
+
 	// Invalidate node
 	_nodes[id] = Node();
 
-	_stateNodes.erase(id);
-	stlu::remove_first_value(&_autoTaggedNodes, id);
-
 	// Add NodeID to recycled ones
 	_recycledIDs.push_back(id);
-
-	untagNode(id);
 }
 
 size_t NodeTree::firstOutputLink(NodeID fromNode,

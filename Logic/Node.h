@@ -2,6 +2,14 @@
 
 #include "Prerequisites.h"
 
+enum class ENodeFlags
+{
+	Tagged             = BIT(1),
+	StateNode          = BIT(2),
+	AutoTag            = BIT(3),
+	NotFullyConnected  = BIT(4)
+};
+
 class MOUVE_LOGIC_EXPORT Node
 {
 	Q_DISABLE_COPY(Node)
@@ -41,6 +49,10 @@ public:
 	QVariant property(PropertyID propID) const;
 	bool initialize();
 
+	bool flag(ENodeFlags flag) const;
+	void setFlag(ENodeFlags flag);
+	void unsetFlag(ENodeFlags flag);
+
 private:
 	// NOTE: If you add any new fields be sure to also handle them in move constructor/operator
 	std::unique_ptr<NodeType> _nodeType;
@@ -49,6 +61,7 @@ private:
 	SocketID _numInputs;
 	SocketID _numOutputs;
 	NodeTypeID _nodeTypeID;
+	uint _flags;
 };
 
 class NodeIterator
@@ -81,3 +94,12 @@ inline SocketID Node::numOutputSockets() const
 
 inline NodeTypeID Node::nodeTypeID() const
 { return _nodeTypeID; }
+
+inline bool Node::flag(ENodeFlags flag) const
+{ return _flags & uint(flag); }
+
+inline void Node::setFlag(ENodeFlags flag)
+{ _flags |= uint(flag); }
+
+inline void Node::unsetFlag(ENodeFlags flag)
+{ _flags &= ~uint(flag); }

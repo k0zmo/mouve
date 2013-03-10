@@ -75,12 +75,9 @@ private:
 private:
 	std::vector<Node> _nodes;
 	std::vector<NodeID> _recycledIDs;
-	std::vector<NodeID> _taggedNodesID;
 	std::vector<NodeLink> _links;
 	std::vector<NodeID> _executeList;
 	std::unordered_map<std::string, NodeID> _nodeNameToNodeID;
-	std::set<NodeID> _stateNodes; // assuming small size of it
-	std::vector<NodeID> _autoTaggedNodes;
 	NodeSystem* _nodeSystem;
 	bool _executeListDirty;
 
