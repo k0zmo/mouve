@@ -52,6 +52,7 @@ static const NodeTypeID InvalidNodeTypeID = NodeTypeID(0);
 // Forward declarations
 struct InputSocketConfig;
 struct OutputSocketConfig;
+struct PropertyConfig;
 struct NodeConfig;
 struct ExecutionStatus;
 

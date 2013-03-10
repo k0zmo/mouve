@@ -96,5 +96,8 @@
     <ClInclude Include="CV.h">
       <Filter>CV</Filter>
     </ClInclude>
+    <ClInclude Include="NodeException.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

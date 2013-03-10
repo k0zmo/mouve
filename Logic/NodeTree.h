@@ -15,13 +15,18 @@ public:
 
 	void tagNode(NodeID nodeID);
 	void untagNode(NodeID nodeID);
+	void tagAutoNodes();
+	bool isTreeStateless() const;
+
 	void prepareList();
 	void execute(bool withInit = false);
-
+	
+	// Returns sorted list of node in order of their execution
+	// Returned list is valid between prepareList() calls.
 	std::vector<NodeID> executeList() const;
 
 	NodeID createNode(NodeTypeID typeID, const std::string& name);
-	bool removeNode(NodeID);
+	bool removeNode(NodeID nodeID);
 	bool removeNode(const std::string& nodeName);
 
 	bool linkNodes(SocketAddress from, SocketAddress to);
@@ -39,12 +44,14 @@ public:
 	// For a given NodeID returns its type name as string
 	const std::string& nodeTypeName(NodeID nodeID) const;	
 
-	// Zwraca socket wyjsciowy do ktorego podlaczony jest podany adres
+	// Returns output socket address from which given input socket is connected to
 	SocketAddress connectedFrom(SocketAddress iSocketAddress) const;
 	const cv::Mat& outputSocket(NodeID nodeID, SocketID socketID) const;
 	const cv::Mat& inputSocket(NodeID nodeID, SocketID socketID) const;
 
+	// Returns true if given input socket is connected 
 	bool isInputSocketConnected(NodeID nodeID, SocketID socketID) const;
+	// Returns true if given output socket is connected
 	bool isOutputSocketConnected(NodeID nodeID, SocketID socketID) const;
 
 	bool nodeConfiguration(NodeID nodeID, NodeConfig& nodeConfig) const;
@@ -52,10 +59,7 @@ public:
 	QVariant nodeProperty(NodeID nodeID, PropertyID propID);
 
 	std::unique_ptr<NodeIterator> createNodeIterator();
-	std::unique_ptr<NodeLinkIterator> createNodeLinkIterator();
-
-	bool isTreeStateless() const;
-	void tagAutoNodes();
+	std::unique_ptr<NodeLinkIterator> createNodeLinkIterator();	
 
 private:
 	NodeID allocateNodeID();

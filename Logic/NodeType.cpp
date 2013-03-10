@@ -1,6 +1,7 @@
 #include "NodeType.h"
 #include "NodeTree.h"
 #include "NodeLink.h"
+#include "NodeException.h"
 
 /// xXx: Temporary here
 #include <opencv2/core/core.hpp>
@@ -16,6 +17,7 @@ const cv::Mat& NodeSocketReader::readSocket(SocketID socketID) const
 {
 	Q_ASSERT(_nodeTree != nullptr);
 	Q_ASSERT(_numInputSockets > 0);
+	Q_ASSERT(_nodeID != InvalidNodeID);
 
 	if(socketID < _numInputSockets)
 	{
@@ -37,31 +39,8 @@ const cv::Mat& NodeSocketReader::readSocket(SocketID socketID) const
 	}
 	else
 	{
-		/// xXx: To throw or not to throw ?
-		throw std::runtime_error("bad socket ID");
-		//static cv::Mat invalidMat = cv::Mat();
-		//return invalidMat;
+		throw node_bad_socket();
 	}
-}
-
-bool NodeSocketReader::allInputSocketsConnected() const
-{
-	Q_ASSERT(_nodeTree != nullptr);
-	SocketID numConnected = 0;
-
-	for(SocketID socketID = 0; socketID < _numInputSockets; ++socketID)
-	{
-		SocketAddress outputAddr = 
-			_nodeTree->connectedFrom(SocketAddress(_nodeID, socketID, false));
-
-		if(outputAddr.node != InvalidNodeID &&
-		   outputAddr.socket != InvalidSocketID)
-		{
-			++numConnected;
-		}
-	}
-
-	return numConnected == _numInputSockets;
 }
 
 void NodeSocketWriter::setOutputSockets(std::vector<cv::Mat>& outputs)
@@ -74,18 +53,19 @@ void NodeSocketWriter::writeSocket(SocketID socketID, cv::Mat& image)
 	Q_ASSERT(_outputs != nullptr);
 	Q_ASSERT(socketID < static_cast<int>(_outputs->size()));
 
-	/// xXx: To throw or not to throw ?
+	if(socketID >= static_cast<int>(_outputs->size()))
+		throw node_bad_socket();;
+
 	_outputs->at(socketID) = std::move(image);
 }
 
-cv::Mat& NodeSocketWriter::lockSocket(SocketID socketID)
+cv::Mat& NodeSocketWriter::acquireSocket(SocketID socketID)
 {
 	Q_ASSERT(_outputs != nullptr);
 	Q_ASSERT(socketID < static_cast<int>(_outputs->size()));
 
-	/// xXx: To throw or not to throw ?
-	cv::Mat& output = _outputs->at(socketID);
-	output = cv::Mat();
+	if(socketID >= static_cast<int>(_outputs->size()))
+		throw node_bad_socket();;
 
-	return output;
+	return  _outputs->at(socketID);
 }

@@ -74,7 +74,7 @@ public:
 	{
 		Q_UNUSED(reader);
 
-		cv::Mat& output = writer.lockSocket(0);
+		cv::Mat& output = writer.acquireSocket(0);
 		if(!_capture.isOpened())
 			return ExecutionStatus(EStatus::Ok);
 
@@ -197,7 +197,7 @@ public:
 	ExecutionStatus execute(NodeSocketReader& reader, NodeSocketWriter& writer) override
 	{
 		const cv::Mat& source = reader.readSocket(0);
-		cv::Mat& output = writer.lockSocket(0);
+		cv::Mat& output = writer.acquireSocket(0);
 
 		if(!source.data)
 			return ExecutionStatus(EStatus::Ok);
@@ -278,7 +278,7 @@ public:
 
 	ExecutionStatus execute(NodeSocketReader&, NodeSocketWriter& writer) override
 	{
-		cv::Mat& output = writer.lockSocket(0);
+		cv::Mat& output = writer.acquireSocket(0);
 
 		output = cv::imread(_filePath, CV_LOAD_IMAGE_GRAYSCALE);
 
@@ -355,7 +355,7 @@ public:
 	ExecutionStatus execute(NodeSocketReader& reader, NodeSocketWriter& writer) override
 	{
 		const cv::Mat& input = reader.readSocket(0);
-		cv::Mat& output = writer.lockSocket(0);
+		cv::Mat& output = writer.acquireSocket(0);
 
 		if(!input.data)
 			return ExecutionStatus(EStatus::Ok);
@@ -409,7 +409,7 @@ public:
 	ExecutionStatus execute(NodeSocketReader& reader, NodeSocketWriter& writer) override
 	{
 		const cv::Mat& input = reader.readSocket(0);
-		cv::Mat& output = writer.lockSocket(0);
+		cv::Mat& output = writer.acquireSocket(0);
 
 		if(input.rows == 0 || input.cols == 0)
 			return ExecutionStatus(EStatus::Ok);
@@ -482,7 +482,7 @@ public:
 	ExecutionStatus execute(NodeSocketReader& reader, NodeSocketWriter& writer) override
 	{
 		const cv::Mat& input = reader.readSocket(0);
-		cv::Mat& output = writer.lockSocket(0);
+		cv::Mat& output = writer.acquireSocket(0);
 
 		if(input.rows == 0 || input.cols == 0)
 			return ExecutionStatus(EStatus::Ok);;
@@ -565,7 +565,7 @@ public:
 	{
 		const cv::Mat& src1 = reader.readSocket(0);
 		const cv::Mat& src2 = reader.readSocket(1);
-		cv::Mat& dst = writer.lockSocket(0);
+		cv::Mat& dst = writer.acquireSocket(0);
 
 		if((src1.rows == 0 || src1.cols == 0) ||
 			(src2.rows == 0 || src2.cols == 0))
@@ -624,7 +624,7 @@ public:
 	ExecutionStatus execute(NodeSocketReader& reader, NodeSocketWriter& writer) override
 	{
 		const cv::Mat& src = reader.readSocket(0);
-		cv::Mat& dst = writer.lockSocket(0);
+		cv::Mat& dst = writer.acquireSocket(0);
 
 		if(src.rows == 0 || src.cols == 0)
 			return ExecutionStatus(EStatus::Ok);
@@ -658,7 +658,7 @@ public:
 	{
 		const cv::Mat& src1 = reader.readSocket(0);
 		const cv::Mat& src2 = reader.readSocket(1);
-		cv::Mat& dst = writer.lockSocket(0);
+		cv::Mat& dst = writer.acquireSocket(0);
 
 		if((src1.rows == 0 || src1.cols == 0) ||
 		   (src2.rows == 0 || src2.cols == 0))
@@ -702,7 +702,7 @@ public:
 	{
 		const cv::Mat& src1 = reader.readSocket(0);
 		const cv::Mat& src2 = reader.readSocket(1);
-		cv::Mat& dst = writer.lockSocket(0);
+		cv::Mat& dst = writer.acquireSocket(0);
 
 		if((src1.rows == 0 || src1.cols == 0) ||
 		   (src2.rows == 0 || src2.cols == 0))
@@ -745,7 +745,7 @@ public:
 	ExecutionStatus execute(NodeSocketReader& reader, NodeSocketWriter& writer) override
 	{
 		const cv::Mat& src = reader.readSocket(0);
-		cv::Mat& dst = writer.lockSocket(0);
+		cv::Mat& dst = writer.acquireSocket(0);
 
 		if(dst.type() == CV_8U)
 			dst = 255 - src;
@@ -808,7 +808,7 @@ public:
 	ExecutionStatus execute(NodeSocketReader& reader, NodeSocketWriter& writer) override
 	{
 		const cv::Mat& src = reader.readSocket(0);
-		cv::Mat& dst = writer.lockSocket(0);
+		cv::Mat& dst = writer.acquireSocket(0);
 
 		if(src.rows == 0 || src.cols == 0)
 			return ExecutionStatus(EStatus::Ok);
@@ -893,7 +893,7 @@ public:
 	ExecutionStatus execute(NodeSocketReader& reader, NodeSocketWriter& writer) override
 	{
 		const cv::Mat& src = reader.readSocket(0);
-		cv::Mat& dst = writer.lockSocket(0);
+		cv::Mat& dst = writer.acquireSocket(0);
 
 		int ddepth = _scaleAbs ? CV_16S : -1;
 
@@ -974,7 +974,7 @@ public:
 	ExecutionStatus execute(NodeSocketReader& reader, NodeSocketWriter& writer) override
 	{
 		const cv::Mat& src = reader.readSocket(0);
-		cv::Mat& dst = writer.lockSocket(0);
+		cv::Mat& dst = writer.acquireSocket(0);
 
 		cv::Mat kernel = cvu::predefinedConvolutionKernel(_filterType);
 		bool weight0 = cv::sum(kernel) == cv::Scalar(0);
@@ -1065,7 +1065,7 @@ public:
 
 	ExecutionStatus execute(NodeSocketReader&, NodeSocketWriter& writer) override
 	{
-		cv::Mat& kernel = writer.lockSocket(0);
+		cv::Mat& kernel = writer.acquireSocket(0);
 
 		if(_xradius == 0 || _yradius == 0)
 			return ExecutionStatus(EStatus::Ok);
@@ -1144,7 +1144,7 @@ public:
 	{
 		const cv::Mat& src = reader.readSocket(0);
 		const cv::Mat& se = reader.readSocket(1);
-		cv::Mat& dst = writer.lockSocket(0);
+		cv::Mat& dst = writer.acquireSocket(0);
 
 		if(se.cols == 0 || se.rows == 0 || src.rows == 0 || src.cols == 0)
 			return ExecutionStatus(EStatus::Ok);
@@ -1264,7 +1264,7 @@ public:
 	ExecutionStatus execute(NodeSocketReader& reader, NodeSocketWriter& writer) override
 	{
 		const cv::Mat& src = reader.readSocket(0);
-		cv::Mat& dst = writer.lockSocket(0);
+		cv::Mat& dst = writer.acquireSocket(0);
 
 		if(src.rows == 0 || src.cols == 0)
 			return ExecutionStatus(EStatus::Ok);

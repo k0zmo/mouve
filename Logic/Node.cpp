@@ -1,5 +1,6 @@
 #include "Node.h"
 #include "NodeType.h"
+#include "NodeException.h"
 
 /// xXx: Temporary here
 #include <opencv2/core/core.hpp>
@@ -70,7 +71,7 @@ cv::Mat& Node::outputSocket(SocketID socketID)
 {
 	Q_ASSERT(socketID < numOutputSockets());
 	if(!validateSocket(socketID, true))
-		throw std::runtime_error("bad socketID");
+		throw node_bad_socket();
 
 	return _outputSockets[socketID];
 }
@@ -79,7 +80,7 @@ const cv::Mat& Node::outputSocket(SocketID socketID) const
 {
 	Q_ASSERT(socketID < numOutputSockets());
 	if(!validateSocket(socketID, true))
-		throw std::runtime_error("bad socketID");
+		throw node_bad_socket();
 
 	return _outputSockets[socketID];
 }

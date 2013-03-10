@@ -278,6 +278,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="CV.h" />
+    <ClInclude Include="NodeException.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{DC17726C-68F2-4136-BBC4-25765372976A}</ProjectGuid>

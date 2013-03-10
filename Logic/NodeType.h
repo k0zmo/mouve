@@ -5,18 +5,20 @@
 class MOUVE_LOGIC_EXPORT NodeSocketReader
 {
 	Q_DISABLE_COPY(NodeSocketReader);
+
+	friend class NodeTree;
 public:
-	NodeSocketReader(NodeTree* tree)
+	explicit NodeSocketReader(NodeTree* tree)
 		: _nodeTree(tree)
 		, _numInputSockets(0)
 		, _nodeID(InvalidNodeID)
-	{}
-
-	/// xXx: make it private? and friend with nodetree/node?
-	void setNode(NodeID nodeID, SocketID numInputSockets);
+	{
+	}
 
 	const cv::Mat& readSocket(SocketID socketID) const;
-	bool allInputSocketsConnected() const;
+
+private:
+	void setNode(NodeID nodeID, SocketID numInputSockets);
 
 private:
 	NodeTree* _nodeTree;
@@ -27,16 +29,19 @@ private:
 class MOUVE_LOGIC_EXPORT NodeSocketWriter
 {
 	Q_DISABLE_COPY(NodeSocketWriter);
-public:
-	NodeSocketWriter()
-		: _outputs(nullptr)
-	{}
 
-	/// xXx: make it private? and friend with nodetree/node?
-	void setOutputSockets(std::vector<cv::Mat>& outputs);
+	friend class Node;
+public:
+	explicit NodeSocketWriter()
+		: _outputs(nullptr)
+	{
+	}
 
 	void writeSocket(SocketID socketID, cv::Mat& image);
-	cv::Mat& lockSocket(SocketID socketID);
+	cv::Mat& acquireSocket(SocketID socketID);
+
+private:
+	void setOutputSockets(std::vector<cv::Mat>& outputs);
 
 private:
 	std::vector<cv::Mat>* _outputs;
@@ -59,7 +64,14 @@ struct Matrix3x3
 		v[4] = center;
 	}
 
-	// TODO: Do I need copy constructor ??
+	Matrix3x3(double m11, double m12, double m13,
+		double m21, double m22, double m23,
+		double m31, double m32, double m33)
+	{
+		v[0] = m11; v[1] = m12; v[2] = m13;
+		v[3] = m21; v[4] = m22; v[5] = m23;
+		v[6] = m31; v[7] = m32; v[8] = m33;
+	}
 };
 
 enum class EPropertyType

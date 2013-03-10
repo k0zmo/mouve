@@ -3,6 +3,7 @@
 #include "NodeType.h"
 #include "NodeLink.h"
 #include "NodeSystem.h"
+#include "NodeException.h"
 
 #include "Common/StlUtils.h"
 
@@ -14,8 +15,6 @@ NodeTree::NodeTree(NodeSystem* nodeSystem)
 
 NodeTree::~NodeTree()
 {
-	// TODO: clean up ...
-
 	clear();
 }
 
@@ -47,6 +46,17 @@ void NodeTree::untagNode(NodeID nodeID)
 	{
 		_executeListDirty = true;
 	}
+}
+
+void NodeTree::tagAutoNodes()
+{
+	for(NodeID nodeID : _autoTaggedNodes)
+		tagNode(nodeID);
+}
+
+bool NodeTree::isTreeStateless() const
+{
+	return _stateNodes.empty();
 }
 
 void NodeTree::prepareList()
@@ -342,8 +352,7 @@ SocketAddress NodeTree::connectedFrom(SocketAddress iSocketAddr) const
 const cv::Mat& NodeTree::outputSocket(NodeID nodeID, SocketID socketID) const
 {
 	if(!validateNode(nodeID))
-		/// TODO: To throw or not to throw ?
-		throw std::runtime_error("node validation failed");
+		throw node_bad_node();
 
 	// outputSocket verifies socketID
 	return _nodes[nodeID].outputSocket(socketID);
@@ -352,8 +361,7 @@ const cv::Mat& NodeTree::outputSocket(NodeID nodeID, SocketID socketID) const
 const cv::Mat& NodeTree::inputSocket(NodeID nodeID, SocketID socketID) const
 {
 	if(!validateNode(nodeID))
-		/// TODO: To throw or not to throw ?
-		throw std::runtime_error("node validation failed");
+		throw node_bad_node();
 
 	SocketAddress outputAddr = connectedFrom(
 		SocketAddress(nodeID, socketID, false));
@@ -526,17 +534,6 @@ bool NodeTree::validateNode(NodeID nodeID) const
 	if(nodeID >= _nodes.size() || nodeID == InvalidNodeID)
 		return false;
 	return _nodes[nodeID].isValid();
-}
-
-bool NodeTree::isTreeStateless() const
-{
-	return _stateNodes.empty();
-}
-
-void NodeTree::tagAutoNodes()
-{
-	for(NodeID nodeID : _autoTaggedNodes)
-		tagNode(nodeID);
 }
 
 // -----------------------------------------------------------------------------
