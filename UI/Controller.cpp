@@ -464,6 +464,8 @@ void Controller::setupUi()
 	_ui->propertiesTreeView->header()->setSectionResizeMode(
 		QHeaderView::ResizeToContents);
 
+	_ui->controlToolBar->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
+
 	// Init preview window
 	_previewWidget = new PreviewWidget(this);
 	_previewWidget->showDummy();
