@@ -130,13 +130,15 @@ void NodeTree::execute(bool withInit)
 				/*bool res = */node.initialize(/*reader, writer*/);
 			}
 
+			/// TODO: 
 			ExecutionStatus ret = node.execute(reader, writer);
 			if(ret.status == EStatus::Tag)
 				selfTagging.push_back(nodeID);
 		}
 		catch(boost::bad_get& ex)
 		{
-			/// TODO: Show some error/warning message
+			qCritical(ex.what());
+			break;
 		}
 	}
 

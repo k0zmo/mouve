@@ -52,6 +52,13 @@ void LogView::messageHandler(QtMsgType type,
 		"requested for null window or window without handle.")
 		return;
 
+	// If this isn't UI thread
+	if(QThread::currentThread() != QCoreApplication::instance()->thread())
+	{
+		/// TODO:
+		return;
+	}
+
 	auto it = _headView;
 	while(it)
 	{
