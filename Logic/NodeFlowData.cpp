@@ -24,14 +24,14 @@ NodeFlowData::NodeFlowData(ENodeFlowDataType dataType)
 	case ENodeFlowDataType::ImageRgb:
 		_data = cv::Mat();
 		break;
+	case ENodeFlowDataType::Array:
+		_data = cv::Mat();
+		break;
 	case ENodeFlowDataType::Keypoints:
 		_data = cv::KeyPoints();
 		break;
 	case ENodeFlowDataType::Matches:
 		_data = cv::DMatches();
-		break;
-	case ENodeFlowDataType::Array:
-		_data = cv::Mat();
 		break;
 	case ENodeFlowDataType::Invalid:
 	default:

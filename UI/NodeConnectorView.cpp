@@ -15,17 +15,23 @@ NodeConnectorView::NodeConnectorView(bool isOutput, QGraphicsItem* parent)
 	, mHoveredConnector(nullptr)
 	, mIsOutput(isOutput)
 {
-	QLinearGradient gradient(0, mRect.y(), 0, mRect.height());
-	gradient.setColorAt(0, NodeStyle::SocketGradientStart);
-	gradient.setColorAt(1, NodeStyle::SocketGradientStop);
-	mBrush = QBrush(gradient);
-	mPen.setWidthF(NodeStyle::NodeSocketPenWidth);
+	setBrushGradient(Qt::white, Qt::black);
+	setPenWidth(NodeStyle::NodeSocketPenWidth);
 
 	setAcceptHoverEvents(true);
 
 	mAnimation.setDuration(250);
 	mAnimation.setEasingCurve(QEasingCurve::InOutQuad);
 	mAnimation.setStartValue(penWidth());
+}
+
+void NodeConnectorView::setBrushGradient(const QColor& start, const QColor& stop)
+{
+	QLinearGradient gradient(0, mRect.y(), 0, mRect.height());
+	gradient.setColorAt(0, start);
+	gradient.setColorAt(1, stop);
+	mBrush = QBrush(gradient);
+	update();
 }
 
 void NodeConnectorView::setPenWidth(float penWidth)

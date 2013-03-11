@@ -17,8 +17,9 @@ public:
 		const QStyleOptionGraphicsItem* option, QWidget* widget);
 
 	NodeID nodeKey() const;
-	NodeSocketView* addSocketView(SocketID socketKey,
-		const QString& title, bool isOutput = false);
+	NodeSocketView* addSocketView(SocketID socketKey, 
+		ENodeFlowDataType dataType,	const QString& title,
+		bool isOutput = false);
 	void updateLayout();
 	void selectPreview(bool selected);
 

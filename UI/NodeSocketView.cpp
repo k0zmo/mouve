@@ -23,6 +23,11 @@ NodeSocketView::NodeSocketView(const QString& title, bool isOutput,
 		SIGNAL(draggingLinkDropped(QGraphicsWidget*, QGraphicsWidget*)));
 }
 
+void NodeSocketView::setConnectorBrushGradient(const QColor& start, const QColor& stop)
+{
+	mConnector->setBrushGradient(start, stop);
+}
+
 void NodeSocketView::updateLayout()
 {
 	const QRectF& b = mLabel->boundingRect();

@@ -178,7 +178,7 @@ void Controller::addNodeView(const QString& nodeTitle,
 			QString socketTitle = input.humanName.length() > 0
 				? QString::fromStdString(input.humanName)
 				: QString::fromStdString(input.name);
-			nodeView->addSocketView(socketID, socketTitle, false);
+			nodeView->addSocketView(socketID, input.dataType, socketTitle, false);
 			++socketID;
 		}
 	}
@@ -194,7 +194,7 @@ void Controller::addNodeView(const QString& nodeTitle,
 			QString socketTitle = output.humanName.length() > 0
 				? QString::fromStdString(output.humanName)
 				: QString::fromStdString(output.name);
-			nodeView->addSocketView(socketID, socketTitle, true);
+			nodeView->addSocketView(socketID, output.dataType, socketTitle, true);
 			++socketID;
 		}
 	}

@@ -13,17 +13,13 @@ public:
 		bool isOutput, QGraphicsItem* parent = nullptr);
 	virtual int type() const;
 
+	void setConnectorBrushGradient(const QColor& start, const QColor& stop);
+
 	// Przelicza i ustawia rozmiary i pozycje nazwy oraz "wtyczki"
 	void updateLayout();
 
 	// Zmienia aktywnosc gniazda
 	void setActive(bool active);
-
-	// Zwraca widok wezla do ktorego nalezy gniazdo
-	NodeView* nodeView() const;
-
-	// Zwraca klucz gniazda
-	SocketID socketKey() const;
 
 	// Zwraca pozycje srodka widoku gniazda
 	QPointF connectorCenterPos() const;
@@ -33,6 +29,12 @@ public:
 
 	void addLink(NodeLinkView* link);
 	void removeLink(NodeLinkView* link);
+
+	// Zwraca klucz gniazda
+	SocketID socketKey() const;
+
+	// Zwraca widok wezla do ktorego nalezy gniazdo
+	NodeView* nodeView() const;
 
 	enum { Type = QGraphicsItem::UserType + 3 };
 

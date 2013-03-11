@@ -24,9 +24,9 @@ enum class ENodeFlowDataType : int
 	Invalid,
 	Image,
 	ImageRgb,
+	Array,
 	Keypoints,
-	Matches,
-	Array
+	Matches	
 	/// TODO: OpenCL
 	//DeviceImage,
 	//DeviceKeypoints, ...

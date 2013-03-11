@@ -21,6 +21,7 @@ public:
 	/// xXx: virtual QPainterPath shape() const;
 	virtual int type() const;
 
+	void setBrushGradient(const QColor& start, const QColor& stop);
 	float penWidth() const;
 	void setPenWidth(float penWidth);
 

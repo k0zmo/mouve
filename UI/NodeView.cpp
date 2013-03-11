@@ -3,6 +3,8 @@
 #include "NodeSocketView.h"
 #include "Controller.h"
 
+#include "Logic/NodeFlowData.h"
+
 #include <QPainter>
 
 NodeView::NodeView(const QString& title, QGraphicsItem* parent)
@@ -73,8 +75,10 @@ QPainterPath NodeView::shape2(qreal titleHeight) const
 	return shape;
 }
 
-NodeSocketView* NodeView::addSocketView(SocketID socketKey,
-	const QString& title, bool isOutput)
+NodeSocketView* NodeView::addSocketView(SocketID socketKey, 
+										ENodeFlowDataType dataType, 
+										const QString& title,
+										bool isOutput)
 {
 	// Check if the socketKey hasn't been added already
 	auto& views = isOutput
@@ -85,6 +89,34 @@ NodeSocketView* NodeView::addSocketView(SocketID socketKey,
 	{
 		NodeSocketView* socketView = new NodeSocketView(title, isOutput, this);
 		socketView->setData(NodeDataIndex::SocketKey, socketKey);
+
+		switch(dataType)
+		{
+		case ENodeFlowDataType::Image:
+			socketView->setConnectorBrushGradient(NodeStyle::SocketGradientStart1,
+				NodeStyle::SocketGradientStop1);
+			break;
+		case ENodeFlowDataType::ImageRgb:
+			socketView->setConnectorBrushGradient(NodeStyle::SocketGradientStart2,
+				NodeStyle::SocketGradientStop2);
+			break;
+		case ENodeFlowDataType::Array:
+			socketView->setConnectorBrushGradient(NodeStyle::SocketGradientStart3,
+				NodeStyle::SocketGradientStop3);
+			break;
+		case ENodeFlowDataType::Keypoints:
+			socketView->setConnectorBrushGradient(NodeStyle::SocketGradientStart4,
+				NodeStyle::SocketGradientStop4);
+			break;
+		case ENodeFlowDataType::Matches:
+			socketView->setConnectorBrushGradient(NodeStyle::SocketGradientStart5,
+				NodeStyle::SocketGradientStop5);
+			break;
+		case ENodeFlowDataType::Invalid:
+		default:
+			socketView->setConnectorBrushGradient(Qt::white, Qt::black);
+			break;
+		}
 
 		connect(socketView, SIGNAL(draggingLinkDropped(QGraphicsWidget*, QGraphicsWidget*)),
 			gC, SLOT(draggingLinkDrop(QGraphicsWidget*, QGraphicsWidget*)));
