@@ -20,7 +20,10 @@ NodeFlowData::NodeFlowData(ENodeFlowDataType dataType)
 	{
 	case ENodeFlowDataType::Image:
 		_data = cv::Mat();
-		break;		
+		break;
+	case ENodeFlowDataType::ImageRgb:
+		_data = cv::Mat();
+		break;
 	case ENodeFlowDataType::Keypoints:
 		_data = cv::KeyPoints();
 		break;
@@ -56,6 +59,16 @@ cv::Mat& NodeFlowData::getImage()
 }
 
 const cv::Mat& NodeFlowData::getImage() const
+{
+	return boost::get<cv::Mat>(_data);
+}
+
+cv::Mat& NodeFlowData::getImageRgb()
+{
+	return boost::get<cv::Mat>(_data);
+}
+
+const cv::Mat& NodeFlowData::getImageRgb() const
 {
 	return boost::get<cv::Mat>(_data);
 }

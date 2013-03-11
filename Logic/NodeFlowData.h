@@ -23,6 +23,7 @@ enum class ENodeFlowDataType : int
 {
 	Invalid,
 	Image,
+	ImageRgb,
 	Keypoints,
 	Matches,
 	Array
@@ -46,6 +47,9 @@ public:
 
 	cv::Mat& getImage();
 	const cv::Mat& getImage() const;
+
+	cv::Mat& getImageRgb();
+	const cv::Mat& getImageRgb() const;
 
 	cv::KeyPoints& getKeypoints();
 	const cv::KeyPoints& getKeypoints() const;

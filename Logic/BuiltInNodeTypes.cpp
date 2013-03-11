@@ -1642,16 +1642,15 @@ public:
 	{
 		const cv::Mat& imageSrc = reader.readSocket(0).getImage();
 		const cv::KeyPoints& keypoints = reader.readSocket(1).getKeypoints();
-		cv::Mat& imageDst = writer.acquireSocket(0).getImage();
+		cv::Mat& imageDst = writer.acquireSocket(0).getImageRgb();
 
 		if(keypoints.empty())
 			return ExecutionStatus(EStatus::Ok);
 
 		cv::drawKeypoints(imageSrc, keypoints, imageDst, 
-			cv::Scalar::all(1), _richKeypoints
+			cv::Scalar(0, 0, 255), _richKeypoints
 				? cv::DrawMatchesFlags::DRAW_RICH_KEYPOINTS
 				: cv::DrawMatchesFlags::DEFAULT);
-		cv::cvtColor(imageDst, imageDst, CV_BGR2GRAY);
 
 		return ExecutionStatus(EStatus::Ok);
 	}
@@ -1664,7 +1663,7 @@ public:
 			{ ENodeFlowDataType::Invalid, "", "", "" }
 		};
 		static const OutputSocketConfig out_config[] = {
-			{ ENodeFlowDataType::Image, "output", "Output", "" },
+			{ ENodeFlowDataType::ImageRgb, "output", "Output", "" },
 			{ ENodeFlowDataType::Invalid, "", "", "" }
 		};
 		static const PropertyConfig prop_config[] = {
@@ -1698,15 +1697,14 @@ public:
 		const cv::KeyPoints& keypoints2 = reader.readSocket(3).getKeypoints();
 		const cv::DMatches& matches = reader.readSocket(4).getMatches();
 
-		cv::Mat& imageMatches = writer.acquireSocket(0).getImage();
+		cv::Mat& imageMatches = writer.acquireSocket(0).getImageRgb();
 
 		if(keypoints1.empty() || keypoints2.empty() || !image1.data || !image2.data || matches.empty())
 			return ExecutionStatus(EStatus::Ok);
 
 		cv::drawMatches(image1, keypoints1, image2, keypoints2,
-			matches, imageMatches, cv::Scalar::all(1), cv::Scalar::all(1),
+			matches, imageMatches, cv::Scalar(0, 255, 0), cv::Scalar::all(-1),
 			std::vector<char>(), cv::DrawMatchesFlags::NOT_DRAW_SINGLE_POINTS);
-		cv::cvtColor(imageMatches, imageMatches, CV_BGR2GRAY);
 
 		return ExecutionStatus(EStatus::Ok);
 	}
@@ -1722,7 +1720,7 @@ public:
 			{ ENodeFlowDataType::Invalid, "", "", "" }
 		};
 		static const OutputSocketConfig out_config[] = {
-			{ ENodeFlowDataType::Image, "output", "Image", "" },
+			{ ENodeFlowDataType::ImageRgb, "output", "Image", "" },
 			{ ENodeFlowDataType::Invalid, "", "", "" }
 		};
 
@@ -1756,12 +1754,13 @@ public:
 
 		cv::perspectiveTransform(obj_corners, scene_corners, homography);
 
-		img_matches = img_scene.clone();
+		//img_matches = img_scene.clone();
+		cvtColor(img_scene, img_matches, CV_GRAY2BGR);
 
-		cv::line(img_matches, scene_corners[0], scene_corners[1], cv::Scalar(0, 0, 0), 4);
-		cv::line(img_matches, scene_corners[1], scene_corners[2], cv::Scalar(0, 0, 0), 4);
-		cv::line(img_matches, scene_corners[2], scene_corners[3], cv::Scalar(0, 0, 0), 4);
-		cv::line(img_matches, scene_corners[3], scene_corners[0], cv::Scalar(0, 0, 0), 4);
+		cv::line(img_matches, scene_corners[0], scene_corners[1], cv::Scalar(255, 0, 0), 4);
+		cv::line(img_matches, scene_corners[1], scene_corners[2], cv::Scalar(255, 0, 0), 4);
+		cv::line(img_matches, scene_corners[2], scene_corners[3], cv::Scalar(255, 0, 0), 4);
+		cv::line(img_matches, scene_corners[3], scene_corners[0], cv::Scalar(255, 0, 0), 4);
 
 		return ExecutionStatus(EStatus::Ok);
 	}
@@ -1775,7 +1774,7 @@ public:
 			{ ENodeFlowDataType::Invalid, "", "", "" }
 		};
 		static const OutputSocketConfig out_config[] = {
-			{ ENodeFlowDataType::Image, "output", "Output", "" },
+			{ ENodeFlowDataType::ImageRgb, "output", "Output", "" },
 			{ ENodeFlowDataType::Invalid, "", "", "" }
 		};
 

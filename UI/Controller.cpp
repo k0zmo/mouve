@@ -584,6 +584,10 @@ void Controller::updatePreviewImpl()
 			case ENodeFlowDataType::Image:
 				_previewWidget->show(outputData.getImage());
 				return;
+
+			case ENodeFlowDataType::ImageRgb:
+				_previewWidget->show(outputData.getImageRgb());
+				return;
 			}
 		}
 	}
