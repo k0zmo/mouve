@@ -2,7 +2,7 @@
 
 #include "Prerequisites.h"
 
-enum class ENodeFlags
+enum class ENodeFlags : int
 {
 	Tagged             = BIT(1),
 	StateNode          = BIT(2),

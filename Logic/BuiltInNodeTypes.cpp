@@ -10,6 +10,12 @@
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/video/video.hpp>
 
+#include <opencv2/features2d/features2d.hpp>
+#include <opencv2/nonfree/features2d.hpp>
+#include <opencv2/calib3d/calib3d.hpp>
+
+#include "CV.h"
+
 class VideoFromFileNodeType : public NodeType
 {
 public:
@@ -942,8 +948,6 @@ private:
 	bool _scaleAbs;
 };
 
-#include "CV.h"
-
 class PredefinedConvolutionNodeType : public NodeType
 {
 public:
@@ -1301,22 +1305,6 @@ public:
 };
 
 // _________________________________________________________________________________________________
-
-#include <opencv2/features2d/features2d.hpp>
-#include <opencv2/nonfree/features2d.hpp>
-#include <opencv2/calib3d/calib3d.hpp>
-
-#ifdef _DEBUG
-#  pragma comment(lib, "opencv_features2d243d.lib")
-#  pragma comment(lib, "opencv_nonfree243d.lib")
-#  pragma comment(lib, "opencv_flann243d.lib")
-#  pragma comment(lib, "opencv_calib3d243d.lib")
-#else
-#  pragma comment(lib, "opencv_features2d243.lib")
-#  pragma comment(lib, "opencv_nonfree243.lib")
-#  pragma comment(lib, "opencv_flann243.lib")
-#  pragma comment(lib, "opencv_calib3d243.lib")
-#endif
 
 class SurfFeatureDetectorNodeType : public NodeType
 {

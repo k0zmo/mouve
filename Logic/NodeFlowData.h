@@ -19,7 +19,7 @@ typedef boost::variant<
 	cv::DMatches
 > flow_data;
 
-enum class ENodeFlowDataType
+enum class ENodeFlowDataType : int
 {
 	Invalid,
 	Image,

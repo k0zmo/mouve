@@ -76,7 +76,7 @@ struct Matrix3x3
 	}
 };
 
-enum class EPropertyType
+enum class EPropertyType : int
 {
 	Unknown,
 	Boolean,
@@ -140,7 +140,7 @@ struct NodeConfig
 	}
 };
 
-enum class EStatus
+enum class EStatus : int
 {
 	Ok,
 	Error,

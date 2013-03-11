@@ -33,7 +33,6 @@
 // Property system
 #include <QVariant>
 
-
 // Id of a socket - unique in each node
 typedef std::uint8_t SocketID;
 // Id of a node - unique in each tree
@@ -71,3 +70,8 @@ struct SocketAddress;
 class NodeIterator;
 class NodeLinkIterator;
 class NodeTypeIterator;
+
+enum class ENodeFlags : int;
+enum class EPropertyType : int;
+enum class EStatus : int;
+enum class ENodeFlowDataType : int;
