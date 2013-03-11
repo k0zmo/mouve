@@ -14,6 +14,7 @@ NodeView::NodeView(const QString& title, QGraphicsItem* parent)
 	setFlag(QGraphicsItem::ItemIsMovable);
 	setFlag(QGraphicsItem::ItemIsSelectable);
 	setFlag(QGraphicsItem::ItemSendsScenePositionChanges);
+	setZValue(NodeStyle::ZValueNode);
 
 	// Node title
 	mLabel->setText(title);
