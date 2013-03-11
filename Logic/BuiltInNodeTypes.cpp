@@ -1623,6 +1623,33 @@ public:
 class DrawKeypointsNodeType : public NodeType
 {
 public:
+	DrawKeypointsNodeType()
+		: _richKeypoints(false)
+	{
+	}
+
+	bool setProperty(PropertyID propId, const QVariant& newValue) override
+	{
+		switch(propId)
+		{
+		case ID_RichKeypoints:
+			_richKeypoints = newValue.toBool();
+			return true;
+		}
+
+		return false;
+	}
+
+	QVariant property(PropertyID propId) const override
+	{
+		switch(propId)
+		{
+		case ID_RichKeypoints: return _richKeypoints;
+		}
+
+		return QVariant();
+	}
+
 	ExecutionStatus execute(NodeSocketReader& reader, NodeSocketWriter& writer) override
 	{
 		const cv::Mat& imageSrc = reader.readSocket(0).getImage();
@@ -1633,7 +1660,9 @@ public:
 			return ExecutionStatus(EStatus::Ok);
 
 		cv::drawKeypoints(imageSrc, keypoints, imageDst, 
-			cv::Scalar::all(1), cv::DrawMatchesFlags::DRAW_RICH_KEYPOINTS);
+			cv::Scalar::all(1), _richKeypoints
+				? cv::DrawMatchesFlags::DRAW_RICH_KEYPOINTS
+				: cv::DrawMatchesFlags::DEFAULT);
 		cv::cvtColor(imageDst, imageDst, CV_BGR2GRAY);
 
 		return ExecutionStatus(EStatus::Ok);
@@ -1650,11 +1679,24 @@ public:
 			{ ENodeFlowDataType::Image, "output", "Output", "" },
 			{ ENodeFlowDataType::Invalid, "", "", "" }
 		};
+		static const PropertyConfig prop_config[] = {
+			{ EPropertyType::Boolean, "Rich keypoints", "" },
+			{ EPropertyType::Unknown, "", "" }
+		};
 
 		nodeConfig.description = "";
 		nodeConfig.pInputSockets = in_config;
 		nodeConfig.pOutputSockets = out_config;
+		nodeConfig.pProperties = prop_config;
 	}
+
+private:
+	enum EPropertyID
+	{
+		ID_RichKeypoints
+	};
+
+	bool _richKeypoints;
 };
 
 class DrawMatchesNodeType : public NodeType
