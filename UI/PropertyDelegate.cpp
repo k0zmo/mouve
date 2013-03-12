@@ -7,7 +7,7 @@
 PropertyDelegate::PropertyDelegate(QObject* parent)
 	: QStyledItemDelegate(parent)
 	, _mapper(new QSignalMapper(this))
-	, _immediateUpdate(false)
+	, _immediateUpdate(true)
 {
 	// not needed as base class already call it and we just override its eventFilter function
 	//installEventFilter(this);

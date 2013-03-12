@@ -1383,8 +1383,8 @@ public:
 		};
 		static const PropertyConfig prop_config[] = {
 			{ EPropertyType::Double, "Hessian threshold", "" },
-			{ EPropertyType::Integer, "Number of octaves", "" },
-			{ EPropertyType::Integer, "Number of octave layers", "" },
+			{ EPropertyType::Integer, "Number of octaves", "min:1" },
+			{ EPropertyType::Integer, "Number of octave layers", "min:1" },
 			{ EPropertyType::Boolean, "Extended", "" },
 			{ EPropertyType::Boolean, "Upright", "" },
 			{ EPropertyType::Unknown, "", "" }
@@ -1542,7 +1542,7 @@ public:
 			{ ENodeFlowDataType::Invalid, "", "", "" }
 		};
 		static const PropertyConfig prop_config[] = {
-			{ EPropertyType::Double, "Threshold", "" },
+			{ EPropertyType::Double, "Threshold", "min:0, step:0.1" },
 			{ EPropertyType::Unknown, "", "" }
 		};
 
@@ -1785,12 +1785,12 @@ public:
 };
 
 REGISTER_NODE("Draw homography", DrawHomographyNodeType)
-REGISTER_NODE("Draw matches", DrawMatchesNodeType);
-REGISTER_NODE("Draw keypoints", DrawKeypointsNodeType);
+REGISTER_NODE("Draw matches", DrawMatchesNodeType)
+REGISTER_NODE("Draw keypoints", DrawKeypointsNodeType)
 REGISTER_NODE("Estimate homography", EstimateHomographyNodeType)
-REGISTER_NODE("NN Matcher", NearestNeighborMatcherNodeType);
+REGISTER_NODE("NN Matcher", NearestNeighborMatcherNodeType)
 REGISTER_NODE("SURF Extractor", SurfFeatureExtractorNodeType)
-REGISTER_NODE("SURF Detector", SurfFeatureDetectorNodeType);
+REGISTER_NODE("SURF Detector", SurfFeatureDetectorNodeType)
 
 REGISTER_NODE("Mixture of Gaussians", MixtureOfGaussianNodeType)
 REGISTER_NODE("Canny edge detector", CannyEdgeDetectorNodeType)

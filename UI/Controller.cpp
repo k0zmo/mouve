@@ -459,7 +459,7 @@ void Controller::setupUi()
 
 	// Init properties window
 	PropertyDelegate* delegate = new PropertyDelegate(this);
-	delegate->setImmediateUpdate(false);
+	delegate->setImmediateUpdate(true);
 	_ui->propertiesTreeView->setItemDelegateForColumn(1, delegate);
 	_ui->propertiesTreeView->header()->setSectionResizeMode(
 		QHeaderView::ResizeToContents);
@@ -1306,6 +1306,7 @@ void Controller::openTree()
 	if(filePath.isEmpty())
 		return;
 
+	_ui->actionAutoRefresh->setChecked(false);
 	createNewTree();
 
 	if(openTreeFromFileImpl(filePath))
