@@ -43,6 +43,16 @@ LogView::~LogView()
 		it->_nextView = _nextView;
 }
 
+void LogView::debug(const char* msg)
+{
+	qDebug(msg);
+}
+
+void LogView::warn(const char* msg)
+{
+	qWarning(msg);
+}
+
 void LogView::critical(const char* msg)
 {
 	qCritical(msg);

@@ -13,6 +13,8 @@ public:
 	~LogView() override;
 
 public slots:
+	void debug(const char* msg);
+	void warn(const char* msg);
 	void critical(const char* msg);
 
 private:

@@ -128,7 +128,7 @@ NodeSocketView* NodeView::addSocketView(SocketID socketKey,
 	}
 	else
 	{
-		qWarning() << "SocketView with socketKey =" << socketKey << "already exists";
+		qCritical() << "SocketView with socketKey =" << socketKey << "already exists";
 		return nullptr;
 	}
 }
