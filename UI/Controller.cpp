@@ -59,7 +59,6 @@ Controller::Controller(QWidget* parent, Qt::WindowFlags flags)
 	updateTitleBar();
 	createNewNodeScene();
 
-	/// MB: Use eventFilter?
 	// Context menu from node graphics view
 	connect(_ui->graphicsView, &NodeEditorView::contextMenu,
 		this, &Controller::contextMenu);
@@ -1076,25 +1075,6 @@ void Controller::loadLinks(const QVariantList& links,
 	}
 }
 
-void Controller::draggingLinkDrop(QGraphicsWidget* from, QGraphicsWidget* to)
-{
-	if(!_ui->graphicsView->isPseudoInteractive())
-	{
-		auto fromSocket = static_cast<NodeSocketView*>(from);
-		auto toSocket = static_cast<NodeSocketView*>(to);
-
-		Q_ASSERT(fromSocket);
-		Q_ASSERT(toSocket);
-		Q_ASSERT(fromSocket->nodeView());
-		Q_ASSERT(toSocket->nodeView());
-
-		linkNodes(fromSocket->nodeView()->nodeKey(),
-			fromSocket->socketKey(),
-			toSocket->nodeView()->nodeKey(),
-			toSocket->socketKey());
-	}
-}
-
 void Controller::contextMenu(const QPoint& globalPos,
 	const QPointF& scenePos)
 {
@@ -1177,6 +1157,25 @@ void Controller::keyPress(QKeyEvent* event)
 		}
 
 		event->accept();
+	}
+}
+
+void Controller::draggingLinkDrop(QGraphicsWidget* from, QGraphicsWidget* to)
+{
+	if(!_ui->graphicsView->isPseudoInteractive())
+	{
+		auto fromSocket = static_cast<NodeSocketView*>(from);
+		auto toSocket = static_cast<NodeSocketView*>(to);
+
+		Q_ASSERT(fromSocket);
+		Q_ASSERT(toSocket);
+		Q_ASSERT(fromSocket->nodeView());
+		Q_ASSERT(toSocket->nodeView());
+
+		linkNodes(fromSocket->nodeView()->nodeKey(),
+			fromSocket->socketKey(),
+			toSocket->nodeView()->nodeKey(),
+			toSocket->socketKey());
 	}
 }
 

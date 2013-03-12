@@ -31,18 +31,19 @@ public:
 		Qt::WindowFlags flags = 0);
 	~Controller() override;
 
+	void addNode(NodeTypeID nodeTypeID, const QPointF& scenePos);
+	void linkNodes(NodeID fromNodeID, SocketID fromSocketID,
+		NodeID toNodeID, SocketID toSocketID);
+
 protected:
 	void closeEvent(QCloseEvent* event);
 
 private:
-	void addNode(NodeTypeID nodeTypeID, const QPointF& scenePos);
 	void addNodeView(const QString& nodeTitle,
 		NodeID nodeID, const QPointF& scenePos);
-
-	void linkNodes(NodeID fromNodeID, SocketID fromSocketID,
-		NodeID toNodeID, SocketID toSocketID);
 	void linkNodesView(NodeSocketView* from, NodeSocketView* to);
 
+	/// TODO: Split to unlinkNodes and unlinkNodesView Called from the controller itself
 	// Called from the controller itself
 	void unlinkNodes(NodeLinkView* linkView);
 	void deleteNode(NodeView* nodeView);
@@ -88,13 +89,19 @@ private:
 	void loadLinks(const QVariantList& links, const QMap<uint, NodeID>& oldToNewNodeID);
 
 private slots:
-	/// Temporary
-	void draggingLinkDrop(QGraphicsWidget* from, QGraphicsWidget* to);
+	// Slots for QGraphicsView's events
 	void contextMenu(const QPoint& globalPos, const QPointF& scenePos);
 	void keyPress(QKeyEvent* event);
+
+	void draggingLinkDrop(QGraphicsWidget* from, QGraphicsWidget* to);
+
+	// Changes "preview node"
 	void mouseDoubleClickNodeView(NodeView* nodeView);
 
+	// Updates property view with new property model
 	void sceneSelectionChanged();
+
+	// Slot for UI part of Property::setData 
 	void changeProperty(NodeID nodeID, PropertyID propID, 
 		const QVariant& newValue, bool* ok);
 

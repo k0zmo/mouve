@@ -38,13 +38,13 @@ QFont NodeStyle::SocketFont = QFont(FontName, 9);
 
 // Connector NodeStyle
 QColor NodeStyle::SocketGradientStart1 = QColor(193, 171, 60);
-QColor NodeStyle::SocketGradientStop1 = QColor(137, 122, 44);
+QColor NodeStyle::SocketGradientStop1 = QColor(99, 88, 34);
 QColor NodeStyle::SocketGradientStart2 = QColor(141, 139, 169);
 QColor NodeStyle::SocketGradientStop2 = QColor(61, 61, 108);
 QColor NodeStyle::SocketGradientStart3 = QColor(93, 93, 93);
 QColor NodeStyle::SocketGradientStop3 = QColor(57, 57, 57);
 QColor NodeStyle::SocketGradientStart4 = QColor(82, 165, 98);
-QColor NodeStyle::SocketGradientStop4 = QColor(52, 104, 61);
+QColor NodeStyle::SocketGradientStop4 = QColor(40, 81, 47);
 QColor NodeStyle::SocketGradientStart5 = QColor(142, 84, 123);
 QColor NodeStyle::SocketGradientStop5 = QColor(84, 50, 73);
 
