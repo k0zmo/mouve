@@ -115,6 +115,18 @@ void NodeTree::execute(bool withInit)
 
 	std::vector<NodeID> selfTagging;
 
+	auto cleanUp = [this, &selfTagging]()
+	{
+		// Clean
+		for(Node& node : _nodes)
+			node.unsetFlag(ENodeFlags::Tagged);
+		_executeListDirty = true;
+
+		// tag all self-tagging nodes
+		for(auto id : selfTagging)
+			tagNode(id);
+	};
+
 	// Traverse through just-built exec list and process each node 
 	for(NodeID nodeID : _executeList)
 	{
@@ -130,26 +142,19 @@ void NodeTree::execute(bool withInit)
 				/*bool res = */node.initialize(/*reader, writer*/);
 			}
 
-			/// TODO: 
+			/// TODO: throw if status is error
 			ExecutionStatus ret = node.execute(reader, writer);
 			if(ret.status == EStatus::Tag)
 				selfTagging.push_back(nodeID);
 		}
 		catch(boost::bad_get& ex)
 		{
-			qCritical(ex.what());
-			break;
+			cleanUp();
+			throw;
 		}
 	}
 
-	// Clean
-	for(Node& node : _nodes)
-		node.unsetFlag(ENodeFlags::Tagged);
-	_executeListDirty = true;
-
-	// tag all self-tagging nodes
-	for(auto id : selfTagging)
-		tagNode(id);
+	cleanUp();
 }
 
 std::vector<NodeID> NodeTree::executeList() const

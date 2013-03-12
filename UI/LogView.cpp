@@ -43,6 +43,11 @@ LogView::~LogView()
 		it->_nextView = _nextView;
 }
 
+void LogView::critical(const char* msg)
+{
+	qCritical(msg);
+}
+
 void LogView::messageHandler(QtMsgType type, 
 							 const QMessageLogContext& context,
 							 const QString& msg)
@@ -55,7 +60,6 @@ void LogView::messageHandler(QtMsgType type,
 	// If this isn't UI thread
 	if(QThread::currentThread() != QCoreApplication::instance()->thread())
 	{
-		/// TODO:
 		return;
 	}
 

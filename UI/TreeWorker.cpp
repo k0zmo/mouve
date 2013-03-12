@@ -1,6 +1,7 @@
 #include "TreeWorker.h"
 
 #include "Logic/NodeTree.h"
+#include "Logic/NodeFlowData.h"
 
 TreeWorker::TreeWorker(QObject* parent)
 	: QObject(parent)
@@ -19,8 +20,15 @@ void TreeWorker::setNodeTree(const std::shared_ptr<NodeTree>& nodeTree)
 
 void TreeWorker::process(bool withInit)
 {
-	if(_nodeTree)
-		_nodeTree->execute(withInit);
+	try
+	{
+		if(_nodeTree)
+			_nodeTree->execute(withInit);
+	}
+	catch(boost::bad_get& ex)
+	{
+		emit error(ex.what());
+	}
 
 	emit completed();
 }

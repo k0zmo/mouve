@@ -7,9 +7,13 @@
 
 class LogView : public QWidget
 {
+	Q_OBJECT
 public:
 	explicit LogView(QWidget* parent = nullptr);
 	~LogView() override;
+
+public slots:
+	void critical(const char* msg);
 
 private:
 	static void messageHandler(QtMsgType type, 

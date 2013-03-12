@@ -412,6 +412,7 @@ void Controller::setupUi()
 	// Create log view
 	LogView* logView = new LogView(this);
 	_ui->logDockWidget->setWidget(logView);
+	connect(_treeWorker, &TreeWorker::error, logView, &LogView::critical);
 	// Hide log on default
 	_ui->logDockWidget->hide();
 

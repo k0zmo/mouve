@@ -15,6 +15,7 @@ public:
 
 signals:
 	void completed();
+	void error(char const* msg);
 
 public slots:
 	void process(bool withInit);
