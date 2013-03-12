@@ -1424,8 +1424,8 @@ public:
 		if(keypoints.empty() || imageSrc.cols == 0 || imageSrc.rows == 0)
 			return ExecutionStatus(EStatus::Ok);
 
-		cv::KeyPoints& outKeypoints = writer.acquireSocket(0).getKeypoints();
-		cv::Mat& outDescriptors = writer.acquireSocket(1).getArray();
+		cv::Mat& outDescriptors = writer.acquireSocket(0).getArray();
+		cv::KeyPoints& outKeypoints = writer.acquireSocket(1).getKeypoints();
 
 		outKeypoints = keypoints;
 
@@ -1443,8 +1443,8 @@ public:
 			{ ENodeFlowDataType::Invalid, "", "", "" }
 		};
 		static const OutputSocketConfig out_config[] = {
-			{ ENodeFlowDataType::Keypoints, "output", "Keypoints", "" },
 			{ ENodeFlowDataType::Array, "output", "Descriptors", "" },
+			{ ENodeFlowDataType::Keypoints, "output", "Keypoints", "" },
 			{ ENodeFlowDataType::Invalid, "", "", "" }
 		};
 
@@ -1735,11 +1735,11 @@ class DrawHomographyNodeType : public NodeType
 public:
 	ExecutionStatus execute(NodeSocketReader& reader, NodeSocketWriter& writer) override
 	{
-		const cv::Mat& img_scene = reader.readSocket(0).getImage();
-		const cv::Mat& img_object = reader.readSocket(1).getImage();
+		const cv::Mat& img_object = reader.readSocket(0).getImage();
+		const cv::Mat& img_scene = reader.readSocket(1).getImage();
 		const cv::Mat& homography = reader.readSocket(2).getArray();
 
-		cv::Mat& img_matches = writer.acquireSocket(0).getImage();
+		cv::Mat& img_matches = writer.acquireSocket(0).getImageRgb();
 
 		if(!img_scene.data || !img_object.data)
 			return ExecutionStatus(EStatus::Ok);
@@ -1768,8 +1768,8 @@ public:
 	void configuration(NodeConfig& nodeConfig) const override
 	{
 		static const InputSocketConfig in_config[] = {
-			{ ENodeFlowDataType::Image, "source", "Base image", "" },
 			{ ENodeFlowDataType::Image, "source", "Object image", "" },
+			{ ENodeFlowDataType::Image, "source", "Base image", "" },
 			{ ENodeFlowDataType::Array, "source", "Homography", "" },
 			{ ENodeFlowDataType::Invalid, "", "", "" }
 		};
