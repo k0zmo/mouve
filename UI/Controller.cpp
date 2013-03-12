@@ -696,7 +696,7 @@ void Controller::createNewNodeScene()
 	_nodeScene->setBackgroundBrush(NodeStyle::SceneBackground);
 	connect(_nodeScene, &QGraphicsScene::selectionChanged,
 		this, &Controller::sceneSelectionChanged);
-	/// Qt bug concering scene->removeItem ?? Seems to fixed it
+	/// TODO: Qt bug concering scene->removeItem ?? Seems to fixed it
 	_nodeScene->setItemIndexMethod(QGraphicsScene::NoIndex);
 
 	_ui->graphicsView->setScene(_nodeScene);

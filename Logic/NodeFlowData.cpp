@@ -55,50 +55,80 @@ NodeFlowData::~NodeFlowData()
 
 cv::Mat& NodeFlowData::getImage()
 {
+	if(_type != ENodeFlowDataType::Image)
+		throw boost::bad_get();
+
 	return boost::get<cv::Mat>(_data);
 }
 
 const cv::Mat& NodeFlowData::getImage() const
 {
+	if(_type != ENodeFlowDataType::Image)
+		throw boost::bad_get();
+
 	return boost::get<cv::Mat>(_data);
 }
 
 cv::Mat& NodeFlowData::getImageRgb()
 {
+	if(_type != ENodeFlowDataType::ImageRgb)
+		throw boost::bad_get();
+
 	return boost::get<cv::Mat>(_data);
 }
 
 const cv::Mat& NodeFlowData::getImageRgb() const
 {
+	if(_type != ENodeFlowDataType::ImageRgb)
+		throw boost::bad_get();
+
 	return boost::get<cv::Mat>(_data);
 }
 
 cv::KeyPoints& NodeFlowData::getKeypoints()
 {
+	if(_type != ENodeFlowDataType::Keypoints)
+		throw boost::bad_get();
+
 	return boost::get<cv::KeyPoints>(_data);
 }
 
 const cv::KeyPoints& NodeFlowData::getKeypoints() const
 {
+	if(_type != ENodeFlowDataType::Keypoints)
+		throw boost::bad_get();
+
 	return boost::get<cv::KeyPoints>(_data);
 }
 
 cv::DMatches& NodeFlowData::getMatches()
 {
+	if(_type != ENodeFlowDataType::Matches)
+		throw boost::bad_get();
+
 	return boost::get<cv::DMatches>(_data);
 }
 
 const cv::DMatches& NodeFlowData::getMatches() const
 {
+	if(_type != ENodeFlowDataType::Matches)
+		throw boost::bad_get();
+
 	return boost::get<cv::DMatches>(_data);
 }
 
 cv::Mat& NodeFlowData::getArray()
 {
+	if(_type != ENodeFlowDataType::Array)
+		throw boost::bad_get();
+
 	return boost::get<cv::Mat>(_data);
 }
 
 const cv::Mat& NodeFlowData::getArray() const
 {
+	if(_type != ENodeFlowDataType::Array)
+		throw boost::bad_get();
+
 	return boost::get<cv::Mat>(_data);
 }
