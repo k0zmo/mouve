@@ -108,7 +108,7 @@ public:
 
 		cv::Mat& output = writer.acquireSocket(0).getImage();
 
-		if(buffer.data)
+		if(!buffer.empty())
 		{
 			cv::cvtColor(buffer, output, CV_BGR2GRAY);
 			return ExecutionStatus(EStatus::Tag);
