@@ -11,7 +11,6 @@ NodeLinkView::NodeLinkView(NodeSocketView* fromSocketView,
 	, mFromSocketView(fromSocketView)
 	, mToSocketView(toSocketView)
 	, mDrawDebug(false)
-	, mDrawMode(1)
 {
 	setFlag(QGraphicsItem::ItemIsSelectable);
 	setFlag(QGraphicsItem::ItemIsFocusable);
@@ -36,7 +35,7 @@ void NodeLinkView::paint(QPainter *painter,
 
 	painter->setBrush(Qt::NoBrush);
 	painter->setPen(mPen);
-	painter->drawPath(shapeImpl(false));
+	painter->drawPath(mPath);
 
 	// Draw debugging red-ish rectangle
 	if(mDrawDebug)
@@ -49,22 +48,13 @@ void NodeLinkView::paint(QPainter *painter,
 
 QRectF NodeLinkView::boundingRect() const
 {
-	float x1 = qMin(qreal(0), mEndPosition.x());
-	float y1 = qMin(qreal(0), mEndPosition.y());
-	float x2 = qMax(qreal(0), mEndPosition.x());
-	float y2 = qMax(qreal(0), mEndPosition.y());
-	return QRectF(QPointF(x1, y1), QPointF(x2, y2));
-}
-
-void NodeLinkView::setDrawMode(int drawMode)
-{
-	mDrawMode = drawMode;
-	update();
+	return mPath.controlPointRect();
 }
 
 void NodeLinkView::setDrawDebug(bool drawDebug)
 {
 	mDrawDebug = drawDebug;
+	mPath = shapeImpl();
 	update();
 }
 
@@ -94,6 +84,7 @@ void NodeLinkView::updateFromSocketViews()
 		prepareGeometryChange();
 		setPos(mFromSocketView->scenePos() + mFromSocketView->connectorCenterPos());
 		mEndPosition = mapFromScene(mToSocketView->scenePos() + mToSocketView->connectorCenterPos());
+		mPath = shapeImpl();
 	}
 }
 
@@ -118,47 +109,29 @@ bool NodeLinkView::inputConnecting(NodeView* to) const
 
 QPainterPath NodeLinkView::shape() const
 {
-	return shapeImpl(true);
+	return shapeImpl();
 }
 
-QPainterPath NodeLinkView::shapeImpl(bool thicken) const
+QPainterPath NodeLinkView::shapeImpl() const
 {
-	qreal thick = 5.0;
-
-	// Default bezier drawing NodeStyle
-	if(mDrawMode == 1)
+	int drawMode = 1;
+	// 0,0 (origin) is at startPosition
+	if((qAbs(mEndPosition.y()) / qAbs(mEndPosition.x()) > 2.5)
+		|| mEndPosition.x() < 0.0)
 	{
-		if(!thicken)
-		{
-			QPointF c1(mEndPosition.x() / 2.0, 0);
-			QPointF c2(mEndPosition.x() / 2.0, mEndPosition.y());
-
-			QPainterPath painterPath;
-			painterPath.cubicTo(c1, c2, mEndPosition);
-			return painterPath;
-		}
-		else
-		{
-			QPointF c1(mEndPosition.x() / 2.0, -thick);
-			QPointF c2(mEndPosition.x() / 2.0, mEndPosition.y() - thick);
-
-			QPainterPath painterPath(QPointF(0, -thick));
-			painterPath.cubicTo(c1, c2, QPointF(mEndPosition.x(), mEndPosition.y() - thick));
-			painterPath.lineTo(mEndPosition.x(), mEndPosition.y() + thick);
-
-			c1 = QPointF(mEndPosition.x() / 2.0, + thick);
-			c2 = QPointF(mEndPosition.x() / 2.0, mEndPosition.y() + thick);
-
-			painterPath.cubicTo(c2, c1, QPointF(0, thick));
-			painterPath.closeSubpath();
-
-			return painterPath;
-		}
+		drawMode = 2;
 	}
-	//
-	// Not quite working ;p 
-	//
-	else if(mDrawMode == 2)
+
+	if(drawMode == 1)
+	{
+		QPointF c1(mEndPosition.x() / 2.0, 0);
+		QPointF c2(mEndPosition.x() / 2.0, mEndPosition.y());
+
+		QPainterPath painterPath;
+		painterPath.cubicTo(c1, c2, mEndPosition);
+		return painterPath;
+	}
+	else
 	{
 		qreal tangentLength = qAbs(mEndPosition.x()) / 2.0 +
 			qAbs(mEndPosition.y()) / 4.0;
@@ -168,24 +141,5 @@ QPainterPath NodeLinkView::shapeImpl(bool thicken) const
 		QPainterPath painterPath;
 		painterPath.cubicTo(startTangent, endTangent, mEndPosition);
 		return painterPath;
-	}
-	// Simple line
-	else
-	{
-		if(!thicken)
-		{
-			QPainterPath painterPath(QPointF(0, 0));
-			painterPath.lineTo(mEndPosition);
-			return painterPath;
-		}
-		else
-		{
-			QPainterPath painterPath(QPointF(0, -thick));
-			painterPath.lineTo(mEndPosition.x(), mEndPosition.y() - thick);
-			painterPath.lineTo(mEndPosition.x(), mEndPosition.y() + thick);
-			painterPath.lineTo(0, thick);
-			painterPath.closeSubpath();
-			return painterPath;
-		}
 	}	
 }

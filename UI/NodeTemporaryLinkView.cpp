@@ -9,10 +9,11 @@ NodeTemporaryLinkView::NodeTemporaryLinkView(const QPointF& startPosition,
 	, mPen(NodeStyle::TemporaryLinkPen)
 	, mEndPosition(mapFromScene(endPosition))
 	, mDrawDebug(false)
-	, mDrawMode(1)
 {
 	setPos(startPosition);
 	setZValue(NodeStyle::ZValueTemporaryLink);
+
+	mPath = shapeImpl();
 }
 
 void NodeTemporaryLinkView::paint(QPainter *painter,
@@ -23,7 +24,8 @@ void NodeTemporaryLinkView::paint(QPainter *painter,
 
 	painter->setBrush(Qt::NoBrush);
 	painter->setPen(mPen);
-	painter->drawPath(shapeImpl());
+	painter->drawPath(mPath);
+
 	// Draw debugging red-ish rectangle
 	if(mDrawDebug)
 	{
@@ -35,11 +37,7 @@ void NodeTemporaryLinkView::paint(QPainter *painter,
 
 QRectF NodeTemporaryLinkView::boundingRect() const
 {
-	float x1 = qMin(qreal(0), mEndPosition.x());
-	float y1 = qMin(qreal(0), mEndPosition.y());
-	float x2 = qMax(qreal(0), mEndPosition.x());
-	float y2 = qMax(qreal(0), mEndPosition.y());
-	return QRectF(QPointF(x1, y1), QPointF(x2, y2));
+	return mPath.controlPointRect();
 }
 
 void NodeTemporaryLinkView::updateEndPosition(const QPointF& endPosition)
@@ -48,25 +46,27 @@ void NodeTemporaryLinkView::updateEndPosition(const QPointF& endPosition)
 	{
 		prepareGeometryChange();
 		mEndPosition = mapFromScene(endPosition);
+		mPath = shapeImpl();
 	}
-}
-
-void NodeTemporaryLinkView::setDrawMode(int drawMode)
-{
-	mDrawMode = drawMode;
-	update();
 }
 
 void NodeTemporaryLinkView::setDrawDebug(bool drawDebug)
 {
 	mDrawDebug = drawDebug;
+	mPath = shapeImpl();
 	update();
 }
 
 QPainterPath NodeTemporaryLinkView::shapeImpl() const
 {
-	// Default bezier drawing NodeStyle
-	if(mDrawMode == 1)
+	int drawMode = 1;
+	if((qAbs(mEndPosition.y()) / qAbs(mEndPosition.x()) > 2.5)
+		|| mEndPosition.x() < 0.0)
+	{
+		drawMode = 2;
+	}
+
+	if(drawMode == 1)
 	{
 		QPointF c1(mEndPosition.x() / 2.0, 0);
 		QPointF c2(mEndPosition.x() / 2.0, mEndPosition.y());
@@ -75,10 +75,7 @@ QPainterPath NodeTemporaryLinkView::shapeImpl() const
 		painterPath.cubicTo(c1, c2, mEndPosition);
 		return painterPath;
 	}
-	//
-	// Not quite working ;p 
-	//
-	else if(mDrawMode == 2)
+	else
 	{
 		qreal tangentLength = qAbs(mEndPosition.x()) / 2.0 +
 			qAbs(mEndPosition.y()) / 4.0;
@@ -89,11 +86,4 @@ QPainterPath NodeTemporaryLinkView::shapeImpl() const
 		painterPath.cubicTo(startTangent, endTangent, mEndPosition);
 		return painterPath;
 	}
-	// Simple line
-	else
-	{
-		QPainterPath painterPath(QPointF(0, 0));
-		painterPath.lineTo(mEndPosition);
-		return painterPath;
-	}	
 }

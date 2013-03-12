@@ -30,8 +30,6 @@ public:
 
 	enum { Type = QGraphicsItem::UserType + 2 };
 
-	// Zmiana trybu rysowania krzywej
-	void setDrawMode(int drawMode);
 	void setDrawDebug(bool drawDebug);
 
 	const NodeSocketView* fromSocketView() const;
@@ -45,14 +43,12 @@ private:
 	QPointF mEndPosition;
 	NodeSocketView* mFromSocketView;
 	NodeSocketView* mToSocketView;
-
+	QPainterPath mPath;
 	bool mDrawDebug;
-	//! xXx: Make it enum
-	int mDrawMode;
 
 private:
 	// Buduje i zwraca QPainterPath 
-	QPainterPath shapeImpl(bool thicken) const;
+	QPainterPath shapeImpl() const;
 };
 
 inline int NodeLinkView::type() const

@@ -21,16 +21,13 @@ public:
 
 	enum { Type = QGraphicsItem::UserType + 5 };
 
-	void setDrawMode(int drawMode);
 	void setDrawDebug(bool drawDebug);
 
 private:
 	QPen mPen;
 	QPointF mEndPosition;
-
+	QPainterPath mPath;
 	bool mDrawDebug;
-	/// xXx: Make it enum
-	int mDrawMode;
 
 private:
 	QPainterPath shapeImpl() const;
