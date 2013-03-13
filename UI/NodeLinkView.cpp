@@ -18,6 +18,20 @@ NodeLinkView::NodeLinkView(NodeSocketView* fromSocketView,
 	updateFromSocketViews();
 }
 
+NodeLinkView::NodeLinkView(const QPointF& startPosition,
+	const QPointF& endPosition, QGraphicsItem* parent)
+	: QGraphicsItem(parent)
+	, mPen(NodeStyle::TemporaryLinkPen)
+	, mEndPosition(mapFromScene(endPosition))
+	, mFromSocketView(nullptr)
+	, mToSocketView(nullptr)
+	, mDrawDebug(false)
+{
+	setPos(startPosition);
+	setZValue(NodeStyle::ZValueTemporaryLink);
+	mPath = shapeImpl();
+}
+
 NodeLinkView::~NodeLinkView()
 {
 	// Remove the references so the socket views won't point to the no man's land
@@ -84,6 +98,16 @@ void NodeLinkView::updateFromSocketViews()
 		prepareGeometryChange();
 		setPos(mFromSocketView->scenePos() + mFromSocketView->connectorCenterPos());
 		mEndPosition = mapFromScene(mToSocketView->scenePos() + mToSocketView->connectorCenterPos());
+		mPath = shapeImpl();
+	}
+}
+
+void NodeLinkView::updateEndPosition(const QPointF& endPosition)
+{
+	if(mEndPosition != endPosition)
+	{
+		prepareGeometryChange();
+		mEndPosition = mapFromScene(endPosition);
 		mPath = shapeImpl();
 	}
 }

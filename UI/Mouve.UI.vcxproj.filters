@@ -86,9 +86,6 @@
     <ClCompile Include="GeneratedFiles\Release\moc_NodeSocketView.cpp">
       <Filter>Generated Files\Release</Filter>
     </ClCompile>
-    <ClCompile Include="NodeTemporaryLinkView.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="NodeView.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -197,9 +194,6 @@
       <Filter>Form Files</Filter>
     </CustomBuild>
     <CustomBuild Include="NodeLinkView.h">
-      <Filter>Header Files</Filter>
-    </CustomBuild>
-    <CustomBuild Include="NodeTemporaryLinkView.h">
       <Filter>Header Files</Filter>
     </CustomBuild>
     <CustomBuild Include="NodeStyle.h">

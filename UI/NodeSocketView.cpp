@@ -17,10 +17,6 @@ NodeSocketView::NodeSocketView(const QString& title, bool isOutput,
 	mLabel->setBrush(NodeStyle::SocketTitleBrush);
 	mLabel->setText(title);
 	mLabel->setFont(NodeStyle::SocketFont);
-
-	// Send the signals from connector elsewhere
-	connect(mConnector, SIGNAL(draggingLinkDropped(QGraphicsWidget*, QGraphicsWidget*)),
-		SIGNAL(draggingLinkDropped(QGraphicsWidget*, QGraphicsWidget*)));
 }
 
 void NodeSocketView::setConnectorBrushGradient(const QColor& start, const QColor& stop)

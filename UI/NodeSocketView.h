@@ -49,9 +49,6 @@ private:
 	QGraphicsSimpleTextItem* mLabel;
 	NodeConnectorView* mConnector;
 	QList<NodeLinkView*> mLinks;
-
-signals:
-	void draggingLinkDropped(QGraphicsWidget*, QGraphicsWidget*);
 };
 
 inline int NodeSocketView::type() const

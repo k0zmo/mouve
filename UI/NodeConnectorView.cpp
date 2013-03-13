@@ -1,6 +1,8 @@
 #include "NodeConnectorView.h"
 #include "NodeStyle.h"
-#include "NodeTemporaryLinkView.h"
+#include "NodeSocketView.h"
+#include "NodeLinkView.h"
+#include "Controller.h"
 
 #include <QGraphicsSceneMouseEvent>
 #include <QGraphicsScene>
@@ -23,6 +25,9 @@ NodeConnectorView::NodeConnectorView(bool isOutput, QGraphicsItem* parent)
 	mAnimation.setDuration(250);
 	mAnimation.setEasingCurve(QEasingCurve::InOutQuad);
 	mAnimation.setStartValue(penWidth());
+
+	connect(this, SIGNAL(draggingLinkDropped(QGraphicsWidget*, QGraphicsWidget*)),
+		gC, SLOT(draggingLinkDrop(QGraphicsWidget*, QGraphicsWidget*)));
 }
 
 void NodeConnectorView::setBrushGradient(const QColor& start, const QColor& stop)
@@ -88,8 +93,7 @@ void NodeConnectorView::mousePressEvent(QGraphicsSceneMouseEvent* event)
 	if(event->button() == Qt::LeftButton
 		&& !mTemporaryLink) // protects from double click
 	{
-		mTemporaryLink = new NodeTemporaryLinkView
-			(centerPos(), event->scenePos(), this);
+		mTemporaryLink = new NodeLinkView(centerPos(), event->scenePos(), this);
 	}
 }
 
@@ -174,4 +178,7 @@ NodeConnectorView* NodeConnectorView::canDrop(const QPointF& scenePos)
 	return nullptr;
 }
 
-
+NodeSocketView* NodeConnectorView::socketView() const
+{
+	return static_cast<NodeSocketView*>(parentObject());
+}

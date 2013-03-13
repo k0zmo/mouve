@@ -6,8 +6,6 @@
 #include <QPropertyAnimation>
 #include <QPen>
 
-#include "NodeSocketView.h"
-
 class NodeConnectorView : public QGraphicsWidget
 {
 	Q_OBJECT
@@ -45,7 +43,7 @@ private:
 	QPen mPen;
 	QBrush mBrush;
 	QPropertyAnimation mAnimation;
-	NodeTemporaryLinkView* mTemporaryLink;
+	NodeLinkView* mTemporaryLink;
 	NodeConnectorView* mHoveredConnector;
 	bool mIsOutput;
 
@@ -70,6 +68,3 @@ inline bool NodeConnectorView::isOutput() const
 
 inline QPointF NodeConnectorView::centerPos() const
 { return QPointF(mRect.width() * 0.5, mRect.height() * 0.5); }
-
-inline NodeSocketView* NodeConnectorView::socketView() const
-{ return static_cast<NodeSocketView*>(parentObject()); }

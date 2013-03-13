@@ -1,7 +1,6 @@
 #include "NodeView.h"
 #include "NodeStyle.h"
 #include "NodeSocketView.h"
-#include "Controller.h"
 
 #include "Logic/NodeFlowData.h"
 
@@ -125,9 +124,6 @@ NodeSocketView* NodeView::addSocketView(SocketID socketKey,
 			socketView->setConnectorBrushGradient(Qt::white, Qt::black);
 			break;
 		}
-
-		connect(socketView, SIGNAL(draggingLinkDropped(QGraphicsWidget*, QGraphicsWidget*)),
-			gC, SLOT(draggingLinkDrop(QGraphicsWidget*, QGraphicsWidget*)));
 
 		views.insert(socketKey, socketView);
 

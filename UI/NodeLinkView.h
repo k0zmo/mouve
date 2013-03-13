@@ -10,6 +10,9 @@ class NodeLinkView :  public QGraphicsItem
 public:
 	explicit NodeLinkView(NodeSocketView* fromSocketView,
 		NodeSocketView* toSocketView, QGraphicsItem* parent = nullptr);
+	// Contruction for temporary link 
+	explicit NodeLinkView(const QPointF& startPosition,
+		const QPointF& endPosition, QGraphicsItem* parent = nullptr);
 	virtual ~NodeLinkView();
 
 	virtual void paint(QPainter *painter, 
@@ -20,6 +23,7 @@ public:
 
 	// Uaktualnia ksztlat i pozycje na podstawie gniazd do ktorych wchodzi/wychodzi
 	void updateFromSocketViews();
+	void updateEndPosition(const QPointF& endPosition);
 
 	// Zwraca true jesli obiekt laczy podane gniazda
 	bool connects(NodeSocketView* from, NodeSocketView* to) const;
