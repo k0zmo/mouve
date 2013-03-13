@@ -61,11 +61,11 @@ void NodeEditorView::mouseMoveEvent(QMouseEvent* event)
 {
 	if(mPanning)
 	{
-		QScrollBar* hBar = horizontalScrollBar();
-		QScrollBar* vBar = verticalScrollBar();
-
 		QPoint delta = event->pos() - mLastMouseEventPos;
 		mLastMouseEventPos = event->pos();
+
+		QScrollBar* hBar = horizontalScrollBar();
+		QScrollBar* vBar = verticalScrollBar();
 
 		hBar->setValue(hBar->value() + (isRightToLeft() ? delta.x() : -delta.x()));
 		vBar->setValue(vBar->value() - delta.y());

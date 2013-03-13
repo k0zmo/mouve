@@ -359,14 +359,15 @@ void Controller::deleteNode(NodeView* nodeView)
 	_propManager->deletePropertyModel(nodeID);	
 
 	// Remove node view 
-	_nodeScene->removeItem(nodeView);
+	//_nodeScene->removeItem(nodeView); // Calling this first with Bsp causes AV
 	_nodeViews.remove(nodeID);
 	if(_previewSelectedNodeView == nodeView)
 	{
 		_previewSelectedNodeView = nullptr;
 		updatePreviewImpl();
 	}
-	nodeView->deleteLater();
+	//nodeView->deleteLater();
+	delete nodeView;
 
 	_nodeTreeDirty = true;
 	updateTitleBar();
@@ -685,10 +686,6 @@ void Controller::clearTreeView()
 
 void Controller::createNewNodeScene()
 {
-	// Set up a node scene
-	/// xXx: Temporary
-	///_nodeScene->setSceneRect(-200,-200,1000,600);
-
 	// Create new tree model
 	_nodeTree = _nodeSystem->createNodeTree();
 	_treeWorker->setNodeTree(_nodeTree);
@@ -698,9 +695,6 @@ void Controller::createNewNodeScene()
 	_nodeScene->setBackgroundBrush(NodeStyle::SceneBackground);
 	connect(_nodeScene, &QGraphicsScene::selectionChanged,
 		this, &Controller::sceneSelectionChanged);
-	/// TODO: Qt bug concering scene->removeItem ?? Seems to fixed it
-	_nodeScene->setItemIndexMethod(QGraphicsScene::NoIndex);
-
 	_ui->graphicsView->setScene(_nodeScene);
 }
 
