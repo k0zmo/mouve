@@ -9,7 +9,8 @@ class NodeView : public QGraphicsWidget
 {
 	Q_OBJECT
 public:
-	explicit NodeView(const QString& title, QGraphicsItem* parent = nullptr);
+	explicit NodeView(const QString& title, const QString& typeName,
+		QGraphicsItem* parent = nullptr);
 	virtual ~NodeView();
 
 	virtual int type() const;
@@ -37,6 +38,7 @@ protected:
 
 private:
 	QGraphicsSimpleTextItem* mLabel;
+	QGraphicsSimpleTextItem* mTypeLabel;
 	QGraphicsDropShadowEffect* mDropShadowEffect;
 	QPainterPath mShape1;
 	QPainterPath mShape2;

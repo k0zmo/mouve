@@ -23,6 +23,8 @@ struct NodeStyle
 	static QFont NodeTitleFont;
 	static QBrush NodeTitleFontBrush;
 	static QBrush NodeTitleBrush;
+	static QFont NodeTypeNameFont;
+	static QBrush NodeTypeNameFontBrush;
 	static QBrush NodeBrush;
 	static QPen NodeBorderPen;
 	static QPen NodeBorderSelectedPen;

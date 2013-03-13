@@ -7,9 +7,12 @@
 
 #include <QPainter>
 
-NodeView::NodeView(const QString& title, QGraphicsItem* parent)
+NodeView::NodeView(const QString& title, 
+				   const QString& typeName,
+				   QGraphicsItem* parent)
 	: QGraphicsWidget(parent)
 	, mLabel(new QGraphicsSimpleTextItem(this))
+	, mTypeLabel(new QGraphicsSimpleTextItem(this))
 	, mDropShadowEffect(new QGraphicsDropShadowEffect(this))
 	, mPreviewSelected(false)
 {
@@ -22,6 +25,11 @@ NodeView::NodeView(const QString& title, QGraphicsItem* parent)
 	mLabel->setText(title);
 	mLabel->setFont(NodeStyle::NodeTitleFont);
 	mLabel->setBrush(NodeStyle::NodeTitleFontBrush);
+
+	// Node type name
+	mTypeLabel->setText(typeName);
+	mTypeLabel->setFont(NodeStyle::NodeTypeNameFont);
+	mTypeLabel->setBrush(NodeStyle::NodeTypeNameFontBrush);
 
 	// Additional visual effect
 	mDropShadowEffect->setOffset(5.0, 5.0);
@@ -179,7 +187,11 @@ void NodeView::updateLayout()
 {
 	qreal titleWidth = mLabel->boundingRect().width();
 	qreal titleHeight = mLabel->boundingRect().bottom()
-		+ 3 * NodeStyle::NodeTitleSize;
+		+ 2 * NodeStyle::NodeTitleSize;
+
+	qreal typeNameWidth = mTypeLabel->boundingRect().width();
+	qreal typeNameHeight = mTypeLabel->boundingRect().bottom()
+		+ 2 * NodeStyle::NodeTitleSize;
 
 	// During first pass we layout input slots and calculate
 	// required spacing between them and output slots.
@@ -190,11 +202,12 @@ void NodeView::updateLayout()
 	qreal totalWidth = qMax(qreal(10.0),
 		qreal(titleWidth + 2 * NodeStyle::NodeTitleHorizontalMargin));
 
-	qreal yPos = titleHeight;
+	qreal yPos = titleHeight + typeNameHeight;
+	const qreal yPosStart = yPos;
 	qreal inputsWidth = 0.0;
 	qreal outputsWidth = 0.0;
 
-#if 0
+#if 1
 	foreach(NodeSocketView* sv, mInputSocketViews.values())
 	{
 		if(!sv->isVisible())
@@ -219,7 +232,7 @@ void NodeView::updateLayout()
 		outputsWidth, inputsWidth));
 
 	// Second pass
-	qreal inputsHeight = qMax(yPos, titleHeight * 1.5); // if node is trivial
+	qreal inputsHeight = qMax(yPos, yPosStart * 1.5); // if node is trivial
 
 	foreach(NodeSocketView* sv, mOutputSocketViews.values())
 	{
@@ -230,7 +243,6 @@ void NodeView::updateLayout()
 			(b.width() + NodeStyle::NodeSocketHorizontalMargin), yPos);
 		yPos += b.height() + NodeStyle::NodeSocketVerticalMargin;
 	}
-
 #else
 	// First pass
 	foreach(NodeSocketView* sv, mInputSocketViews.values())
@@ -257,8 +269,8 @@ void NodeView::updateLayout()
 		outputsWidth + inputsWidth + NodeStyle::NodeSocketsMargin);
 
 	// Second pass
-	qreal inputsHeight = qMax(yPos, titleHeight * 1.5); // if node is trivial
-	yPos = titleHeight;
+	qreal inputsHeight = qMax(yPos, yPosStart * 1.5); // if node is trivial
+	yPos = yPosStart;
 
 	foreach(NodeSocketView* sv, mOutputSocketViews.values())
 	{
@@ -270,14 +282,16 @@ void NodeView::updateLayout()
 		yPos += b.height() + NodeStyle::NodeSocketVerticalMargin;
 	}
 #endif
-
 	// Center title
-	mLabel->setPos((totalWidth - titleWidth) / 2.0,
+	mLabel->setPos((totalWidth - titleWidth) * 0.5,
 		NodeStyle::NodeTitleSize);
+	mTypeLabel->setPos((totalWidth - typeNameWidth) * 0.5,
+		titleHeight);
+
 	resize(totalWidth, qMax(yPos, inputsHeight));
 
 	// Generate painter paths
-	qreal yy = mLabel->boundingRect().bottom() + 2 * NodeStyle::NodeTitleSize;
+	qreal yy = yPosStart - NodeStyle::NodeTitleSize;
 	mShape1 = shape1(yy);
 	mShape2 = shape2(yy);
 

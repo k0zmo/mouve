@@ -162,7 +162,8 @@ void Controller::addNodeView(const QString& nodeTitle,
 		return;
 	}
 
-	NodeView* nodeView = new NodeView(nodeTitle);
+	QString nodeTypeName = QString::fromStdString(_nodeTree->nodeTypeName(nodeID));
+	NodeView* nodeView = new NodeView(nodeTitle, nodeTypeName);
 	if(!nodeConfig.description.empty())
 		nodeView->setToolTip(QString::fromStdString(nodeConfig.description));
 
