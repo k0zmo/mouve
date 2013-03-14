@@ -484,10 +484,10 @@ public:
 	}
 };
 
-REGISTER_NODE("Draw homography", DrawHomographyNodeType)
-REGISTER_NODE("Draw matches", DrawMatchesNodeType)
-REGISTER_NODE("Draw keypoints", DrawKeypointsNodeType)
-REGISTER_NODE("Estimate homography", EstimateHomographyNodeType)
-REGISTER_NODE("NN Matcher", NearestNeighborMatcherNodeType)
-REGISTER_NODE("SURF Extractor", SurfFeatureExtractorNodeType)
-REGISTER_NODE("SURF Detector", SurfFeatureDetectorNodeType)
+REGISTER_NODE("Features/Draw homography", DrawHomographyNodeType)
+REGISTER_NODE("Features/Draw matches", DrawMatchesNodeType)
+REGISTER_NODE("Features/Draw keypoints", DrawKeypointsNodeType)
+REGISTER_NODE("Features/Estimate homography", EstimateHomographyNodeType)
+REGISTER_NODE("Features/NN Matcher", NearestNeighborMatcherNodeType)
+REGISTER_NODE("Features/SURF Extractor", SurfFeatureExtractorNodeType)
+REGISTER_NODE("Features/SURF Detector", SurfFeatureDetectorNodeType)

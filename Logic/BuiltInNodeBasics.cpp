@@ -1300,27 +1300,28 @@ public:
 	}
 };
 
-REGISTER_NODE("Mixture of Gaussians", MixtureOfGaussianNodeType)
-REGISTER_NODE("Canny edge detector", CannyEdgeDetectorNodeType)
+REGISTER_NODE("Video/Mixture of Gaussians", MixtureOfGaussianNodeType)
 
-REGISTER_NODE("Upsample", UpsampleNodeType)
-REGISTER_NODE("Downsample", DownsampleNodeType)
-REGISTER_NODE("Equalize hist.", EqualizeHistogramNodeType)
+REGISTER_NODE("Edge/Canny edge detector", CannyEdgeDetectorNodeType)
+REGISTER_NODE("Edge/Sobel filter", SobelFilterNodeType)
 
-REGISTER_NODE("Convolution", CustomConvolutionNodeType)
-REGISTER_NODE("Predefined convolution", PredefinedConvolutionNodeType)
-REGISTER_NODE("Morphology op.", MorphologyNodeType)
-REGISTER_NODE("Sobel filter", SobelFilterNodeType)
-REGISTER_NODE("Gaussian blur", GaussianBlurNodeType)
-REGISTER_NODE("Binarization", BinarizationNodeType)
+REGISTER_NODE("Image/Upsample", UpsampleNodeType)
+REGISTER_NODE("Image/Downsample", DownsampleNodeType)
+REGISTER_NODE("Image/Equalize hist.", EqualizeHistogramNodeType)
+REGISTER_NODE("Image/Convolution", CustomConvolutionNodeType)
+REGISTER_NODE("Image/Predefined convolution", PredefinedConvolutionNodeType)
+REGISTER_NODE("Image/Morphology op.", MorphologyNodeType)
+REGISTER_NODE("Image/Gaussian blur", GaussianBlurNodeType)
 
-REGISTER_NODE("Negate", NegateNodeType)
-REGISTER_NODE("Absolute diff.", AbsoluteDifferenceNodeType)
+REGISTER_NODE("Segmentation/Binarization", BinarizationNodeType)
+
+REGISTER_NODE("Arithmetic/Negate", NegateNodeType)
+REGISTER_NODE("Arithmetic/Absolute diff.", AbsoluteDifferenceNodeType)
 //REGISTER_NODE("Subtract", SubtractNodeType)
 //REGISTER_NODE("Absolute", AbsoluteNodeType)
-REGISTER_NODE("Add", AddNodeType)
+REGISTER_NODE("Arithmetic/Add", AddNodeType)
 
-REGISTER_NODE("Structuring element", StructuringElementNodeType)
-REGISTER_NODE("Video from file", VideoFromFileNodeType)
-REGISTER_NODE("Image from file", ImageFromFileNodeType)
+REGISTER_NODE("Source/Structuring element", StructuringElementNodeType)
+REGISTER_NODE("Source/Video from file", VideoFromFileNodeType)
+REGISTER_NODE("Source/Image from file", ImageFromFileNodeType)
 
