@@ -111,7 +111,12 @@ cv::Mat rotateStructuringElement(int rotation, const cv::Mat& _element)
 			--top;
 	}
 
-	return element(cv::Rect(left, top, width, height));
+	cv::Mat elem = element(cv::Rect(left, top, width, height));
+	for(int y = 0; y < elem.rows; ++y)
+		for(int x = 0; x < elem.cols; ++x)
+			if(elem.at<uchar>(y, x) != 0)
+				elem.at<uchar>(y, x) = 255;
+	return elem;
 }
 
 cv::Mat standardStructuringElement(int xradius, int yradius,
