@@ -564,9 +564,7 @@ bool Controller::shouldUpdatePreview(const std::vector<NodeID>& executedNodes)
 		for(auto nodeID : executedNodes)
 		{
 			if(nodeID == _previewSelectedNodeView->nodeKey())
-			{
 				return true;
-			}
 		}
 	}
 

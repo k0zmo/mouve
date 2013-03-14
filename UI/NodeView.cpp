@@ -102,26 +102,32 @@ NodeSocketView* NodeView::addSocketView(SocketID socketKey,
 		case ENodeFlowDataType::Image:
 			socketView->setConnectorBrushGradient(NodeStyle::SocketGradientStart1,
 				NodeStyle::SocketGradientStop1);
+			socketView->setConnectorToolTip("[Image]");
 			break;
 		case ENodeFlowDataType::ImageRgb:
 			socketView->setConnectorBrushGradient(NodeStyle::SocketGradientStart2,
 				NodeStyle::SocketGradientStop2);
+			socketView->setConnectorToolTip("[ImageRGB]");
 			break;
 		case ENodeFlowDataType::Array:
 			socketView->setConnectorBrushGradient(NodeStyle::SocketGradientStart3,
 				NodeStyle::SocketGradientStop3);
+			socketView->setConnectorToolTip("[Array]");
 			break;
 		case ENodeFlowDataType::Keypoints:
 			socketView->setConnectorBrushGradient(NodeStyle::SocketGradientStart4,
 				NodeStyle::SocketGradientStop4);
+			socketView->setConnectorToolTip("[Keypoints]");
 			break;
 		case ENodeFlowDataType::Matches:
 			socketView->setConnectorBrushGradient(NodeStyle::SocketGradientStart5,
 				NodeStyle::SocketGradientStop5);
+			socketView->setConnectorToolTip("[Matches]");
 			break;
 		case ENodeFlowDataType::Invalid:
 		default:
 			socketView->setConnectorBrushGradient(Qt::white, Qt::black);
+			socketView->setConnectorToolTip("[Invalid]");
 			break;
 		}
 

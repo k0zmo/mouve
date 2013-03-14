@@ -24,6 +24,11 @@ void NodeSocketView::setConnectorBrushGradient(const QColor& start, const QColor
 	mConnector->setBrushGradient(start, stop);
 }
 
+void NodeSocketView::setConnectorToolTip(const QString& toolTip)
+{
+	mConnector->setToolTip(toolTip);
+}
+
 void NodeSocketView::updateLayout()
 {
 	const QRectF& b = mLabel->boundingRect();
