@@ -261,7 +261,8 @@
     </CustomBuild>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="BuiltInNodeTypes.cpp" />
+    <ClCompile Include="BuiltInNodeFeatures.cpp" />
+    <ClCompile Include="BuiltInNodeBasics.cpp" />
     <ClCompile Include="CV.cpp" />
     <ClCompile Include="Node.cpp" />
     <ClCompile Include="NodeFactory.cpp" />

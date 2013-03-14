@@ -62,11 +62,14 @@
     <ClCompile Include="CV.cpp">
       <Filter>CV</Filter>
     </ClCompile>
-    <ClCompile Include="BuiltInNodeTypes.cpp">
-      <Filter>CV</Filter>
-    </ClCompile>
     <ClCompile Include="NodeFlowData.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="BuiltInNodeBasics.cpp">
+      <Filter>CV</Filter>
+    </ClCompile>
+    <ClCompile Include="BuiltInNodeFeatures.cpp">
+      <Filter>CV</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
