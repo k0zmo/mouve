@@ -151,7 +151,7 @@ bool DoubleProperty::setEditorData(QWidget* editor, const QVariant& data)
 
 	if(editor_ != nullptr)
 	{
-		if(QMetaType::Type(data.type()) == QMetaType::Double)
+		if(data.type() == qMetaTypeId<double>())
 		{
 			editor_->blockSignals(true);
 			editor_->setValue(data.toDouble());
@@ -167,12 +167,8 @@ bool DoubleProperty::setEditorData(QWidget* editor, const QVariant& data)
 QVariant DoubleProperty::editorData(QWidget* editor)
 {
 	PropertyDoubleSpinBox* editor_ = qobject_cast<PropertyDoubleSpinBox*>(editor);
-
 	if(editor_ != nullptr)
-	{
 		return editor_->value();
-	}
-
 	return QVariant();
 }
 
@@ -218,7 +214,7 @@ bool EnumProperty::setValue(const QVariant& value, int role)
 {
 	if(role == Qt::EditRole)
 	{
-		if(QMetaType::Type(value.type()) == QMetaType::Int)
+		if(value.type() == qMetaTypeId<int>())
 		{
 			bool ok;
 			int index = value.toInt(&ok);
@@ -249,7 +245,7 @@ bool EnumProperty::setEditorData(QWidget* editor, const QVariant& data)
 
 	if(editor_ != nullptr)
 	{
-		if(QMetaType::Type(data.type()) == QMetaType::QString)
+		if(data.type() == qMetaTypeId<QString>())
 		{
 			editor_->blockSignals(true);
 			editor_->setCurrentIndex(_value.toInt());
@@ -265,12 +261,8 @@ bool EnumProperty::setEditorData(QWidget* editor, const QVariant& data)
 QVariant EnumProperty::editorData(QWidget* editor)
 {
 	PropertyComboBox* editor_ = qobject_cast<PropertyComboBox*>(editor);
-
 	if(editor_ != nullptr)
-	{
 		return editor_->currentIndex();
-	}
-
 	return QVariant();
 }
 
@@ -313,7 +305,7 @@ bool IntegerProperty::setEditorData(QWidget* editor, const QVariant& data)
 
 	if(editor_ != nullptr)
 	{
-		if(QMetaType::Type(data.type()) == QMetaType::Int)
+		if(data.type() == qMetaTypeId<int>())
 		{
 			editor_->blockSignals(true);
 			editor_->setValue(data.toInt());
@@ -329,12 +321,8 @@ bool IntegerProperty::setEditorData(QWidget* editor, const QVariant& data)
 QVariant IntegerProperty::editorData(QWidget* editor)
 {
 	QSpinBox* editor_ = qobject_cast<QSpinBox*>(editor);
-
 	if(editor_ != nullptr)
-	{
 		return editor_->value();
-	}
-
 	return QVariant();
 }
 
@@ -379,7 +367,7 @@ bool BooleanProperty::setEditorData(QWidget* editor,
 
 	if(editor_ != nullptr)
 	{
-		if(QMetaType::Type(data.type()) == QMetaType::Bool)
+		if(data.type() == qMetaTypeId<bool>())
 		{
 			editor_->blockCheckBoxSignals(true);
 			editor_->setChecked(data.toBool());
@@ -395,12 +383,8 @@ bool BooleanProperty::setEditorData(QWidget* editor,
 QVariant BooleanProperty::editorData(QWidget* editor)
 {
 	PropertyCheckBox* editor_ = qobject_cast<PropertyCheckBox*>(editor);
-
 	if(editor_ != nullptr)
-	{
 		return editor_->isChecked();
-	}
-
 	return QVariant();
 }
 
@@ -453,9 +437,7 @@ bool FilePathProperty::setValue(const QVariant& value, int role)
 {
 	if(role == Qt::EditRole)
 	{
-		//qDebug() << Q_FUNC_INFO << value;
-
-		if(QMetaType::Type(value.type()) == QMetaType::QString)
+		if(value.type() == qMetaTypeId<QString>())
 		{
 			QFileInfo tmpInfo = QFileInfo(value.toString());
 			if(tmpInfo != _fileInfo 
@@ -485,11 +467,8 @@ bool FilePathProperty::setEditorData(QWidget* editor,
 
 	if(editor_ != nullptr)
 	{
-		if(QMetaType::Type(data.type()) == QMetaType::QString)
+		if(data.type() == qMetaTypeId<QString>())
 		{
-			//qDebug() << Q_FUNC_INFO << data.toString();
-			//editor_->setFilePath(data.toString());
-
 			editor_->blockLineEditSignals(true);
 			editor_->setText(data.toString());
 			editor_->blockLineEditSignals(false);
@@ -504,13 +483,8 @@ bool FilePathProperty::setEditorData(QWidget* editor,
 QVariant FilePathProperty::editorData(QWidget* editor)
 {
 	FileRequester* editor_ = qobject_cast<FileRequester*>(editor);
-
 	if(editor_ != nullptr)
-	{
-		//qDebug() << Q_FUNC_INFO << editor_->text();
 		return editor_->text();
-	}
-
 	return QVariant();
 }
 
@@ -553,9 +527,6 @@ QVariant MatrixProperty::value(int role) const
 	return str;
 }
 
-//bool setValue(const QVariant& value, 
-//	int role = Qt::UserRole) override;
-
 QWidget* MatrixProperty::createEditor(QWidget* parent)
 {
 	return new PropertyMatrixButton(parent);
@@ -568,7 +539,7 @@ bool MatrixProperty::setEditorData(QWidget* editor,
 
 	if(ed)
 	{
-		if(data.userType() == QMetaTypeId<Matrix3x3>::qt_metatype_id())
+		if(data.userType() == qMetaTypeId<Matrix3x3>())
 		{
 			ed->setMatrix(data.value<Matrix3x3>());
 			return true;
@@ -581,9 +552,7 @@ bool MatrixProperty::setEditorData(QWidget* editor,
 QVariant MatrixProperty::editorData(QWidget* editor)
 {
 	PropertyMatrixButton* ed = qobject_cast<PropertyMatrixButton*>(editor);
-
 	if(ed)
 		return QVariant::fromValue<Matrix3x3>(ed->matrix());
-
 	return QVariant();
 }

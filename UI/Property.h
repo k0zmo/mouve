@@ -186,8 +186,6 @@ public:
 		const Matrix3x3& initial = Matrix3x3(1));
 
 	QVariant value(int role = Qt::UserRole) const override;
-	//bool setValue(const QVariant& value, 
-	//	int role = Qt::UserRole) override;
 
 	QWidget* createEditor(QWidget* parent) override;
 	bool setEditorData(QWidget* editor,
