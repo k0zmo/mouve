@@ -32,6 +32,7 @@ struct NodeStyle
 	static int NodeRoundArc;
 	static float NodeTitleSize;
 	static float NodeTitleHorizontalMargin;
+	static float NodeTypeNameHorizontalMargin;
 	static float NodeSocketHorizontalMargin;
 	static float NodeSocketVerticalMargin;
 	static float NodeSocketsMargin;

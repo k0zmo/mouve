@@ -196,7 +196,8 @@ void NodeView::updateLayout()
 
 	// Make some minimum size
 	qreal totalWidth = qMax(qreal(10.0),
-		qreal(titleWidth + 2 * NodeStyle::NodeTitleHorizontalMargin));
+		qMax(qreal(titleWidth + 2 * NodeStyle::NodeTitleHorizontalMargin),
+			qreal(typeNameWidth + 2 * NodeStyle::NodeTypeNameHorizontalMargin)));
 
 	qreal yPos = titleHeight + typeNameHeight;
 	const qreal yPosStart = yPos;

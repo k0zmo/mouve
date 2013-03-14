@@ -29,6 +29,7 @@ QPen NodeStyle::NodeBorderPreviewSelectedPen = QPen(QColor(119, 189, 255), 2.5, 
 int NodeStyle::NodeRoundArc = 15;
 float NodeStyle::NodeTitleSize = 5.0;
 float NodeStyle::NodeTitleHorizontalMargin = 20.0;
+float NodeStyle::NodeTypeNameHorizontalMargin = 8.0;
 float NodeStyle::NodeSocketHorizontalMargin = -7.5;
 float NodeStyle::NodeSocketVerticalMargin = 8.0;
 float NodeStyle::NodeSocketsMargin = 20.0;
