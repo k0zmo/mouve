@@ -85,8 +85,6 @@ private:
 
 	// Opening node tree from a given file (json deserialization)
 	bool openTreeFromFileImpl(const QString& filePath);
-	void loadNodes(const QVariantList& nodes, QMap<uint, NodeID>& oldToNewNodeID);
-	void loadLinks(const QVariantList& links, const QMap<uint, NodeID>& oldToNewNodeID);
 
 private slots:
 	// Slots for QGraphicsView's events

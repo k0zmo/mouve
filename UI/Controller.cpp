@@ -744,117 +744,22 @@ bool Controller::saveTreeToFile(const QString& filePath)
 
 bool Controller::saveTreeToFileImpl(const QString& filePath)
 {
-	// Iterate over all nodes and serialize it as JSON value of JSON array
-	QJsonArray jsonNodes;
-	auto nodeIt = _nodeTree->createNodeIterator();
-	NodeID nodeID;
-	while(const Node* node = nodeIt->next(nodeID))
+	// Add view part to deserialized part
+	QJsonArray jsonScene;
+	for(auto nvit = _nodeViews.begin(); nvit != _nodeViews.end(); ++nvit)
 	{
-		QJsonObject jsonNode;
+		QJsonObject jsonSceneElem;
 
-		NodeTypeID nodeTypeID = node->nodeTypeID();
-		QString nodeName = QString::fromStdString(node->nodeName());
-		QString nodeTypeName = QString::fromStdString(_nodeTree->nodeTypeName(nodeID));		
-		QPointF nodePos = _nodeViews[nodeID]->scenePos();
+		QPointF nodePos = _nodeViews[nvit.key()]->scenePos();
+		jsonSceneElem.insert(QStringLiteral("nodeId"), nvit.key());
+		jsonSceneElem.insert(QStringLiteral("scenePosX"), nodePos.x());
+		jsonSceneElem.insert(QStringLiteral("scenePosY"), nodePos.y());
 
-		jsonNode.insert(QStringLiteral("typeId"), nodeTypeID);
-		jsonNode.insert(QStringLiteral("id"), nodeID);
-		jsonNode.insert(QStringLiteral("name"), nodeName);
-		jsonNode.insert(QStringLiteral("typeName"), nodeTypeName);
-		jsonNode.insert(QStringLiteral("scenePosX"), nodePos.x());
-		jsonNode.insert(QStringLiteral("scenePosY"), nodePos.y());
-
-		// Save properties' values
-		NodeConfig nodeConfig;
-		node->configuration(nodeConfig);
-		PropertyID propID = 0;
-		QJsonArray jsonProperties;
-
-		if(nodeConfig.pProperties)
-		{
-			while(nodeConfig.pProperties[propID].type != EPropertyType::Unknown)
-			{
-				QVariant propValue = node->property(propID);
-
-				if(propValue.isValid())
-				{
-					auto& prop = nodeConfig.pProperties[propID];
-
-					QJsonObject jsonProp;
-					jsonProp.insert(QStringLiteral("id"), propID);
-					jsonProp.insert(QStringLiteral("name"), QString::fromStdString(prop.name));
-
-					switch(prop.type)
-					{
-					case EPropertyType::Boolean:
-						jsonProp.insert("value", propValue.toBool());
-						jsonProp.insert("type", QStringLiteral("boolean"));
-						break;
-					case EPropertyType::Integer:
-						jsonProp.insert("value", propValue.toInt());
-						jsonProp.insert("type", QStringLiteral("integer"));
-						break;
-					case EPropertyType::Double:
-						jsonProp.insert("value", propValue.toDouble());
-						jsonProp.insert("type", QStringLiteral("double"));
-						break;
-					case EPropertyType::Enum:
-						jsonProp.insert("value", propValue.toInt());
-						jsonProp.insert("type", QStringLiteral("enum"));
-						break;
-					case EPropertyType::Matrix:
-						{
-							QJsonArray jsonMatrix;
-							Matrix3x3 matrix = propValue.value<Matrix3x3>();
-							for(double v : matrix.v)
-								jsonMatrix.append(v);
-							jsonProp.insert("value", jsonMatrix);
-							jsonProp.insert("type", QStringLiteral("matrix3x3"));
-							break;
-						}
-					case EPropertyType::Filepath:
-						jsonProp.insert("value", propValue.toString());
-						jsonProp.insert("type", QStringLiteral("filepath"));
-						break;
-					case EPropertyType::String:
-						jsonProp.insert("value", propValue.toString());
-						jsonProp.insert("type", QStringLiteral("string"));
-						break;
-					}
-
-					jsonProperties.append(jsonProp);
-				}
-
-				++propID;
-			}
-		}
-
-		if(!jsonProperties.isEmpty())
-			jsonNode.insert(QStringLiteral("properties"), jsonProperties);
-
-		jsonNodes.append(jsonNode);
+		jsonScene.append(jsonSceneElem);
 	}
 
-	// Iterate over all links and serialize it as JSON value of JSON array
-	QJsonArray jsonLinks;
-	auto linkIt = _nodeTree->createNodeLinkIterator();
-	NodeLink nodeLink;
-	while(linkIt->next(nodeLink))
-	{
-		QJsonObject jsonLink;
-
-		jsonLink.insert(QStringLiteral("fromNode"), nodeLink.fromNode);
-		jsonLink.insert(QStringLiteral("fromSocket"), nodeLink.fromSocket);
-		jsonLink.insert(QStringLiteral("toNode"), nodeLink.toNode);
-		jsonLink.insert(QStringLiteral("toSocket"), nodeLink.toSocket);
-
-		jsonLinks.append(jsonLink);
-	}
-
-	// Finally, add JSON arrays representing nodes and links
-	QJsonObject jsonTree;
-	jsonTree.insert(QStringLiteral("nodes"), jsonNodes);
-	jsonTree.insert(QStringLiteral("links"), jsonLinks);
+	QJsonObject jsonTree = _nodeTree->serializeJson();
+	jsonTree.insert(QStringLiteral("scene"), jsonScene);
 
 	QJsonDocument doc(jsonTree);
 	QByteArray textJson = doc.toJson();
@@ -892,28 +797,79 @@ bool Controller::openTreeFromFileImpl(const QString& filePath)
 	}
 
 	QJsonObject jsonTree = doc.object();
-	QVariantMap map = jsonTree.toVariantMap();
-
-	QVariant& nodesVariant = map["nodes"];
-	QVariant& linksVariant = map["links"];
-
-	if(!nodesVariant.isValid() || !linksVariant.isValid())
-	{
-		showErrorMessage("Error occured during parsing file! Check logs for more details.");
-		qCritical() << "Couldn't open node tree from file:" << filePath
-			<< " details: can't find \"nodes\" and/or \"links\" section(s)";
-		return false;
-	}
-
-	/// TODO : check if they "nodes" and "links" are indeed QVariantList?
 
 	// Method used in loading nodes makes them lose their original NodeID
-	// Below map is a "cure" for this
-	QMap<uint, NodeID> oldToNewNodeID;
+	std::map<NodeID, NodeID> mapping;
+	if(!_nodeTree->deserializeJson(jsonTree, &mapping))
+		return false;
 
-	// Read nodes and its links
-	loadNodes(nodesVariant.toList(), oldToNewNodeID);
-	loadLinks(linksVariant.toList(), oldToNewNodeID);
+	// Deserialize view part
+	QJsonArray jsonScene = jsonTree["scene"].toArray();
+	QVariantList scene = jsonScene.toVariantList();
+
+	for(auto& sceneElem : scene)
+	{
+		QVariantMap elemMap = sceneElem.toMap();
+
+		NodeID nodeID = elemMap["nodeId"].toUInt();
+		NodeID mappedNodeID = mapping[nodeID];
+		double scenePosX = elemMap["scenePosX"].toDouble();
+		double scenePosY = elemMap["scenePosY"].toDouble();
+
+		// Create new view associated with the model
+		if(!_nodeViews.contains(mappedNodeID))
+		{
+			if(!_nodeTree->nodeTypeID(mappedNodeID) == InvalidNodeTypeID)
+			{
+				QString nodeName = QString::fromStdString(_nodeTree->nodeName(mappedNodeID));
+				addNodeView(nodeName, mappedNodeID, QPointF(scenePosX, scenePosY));
+			}
+			else
+			{
+				qWarning() << "Couldn't find node for scene element with node id:" << nodeID;
+			}
+		}
+		else
+		{
+			qWarning() << "More than one scene element with the same node id:" << nodeID;
+		}
+	}
+
+	if(_nodeViews.count() != _nodeTree->nodesCount())
+	{
+		qWarning("Some scene elements were missing, adding them to scene origin."
+			"You can fix it by resaving the file");
+		
+		auto nodeIt = _nodeTree->createNodeIterator();
+		NodeID nodeID;
+		while(const Node* node = nodeIt->next(nodeID))
+		{
+			NodeID mappedNodeID = mapping[nodeID];
+			if(!_nodeViews.contains(mappedNodeID))
+			{
+				QString nodeName = QString::fromStdString(_nodeTree->nodeName(mappedNodeID));
+				addNodeView(nodeName, mappedNodeID, QPointF(0, 0));
+			}
+		}
+	}
+
+	// Add link views to the scene 
+	auto linkIt = _nodeTree->createNodeLinkIterator();
+	NodeLink nodeLink;
+	while(linkIt->next(nodeLink))
+	{
+		NodeView* fromNodeView = _nodeViews[nodeLink.fromNode];
+		NodeView* toNodeView = _nodeViews[nodeLink.toNode];
+
+		if(fromNodeView && toNodeView)
+		{
+			NodeSocketView* fromSocketView = fromNodeView->outputSocketView(nodeLink.fromSocket);
+			NodeSocketView* toSocketView = toNodeView->inputSocketView(nodeLink.toSocket);
+
+			if(fromSocketView && toSocketView)
+				linkNodesView(fromSocketView, toSocketView);
+		}
+	}
 
 	if(_nodeTree->isTreeStateless())
 		switchToImageMode();
@@ -921,154 +877,6 @@ bool Controller::openTreeFromFileImpl(const QString& filePath)
 		switchToVideoMode();
 
 	return true;
-}
-
-void Controller::loadNodes(const QVariantList& nodes,
-						   QMap<uint, NodeID>& oldToNewNodeID)
-{
-	for(auto& node : nodes)
-	{
-		QVariantMap mapNode = node.toMap();		
-
-		bool ok;
-		uint nodeTypeId = mapNode["typeId"].toUInt(&ok);
-		if(!ok)
-		{
-			qWarning() << "\"typeId\" is bad, node will be skipped";
-			continue;
-		}
-
-		uint nodeId = mapNode["id"].toUInt(&ok);
-		if(!ok)
-		{
-			qWarning() << "\"id\" is bad, node will be skipped";
-			continue;
-		}
-
-		QString nodeName = mapNode["name"].toString();
-		if(nodeName.isEmpty())
-		{
-			qWarning() << "\"name\" is bad, node of id" << nodeId << "will be skipped";
-			continue;
-		}
-
-		double nodeScenePosX = mapNode["scenePosX"].toDouble(&ok);
-		if(!ok)
-		{
-			qWarning() << "\"scenePosX\" is bad, assuming 0.0";
-			nodeScenePosX = 0.0;
-		}
-
-		double nodeScenePosY = mapNode["scenePosY"].toDouble(&ok);
-		if(!ok)
-		{
-			qWarning() << "\"scenePosX\" is bad, assuming 0.0";
-			nodeScenePosX = 0.0;
-		}
-
-		// Try to create new node 
-		NodeID _nodeId = _nodeTree->createNode(nodeTypeId, nodeName.toStdString());
-		oldToNewNodeID.insert(nodeId, _nodeId);
-		if(_nodeId == InvalidNodeID)
-		{
-			qWarning() << QString("Couldn't create node of id: %1 and type id: %2, skipping")
-				.arg(nodeId)
-				.arg(nodeTypeId);
-			continue;
-		}
-
-		QVariant varProperties = mapNode["properties"];
-		if(varProperties.isValid() 
-			&& varProperties.type() == QVariant::List)
-		{
-			QVariantList properties = varProperties.toList();
-
-			for(auto& prop : properties)
-			{
-				QVariantMap propMap = prop.toMap();
-
-				bool ok;
-				uint propId = propMap["id"].toUInt(&ok);
-				if(!ok)
-				{
-					qWarning() << "\"id\" is bad, property will be skipped";
-					continue;
-				}
-
-				QVariant value = propMap["value"];
-				if(!value.isValid())
-				{
-					qWarning() << "\"value\" is bad, property of id" << propId << "will be skipped";
-					continue;
-				}
-
-				// Special case - type is matrix3x3. For rest types we don't even check it (at least for now)
-				QString propType = propMap["type"].toString();
-				if(propType == "matrix3x3")
-				{
-					// Convert from QList<QVariant (of double)> to Matrix3x3
-					QVariantList matrixList = value.toList();
-					Matrix3x3 matrix;
-					for(int i = 0; i < matrixList.count() && i < 9; ++i)
-						matrix.v[i] = matrixList[i].toDouble();
-					
-					value = QVariant::fromValue<Matrix3x3>(matrix);
-				}
-
-				if(!_nodeTree->nodeSetProperty(_nodeId, propId, value))
-				{
-					qWarning() << "Couldn't set loaded property" << propId <<  "to" << value;
-				}
-			}
-		}
-
-		// Create new view associated with the model
-		addNodeView(nodeName, _nodeId, QPointF(nodeScenePosX, nodeScenePosY));
-	}
-}
-
-void Controller::loadLinks(const QVariantList& links,
-						   const QMap<uint, NodeID>& oldToNewNodeID)
-{
-	for(auto& link : links)
-	{
-		QVariantMap mapLink = link.toMap();
-
-		bool ok;
-		uint fromNode = mapLink["fromNode"].toUInt(&ok);
-		if(!ok)
-		{
-			qWarning() << "\"fromNode\" is bad, node link will be skipped";
-			continue;
-		}
-
-		uint fromSocket = mapLink["fromSocket"].toUInt(&ok);
-		if(!ok)
-		{
-			qWarning() << "\"fromSocket\" is bad, node link will be skipped";
-			continue;
-		}
-
-		uint toNode = mapLink["toNode"].toUInt(&ok);
-		if(!ok)
-		{
-			qWarning() << "\"toNode\" is bad, node link will be skipped";
-			continue;
-		}
-
-		uint toSocket = mapLink["toSocket"].toUInt(&ok);
-		if(!ok)
-		{
-			qWarning() << "\"toSocket\" is bad, node link will be skipped";
-			continue;
-		}
-
-		linkNodes(
-			oldToNewNodeID[fromNode],
-			fromSocket,
-			oldToNewNodeID[toNode],
-			toSocket);
-	}
 }
 
 void Controller::contextMenu(const QPoint& globalPos,
