@@ -49,6 +49,7 @@ private:
 	void deleteNode(NodeView* nodeView);
 
 	void setupUi();
+	void setupNodeTypesUi();
 	void showErrorMessage(const QString& message);
 
 	// Enables (disables) video or image control toolbar buttons

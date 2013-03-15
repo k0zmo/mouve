@@ -1,5 +1,6 @@
 <RCC>
   <qresource prefix="/">
+    <file>images/button-brick.png</file>
     <file>images/button-fit.png</file>
     <file>images/button-image.png</file>
     <file>images/button-zoom-in.png</file>

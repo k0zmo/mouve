@@ -395,12 +395,15 @@ void Controller::setupUi()
 	
 	QAction* actionNodes = _ui->nodesDockWidget->toggleViewAction();
 	actionNodes->setShortcut(tr("Ctrl+1"));
+	actionNodes->setIcon(QIcon(":/images/button-brick.png"));
+	_ui->controlToolBar->addAction(actionNodes);
 
 	QAction* actionProperties = _ui->propertiesDockWidget->toggleViewAction();
 	actionProperties->setShortcut(tr("Ctrl+2"));
 
 	QAction* actionPreview = _ui->previewDockWidget->toggleViewAction();
 	actionPreview->setShortcut(tr("Ctrl+3"));
+	actionPreview->setIcon(QIcon(":/images/button-image.png"));
 
 	QAction* actionLog = _ui->logDockWidget->toggleViewAction();
 	actionLog->setShortcut(tr("Ctrl+4"));
@@ -480,6 +483,11 @@ void Controller::setupUi()
 	_ui->statusBar->addPermanentWidget(_stateLabel);
 
 	// Init nodes tree widget
+	setupNodeTypesUi();
+}
+
+void Controller::setupNodeTypesUi()
+{
 	QList<QTreeWidgetItem*> treeItems;
 	connect(_ui->nodesTreeWidget, &QTreeWidget::itemDoubleClicked, 
 		[=](QTreeWidgetItem* item, int column)
@@ -504,16 +512,53 @@ void Controller::setupUi()
 		QStringList tokens = typeName.split('/');
 		QTreeWidgetItem* parent = nullptr;
 
+		auto findItem = [=](const QList<QTreeWidgetItem*> items,
+			const QString& text) -> QTreeWidgetItem*
+		{
+			for(const auto item : treeItems)
+				if(item->text(0) == text)
+					return item;
+			return nullptr;
+		};
+
+		auto findChild = [=](const QTreeWidgetItem* parent,
+			const QString& text) -> QTreeWidgetItem*
+		{
+			for(int i = 0; i < parent->childCount(); ++i)
+			{
+				QTreeWidgetItem* item = parent->child(i);
+				if(item->text(0) == text)
+					return item;
+			}
+			return nullptr;
+		};
+
 		if(tokens.count() > 1)
 		{
-			
+			int c = tokens.count();
+			for(int level = 0; level < tokens.count() - 1; ++level)
+			{
+				int c = tokens.count();
+				QString parentToken = tokens[level];
+
+				QTreeWidgetItem* p = level == 0 
+					? findItem(treeItems, parentToken)
+					: findChild(parent, parentToken);
+				if(!p)
+				{
+					p = new QTreeWidgetItem(parent, QStringList(parentToken));
+					if(level == 0)
+						treeItems.append(p);
+				}
+				parent = p;
+			}
 		}
 
 		QTreeWidgetItem* item = new QTreeWidgetItem(parent, QStringList(tokens.last()));
 		item->setData(0, Qt::UserRole, typeId);
 		treeItems.append(item);
 
-		QAction* action = new QAction(typeName, this);
+		QAction* action = new QAction(tokens.last(), this);
 		action->setData(typeId);
 		_contextMenuAddNodes->addAction(action);
 	}
