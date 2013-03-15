@@ -1,6 +1,8 @@
 #include "NodeEditorView.h"
 #include <QWheelEvent>
 #include <QScrollBar>
+#include <QMimeData>
+#include <QStandardItem>
 
 #include "Controller.h"
 
@@ -137,15 +139,7 @@ void NodeEditorView::dropEvent(QDropEvent* event)
 			
 			NodeTypeID typeId = item->data(Qt::UserRole).toUInt();
 			if(typeId != InvalidNodeTypeID)
-				gC->addNode(typeId, mapToScene(event->pos()));
+				Controller::instance().addNode(typeId, mapToScene(event->pos()));
 		}
-#if 0
-		QStandardItemModel itemModel;
-		if(!itemModel.dropMimeData(event->mimeData(), event->dropAction(), 0, 0, QModelIndex()))
-			return;
-		NodeTypeID typeId = itemModel.data(itemModel.index(0, 0), Qt::UserRole).toUInt();
-		if(typeId != InvalidNodeTypeID)
-			gC->addNode(typeId, mapToScene(event->pos()));
-#endif
 	}
 }

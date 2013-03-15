@@ -174,7 +174,7 @@ void GLWidget::show(const cv::Mat& image)
 		return;
 	}
 
-	if(image.cols != image.step)
+	if(size_t(image.cols) != image.step)
 	{
 		// TODO: Use PBO? or something else to skip pointless copying because of step size
 		char* data = new char[image.elemSize() * image.rows * image.cols];

@@ -5,6 +5,7 @@
 #include "Logic/NodeFlowData.h"
 
 #include <QPainter>
+#include <QDebug>
 
 NodeView::NodeView(const QString& title, 
 				   const QString& typeName,

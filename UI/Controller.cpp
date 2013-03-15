@@ -28,6 +28,7 @@
 #include <QGraphicsWidget>
 #include <QSettings>
 #include <QDesktopWidget>
+#include <QDebug>
 
 #include <QJsonDocument>
 #include <QJsonObject>
@@ -512,8 +513,7 @@ void Controller::setupNodeTypesUi()
 		QStringList tokens = typeName.split('/');
 		QTreeWidgetItem* parent = nullptr;
 
-		auto findItem = [=](const QList<QTreeWidgetItem*> items,
-			const QString& text) -> QTreeWidgetItem*
+		auto findItem = [=](const QString& text) -> QTreeWidgetItem*
 		{
 			for(const auto item : treeItems)
 				if(item->text(0) == text)
@@ -535,14 +535,11 @@ void Controller::setupNodeTypesUi()
 
 		if(tokens.count() > 1)
 		{
-			int c = tokens.count();
 			for(int level = 0; level < tokens.count() - 1; ++level)
 			{
-				int c = tokens.count();
 				QString parentToken = tokens[level];
-
 				QTreeWidgetItem* p = level == 0 
-					? findItem(treeItems, parentToken)
+					? findItem(parentToken)
 					: findChild(parent, parentToken);
 				if(!p)
 				{
@@ -723,6 +720,8 @@ void Controller::updatePreviewImpl()
 			case ENodeFlowDataType::ImageRgb:
 				_previewWidget->show(outputData.getImageRgb());
 				return;
+			default:
+				break;
 			}
 		}
 	}
@@ -966,14 +965,14 @@ bool Controller::openTreeFromFileImpl(const QString& filePath)
 		}
 	}
 
-	if(_nodeViews.count() != _nodeTree->nodesCount())
+	if(size_t(_nodeViews.count()) != _nodeTree->nodesCount())
 	{
 		qWarning("Some scene elements were missing, adding them to scene origin."
 			"You can fix it by resaving the file");
 		
 		auto nodeIt = _nodeTree->createNodeIterator();
 		NodeID nodeID;
-		while(const Node* node = nodeIt->next(nodeID))
+		while(nodeIt->next(nodeID))
 		{
 			NodeID mappedNodeID = mapping[nodeID];
 			if(!_nodeViews.contains(mappedNodeID))

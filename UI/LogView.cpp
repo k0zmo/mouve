@@ -1,6 +1,8 @@
 #include "LogView.h"
 
 #include <QDateTime>
+#include <QThread>
+#include <QCoreApplication>
 
 LogView* LogView::_headView = nullptr;
 QIcon LogView::_warningIcon;

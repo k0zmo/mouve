@@ -13,7 +13,6 @@ HEADERS += \
 	NodeLinkView.h \
 	NodeSocketView.h \
 	NodeStyle.h \
-	NodeTemporaryLinkView.h \
 	NodeView.h \
 	PreviewWidget.h \
 	Prerequisites.h \
@@ -34,7 +33,6 @@ SOURCES += \
 	NodeLinkView.cpp \
 	NodeSocketView.cpp \
 	NodeStyle.cpp \
-	NodeTemporaryLinkView.cpp \
 	NodeView.cpp \
 	PreviewWidget.cpp \
 	Property.cpp \
@@ -56,9 +54,10 @@ PRECOMPILED_HEADER = Precomp.h
 LIBS += -lMouve.Logic
 
 unix {
-	LIBS += -lopencv_core -lopencv_imgproc -lopencv_highgui
+    LIBS += -lopencv_core
 }
 win32 {
-	LIBS += -LD:/Programowanie/Libs/opencv-243/lib/x86
-	LIBS += -lopencv_core243d -lopencv_imgproc243d -lopencv_highgui243d 
+    LIBS += -LD:/Programowanie/SDKs/opencv/lib/x86
+    # TODO: version, dir and debug|release
+    LIBS += -lopencv_core243d
 }

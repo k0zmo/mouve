@@ -29,8 +29,8 @@ const NodeFlowData& NodeSocketReader::readSocket(SocketID socketID) const
 		else
 		{
 			// Return an empty NodeFlowData
-			static NodeFlowData default = NodeFlowData();
-			return default;
+			static NodeFlowData _default = NodeFlowData();
+			return _default;
 		}
 	}
 	else

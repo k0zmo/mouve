@@ -2,6 +2,7 @@
 #include "NodeType.h"
 #include "NodeFactory.h"
 
+#include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/features2d/features2d.hpp>
 #include <opencv2/nonfree/features2d.hpp>
 #include <opencv2/calib3d/calib3d.hpp>
@@ -278,10 +279,10 @@ public:
 		std::vector<cv::Point2f> obj;
 		std::vector<cv::Point2f> scene;
 
-		for( int i = 0; i < matches.size(); i++ )
+		for(auto& match : matches)
 		{
-			obj.push_back(keypoints1[matches[i].queryIdx].pt);
-			scene.push_back(keypoints2[matches[i].trainIdx].pt);
+			obj.push_back(keypoints1[match.queryIdx].pt);
+			scene.push_back(keypoints2[match.trainIdx].pt);
 		}
 
 		H = cv::findHomography(obj, scene, cv::RANSAC);

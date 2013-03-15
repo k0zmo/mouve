@@ -665,8 +665,8 @@ const NodeFlowData& NodeTree::outputSocket(NodeID nodeID, SocketID socketID) con
 	if(!allRequiredInputSocketConnected(nodeID))
 	{
 		/// TODO: Transform this to a method (same as NodeType::readSocket())
-		static NodeFlowData default = NodeFlowData();
-		return default;
+		static NodeFlowData _default = NodeFlowData();
+		return _default;
 	}
 
 	// outputSocket verifies socketID
