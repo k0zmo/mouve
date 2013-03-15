@@ -2,6 +2,8 @@
 #include <QWheelEvent>
 #include <QScrollBar>
 
+#include "Controller.h"
+
 NodeEditorView::NodeEditorView(QWidget* parent)
 	: QGraphicsView(parent)
 	, mZoom(1.0f)
@@ -16,6 +18,7 @@ NodeEditorView::NodeEditorView(QWidget* parent)
 	setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
 	setFocusPolicy(Qt::ClickFocus);
 	setDragMode(QGraphicsView::RubberBandDrag);
+	setAcceptDrops(true);
 }
 
 void NodeEditorView::setZoom(float zoom)
@@ -101,4 +104,48 @@ void NodeEditorView::keyPressEvent(QKeyEvent* event)
 void NodeEditorView::setPseudoInteractive(bool allowed)
 {
 	mPseudoInteractive = !allowed;
+}
+
+void NodeEditorView::dragEnterEvent(QDragEnterEvent* event)
+{
+	if(event->mimeData()->hasFormat(QStringLiteral("application/x-qabstractitemmodeldatalist")))
+		event->acceptProposedAction();
+}
+
+void NodeEditorView::dragMoveEvent(QDragMoveEvent* event)
+{
+	if(event->mimeData()->hasFormat(QStringLiteral("application/x-qabstractitemmodeldatalist")))
+		event->acceptProposedAction();
+}
+
+void NodeEditorView::dropEvent(QDropEvent* event)
+{
+	if(event->mimeData()->hasFormat(QStringLiteral("application/x-qabstractitemmodeldatalist")))
+	{
+		QByteArray encoded = event->mimeData()->data(
+			QStringLiteral("application/x-qabstractitemmodeldatalist"));
+		QDataStream stream(&encoded, QIODevice::ReadOnly);
+
+		while (!stream.atEnd())
+		{
+			int r, c;
+			stream >> r >> c;
+			if(r != 1 && c != 0)
+				return;
+			QScopedPointer<QStandardItem> item(new QStandardItem);
+			stream >> *item;
+			
+			NodeTypeID typeId = item->data(Qt::UserRole).toUInt();
+			if(typeId != InvalidNodeTypeID)
+				gC->addNode(typeId, mapToScene(event->pos()));
+		}
+#if 0
+		QStandardItemModel itemModel;
+		if(!itemModel.dropMimeData(event->mimeData(), event->dropAction(), 0, 0, QModelIndex()))
+			return;
+		NodeTypeID typeId = itemModel.data(itemModel.index(0, 0), Qt::UserRole).toUInt();
+		if(typeId != InvalidNodeTypeID)
+			gC->addNode(typeId, mapToScene(event->pos()));
+#endif
+	}
 }
