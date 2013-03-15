@@ -400,6 +400,7 @@ void Controller::setupUi()
 
 	QAction* actionProperties = _ui->propertiesDockWidget->toggleViewAction();
 	actionProperties->setShortcut(tr("Ctrl+2"));
+	actionProperties->setIcon(QIcon(":/images/button-gears.png"));
 
 	QAction* actionPreview = _ui->previewDockWidget->toggleViewAction();
 	actionPreview->setShortcut(tr("Ctrl+3"));
@@ -499,9 +500,6 @@ void Controller::setupNodeTypesUi()
 				addNode(item->data(column, Qt::UserRole).toUInt(), centerPos);
 		});
 
-	// Init context menu for adding nodes
-	_contextMenuAddNodes = new QMenu(this);
-
 	auto nodeTypeIterator = _nodeSystem->createNodeTypeIterator();
 	NodeTypeIterator::NodeTypeInfo info;
 	while(nodeTypeIterator->next(info))
@@ -557,12 +555,41 @@ void Controller::setupNodeTypesUi()
 		QTreeWidgetItem* item = new QTreeWidgetItem(parent, QStringList(tokens.last()));
 		item->setData(0, Qt::UserRole, typeId);
 		treeItems.append(item);
-
-		QAction* action = new QAction(tokens.last(), this);
-		action->setData(typeId);
-		_contextMenuAddNodes->addAction(action);
 	}
 	_ui->nodesTreeWidget->insertTopLevelItems(0, treeItems);
+
+	// Init context menu for adding nodes
+	_contextMenuAddNodes = new QMenu(this);
+
+	QTreeWidgetItemIterator iter(_ui->nodesTreeWidget);
+	QMenu* lastMenu = nullptr;
+
+	while(*iter)
+	{
+		QString text = (*iter)->text(0);
+
+		// Categories
+		if((*iter)->childCount() > 0)
+		{
+			lastMenu = (*iter)->parent() == nullptr || !lastMenu
+				? _contextMenuAddNodes->addMenu(text)
+				: lastMenu->addMenu(text);
+		}
+		// Bottom level items
+		else if((*iter)->childCount() == 0)
+		{
+			NodeTypeID typeId = (*iter)->data(0, Qt::UserRole).toUInt();
+			QAction* action = new QAction(text, this);
+			action->setData(typeId);
+
+			if(lastMenu)
+				lastMenu->addAction(action);
+			else
+				_contextMenuAddNodes->addAction(action);
+		}
+
+		iter++;
+	}
 }
 
 void Controller::showErrorMessage(const QString& message)
