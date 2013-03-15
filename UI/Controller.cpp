@@ -485,6 +485,8 @@ void Controller::setupUi()
 
 	// Init nodes tree widget
 	setupNodeTypesUi();
+	// Init context menu for adding nodes
+	pupulateAddNodeContextMenu();
 }
 
 void Controller::setupNodeTypesUi()
@@ -552,12 +554,29 @@ void Controller::setupNodeTypesUi()
 			}
 		}
 
-		QTreeWidgetItem* item = new QTreeWidgetItem(parent, QStringList(tokens.last()));
+		QTreeWidgetItem* item = new QTreeWidgetItem(parent);
+		item->setText(0, tokens.last());
 		item->setData(0, Qt::UserRole, typeId);
+
 		treeItems.append(item);
 	}
 	_ui->nodesTreeWidget->insertTopLevelItems(0, treeItems);
 
+	// Set proper item flags
+	QTreeWidgetItemIterator it(_ui->nodesTreeWidget);
+	while(*it)
+	{
+		Qt::ItemFlags flags = Qt::ItemIsSelectable | Qt::ItemIsEnabled;
+		// Is it leaf?
+		if((*it)->childCount() == 0)
+			flags |=  Qt::ItemIsDragEnabled;			
+		(*it)->setFlags(flags);
+		++it;
+	}
+}
+
+void Controller::pupulateAddNodeContextMenu()
+{
 	// Init context menu for adding nodes
 	_contextMenuAddNodes = new QMenu(this);
 
@@ -573,7 +592,7 @@ void Controller::setupNodeTypesUi()
 		{
 			lastMenu = (*iter)->parent() == nullptr || !lastMenu
 				? _contextMenuAddNodes->addMenu(text)
-				: lastMenu->addMenu(text);
+				: lastMenu->addMenu(text);		
 		}
 		// Bottom level items
 		else if((*iter)->childCount() == 0)

@@ -50,6 +50,7 @@ private:
 
 	void setupUi();
 	void setupNodeTypesUi();
+	void pupulateAddNodeContextMenu();
 	void showErrorMessage(const QString& message);
 
 	// Enables (disables) video or image control toolbar buttons
