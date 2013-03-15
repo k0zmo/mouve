@@ -139,11 +139,13 @@ private:
 	QThread _workerThread;
 	TreeWorker* _treeWorker;
 
-	// Temporary
-	QList<QAction*> _addNodesActions;
+	//
+	// UI part
+	//
 
 	Ui::MainWindow* _ui;
 	PreviewWidget* _previewWidget;
+	QMenu* _contextMenuAddNodes;
 
 	QLabel* _stateLabel;
 	EState _state;

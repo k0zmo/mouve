@@ -66,18 +66,6 @@ Controller::Controller(QWidget* parent, Qt::WindowFlags flags)
 	connect(_ui->graphicsView, &NodeEditorView::keyPress,
 		this, &Controller::keyPress);
 
-	/// TODO: Fix it - use some kind of a NodeTypeModel
-	// Get available nodes and and them to Add Node context menu
-	auto nodeTypeIterator = _nodeSystem->createNodeTypeIterator();
-	NodeTypeIterator::NodeTypeInfo info;
-	while(nodeTypeIterator->next(info))
-	{
-		QAction* action = new QAction(
-			QString::fromStdString(info.typeName), this);
-		action->setData(info.typeID);
-		_addNodesActions.append(action);
-	}
-
 	_treeWorker->moveToThread(&_workerThread);
 
 	connect(&_workerThread, &QThread::finished,
@@ -404,15 +392,18 @@ void Controller::setupUi()
 	// Menu bar actions
 	_ui->actionQuit->setShortcuts(QKeySequence::Quit);
 	connect(_ui->actionQuit, &QAction::triggered, this, &QMainWindow::close);
+	
+	QAction* actionNodes = _ui->nodesDockWidget->toggleViewAction();
+	actionNodes->setShortcut(tr("Ctrl+1"));
 
 	QAction* actionProperties = _ui->propertiesDockWidget->toggleViewAction();
-	actionProperties->setShortcut(tr("Ctrl+1"));
+	actionProperties->setShortcut(tr("Ctrl+2"));
 
 	QAction* actionPreview = _ui->previewDockWidget->toggleViewAction();
-	actionPreview->setShortcut(tr("Ctrl+2"));
+	actionPreview->setShortcut(tr("Ctrl+3"));
 
 	QAction* actionLog = _ui->logDockWidget->toggleViewAction();
-	actionLog->setShortcut(tr("Ctrl+3"));
+	actionLog->setShortcut(tr("Ctrl+4"));
 
 	// Create log view
 	LogView* logView = new LogView(this);
@@ -425,9 +416,17 @@ void Controller::setupUi()
 	setCorner(Qt::BottomLeftCorner, Qt::LeftDockWidgetArea);
 	setCorner(Qt::TopRightCorner, Qt::RightDockWidgetArea);
 	setCorner(Qt::TopLeftCorner, Qt::LeftDockWidgetArea);
-	/// tabifyDockWidget(_ui->propertiesDockWidget, _ui->previewDockWidget);
+
+	tabifyDockWidget(_ui->propertiesDockWidget, _ui->nodesDockWidget);
+
+	/// TODO: Bug in Qt 5.0.1 : Dock widget loses its frame and bar after undocked
+	_ui->nodesDockWidget->setFeatures(QDockWidget::DockWidgetClosable|QDockWidget::DockWidgetMovable);
+	_ui->propertiesDockWidget->setFeatures(QDockWidget::DockWidgetClosable|QDockWidget::DockWidgetMovable);
+	_ui->previewDockWidget->setFeatures(QDockWidget::DockWidgetClosable|QDockWidget::DockWidgetMovable);
+	_ui->logDockWidget->setFeatures(QDockWidget::DockWidgetClosable|QDockWidget::DockWidgetMovable);
 
 	// Init menu bar and its 'view' menu
+	_ui->menuView->addAction(actionNodes);
 	_ui->menuView->addAction(actionProperties);
 	_ui->menuView->addAction(actionPreview);
 	_ui->menuView->addAction(actionLog);
@@ -479,6 +478,46 @@ void Controller::setupUi()
 	// Init status bar
 	_stateLabel = new QLabel(this);
 	_ui->statusBar->addPermanentWidget(_stateLabel);
+
+	// Init nodes tree widget
+	QList<QTreeWidgetItem*> treeItems;
+	connect(_ui->nodesTreeWidget, &QTreeWidget::itemDoubleClicked, 
+		[=](QTreeWidgetItem* item, int column)
+		{
+			QGraphicsView* view = _ui->graphicsView;
+			QPointF centerPos = view->mapToScene(view->viewport()->rect().center());
+			NodeTypeID typeId = item->data(column, Qt::UserRole).toUInt();
+			if(typeId != InvalidNodeTypeID)
+				addNode(item->data(column, Qt::UserRole).toUInt(), centerPos);
+		});
+
+	// Init context menu for adding nodes
+	_contextMenuAddNodes = new QMenu(this);
+
+	auto nodeTypeIterator = _nodeSystem->createNodeTypeIterator();
+	NodeTypeIterator::NodeTypeInfo info;
+	while(nodeTypeIterator->next(info))
+	{
+		QString typeName = QString::fromStdString(info.typeName);
+		NodeTypeID typeId = info.typeID;
+
+		QStringList tokens = typeName.split('/');
+		QTreeWidgetItem* parent = nullptr;
+
+		if(tokens.count() > 1)
+		{
+			
+		}
+
+		QTreeWidgetItem* item = new QTreeWidgetItem(parent, QStringList(tokens.last()));
+		item->setData(0, Qt::UserRole, typeId);
+		treeItems.append(item);
+
+		QAction* action = new QAction(typeName, this);
+		action->setData(typeId);
+		_contextMenuAddNodes->addAction(action);
+	}
+	_ui->nodesTreeWidget->insertTopLevelItems(0, treeItems);
 }
 
 void Controller::showErrorMessage(const QString& message)
@@ -894,11 +933,7 @@ void Controller::contextMenu(const QPoint& globalPos,
 	// If the user clicked onto empty space
 	if(items.isEmpty())
 	{
-		QMenu menu;
-		//QMenu* menuAddNode = menu.addMenu("Add node");
-		foreach(QAction* a, _addNodesActions)
-			menu.addAction(a);
-		QAction* ret = menu.exec(globalPos);
+		QAction* ret = _contextMenuAddNodes->exec(globalPos);
 		if(ret != nullptr)
 			addNode(ret->data().toInt(), scenePos);
 	}
