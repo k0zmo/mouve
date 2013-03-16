@@ -16,7 +16,11 @@ class VideoFromFileNodeType : public NodeType
 {
 public:
 	VideoFromFileNodeType()
+#ifdef QT_DEBUG
 		: _videoPath("video-4.mkv")
+#else
+		: _videoPath("")
+#endif
 		, _startFrame(0)
 		, _frameInterval(0)
 	{
@@ -258,7 +262,11 @@ class ImageFromFileNodeType : public NodeType
 {
 public: 
 	ImageFromFileNodeType()
+#ifdef QT_DEBUG
 		: _filePath("lena.jpg")
+#else
+		: _filePath("")
+#endif
 	{
 	}
 
