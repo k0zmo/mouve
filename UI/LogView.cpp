@@ -45,19 +45,19 @@ LogView::~LogView()
 		it->_nextView = _nextView;
 }
 
-void LogView::debug(const char* msg)
+void LogView::debug(const QString& msg)
 {
-	qDebug(msg);
+	qDebug(qPrintable(msg));
 }
 
-void LogView::warn(const char* msg)
+void LogView::warn(const QString& msg)
 {
-	qWarning(msg);
+	qWarning(qPrintable(msg));
 }
 
-void LogView::critical(const char* msg)
+void LogView::critical(const QString& msg)
 {
-	qCritical(msg);
+	qCritical(qPrintable(msg));
 }
 
 void LogView::messageHandler(QtMsgType type, 

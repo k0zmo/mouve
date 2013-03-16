@@ -51,7 +51,6 @@ private:
 	void setupUi();
 	void setupNodeTypesUi();
 	void pupulateAddNodeContextMenu();
-	void showErrorMessage(const QString& message);
 
 	// Enables (disables) video or image control toolbar buttons
 	void switchToVideoMode();
@@ -89,6 +88,8 @@ private:
 	bool openTreeFromFileImpl(const QString& filePath);
 
 private slots:
+	void showErrorMessage(const QString& message);
+
 	// Slots for QGraphicsView's events
 	void contextMenu(const QPoint& globalPos, const QPointF& scenePos);
 	void keyPress(QKeyEvent* event);

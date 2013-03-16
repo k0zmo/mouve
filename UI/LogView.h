@@ -13,9 +13,9 @@ public:
 	~LogView() override;
 
 public slots:
-	void debug(const char* msg);
-	void warn(const char* msg);
-	void critical(const char* msg);
+	void debug(const QString& msg);
+	void warn(const QString& msg);
+	void critical(const QString& msg);
 
 private:
 	static void messageHandler(QtMsgType type, 

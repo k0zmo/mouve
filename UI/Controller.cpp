@@ -73,6 +73,8 @@ Controller::Controller(QWidget* parent, Qt::WindowFlags flags)
 		_treeWorker, &QObject::deleteLater);
 	connect(_treeWorker, &TreeWorker::completed,
 		this, &Controller::updatePreview);
+	connect(_treeWorker, &TreeWorker::error,
+		this, &Controller::showErrorMessage);
 
 	_workerThread.start();
 }

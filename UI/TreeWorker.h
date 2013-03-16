@@ -15,7 +15,7 @@ public:
 
 signals:
 	void completed();
-	void error(char const* msg);
+	void error(const QString& msg);
 
 public slots:
 	void process(bool withInit);

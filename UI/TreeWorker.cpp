@@ -27,7 +27,11 @@ void TreeWorker::process(bool withInit)
 	}
 	catch(boost::bad_get& ex)
 	{
-		emit error(ex.what());
+		emit error(QString("Bad socket connection, %1").arg(ex.what()));
+	}
+	catch(...)
+	{
+		emit error(QStringLiteral("Unknown exception was thrown"));
 	}
 
 	emit completed();
