@@ -213,9 +213,8 @@ bool NodeTree::deserializeJsonNodes(const QJsonArray& jsonNodes,
 		NodeID _nodeId = createNode(nodeTypeId, nodeName.toStdString());
 		if(_nodeId == InvalidNodeID)
 		{
-			qCritical() << QString("Couldn't create node of id: %1, type id: %2 and type name: %3")
+			qCritical() << QString("Couldn't create node of id: %1 and type name: %3")
 				.arg(nodeId)
-				.arg(nodeTypeId)
 				.arg(nodeTypeName);
 			break;
 		}

@@ -612,7 +612,7 @@ void Controller::pupulateAddNodeContextMenu()
 
 void Controller::showErrorMessage(const QString& message)
 {
-	QMessageBox::critical(nullptr, "mouve", message);
+	QMessageBox::critical(nullptr, applicationTitle, message);
 }
 
 void Controller::switchToVideoMode()
