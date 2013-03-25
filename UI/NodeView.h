@@ -31,6 +31,10 @@ public:
 	NodeSocketView* inputSocketView(SocketID socketID) const;
 	NodeSocketView* outputSocketView(SocketID socketID) const;
 
+	int outputSocketCount() const;
+	SocketID previewSocketID() const;
+	void setPreviewSocketID(SocketID socketID);
+
 protected:
 	virtual void hoverEnterEvent(QGraphicsSceneHoverEvent* event);
 	virtual void hoverLeaveEvent(QGraphicsSceneHoverEvent* event);
@@ -44,6 +48,7 @@ private:
 	QPainterPath mShape2;
 	QMap<SocketID, NodeSocketView*> mInputSocketViews;
 	QMap<SocketID, NodeSocketView*> mOutputSocketViews;
+	int mPreviewSocketID;
 	bool mPreviewSelected;
 
 private:
@@ -65,3 +70,12 @@ inline NodeSocketView* NodeView::inputSocketView(SocketID socketID) const
 
 inline NodeSocketView* NodeView::outputSocketView(SocketID socketID) const
 { return mOutputSocketViews.value(socketID); }
+
+inline int NodeView::outputSocketCount() const
+{ return mOutputSocketViews.count(); }
+
+inline SocketID NodeView::previewSocketID() const
+{ return mPreviewSocketID; }
+
+inline void NodeView::setPreviewSocketID(SocketID socketID)
+{ mPreviewSocketID = socketID; }

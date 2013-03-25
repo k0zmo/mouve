@@ -14,6 +14,7 @@ NodeView::NodeView(const QString& title,
 	, mLabel(new QGraphicsSimpleTextItem(this))
 	, mTypeLabel(new QGraphicsSimpleTextItem(this))
 	, mDropShadowEffect(new QGraphicsDropShadowEffect(this))
+	, mPreviewSocketID(0)
 	, mPreviewSelected(false)
 {
 	setFlag(QGraphicsItem::ItemIsMovable);

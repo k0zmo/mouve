@@ -705,9 +705,7 @@ void Controller::updatePreviewImpl()
 	if(_previewSelectedNodeView != nullptr)
 	{
 		NodeID nodeID = _previewSelectedNodeView->nodeKey();
-		/// xXx: For now we preview only first output socket
-		///      This shouldn't be much a problem for now
-		SocketID socketID = 0;
+		SocketID socketID = _previewSelectedNodeView->previewSocketID();
 
 		const NodeFlowData& outputData = _nodeTree->outputSocket(nodeID, socketID);
 
@@ -1037,15 +1035,41 @@ void Controller::contextMenu(const QPoint& globalPos,
 
 			if(item->type() == NodeView::Type)
 			{
-				QAction action("Remove node", nullptr);
 				QMenu menu;
-				menu.addAction(&action);
-				QAction* ret = menu.exec(globalPos);
-				if(ret != nullptr)
+				QAction actionRemoveNode("Remove node", nullptr);
+				menu.addAction(&actionRemoveNode);
+
+				NodeView* nodeView = static_cast<NodeView*>(item);
+				int previewsCount = nodeView->outputSocketCount();
+				if(previewsCount > 0)
 				{
-					NodeView* nodeView = static_cast<NodeView*>(item);
-					deleteNode(nodeView);
+					menu.addSeparator();
+
+					int curr = nodeView->previewSocketID();
+					for(int i = 0; i < previewsCount; ++i)
+					{
+						QAction* actionPreviewSocket = new QAction
+							(QString("Preview socket: %1").arg(i), &menu);
+						actionPreviewSocket->setCheckable(true);
+						actionPreviewSocket->setChecked(i == curr);
+						actionPreviewSocket->setData(i);
+						connect(actionPreviewSocket, &QAction::triggered,
+							[=](bool checked)
+							{
+								if(checked)
+								{
+									nodeView->setPreviewSocketID
+										(actionPreviewSocket->data().toInt());
+									updatePreviewImpl();
+								}
+							});
+						menu.addAction(actionPreviewSocket);
+					}
 				}
+
+				QAction* ret = menu.exec(globalPos);
+				if(ret == &actionRemoveNode)
+					deleteNode(nodeView);
 				return;
 			}
 		}
