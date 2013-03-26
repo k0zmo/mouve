@@ -29,6 +29,7 @@
 #include <QSettings>
 #include <QDesktopWidget>
 #include <QDebug>
+#include <QProgressBar>
 
 #include <QJsonDocument>
 #include <QJsonObject>
@@ -486,6 +487,14 @@ void Controller::setupUi()
 	_stateLabel = new QLabel(this);
 	_ui->statusBar->addPermanentWidget(_stateLabel);
 
+	// Init worker thread progress bar
+	_progressBar = new QProgressBar(this);
+	_progressBar->setFixedSize(200, _ui->statusBar->sizeHint().height() - 6);
+	_progressBar->setRange(0, 0);
+	_ui->statusBar->setFixedHeight(_ui->statusBar->sizeHint().height());
+	_ui->statusBar->addWidget(_progressBar);
+	_ui->statusBar->removeWidget(_progressBar);
+
 	// Init nodes tree widget
 	setupNodeTypesUi();
 	// Init context menu for adding nodes
@@ -736,13 +745,22 @@ void Controller::setInteractive(bool allowed)
 
 	if(allowed)
 	{
+		if(!_videoMode)
+			_ui->statusBar->removeWidget(_progressBar);
 		_nodeScene->setBackgroundBrush(NodeStyle::SceneBackground);
 		_ui->propertiesTreeView->setEditTriggers(QAbstractItemView::AllEditTriggers);
 	}
 	else
 	{
 		if(_videoMode)
+		{
 			_nodeScene->setBackgroundBrush(NodeStyle::SceneBlockedBackground);
+		}
+		else
+		{
+			_ui->statusBar->addWidget(_progressBar);
+			_progressBar->show();
+		}
 		_ui->propertiesTreeView->setEditTriggers(QAbstractItemView::NoEditTriggers);
 	}
 
@@ -1247,6 +1265,7 @@ void Controller::changeProperty(NodeID nodeID,
 	}
 	else
 	{
+		*ok = false;
 		qWarning() << "Bad value for nodeID:" << nodeID << 
 			", propertyID:" << propID << ", newValue:" << newValue;
 	}

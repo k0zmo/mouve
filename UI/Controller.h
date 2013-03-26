@@ -13,6 +13,7 @@ class QGraphicsScene;
 class QGraphicsWidget;
 class QLabel;
 class TreeWorker;
+class QProgressBar;
 
 enum class EState
 {
@@ -141,6 +142,7 @@ private:
 
 	QThread _workerThread;
 	TreeWorker* _treeWorker;
+	QProgressBar* _progressBar;
 
 	//
 	// UI part
