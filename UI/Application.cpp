@@ -1,7 +1,7 @@
 #include <QApplication>
 #include "Controller.h"
 
-#if _DEBUG
+#if _DEBUG && defined(HAVE_VLD)
 #  include <vld.h>
 #endif
 
