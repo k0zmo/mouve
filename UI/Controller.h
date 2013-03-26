@@ -14,6 +14,7 @@ class QGraphicsWidget;
 class QLabel;
 class TreeWorker;
 class QProgressBar;
+class QTreeWidgetItem;
 
 enum class EState
 {
@@ -51,7 +52,9 @@ private:
 
 	void setupUi();
 	void setupNodeTypesUi();
-	void pupulateAddNodeContextMenu();
+	void addNodeTypeTreeItem(NodeTypeID typeId,
+		const QStringList& tokens, QList<QTreeWidgetItem*>& treeItems);
+	void populateAddNodeContextMenu();
 
 	// Enables (disables) video or image control toolbar buttons
 	void switchToVideoMode();

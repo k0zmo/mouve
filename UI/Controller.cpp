@@ -45,12 +45,21 @@ template<> Controller* Singleton<Controller>::_singleton = nullptr;
 Controller::Controller(QWidget* parent, Qt::WindowFlags flags)
 	: QMainWindow(parent, flags)
 	, _previewSelectedNodeView(nullptr)
+	, _nodeScene(nullptr)
 	, _propManager(new PropertyManager(this))
 	, _nodeSystem(new NodeSystem())
+	, _nodeTree(nullptr)
+	, _workerThread(QThread())
 	, _treeWorker(new TreeWorker())
+	, _progressBar(nullptr)
 	, _ui(new Ui::MainWindow())
+	, _previewWidget(nullptr)
+	, _contextMenuAddNodes(nullptr)
+	, _stateLabel(nullptr)
+	, _state(EState::Stopped)
 	, _videoMode(false)
 	, _startWithInit(true)
+	, _nodeTreeFilePath(QString())
 	, _nodeTreeDirty(false)
 {
 	QCoreApplication::setApplicationName(applicationTitle);
@@ -498,12 +507,11 @@ void Controller::setupUi()
 	// Init nodes tree widget
 	setupNodeTypesUi();
 	// Init context menu for adding nodes
-	pupulateAddNodeContextMenu();
+	populateAddNodeContextMenu();
 }
 
 void Controller::setupNodeTypesUi()
 {
-	QList<QTreeWidgetItem*> treeItems;
 	connect(_ui->nodesTreeWidget, &QTreeWidget::itemDoubleClicked, 
 		[=](QTreeWidgetItem* item, int column)
 		{
@@ -514,77 +522,84 @@ void Controller::setupNodeTypesUi()
 				addNode(item->data(column, Qt::UserRole).toUInt(), centerPos);
 		});
 
+	QList<QTreeWidgetItem*> treeItems;
 	auto nodeTypeIterator = _nodeSystem->createNodeTypeIterator();
 	NodeTypeIterator::NodeTypeInfo info;
 	while(nodeTypeIterator->next(info))
 	{
 		QString typeName = QString::fromStdString(info.typeName);
-		NodeTypeID typeId = info.typeID;
-
 		QStringList tokens = typeName.split('/');
-		QTreeWidgetItem* parent = nullptr;
-
-		auto findItem = [=](const QString& text) -> QTreeWidgetItem*
-		{
-			for(const auto item : treeItems)
-				if(item->text(0) == text)
-					return item;
-			return nullptr;
-		};
-
-		auto findChild = [=](const QTreeWidgetItem* parent,
-			const QString& text) -> QTreeWidgetItem*
-		{
-			for(int i = 0; i < parent->childCount(); ++i)
-			{
-				QTreeWidgetItem* item = parent->child(i);
-				if(item->text(0) == text)
-					return item;
-			}
-			return nullptr;
-		};
-
-		if(tokens.count() > 1)
-		{
-			for(int level = 0; level < tokens.count() - 1; ++level)
-			{
-				QString parentToken = tokens[level];
-				QTreeWidgetItem* p = level == 0 
-					? findItem(parentToken)
-					: findChild(parent, parentToken);
-				if(!p)
-				{
-					p = new QTreeWidgetItem(parent, QStringList(parentToken));
-					if(level == 0)
-						treeItems.append(p);
-				}
-				parent = p;
-			}
-		}
-
-		QTreeWidgetItem* item = new QTreeWidgetItem(parent);
-		item->setText(0, tokens.last());
-		item->setData(0, Qt::UserRole, typeId);
-
-		treeItems.append(item);
+		addNodeTypeTreeItem(info.typeID, tokens, treeItems);
 	}
-	_ui->nodesTreeWidget->insertTopLevelItems(0, treeItems);
 
 	// Set proper item flags
-	QTreeWidgetItemIterator it(_ui->nodesTreeWidget);
-	while(*it)
+	for(QTreeWidgetItem* item : treeItems)
 	{
 		Qt::ItemFlags flags = Qt::ItemIsSelectable | Qt::ItemIsEnabled;
 		// Is it leaf?
-		if((*it)->childCount() == 0)
+		if(item->childCount() == 0)
 			flags |=  Qt::ItemIsDragEnabled;			
-		(*it)->setFlags(flags);
-		++it;
+		item->setFlags(flags);
 	}
+
+	_ui->nodesTreeWidget->insertTopLevelItems(0, treeItems);
 }
 
-void Controller::pupulateAddNodeContextMenu()
+void Controller::addNodeTypeTreeItem(NodeTypeID typeId, const QStringList& tokens,
+									 QList<QTreeWidgetItem*>& treeItems)
 {
+	QTreeWidgetItem* parent = nullptr;
+
+	auto findItem = [=](const QString& text) -> QTreeWidgetItem*
+	{
+		for(const auto item : treeItems)
+			if(item->text(0) == text)
+				return item;
+		return nullptr;
+	};
+
+	auto findChild = [=](const QTreeWidgetItem* parent,
+		const QString& text) -> QTreeWidgetItem*
+	{
+		for(int i = 0; i < parent->childCount(); ++i)
+		{
+			QTreeWidgetItem* item = parent->child(i);
+			if(item->text(0) == text)
+				return item;
+		}
+		return nullptr;
+	};
+
+	if(tokens.count() > 1)
+	{
+		for(int level = 0; level < tokens.count() - 1; ++level)
+		{
+			QString parentToken = tokens[level];
+			QTreeWidgetItem* p = level == 0 
+				? findItem(parentToken)
+				: findChild(parent, parentToken);
+			if(!p)
+			{
+				p = new QTreeWidgetItem(parent, QStringList(parentToken));
+				if(level == 0)
+					treeItems.append(p);
+			}
+			parent = p;
+		}
+	}
+
+	QTreeWidgetItem* item = new QTreeWidgetItem(parent);
+	item->setText(0, tokens.last());
+	item->setData(0, Qt::UserRole, typeId);
+
+	treeItems.append(item);
+}
+
+void Controller::populateAddNodeContextMenu()
+{
+	if(_contextMenuAddNodes)
+		_contextMenuAddNodes->deleteLater();
+
 	// Init context menu for adding nodes
 	_contextMenuAddNodes = new QMenu(this);
 
