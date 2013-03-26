@@ -741,7 +741,8 @@ void Controller::setInteractive(bool allowed)
 	}
 	else
 	{
-		_nodeScene->setBackgroundBrush(NodeStyle::SceneBlockedBackground);
+		if(_videoMode)
+			_nodeScene->setBackgroundBrush(NodeStyle::SceneBlockedBackground);
 		_ui->propertiesTreeView->setEditTriggers(QAbstractItemView::NoEditTriggers);
 	}
 
@@ -1192,6 +1193,12 @@ void Controller::changeProperty(NodeID nodeID,
 								const QVariant& newValue,
 								bool* ok)
 {
+	if(_ui->graphicsView->isPseudoInteractive())
+	{
+		*ok = false;
+		return;
+	}
+
 	qDebug() << "Property changed! details: nodeID:" << nodeID << ", propID:" << propID << "newValue:" << newValue;
 
 	// 'System' property
@@ -1334,6 +1341,9 @@ void Controller::updatePreview()
 
 void Controller::singleStep()
 {
+	if(_ui->graphicsView->isPseudoInteractive())
+		return;
+
 	_nodeTree->prepareList();
 	auto executeList = _nodeTree->executeList();
 
@@ -1348,9 +1358,6 @@ void Controller::singleStep()
 	// Single step in image mode
 	if(!_videoMode)
 	{
-		if(_ui->graphicsView->isPseudoInteractive())
-			return;
-
 		setInteractive(false);
 		queueProcessing(false);
 	}
