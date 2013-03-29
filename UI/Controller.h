@@ -60,7 +60,7 @@ private:
 	void switchToVideoMode();
 	void switchToImageMode();
 
-	void updateStatusBar(EState state);
+	void updateState(EState state);
 
 	// Auto-refresh functionality
 	bool isAutoRefresh();
@@ -78,6 +78,9 @@ private:
 	// If changes are not saved shows adequate message 
 	// Returns false if user "changed his mind"
 	bool canQuit();
+
+	// Returns true if there isn't any job pending or being processed
+	bool treeIdle();
 
 	// Creating new node tree
 	void clearTreeView();
@@ -157,6 +160,7 @@ private:
 
 	QLabel* _stateLabel;
 	EState _state;
+	bool _processing;
 	bool _videoMode;
 	bool _startWithInit;
 

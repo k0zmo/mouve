@@ -57,6 +57,7 @@ Controller::Controller(QWidget* parent, Qt::WindowFlags flags)
 	, _contextMenuAddNodes(nullptr)
 	, _stateLabel(nullptr)
 	, _state(EState::Stopped)
+	, _processing(false)
 	, _videoMode(false)
 	, _startWithInit(true)
 	, _nodeTreeFilePath(QString())
@@ -66,7 +67,9 @@ Controller::Controller(QWidget* parent, Qt::WindowFlags flags)
 	QCoreApplication::setOrganizationName(applicationTitle);
 
 	setupUi();
-	updateStatusBar(EState::Stopped);
+	setupNodeTypesUi();
+	populateAddNodeContextMenu();
+	updateState(EState::Stopped);
 	updateTitleBar();
 	createNewNodeScene();
 
@@ -101,6 +104,7 @@ Controller::~Controller()
 
 void Controller::closeEvent(QCloseEvent* event)
 {
+	// If processing, dtor of controller will wait and then shutdown itself
 	if(_state == EState::Playing)
 		stop();
 
@@ -230,7 +234,6 @@ void Controller::addNodeView(const QString& nodeTitle,
 	Q_ASSERT(propModel);
 	connect(propModel, &PropertyModel::propertyChanged,
 		this, &Controller::changeProperty);
-
 	connect(nodeView, &NodeView::mouseDoubleClicked,
 		this, &Controller::mouseDoubleClickNodeView);
 
@@ -254,7 +257,7 @@ void Controller::linkNodes(NodeID fromNodeID, SocketID fromSocketID,
 		return;
 	}
 
-	/// xXx: Add some checking to release
+	/// TODO: Add some checking to release
 	Q_ASSERT(_nodeViews[fromNodeID]);
 	Q_ASSERT(_nodeViews[toNodeID]);
 
@@ -268,7 +271,7 @@ void Controller::linkNodes(NodeID fromNodeID, SocketID fromSocketID,
 
 void Controller::linkNodesView(NodeSocketView* from, NodeSocketView* to)
 {
-	/// xXx: Add some checking to release
+	/// TODO: Add some checking to release
 	Q_ASSERT(from);
 	Q_ASSERT(to);
 
@@ -285,7 +288,7 @@ void Controller::linkNodesView(NodeSocketView* from, NodeSocketView* to)
 
 void Controller::unlinkNodes(NodeLinkView* linkView)
 {
-	/// xXx: Add some checking to release
+	/// TODO: Add some checking to release
 	Q_ASSERT(linkView);
 	Q_ASSERT(linkView->fromSocketView());
 	Q_ASSERT(linkView->toSocketView());	
@@ -298,7 +301,7 @@ void Controller::unlinkNodes(NodeLinkView* linkView)
 	SocketAddress addrTo(to->nodeView()->nodeKey(), 
 						 to->socketKey(), false);
 
-	/// xXx: give a reason
+	/// TODO: give a reason
 	if(!_nodeTree->unlinkNodes(addrFrom, addrTo))
 	{
 		showErrorMessage("[NodeTree] Couldn't unlinked given sockets");
@@ -337,10 +340,10 @@ void Controller::deleteNode(NodeView* nodeView)
 
 	// Remove incoming and outgoing links
 	// This should be done in cooperation with model but it would probably make the case harder
-	/// xXx: Mark this as minor TODO
-	///      We could retrieve the list of all removed links from NodeTree::removeNode 
-	///      We would also need a method:
-	///      NodeLinkView* resolveLinkView(const NodeLink& nodeLink);
+	/// TODO: Mark this as minor TODO
+	///       We could retrieve the list of all removed links from NodeTree::removeNode 
+	///       We would also need a method:
+	///       NodeLinkView* resolveLinkView(const NodeLink& nodeLink);
 	QMutableListIterator<NodeLinkView*> it(_linkViews);
 	while(it.hasNext())
 	{
@@ -503,11 +506,6 @@ void Controller::setupUi()
 	_ui->statusBar->setFixedHeight(_ui->statusBar->sizeHint().height());
 	_ui->statusBar->addWidget(_progressBar);
 	_ui->statusBar->removeWidget(_progressBar);
-
-	// Init nodes tree widget
-	setupNodeTypesUi();
-	// Init context menu for adding nodes
-	populateAddNodeContextMenu();
 }
 
 void Controller::setupNodeTypesUi()
@@ -665,7 +663,7 @@ void Controller::switchToImageMode()
 	_videoMode = false;
 }
 
-void Controller::updateStatusBar(EState state)
+void Controller::updateState(EState state)
 {
 	_state  = state;
 
@@ -681,7 +679,6 @@ void Controller::updateStatusBar(EState state)
 		_stateLabel->setText("Paused");
 		break;
 	}
-	
 }
 
 bool Controller::isAutoRefresh()
@@ -692,12 +689,13 @@ bool Controller::isAutoRefresh()
 void Controller::processAutoRefresh()
 {
 	// Execute if auto refresh is on
-	if(!_videoMode && isAutoRefresh())
+	if(!_videoMode && isAutoRefresh() && treeIdle())
 		singleStep();
 }
 
 void Controller::queueProcessing(bool withInit)
 {
+	_processing = true;
 	QMetaObject::invokeMethod(_treeWorker, 
 		"process", Qt::QueuedConnection,
 		Q_ARG(bool, withInit));
@@ -756,12 +754,12 @@ void Controller::updatePreviewImpl()
 
 void Controller::setInteractive(bool allowed)
 {
-	_ui->graphicsView->setPseudoInteractive(allowed);
-
 	if(allowed)
 	{
 		if(!_videoMode)
+		{
 			_ui->statusBar->removeWidget(_progressBar);
+		}
 		_nodeScene->setBackgroundBrush(NodeStyle::SceneBackground);
 		_ui->propertiesTreeView->setEditTriggers(QAbstractItemView::AllEditTriggers);
 	}
@@ -1057,9 +1055,12 @@ void Controller::contextMenu(const QPoint& globalPos,
 	// If the user clicked onto empty space
 	if(items.isEmpty())
 	{
-		QAction* ret = _contextMenuAddNodes->exec(globalPos);
-		if(ret != nullptr)
-			addNode(ret->data().toInt(), scenePos);
+		if(treeIdle())
+		{
+			QAction* ret = _contextMenuAddNodes->exec(globalPos);
+			if(ret != nullptr)
+				addNode(ret->data().toInt(), scenePos);
+		}
 	}
 	else
 	{
@@ -1071,13 +1072,15 @@ void Controller::contextMenu(const QPoint& globalPos,
 			{
 				QMenu menu;
 				QAction actionRemoveNode("Remove node", nullptr);
-				menu.addAction(&actionRemoveNode);
+				if(treeIdle())
+					menu.addAction(&actionRemoveNode);
 
 				NodeView* nodeView = static_cast<NodeView*>(item);
 				int previewsCount = nodeView->outputSocketCount();
 				if(previewsCount > 0)
 				{
-					menu.addSeparator();
+					if(_state == EState::Stopped && !_processing)
+						menu.addSeparator();
 
 					int curr = nodeView->previewSocketID();
 					for(int i = 0; i < previewsCount; ++i)
@@ -1102,7 +1105,7 @@ void Controller::contextMenu(const QPoint& globalPos,
 				}
 
 				QAction* ret = menu.exec(globalPos);
-				if(ret == &actionRemoveNode)
+				if(ret == &actionRemoveNode && treeIdle())
 					deleteNode(nodeView);
 				return;
 			}
@@ -1110,8 +1113,12 @@ void Controller::contextMenu(const QPoint& globalPos,
 	}
 }
 
+
 void Controller::keyPress(QKeyEvent* event)
 {
+	if(!treeIdle())
+		return;
+
 	if(event->key() == Qt::Key_Delete)
 	{
 		QList<QGraphicsItem*> selectedItems = _nodeScene->selectedItems();
@@ -1152,21 +1159,22 @@ void Controller::keyPress(QKeyEvent* event)
 
 void Controller::draggingLinkDrop(QGraphicsWidget* from, QGraphicsWidget* to)
 {
-	if(!_ui->graphicsView->isPseudoInteractive())
-	{
-		auto fromSocket = static_cast<NodeSocketView*>(from);
-		auto toSocket = static_cast<NodeSocketView*>(to);
+	/// TODO: Do not let connector view to even start dragging
+	if(!treeIdle())
+		return;
 
-		Q_ASSERT(fromSocket);
-		Q_ASSERT(toSocket);
-		Q_ASSERT(fromSocket->nodeView());
-		Q_ASSERT(toSocket->nodeView());
+	auto fromSocket = static_cast<NodeSocketView*>(from);
+	auto toSocket = static_cast<NodeSocketView*>(to);
 
-		linkNodes(fromSocket->nodeView()->nodeKey(),
-			fromSocket->socketKey(),
-			toSocket->nodeView()->nodeKey(),
-			toSocket->socketKey());
-	}
+	Q_ASSERT(fromSocket);
+	Q_ASSERT(toSocket);
+	Q_ASSERT(fromSocket->nodeView());
+	Q_ASSERT(toSocket->nodeView());
+
+	linkNodes(fromSocket->nodeView()->nodeKey(),
+		fromSocket->socketKey(),
+		toSocket->nodeView()->nodeKey(),
+		toSocket->socketKey());
 }
 
 void Controller::mouseDoubleClickNodeView(NodeView* nodeView)
@@ -1226,13 +1234,14 @@ void Controller::changeProperty(NodeID nodeID,
 								const QVariant& newValue,
 								bool* ok)
 {
-	if(_ui->graphicsView->isPseudoInteractive())
+	if(!treeIdle())
 	{
 		*ok = false;
 		return;
 	}
 
-	qDebug() << "Property changed! details: nodeID:" << nodeID << ", propID:" << propID << "newValue:" << newValue;
+	//qDebug() << "Property changed! details: nodeID:" << 
+	//	nodeID << ", propID:" << propID << "newValue:" << newValue;
 
 	// 'System' property
 	if(propID < 0)
@@ -1349,10 +1358,13 @@ void Controller::updatePreview()
 
 	if(!_videoMode)
 	{
+		// Job is done - enable editing
+		_processing = false;
 		setInteractive(true);
 	}
 	else
 	{
+		// Peek if it's a last "frame"
 		if(_state != EState::Stopped)
 		{
 			_nodeTree->prepareList();
@@ -1360,6 +1372,7 @@ void Controller::updatePreview()
 
 			if(executeList.empty())
 			{
+				_processing = false;
 				stop();
 				return;
 			}
@@ -1370,12 +1383,16 @@ void Controller::updatePreview()
 			// Keep playing 
 			queueProcessing(false);
 		}
+		else
+		{
+			_processing = false;
+		}
 	}
 }
 
 void Controller::singleStep()
 {
-	if(_ui->graphicsView->isPseudoInteractive())
+	if(_processing)
 		return;
 
 	_nodeTree->prepareList();
@@ -1401,7 +1418,7 @@ void Controller::singleStep()
 		if(_state == EState::Stopped)
 		{
 			// If we started playing using "Step" button we need to update these
-			updateStatusBar(EState::Paused);
+			updateState(EState::Paused);
 			setInteractive(false);
 			_ui->actionStop->setEnabled(true);
 		}
@@ -1413,7 +1430,6 @@ void Controller::singleStep()
 
 void Controller::autoRefresh()
 {
-	/// TODO: change itemdelegate updateimmediate
 	processAutoRefresh();
 }
 
@@ -1421,10 +1437,7 @@ void Controller::play()
 {
 	if(_state != EState::Playing)
 	{
-		queueProcessing(_startWithInit);
-		_startWithInit = false;
-
-		updateStatusBar(EState::Playing);
+		updateState(EState::Playing);
 
 		_ui->actionPause->setEnabled(true);
 		_ui->actionStop->setEnabled(true);
@@ -1432,6 +1445,10 @@ void Controller::play()
 		_ui->actionSingleStep->setEnabled(false);
 
 		setInteractive(false);
+
+		// Finally, start processing (on worker thread)
+		queueProcessing(_startWithInit);
+		_startWithInit = false;
 	}
 }
 
@@ -1440,7 +1457,7 @@ void Controller::pause()
 	if(_state == EState::Playing)
 	{
 		// On next time process() won't be invoke
-		updateStatusBar(EState::Paused);
+		updateState(EState::Paused);
 
 		_ui->actionPause->setEnabled(false);
 		_ui->actionStop->setEnabled(true);
@@ -1454,10 +1471,11 @@ void Controller::stop()
 	if(_state != EState::Stopped)
 	{
 		// On next time process() won't be invoke
-		updateStatusBar(EState::Stopped);
+		updateState(EState::Stopped);
 
+		// On next time start with init step
 		_startWithInit = true;
-
+		// And tag nodes that are self-taggable (like video source)
 		_nodeTree->tagAutoNodes();
 
 		_ui->actionPause->setEnabled(false);
@@ -1465,6 +1483,7 @@ void Controller::stop()
 		_ui->actionPlay->setEnabled(true);
 		_ui->actionSingleStep->setEnabled(true);
 
+		// Also, allow for further editing
 		setInteractive(true);
 	}
 }
@@ -1492,4 +1511,9 @@ void Controller::fitToView()
 	QTransform t = _ui->graphicsView->transform();
 	
 	_ui->graphicsView->setZoom(t.m11());
+}
+
+bool Controller::treeIdle()
+{
+	return _state == EState::Stopped && !_processing;
 }

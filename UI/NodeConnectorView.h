@@ -16,7 +16,6 @@ public:
 	virtual void paint(QPainter* painter, 
 		const QStyleOptionGraphicsItem* option, QWidget *widget);
 	virtual QRectF boundingRect() const;
-	/// xXx: virtual QPainterPath shape() const;
 	virtual int type() const;
 
 	void setBrushGradient(const QColor& start, const QColor& stop);

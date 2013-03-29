@@ -12,7 +12,6 @@ NodeEditorView::NodeEditorView(QWidget* parent)
 	, mPanning(false)
 	, mOriginalCursor(viewport()->cursor())
 	, mLastMouseEventPos(QPoint())
-	, mPseudoInteractive(false)
 {
 	setRenderHint(QPainter::Antialiasing);
 	scale(mZoom, mZoom);
@@ -93,19 +92,13 @@ void NodeEditorView::wheelEvent(QWheelEvent* event)
 
 void NodeEditorView::contextMenuEvent(QContextMenuEvent* event)
 {
-	if(!mPanning && !isPseudoInteractive())
+	if(!mPanning)
 		emit contextMenu(event->globalPos(), mapToScene(event->pos()));
 }
 
 void NodeEditorView::keyPressEvent(QKeyEvent* event)
 {
-	if(!isPseudoInteractive())
-		emit keyPress(event);
-}
-
-void NodeEditorView::setPseudoInteractive(bool allowed)
-{
-	mPseudoInteractive = !allowed;
+	emit keyPress(event);
 }
 
 void NodeEditorView::dragEnterEvent(QDragEnterEvent* event)
