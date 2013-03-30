@@ -102,7 +102,8 @@ public:
 			{
 				milliseconds waitDuration = milliseconds(_frameInterval) - dura;
 				std::this_thread::sleep_for(waitDuration);
-				start += waitDuration.count() * 1e-3;
+				// New start time
+				start = _clock.currentTimeInSeconds();
 			}
 
 			_capture.read(buffer);
@@ -876,6 +877,39 @@ private:
 	bool _inv;
 };
 
+class OtsuThresholdingNodeType : public NodeType
+{
+public:
+	ExecutionStatus execute(NodeSocketReader& reader, NodeSocketWriter& writer) override
+	{
+		const cv::Mat& src = reader.readSocket(0).getImage();
+		cv::Mat& dst = writer.acquireSocket(0).getImage();
+
+		if(src.rows == 0 || src.cols == 0 || src.type() != CV_8U)
+			return ExecutionStatus(EStatus::Ok);
+
+		cv::threshold(src, dst, 0, 255, cv::THRESH_OTSU);
+
+		return ExecutionStatus(EStatus::Ok);
+	}
+
+	void configuration(NodeConfig& nodeConfig) const override
+	{
+		static const InputSocketConfig in_config[] = {
+			{ ENodeFlowDataType::Image, "source", "Source", "" },
+			{ ENodeFlowDataType::Invalid, "", "", "" }
+		};
+		static const OutputSocketConfig out_config[] = {
+			{ ENodeFlowDataType::Image, "output", "Output", "" },
+			{ ENodeFlowDataType::Invalid, "", "", "" }
+		};
+
+		nodeConfig.description = "Creates a binary image by segmenting pixel values to 0 or 1 using histogram";
+		nodeConfig.pInputSockets = in_config;
+		nodeConfig.pOutputSockets = out_config;
+	}
+};
+
 class CustomConvolutionNodeType : public NodeType
 {
 public:
@@ -1316,6 +1350,164 @@ public:
 	}
 };
 
+#if defined(Q_CC_MSVC)
+#  include <ppl.h>
+#endif
+
+class BackgroundSubtractorNodeType : public NodeType
+{
+public:
+	BackgroundSubtractorNodeType()
+		: _alpha(0.92)
+		, _threshCoeff(3)
+	{
+	}
+
+	bool setProperty(PropertyID propId, const QVariant& newValue) override
+	{
+		switch(propId)
+		{
+		case ID_Alpha:
+			_alpha = newValue.toDouble();
+			return true;
+		case ID_ThresholdCoeff:
+			_threshCoeff = newValue.toDouble();
+			return true;
+		}
+
+		return false;
+	}
+
+	QVariant property(PropertyID propId) const override
+	{
+		switch(propId)
+		{
+		case ID_Alpha: return _alpha;
+		case ID_ThresholdCoeff: return _threshCoeff;
+		}
+		return QVariant();
+	}
+
+	bool initialize() override
+	{
+		_frameN1 = cv::Mat();
+		_frameN2 = cv::Mat();
+		return true;
+	}
+
+	ExecutionStatus execute(NodeSocketReader& reader, NodeSocketWriter& writer) override
+	{
+		const cv::Mat& frame = reader.readSocket(0).getImage();
+
+		cv::Mat& background = writer.acquireSocket(0).getImage();
+		cv::Mat& movingPixels = writer.acquireSocket(1).getImage();
+		cv::Mat& threshold = writer.acquireSocket(2).getImage();
+
+		if(frame.empty())
+			return ExecutionStatus(EStatus::Ok);
+
+		if(!_frameN2.empty()
+			&& _frameN2.size() == frame.size())
+		{
+			if(background.empty()
+				|| background.size() != frame.size())
+			{
+				background.create(frame.size(), CV_8UC1);
+				background = cv::Scalar(0);
+				movingPixels.create(frame.size(), CV_8UC1);
+				movingPixels = cv::Scalar(0);
+				threshold.create(frame.size(), CV_8UC1);
+				threshold = cv::Scalar(127);
+			}
+
+#if defined(Q_CC_MSVC)
+			concurrency::parallel_for(0, frame.rows, [&](int y)
+#else
+			#pragma omp parallel for
+			for(int y = 0; y < frame.rows; ++y)
+#endif
+			{
+				for(int x = 0; x < frame.cols; ++x)
+				{
+					uchar thresh = threshold.at<uchar>(y, x);
+					uchar pix = frame.at<uchar>(y, x);
+
+					// Find moving pixels
+					bool moving = std::abs(pix - _frameN1.at<uchar>(y, x)) > thresh
+						&& std::abs(pix - _frameN2.at<uchar>(y, x)) > thresh;
+					movingPixels.at<uchar>(y, x) = moving ? 255 : 0;
+
+					const int minThreshold = 20;
+
+					if(!moving)
+					{
+						// Update background image
+						uchar newBackground = _alpha*float(background.at<uchar>(y, x)) + (1-_alpha)*float(pix);
+						background.at<uchar>(y, x) = newBackground;
+
+						// Update threshold image
+						float thresh = _alpha*float(threshold.at<uchar>(y, x)) + 
+							(1-_alpha)*(_threshCoeff * std::abs(pix - newBackground));
+						if(thresh > float(minThreshold))
+							threshold.at<uchar>(y, x) = thresh;
+					}
+					else
+					{
+						// Update threshold image
+						threshold.at<uchar>(y, x) = minThreshold;
+					}
+				}
+			}
+#if defined(Q_CC_MSVC)
+			);
+#endif
+		}
+
+		_frameN2 = _frameN1;
+		_frameN1 = frame.clone();
+
+		return ExecutionStatus(EStatus::Ok);
+	}
+
+	void configuration(NodeConfig& nodeConfig) const override
+	{
+		static const InputSocketConfig in_config[] = {
+			{ ENodeFlowDataType::Image, "source", "Source", "" },
+			{ ENodeFlowDataType::Invalid, "", "", "" }
+		};
+		static const OutputSocketConfig out_config[] = {
+			{ ENodeFlowDataType::Image, "background", "Background", "" },
+			{ ENodeFlowDataType::Image, "movingPixels", "Moving pixels", "" },
+			{ ENodeFlowDataType::Image, "threshold", "Threshold image", "" },
+			{ ENodeFlowDataType::Invalid, "", "", "" }
+		};
+		static const PropertyConfig prop_config[] = {
+			{ EPropertyType::Double, "Alpha", "min:0.0, max:1.0, decimals:3" },
+			{ EPropertyType::Double, "Threshold coeff.", "min:0.0, decimals:3" },
+			{ EPropertyType::Unknown, "", "" }
+		};
+
+		nodeConfig.description = "";
+		nodeConfig.pInputSockets = in_config;
+		nodeConfig.pOutputSockets = out_config;
+		nodeConfig.pProperties = prop_config;
+		nodeConfig.flags = Node_HasState;
+	}
+
+private:
+	enum EPropertyID
+	{
+		ID_Alpha,
+		ID_ThresholdCoeff
+	};
+
+	cv::Mat _frameN1; // I_{n-1}
+	cv::Mat _frameN2; // I_{n-2}
+	float _alpha;
+	float _threshCoeff;
+};
+
+REGISTER_NODE("Video/Background subtraction", BackgroundSubtractorNodeType)
 REGISTER_NODE("Video/Mixture of Gaussians", MixtureOfGaussianNodeType)
 
 REGISTER_NODE("Edge/Canny edge detector", CannyEdgeDetectorNodeType)
@@ -1329,6 +1521,7 @@ REGISTER_NODE("Image/Predefined convolution", PredefinedConvolutionNodeType)
 REGISTER_NODE("Image/Morphology op.", MorphologyNodeType)
 REGISTER_NODE("Image/Gaussian blur", GaussianBlurNodeType)
 
+REGISTER_NODE("Segmentation/Otsu's thresholding", OtsuThresholdingNodeType)
 REGISTER_NODE("Segmentation/Binarization", BinarizationNodeType)
 
 REGISTER_NODE("Arithmetic/Negate", NegateNodeType)
