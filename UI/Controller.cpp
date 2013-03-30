@@ -670,13 +670,19 @@ void Controller::updateState(EState state)
 	switch(_state)
 	{
 	case EState::Stopped:
-		_stateLabel->setText("Stopped (Editing allowed)");
+		if(_processing)
+			_stateLabel->setText("Stopped (wait)");
+		else
+			_stateLabel->setText("Stopped (editing allowed)");
 		break;
 	case EState::Playing:
 		_stateLabel->setText("Playing");
 		break;
 	case EState::Paused:
-		_stateLabel->setText("Paused");
+		if(_processing)
+			_stateLabel->setText("Paused (wait)");
+		else
+			_stateLabel->setText("Paused");
 		break;
 	}
 }
@@ -758,6 +764,8 @@ void Controller::setInteractive(bool allowed)
 	{
 		if(!_videoMode)
 		{
+			_ui->actionSingleStep->setEnabled(true);
+			_ui->actionAutoRefresh->setEnabled(true);
 			_ui->statusBar->removeWidget(_progressBar);
 		}
 		_nodeScene->setBackgroundBrush(NodeStyle::SceneBackground);
@@ -771,6 +779,8 @@ void Controller::setInteractive(bool allowed)
 		}
 		else
 		{
+			_ui->actionSingleStep->setEnabled(false);
+			_ui->actionAutoRefresh->setEnabled(false);
 			_ui->statusBar->addWidget(_progressBar);
 			_progressBar->show();
 		}
@@ -1113,7 +1123,6 @@ void Controller::contextMenu(const QPoint& globalPos,
 	}
 }
 
-
 void Controller::keyPress(QKeyEvent* event)
 {
 	if(!treeIdle())
@@ -1353,13 +1362,15 @@ void Controller::updatePreview()
 {
 	std::vector<NodeID> execList = _nodeTree->executeList();
 
+	// Update preview window if necessary
 	if(shouldUpdatePreview(execList))
 		updatePreviewImpl();
 
+	// Job is done - enable editing
+	_processing = false;
+
 	if(!_videoMode)
 	{
-		// Job is done - enable editing
-		_processing = false;
 		setInteractive(true);
 	}
 	else
@@ -1367,25 +1378,35 @@ void Controller::updatePreview()
 		// Peek if it's a last "frame"
 		if(_state != EState::Stopped)
 		{
-			_nodeTree->prepareList();
-			auto executeList = _nodeTree->executeList();
-
+			auto executeList = _nodeTree->prepareList();
 			if(executeList.empty())
 			{
-				_processing = false;
 				stop();
 				return;
 			}
 		}
-
-		if(_state == EState::Playing)
+		
+		switch(_state)
 		{
+		case EState::Paused:
+			updateControlButtonState(EState::Paused);
+			updateState(EState::Paused);
+			break;
+		case EState::Stopped:
+			updateControlButtonState(EState::Stopped);
+			updateState(EState::Stopped);
+			setInteractive(true);
+
+			/// Could  be somehow done on worker thread
+			/// (some nodes could finish a bit "long")
+			_nodeTree->notifyFinish();
+			// On next time start with init step
+			_startWithInit = true;
+			break;
+		case EState::Playing:
 			// Keep playing 
 			queueProcessing(false);
-		}
-		else
-		{
-			_processing = false;
+			break;
 		}
 	}
 }
@@ -1395,9 +1416,7 @@ void Controller::singleStep()
 	if(_processing)
 		return;
 
-	_nodeTree->prepareList();
-	auto executeList = _nodeTree->executeList();
-
+	auto executeList = _nodeTree->prepareList();
 	if(executeList.empty())
 	{
 		// Should we invalidate current preview?
@@ -1415,6 +1434,10 @@ void Controller::singleStep()
 	// Single step in video mode 
 	else
 	{
+		// Start processing (on worker thread)
+		queueProcessing(_startWithInit);
+		_startWithInit = false;
+
 		if(_state == EState::Stopped)
 		{
 			// If we started playing using "Step" button we need to update these
@@ -1422,9 +1445,6 @@ void Controller::singleStep()
 			setInteractive(false);
 			_ui->actionStop->setEnabled(true);
 		}
-
-		queueProcessing(_startWithInit);
-		_startWithInit = false;
 	}
 }
 
@@ -1438,15 +1458,10 @@ void Controller::play()
 	if(_state != EState::Playing)
 	{
 		updateState(EState::Playing);
-
-		_ui->actionPause->setEnabled(true);
-		_ui->actionStop->setEnabled(true);
-		_ui->actionPlay->setEnabled(false);
-		_ui->actionSingleStep->setEnabled(false);
-
+		updateControlButtonState(EState::Playing);
 		setInteractive(false);
 
-		// Finally, start processing (on worker thread)
+		// Start processing (on worker thread)
 		queueProcessing(_startWithInit);
 		_startWithInit = false;
 	}
@@ -1456,13 +1471,8 @@ void Controller::pause()
 {
 	if(_state == EState::Playing)
 	{
-		// On next time process() won't be invoke
+		// Next time process() won't be invoke
 		updateState(EState::Paused);
-
-		_ui->actionPause->setEnabled(false);
-		_ui->actionStop->setEnabled(true);
-		_ui->actionPlay->setEnabled(true);
-		_ui->actionSingleStep->setEnabled(true);
 	}
 }
 
@@ -1470,21 +1480,24 @@ void Controller::stop()
 {
 	if(_state != EState::Stopped)
 	{
-		// On next time process() won't be invoke
-		updateState(EState::Stopped);
+		if(_processing)
+		{
+			updateState(EState::Stopped);
+		}
+		else
+		{
+			// Worker thread is idle, we need to update stuff from here
+			updateState(EState::Stopped);
+			updateControlButtonState(EState::Stopped);
+			setInteractive(true);
 
-		// On next time start with init step
-		_startWithInit = true;
-		// And tag nodes that are self-taggable (like video source)
-		_nodeTree->tagAutoNodes();
+			// On next time start with init step
+			_startWithInit = true;
 
-		_ui->actionPause->setEnabled(false);
-		_ui->actionStop->setEnabled(false);
-		_ui->actionPlay->setEnabled(true);
-		_ui->actionSingleStep->setEnabled(true);
-
-		// Also, allow for further editing
-		setInteractive(true);
+			/// Could  be somehow done on worker thread
+			/// (some nodes could finish a bit "long")
+			_nodeTree->notifyFinish();
+		}
 	}
 }
 
@@ -1511,6 +1524,36 @@ void Controller::fitToView()
 	QTransform t = _ui->graphicsView->transform();
 	
 	_ui->graphicsView->setZoom(t.m11());
+}
+
+void Controller::updateControlButtonState(EState state)
+{
+	// Should only be used when in video mode
+	if(!_videoMode)
+		return;
+
+	switch(state)
+	{
+	case EState::Stopped:
+		_ui->actionPause->setEnabled(false);
+		_ui->actionStop->setEnabled(false);
+		_ui->actionPlay->setEnabled(true);
+		_ui->actionSingleStep->setEnabled(true);
+		break;
+	case EState::Paused:
+		if(_videoMode)
+		_ui->actionPause->setEnabled(false);
+		_ui->actionStop->setEnabled(true);
+		_ui->actionPlay->setEnabled(true);
+		_ui->actionSingleStep->setEnabled(true);
+		break;
+	case EState::Playing:
+		_ui->actionPause->setEnabled(true);
+		_ui->actionStop->setEnabled(true);
+		_ui->actionPlay->setEnabled(false);
+		_ui->actionSingleStep->setEnabled(false);
+		break;
+	}
 }
 
 bool Controller::treeIdle()

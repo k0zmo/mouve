@@ -48,6 +48,7 @@ public:
 	bool setProperty(PropertyID propID, const QVariant& value);
 	QVariant property(PropertyID propID) const;
 	bool initialize();
+	void finish();
 
 	bool flag(ENodeFlags flag) const;
 	void setFlag(ENodeFlags flag);

@@ -117,3 +117,8 @@ bool Node::initialize()
 {
 	return _nodeType->initialize();
 }
+
+void Node::finish()
+{
+	_nodeType->finish();
+}

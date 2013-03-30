@@ -330,13 +330,16 @@ void NodeTree::untagNode(NodeID nodeID)
 	}
 }
 
-void NodeTree::tagAutoNodes()
+void NodeTree::notifyFinish()
 {
 	for(NodeID nodeID = 0; nodeID < NodeID(_nodes.size()); ++nodeID)
 	{
 		if(!validateNode(nodeID))
 			continue;
 
+		_nodes[nodeID].finish();
+
+		// Finally, tag node that need to be auto-tagged
 		if(_nodes[nodeID].flag(ENodeFlags::AutoTag))
 			tagNode(nodeID);
 	}
@@ -353,10 +356,10 @@ bool NodeTree::isTreeStateless() const
 	return true;
 }
 
-void NodeTree::prepareList()
+std::vector<NodeID> NodeTree::prepareList()
 {
 	if(!_executeListDirty)
-		return;
+		return _executeList;
 	_executeList.clear();
 
 	// stable_sort doesn't touch already sorted items (?)
@@ -382,6 +385,7 @@ void NodeTree::prepareList()
 	}
 
 	_executeListDirty = false;
+	return _executeList;
 }
 
 void NodeTree::execute(bool withInit)

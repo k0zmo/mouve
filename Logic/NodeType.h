@@ -179,6 +179,7 @@ public:
 	virtual bool setProperty(PropertyID propId, const QVariant& newValue);
 	virtual QVariant property(PropertyID propId) const;
 	virtual bool initialize();
+	virtual void finish();
 };
 
 inline bool NodeType::setProperty(PropertyID, const QVariant&)
@@ -187,6 +188,8 @@ inline QVariant NodeType::property(PropertyID) const
 { return QVariant(); }
 inline bool NodeType::initialize()
 { return false; }
+inline void NodeType::finish()
+{ return; }
 
 class NodeTypeIterator
 {

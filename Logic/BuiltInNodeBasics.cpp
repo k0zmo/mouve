@@ -76,6 +76,11 @@ public:
 		return true;
 	}
 
+	void finish() override
+	{
+		qDebug("finish");
+	}
+
 	ExecutionStatus execute(NodeSocketReader&, NodeSocketWriter& writer) override
 	{
 		if(!_capture.isOpened())

@@ -61,6 +61,7 @@ private:
 	void switchToImageMode();
 
 	void updateState(EState state);
+	void updateControlButtonState(EState state);
 
 	// Auto-refresh functionality
 	bool isAutoRefresh();

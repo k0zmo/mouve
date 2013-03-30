@@ -23,11 +23,11 @@ public:
 
 	void tagNode(NodeID nodeID);
 	void untagNode(NodeID nodeID);
-	void tagAutoNodes();
 	bool isTreeStateless() const;
 
-	void prepareList();
+	std::vector<NodeID> prepareList();
 	void execute(bool withInit = false);
+	void notifyFinish();
 	
 	// Returns sorted list of node in order of their execution
 	// Returned list is valid between prepareList() calls.
