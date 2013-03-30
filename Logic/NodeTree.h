@@ -63,7 +63,7 @@ public:
 	bool isOutputSocketConnected(NodeID nodeID, SocketID socketID) const;
 
 	bool allRequiredInputSocketConnected(NodeID nodeID) const;
-	bool tagButNotExecuted(NodeID nodeID) const;
+	bool taggedButNotExecuted(NodeID nodeID) const;
 
 	bool nodeConfiguration(NodeID nodeID, NodeConfig& nodeConfig) const;
 	bool nodeSetProperty(NodeID nodeID, PropertyID propID, const QVariant& value);

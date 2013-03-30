@@ -718,7 +718,7 @@ bool Controller::shouldUpdatePreview(const std::vector<NodeID>& executedNodes)
 		if(executedNodes.empty())
 		{
 			// Invalidate if selected node lost its input(s) 
-			if(_nodeTree->tagButNotExecuted(_previewSelectedNodeView->nodeKey()))
+			if(_nodeTree->taggedButNotExecuted(_previewSelectedNodeView->nodeKey()))
 				return true;
 		}
 

@@ -716,7 +716,7 @@ bool NodeTree::allRequiredInputSocketConnected(NodeID nodeID) const
 	return true;
 }
 
-bool NodeTree::tagButNotExecuted(NodeID nodeID) const
+bool NodeTree::taggedButNotExecuted(NodeID nodeID) const
 {
 	// Node is tagged ..
 	if(_nodes[nodeID].flag(ENodeFlags::Tagged)
