@@ -21,9 +21,15 @@
     <ClInclude Include="StlUtils.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="HighResolutionClock.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dummy.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="HighResolutionClock.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

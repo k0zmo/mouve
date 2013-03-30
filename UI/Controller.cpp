@@ -242,6 +242,9 @@ void Controller::addNodeView(const QString& nodeTitle,
 	nodeView->setData(NodeDataIndex::NodeKey, nodeID);
 	nodeView->setPos(scenePos);
 	_nodeViews[nodeID] = nodeView;
+
+	// Set time info visibility on new nodes
+	nodeView->setTimeInfoVisible(_ui->actionDisplayTimeInfo->isChecked());
 }
 
 void Controller::linkNodes(NodeID fromNodeID, SocketID fromSocketID,
@@ -475,6 +478,7 @@ void Controller::setupUi()
 	connect(_ui->actionPause, &QAction::triggered, this, &Controller::pause);
 	connect(_ui->actionStop, &QAction::triggered, this, &Controller::stop);
 
+	connect(_ui->actionDisplayTimeInfo, &QAction::triggered, this, &Controller::displayNodeTimeInfo);
 	connect(_ui->actionFitToView, &QAction::triggered, this, &Controller::fitToView);
 
 	_ui->actionPlay->setEnabled(false);
@@ -1381,6 +1385,16 @@ void Controller::updatePreview()
 	// Job is done - enable editing
 	_processing = false;
 
+	// Update time info on nodes
+	auto iter = _nodeTree->createNodeIterator();
+	NodeID nodeID;
+	while(auto node = iter->next(nodeID))
+	{
+		QString text = QString::number(node->timeElapsed());
+		text += QStringLiteral(" ms");
+		_nodeViews[nodeID]->setTimeInfo(text);
+	}
+
 	if(!_videoMode)
 	{
 		setInteractive(true);
@@ -1571,4 +1585,11 @@ void Controller::updateControlButtonState(EState state)
 bool Controller::treeIdle()
 {
 	return _state == EState::Stopped && !_processing;
+}
+
+void Controller::displayNodeTimeInfo(bool checked)
+{
+	auto iter = _nodeViews.begin();
+	for( ; iter != _nodeViews.end(); ++iter)
+		iter.value()->setTimeInfoVisible(checked);
 }

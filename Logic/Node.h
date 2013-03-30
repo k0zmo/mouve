@@ -1,13 +1,15 @@
 #pragma once
 
 #include "Prerequisites.h"
+#include "Common/HighResolutionClock.h"
 
 enum class ENodeFlags : int
 {
 	Tagged             = BIT(1),
 	StateNode          = BIT(2),
 	AutoTag            = BIT(3),
-	NotFullyConnected  = BIT(4)
+	NotFullyConnected  = BIT(4),
+	OverridesTimeComp  = BIT(5)
 };
 
 class MOUVE_LOGIC_EXPORT Node
@@ -41,6 +43,7 @@ public:
 	SocketID numInputSockets() const;
 	SocketID numOutputSockets() const;
 	NodeTypeID nodeTypeID() const;
+	double timeElapsed() const;
 
 	// Below methods are thin wrapper for held NodeType interface
 	void configuration(NodeConfig& nodeConfig) const;
@@ -63,6 +66,10 @@ private:
 	SocketID _numOutputs;
 	NodeTypeID _nodeTypeID;
 	uint _flags;
+	double _timeElapsed;
+
+	// Only one node can be executed at once
+	static HighResolutionClock _stopWatch;
 };
 
 class NodeIterator
@@ -95,6 +102,9 @@ inline SocketID Node::numOutputSockets() const
 
 inline NodeTypeID Node::nodeTypeID() const
 { return _nodeTypeID; }
+
+inline double Node::timeElapsed() const
+{ return _timeElapsed; }
 
 inline bool Node::flag(ENodeFlags flag) const
 { return _flags & uint(flag); }

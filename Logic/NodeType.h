@@ -115,9 +115,10 @@ struct PropertyConfig
 
 enum ENodeConfigurationFlags
 {
-	Node_NoFlags     = 0, // default 
-	Node_HasState    = BIT(0),
-	Node_AutoTag     = BIT(1)
+	Node_NoFlags                  = 0, // default 
+	Node_HasState                 = BIT(0),
+	Node_AutoTag                  = BIT(1),
+	Node_OverridesTimeComputation = BIT(2)
 };
 Q_DECLARE_FLAGS(NodeConfigurationFlags, ENodeConfigurationFlags);
 Q_DECLARE_OPERATORS_FOR_FLAGS(NodeConfigurationFlags)
@@ -150,18 +151,21 @@ enum class EStatus : int
 struct ExecutionStatus
 {
 	ExecutionStatus()
-		: status(EStatus::Ok)
+		: timeElapsed(0)
+		, status(EStatus::Ok)
 		, errorMessage()
 	{
 	}
 
 	ExecutionStatus(EStatus status, 
 		const std::string& errorMessage = std::string())
-		: status(status)
+		: timeElapsed(0)
+		, status(status)
 		, errorMessage(errorMessage)
 	{
 	}
 
+	double timeElapsed;
 	EStatus status;
 	std::string errorMessage;
 };

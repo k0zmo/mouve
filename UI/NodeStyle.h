@@ -37,6 +37,9 @@ struct NodeStyle
 	static float NodeSocketVerticalMargin;
 	static float NodeSocketsMargin;
 
+	static QFont NodeTimeInfoFont;
+	static QBrush NodeTimeInfoFontBrush;
+
 	// Socket NodeStyle
 	static QBrush SocketTitleBrush;
 	static QBrush SocketTitleInactiveBrush;

@@ -59,6 +59,8 @@
     <property name="title">
      <string>&amp;View</string>
     </property>
+    <addaction name="actionDisplayTimeInfo"/>
+    <addaction name="separator"/>
    </widget>
    <widget class="QMenu" name="menuHelp">
     <property name="title">
@@ -404,6 +406,17 @@
    </property>
    <property name="toolTip">
     <string>Fit to view</string>
+   </property>
+  </action>
+  <action name="actionDisplayTimeInfo">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Node's time info</string>
+   </property>
+   <property name="toolTip">
+    <string>Enables or disables displaying individual node's time information</string>
    </property>
   </action>
  </widget>

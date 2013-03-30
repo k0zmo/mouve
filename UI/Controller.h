@@ -114,6 +114,8 @@ private slots:
 	void changeProperty(NodeID nodeID, PropertyID propID, 
 		const QVariant& newValue, bool* ok);
 
+	void displayNodeTimeInfo(bool checked);
+
 	// Menu (toolbar) actions
 	void newTree();
 	void openTree();

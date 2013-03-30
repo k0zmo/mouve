@@ -34,6 +34,9 @@ float NodeStyle::NodeSocketHorizontalMargin = -7.5;
 float NodeStyle::NodeSocketVerticalMargin = 8.0;
 float NodeStyle::NodeSocketsMargin = 20.0;
 
+QFont NodeStyle::NodeTimeInfoFont = QFont("Arial", 10);
+QBrush NodeStyle::NodeTimeInfoFontBrush = QBrush(QColor(204, 204, 204));
+
 // Socket NodeStyle
 QBrush NodeStyle::SocketTitleBrush = QBrush(QColor(180, 180, 180));
 QBrush NodeStyle::SocketTitleInactiveBrush = QBrush(QColor(119, 119, 119));

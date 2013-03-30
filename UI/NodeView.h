@@ -35,6 +35,9 @@ public:
 	SocketID previewSocketID() const;
 	void setPreviewSocketID(SocketID socketID);
 
+	void setTimeInfo(const QString& text);
+	void setTimeInfoVisible(bool visible);
+
 protected:
 	virtual void hoverEnterEvent(QGraphicsSceneHoverEvent* event);
 	virtual void hoverLeaveEvent(QGraphicsSceneHoverEvent* event);
@@ -43,6 +46,7 @@ protected:
 private:
 	QGraphicsSimpleTextItem* mLabel;
 	QGraphicsSimpleTextItem* mTypeLabel;
+	QGraphicsSimpleTextItem* mTimeInfo;
 	QGraphicsDropShadowEffect* mDropShadowEffect;
 	QPainterPath mShape1;
 	QPainterPath mShape2;

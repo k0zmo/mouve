@@ -2,6 +2,8 @@
 #include "NodeType.h"
 #include "NodeException.h"
 
+HighResolutionClock Node::_stopWatch;
+
 Node::Node()
 	: _nodeType(nullptr)
 	, _outputSockets(0)
@@ -10,6 +12,7 @@ Node::Node()
 	, _numOutputs(0)
 	, _nodeTypeID(InvalidNodeTypeID)
 	, _flags(0)
+	, _timeElapsed(0)
 {
 }
 
@@ -30,6 +33,8 @@ Node::Node(std::unique_ptr<NodeType> nodeType,
 		setFlag(ENodeFlags::StateNode);
 	if(config.flags & Node_AutoTag)
 		setFlag(ENodeFlags::AutoTag);
+	if(config.flags & Node_OverridesTimeComputation)
+		setFlag(ENodeFlags::OverridesTimeComp);
 
 	// Count number of input sockets
 	if(config.pInputSockets)
@@ -70,6 +75,7 @@ Node& Node::operator=(Node&& rhs)
 		_numOutputs = rhs._numOutputs;
 		_nodeTypeID = rhs._nodeTypeID;
 		_flags = rhs._flags;
+		_timeElapsed = rhs._timeElapsed;
 	}
 	return *this;
 }
@@ -100,7 +106,20 @@ void Node::configuration(NodeConfig& nodeConfig) const
 ExecutionStatus Node::execute(NodeSocketReader& reader, NodeSocketWriter& writer)
 {
 	writer.setOutputSockets(_outputSockets);
-	return _nodeType->execute(reader, writer);
+	double start = _stopWatch.currentTimeInSeconds();
+	ExecutionStatus status = _nodeType->execute(reader, writer);
+	double stop = _stopWatch.currentTimeInSeconds();
+
+	if(!flag(ENodeFlags::OverridesTimeComp))
+	{
+		// Save in milliseconds
+		_timeElapsed = (stop - start) * 1e3;
+	}
+	else
+	{
+		_timeElapsed = status.timeElapsed;
+	}
+	return status;
 }
 
 bool Node::setProperty(PropertyID propID, const QVariant& value)

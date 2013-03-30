@@ -13,6 +13,7 @@ NodeView::NodeView(const QString& title,
 	: QGraphicsWidget(parent)
 	, mLabel(new QGraphicsSimpleTextItem(this))
 	, mTypeLabel(new QGraphicsSimpleTextItem(this))
+	, mTimeInfo(new QGraphicsSimpleTextItem(this))
 	, mDropShadowEffect(new QGraphicsDropShadowEffect(this))
 	, mPreviewSocketID(0)
 	, mPreviewSelected(false)
@@ -37,6 +38,12 @@ NodeView::NodeView(const QString& title,
 	mDropShadowEffect->setBlurRadius(12.0);
 	mDropShadowEffect->setColor(QColor(0, 0, 0, 50));
 	setGraphicsEffect(mDropShadowEffect);
+
+	// Node time info
+	mTimeInfo->setVisible(false);
+	mTimeInfo->setText("0 ms");
+	mTimeInfo->setFont(NodeStyle::NodeTimeInfoFont);
+	mTimeInfo->setBrush(NodeStyle::NodeTimeInfoFontBrush);
 
 	// To alter Z value on moouse hover
 	setAcceptHoverEvents(true);
@@ -300,6 +307,21 @@ void NodeView::updateLayout()
 	mShape1 = shape1(yy);
 	mShape2 = shape2(yy);
 
+	// Update time info
+	mTimeInfo->setPos(0, size().height()+3);
+
+	update();
+}
+
+void NodeView::setTimeInfo(const QString& text)
+{
+	mTimeInfo->setText(text);
+	update();
+}
+
+void NodeView::setTimeInfoVisible(bool visible)
+{
+	mTimeInfo->setVisible(visible);
 	update();
 }
 
