@@ -1164,6 +1164,18 @@ void Controller::keyPress(QKeyEvent* event)
 
 		event->accept();
 	}
+#if defined(QT_DEBUG)
+	// Debugging feature
+	else if(event->key() == Qt::Key_T
+		&& event->modifiers() & Qt::ControlModifier)
+	{
+		// tag all nodes if ctrl+T was pressed
+		auto iter = _nodeTree->createNodeIterator();
+		NodeID nodeID;
+		while(iter->next(nodeID))
+			_nodeTree->tagNode(nodeID);
+	}
+#endif
 }
 
 void Controller::draggingLinkDrop(QGraphicsWidget* from, QGraphicsWidget* to)
