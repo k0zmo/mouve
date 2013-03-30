@@ -1,6 +1,7 @@
 #include "Prerequisites.h"
 #include "NodeType.h"
 #include "NodeFactory.h"
+#include "Common/HighResolutionClock.h"
 
 #include <chrono>
 #include <thread>
@@ -76,13 +77,10 @@ public:
 		return true;
 	}
 
-	void finish() override
-	{
-		qDebug("finish");
-	}
-
 	ExecutionStatus execute(NodeSocketReader&, NodeSocketWriter& writer) override
 	{
+		double start = _clock.currentTimeInSeconds();
+
 		if(!_capture.isOpened())
 			return ExecutionStatus(EStatus::Ok);
 
@@ -104,6 +102,7 @@ public:
 			{
 				milliseconds waitDuration = milliseconds(_frameInterval) - dura;
 				std::this_thread::sleep_for(waitDuration);
+				start += waitDuration.count() * 1e-3;
 			}
 
 			_capture.read(buffer);
@@ -116,7 +115,9 @@ public:
 		if(!buffer.empty())
 		{
 			cv::cvtColor(buffer, output, CV_BGR2GRAY);
-			return ExecutionStatus(EStatus::Tag);
+			double stop = _clock.currentTimeInSeconds();
+			double elapsed = (stop - start) * 1e3;
+			return ExecutionStatus(EStatus::Tag, elapsed);
 		}
 		else
 		{
@@ -140,7 +141,7 @@ public:
 		nodeConfig.description = "Provides video frames from specified stream";
 		nodeConfig.pOutputSockets = out_config;
 		nodeConfig.pProperties = prop_config;
-		nodeConfig.flags = Node_HasState | Node_AutoTag;
+		nodeConfig.flags = Node_HasState | Node_AutoTag | Node_OverridesTimeComputation;
 	}
 
 private:
@@ -155,7 +156,9 @@ private:
 	unsigned _startFrame;
 	unsigned _frameInterval;
 	std::chrono::high_resolution_clock::time_point _timeStamp;
+	static HighResolutionClock _clock;
 };
+HighResolutionClock VideoFromFileNodeType::_clock;
 
 class MixtureOfGaussianNodeType : public NodeType
 {

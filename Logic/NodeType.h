@@ -165,6 +165,15 @@ struct ExecutionStatus
 	{
 	}
 
+	ExecutionStatus(EStatus status,
+		double timeElapsed,
+		const std::string& errorMessage = std::string())
+		: timeElapsed(timeElapsed)
+		, status(status)
+		, errorMessage(errorMessage)
+	{
+	}
+
 	double timeElapsed;
 	EStatus status;
 	std::string errorMessage;
