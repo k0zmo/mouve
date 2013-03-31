@@ -29,6 +29,10 @@ void TreeWorker::process(bool withInit)
 	{
 		emit error(QString("Bad socket connection, %1").arg(ex.what()));
 	}
+	catch(cv::Exception& ex)
+	{
+		emit error(QString("OpenCV exception caught: %1").arg(ex.what()));
+	}
 	catch(...)
 	{
 		emit error(QStringLiteral("Unknown exception was thrown"));
