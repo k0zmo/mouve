@@ -421,10 +421,12 @@ private:
 	double _sigma;
 };
 
-class SobelFilterNodeType : public NodeType
+/// TODO: aperture size
+/// TODO: xorder, yorder
+class SobelNodeType : public NodeType
 {
 public:
-	SobelFilterNodeType()
+	SobelNodeType()
 	{
 	}
 
@@ -464,6 +466,85 @@ public:
 		nodeConfig.pInputSockets = in_config;
 		nodeConfig.pOutputSockets = out_config;
 	}
+};
+
+class LaplacianFilterNodeType : public NodeType
+{
+public:
+	LaplacianFilterNodeType()
+		: _apertureSize(1)
+	{
+	}
+
+	bool setProperty(PropertyID propId, const QVariant& newValue) override
+	{
+		switch(propId)
+		{
+		case ID_ApertureSize:
+			{
+				int aperture = newValue.toInt();
+				if(aperture == 1 || aperture == 3 || aperture == 5 || aperture == 7)
+				{
+					_apertureSize = aperture;
+					return true;
+				}
+			}
+			break;
+		}
+
+		return false;
+	}
+
+	QVariant property(PropertyID propId) const override
+	{
+		switch(propId)
+		{
+		case ID_ApertureSize: return _apertureSize;
+		}
+
+		return QVariant();
+	}
+
+	ExecutionStatus execute(NodeSocketReader& reader, NodeSocketWriter& writer) override
+	{
+		const cv::Mat& input = reader.readSocket(0).getImage();
+		cv::Mat& output = writer.acquireSocket(0).getImage();
+
+		if(input.rows == 0 || input.cols == 0)
+			return ExecutionStatus(EStatus::Ok);
+
+		cv::Laplacian(input, output, CV_8UC1, _apertureSize);
+		return ExecutionStatus(EStatus::Ok);
+	}
+	
+	void configuration(NodeConfig& nodeConfig) const override
+	{
+		static const InputSocketConfig in_config[] = {
+			{ ENodeFlowDataType::Image, "input", "Input", "" },
+			{ ENodeFlowDataType::Invalid, "", "", "" }
+		};
+		static const OutputSocketConfig out_config[] = {
+			{ ENodeFlowDataType::Image, "output", "Output", "" },
+			{ ENodeFlowDataType::Invalid, "", "", "" }
+		};
+		static const PropertyConfig prop_config[] = {
+			{ EPropertyType::Integer, "Aperture size", "min:1, max:7, step:2" },
+			{ EPropertyType::Unknown, "", "" }
+		};
+
+		nodeConfig.description = "Calculates the Laplacian of an image";
+		nodeConfig.pInputSockets = in_config;
+		nodeConfig.pOutputSockets = out_config;
+		nodeConfig.pProperties = prop_config;
+	}
+
+private:
+	enum EPropertyID
+	{
+		ID_ApertureSize
+	};
+
+	int _apertureSize;
 };
 
 class CannyEdgeDetectorNodeType : public NodeType
@@ -1511,7 +1592,8 @@ REGISTER_NODE("Video/Background subtraction", BackgroundSubtractorNodeType)
 REGISTER_NODE("Video/Mixture of Gaussians", MixtureOfGaussianNodeType)
 
 REGISTER_NODE("Edge/Canny edge detector", CannyEdgeDetectorNodeType)
-REGISTER_NODE("Edge/Sobel filter", SobelFilterNodeType)
+REGISTER_NODE("Edge/Sobel", SobelNodeType)
+REGISTER_NODE("Edge/Laplacian", LaplacianFilterNodeType)
 
 REGISTER_NODE("Image/Upsample", UpsampleNodeType)
 REGISTER_NODE("Image/Downsample", DownsampleNodeType)
