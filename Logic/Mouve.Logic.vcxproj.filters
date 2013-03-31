@@ -36,6 +36,9 @@
     <Filter Include="CV">
       <UniqueIdentifier>{590710e5-645e-47a4-8842-6127a124decb}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Nodes">
+      <UniqueIdentifier>{1a2e12c6-74b7-4b31-abf2-e3936507e48a}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Precomp.cpp">
@@ -70,6 +73,9 @@
     </ClCompile>
     <ClCompile Include="BuiltInNodeFeatures.cpp">
       <Filter>CV</Filter>
+    </ClCompile>
+    <ClCompile Include="BriskNodes.cpp">
+      <Filter>Nodes</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

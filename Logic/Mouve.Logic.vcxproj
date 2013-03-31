@@ -261,6 +261,7 @@
     </CustomBuild>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="BriskNodes.cpp" />
     <ClCompile Include="BuiltInNodeFeatures.cpp" />
     <ClCompile Include="BuiltInNodeBasics.cpp" />
     <ClCompile Include="CV.cpp" />
