@@ -33,9 +33,6 @@
       <Extensions>cpp;moc</Extensions>
       <SourceControlFiles>False</SourceControlFiles>
     </Filter>
-    <Filter Include="CV">
-      <UniqueIdentifier>{590710e5-645e-47a4-8842-6127a124decb}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Nodes">
       <UniqueIdentifier>{1a2e12c6-74b7-4b31-abf2-e3936507e48a}</UniqueIdentifier>
     </Filter>
@@ -62,23 +59,32 @@
     <ClCompile Include="NodeType.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="CV.cpp">
-      <Filter>CV</Filter>
-    </ClCompile>
     <ClCompile Include="NodeFlowData.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="BuiltInNodeBasics.cpp">
-      <Filter>CV</Filter>
-    </ClCompile>
-    <ClCompile Include="BuiltInNodeFeatures.cpp">
-      <Filter>CV</Filter>
-    </ClCompile>
-    <ClCompile Include="BriskNodes.cpp">
-      <Filter>Nodes</Filter>
-    </ClCompile>
     <ClCompile Include="NodeModule.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Nodes\BriskNodes.cpp">
+      <Filter>Nodes</Filter>
+    </ClCompile>
+    <ClCompile Include="Nodes\CV.cpp">
+      <Filter>Nodes</Filter>
+    </ClCompile>
+    <ClCompile Include="Nodes\DrawFeaturesNodes.cpp">
+      <Filter>Nodes</Filter>
+    </ClCompile>
+    <ClCompile Include="Nodes\HomographyNodes.cpp">
+      <Filter>Nodes</Filter>
+    </ClCompile>
+    <ClCompile Include="Nodes\MatcherNodes.cpp">
+      <Filter>Nodes</Filter>
+    </ClCompile>
+    <ClCompile Include="Nodes\SurfNodes.cpp">
+      <Filter>Nodes</Filter>
+    </ClCompile>
+    <ClCompile Include="Nodes\BasicNodes.cpp">
+      <Filter>Nodes</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -108,9 +114,6 @@
     </CustomBuild>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="CV.h">
-      <Filter>CV</Filter>
-    </ClInclude>
     <ClInclude Include="NodeException.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -119,6 +122,9 @@
     </ClInclude>
     <ClInclude Include="NodeModule.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Nodes\CV.h">
+      <Filter>Nodes</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

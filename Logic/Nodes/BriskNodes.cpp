@@ -1,4 +1,3 @@
-#include "Prerequisites.h"
 #include "NodeType.h"
 #include "NodeFactory.h"
 
@@ -135,83 +134,5 @@ public:
 	}
 };
 
-class BruteForceMatcherNodeType : public NodeType
-{
-public:
-	BruteForceMatcherNodeType()
-		: _crossCheck(false)
-	{
-	}
-
-	bool setProperty(PropertyID propId, const QVariant& newValue) override
-	{
-		switch(propId)
-		{
-		case ID_CrossCheck:
-			_crossCheck = newValue.toBool();
-			return true;
-		}
-
-		return false;
-	}
-
-	QVariant property(PropertyID propId) const override
-	{
-		switch(propId)
-		{
-		case ID_CrossCheck: return _crossCheck;
-		}
-
-		return QVariant();
-	}
-
-	ExecutionStatus execute(NodeSocketReader& reader, NodeSocketWriter& writer) override
-	{
-		const cv::Mat& queryDescriptors = reader.readSocket(0).getArray();
-		const cv::Mat& trainDescriptors = reader.readSocket(1).getArray();
-
-		if(!queryDescriptors.data || !trainDescriptors.data)
-			return ExecutionStatus(EStatus::Ok);
-
-		cv::DMatches& matches = writer.acquireSocket(0).getMatches();
-
-		cv::BFMatcher matcher(cv::NORM_HAMMING, _crossCheck);
-		matcher.match(queryDescriptors, trainDescriptors, matches);
-
-		return ExecutionStatus(EStatus::Ok);
-	}
-
-	void configuration(NodeConfig& nodeConfig) const override
-	{
-		static const InputSocketConfig in_config[] = {
-			{ ENodeFlowDataType::Array, "descriptors1", "1st descriptors", "" },
-			{ ENodeFlowDataType::Array, "descriptors2", "2nd descriptors", "" },
-			{ ENodeFlowDataType::Invalid, "", "", "" }
-		};
-		static const OutputSocketConfig out_config[] = {
-			{ ENodeFlowDataType::Matches, "matches", "Matches", "" },
-			{ ENodeFlowDataType::Invalid, "", "", "" }
-		};
-		static const PropertyConfig prop_config[] = {
-			{ EPropertyType::Boolean, "Cross check", "" },
-			{ EPropertyType::Unknown, "", "" }
-		};
-
-		nodeConfig.description = "";
-		nodeConfig.pInputSockets = in_config;
-		nodeConfig.pOutputSockets = out_config;
-		nodeConfig.pProperties = prop_config;
-	}
-
-private:
-	enum EPropertyID
-	{
-		ID_CrossCheck
-	};
-
-	bool _crossCheck;
-};
-
-REGISTER_NODE("Features/BF Matcher", BruteForceMatcherNodeType);
 REGISTER_NODE("Features/BRISK Extractor", BriskFeatureExtractorNodeType)
 REGISTER_NODE("Features/BRISK Detector", BriskFeatureDetectorNodeType)
