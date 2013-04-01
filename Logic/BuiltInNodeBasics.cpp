@@ -53,7 +53,7 @@ public:
 		return QVariant();
 	}
 
-	bool initialize() override
+	bool restart() override
 	{
 		// This isn't really necessary as subsequent open()
 		// should call it automatically
@@ -206,7 +206,7 @@ public:
 		return QVariant();
 	}
 
-	bool initialize() override
+	bool restart() override
 	{
 		_mog = cv::BackgroundSubtractorMOG(_history, _nmixtures, _backgroundRatio);
 		return true;
@@ -423,6 +423,7 @@ private:
 
 /// TODO: aperture size
 /// TODO: xorder, yorder
+/// Rozbic na Sobel i Sobel edge
 class SobelNodeType : public NodeType
 {
 public:
@@ -1469,7 +1470,7 @@ public:
 		return QVariant();
 	}
 
-	bool initialize() override
+	bool restart() override
 	{
 		_frameN1 = cv::Mat();
 		_frameN2 = cv::Mat();

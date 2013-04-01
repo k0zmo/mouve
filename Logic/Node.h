@@ -50,7 +50,7 @@ public:
 	ExecutionStatus execute(NodeSocketReader& reader, NodeSocketWriter& writer);
 	bool setProperty(PropertyID propID, const QVariant& value);
 	QVariant property(PropertyID propID) const;
-	bool initialize();
+	bool restart();
 	void finish();
 
 	bool flag(ENodeFlags flag) const;

@@ -3,6 +3,7 @@
 #include "NodeType.h"
 #include "NodeLink.h"
 #include "NodeSystem.h"
+#include "NodeModule.h"
 #include "NodeException.h"
 
 #include "Common/StlUtils.h"
@@ -422,7 +423,7 @@ void NodeTree::execute(bool withInit)
 			if(withInit && _nodes[nodeID].flag(ENodeFlags::StateNode))
 			{
 				/// TODO:
-				/*bool res = */node.initialize(/*reader, writer*/);
+				/*bool res = */node.restart(/*reader, writer*/);
 			}
 
 			/// TODO: throw if status is error
@@ -465,6 +466,18 @@ NodeID NodeTree::createNode(NodeTypeID typeID, const std::string& name)
 	{
 		deallocateNodeID(id);
 		return InvalidNodeID;
+	}
+
+	// If node type belongs to a registered module
+	NodeConfig nodeConfig;
+	nodeType->configuration(nodeConfig);
+	if(!nodeConfig.module.empty())
+	{
+		auto& module = _nodeSystem->nodeModule(nodeConfig.module);
+		if(module && module->ensureInitialized())
+		{
+			nodeType->init(module);
+		}
 	}
 
 	// Create actual node object

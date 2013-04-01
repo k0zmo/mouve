@@ -269,6 +269,7 @@
     <ClCompile Include="NodeFactory.cpp" />
     <ClCompile Include="NodeFlowData.cpp" />
     <ClCompile Include="NodeLink.cpp" />
+    <ClCompile Include="NodeModule.cpp" />
     <ClCompile Include="NodeSystem.cpp" />
     <ClCompile Include="NodeTree.cpp" />
     <ClCompile Include="NodeType.cpp" />
@@ -283,6 +284,7 @@
     <ClInclude Include="CV.h" />
     <ClInclude Include="NodeException.h" />
     <ClInclude Include="NodeFlowData.h" />
+    <ClInclude Include="NodeModule.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{DC17726C-68F2-4136-BBC4-25765372976A}</ProjectGuid>

@@ -63,6 +63,7 @@ class NodeSocketWriter;
 class NodeTree;
 class NodeFactory;
 class NodeSystem;
+class NodeModule;
 
 struct NodeLink;
 struct SocketAddress;

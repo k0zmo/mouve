@@ -132,9 +132,9 @@ QVariant Node::property(PropertyID propID) const
 	return _nodeType->property(propID);
 }
 
-bool Node::initialize()
+bool Node::restart()
 {
-	return _nodeType->initialize();
+	return _nodeType->restart();
 }
 
 void Node::finish()

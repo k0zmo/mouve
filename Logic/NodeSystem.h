@@ -22,6 +22,9 @@ public:
 
 	std::unique_ptr<NodeTypeIterator> createNodeTypeIterator() const;
 
+	bool registerNodeModule(const std::string& name, const std::shared_ptr<NodeModule>& module);
+	const std::shared_ptr<NodeModule>& nodeModule(const std::string& name);
+
 private:
 	// That is all that NodeSystem needs for handling registered node types
 	class NodeTypeInfo
@@ -48,6 +51,7 @@ private:
 
 	std::vector<NodeTypeInfo> _registeredNodeTypes;
 	std::unordered_map<std::string, NodeTypeID> _typeNameToTypeID;
+	std::unordered_map<std::string, std::shared_ptr<NodeModule>> _registeredModules;
 
 private:
 	class NodeTypeIteratorImpl;

@@ -129,6 +129,7 @@ struct NodeConfig
 	const OutputSocketConfig* pOutputSockets;
 	const PropertyConfig* pProperties;
 	std::string description;
+	std::string module;
 	NodeConfigurationFlags flags;
 
 	NodeConfig()
@@ -136,6 +137,7 @@ struct NodeConfig
 		, pOutputSockets(nullptr)
 		, pProperties(nullptr)
 		, description()
+		, module()
 		, flags(Node_NoFlags)
 	{
 	}
@@ -191,18 +193,22 @@ public:
 	// Optional methods
 	virtual bool setProperty(PropertyID propId, const QVariant& newValue);
 	virtual QVariant property(PropertyID propId) const;
-	virtual bool initialize();
+	virtual bool restart();
 	virtual void finish();
+
+	virtual bool init(const std::shared_ptr<NodeModule>& module);
 };
 
 inline bool NodeType::setProperty(PropertyID, const QVariant&)
 { return false; }
 inline QVariant NodeType::property(PropertyID) const
 { return QVariant(); }
-inline bool NodeType::initialize()
+inline bool NodeType::restart()
 { return false; }
 inline void NodeType::finish()
 { return; }
+inline bool NodeType::init(const std::shared_ptr<NodeModule>& module)
+{ return false; }
 
 class NodeTypeIterator
 {
