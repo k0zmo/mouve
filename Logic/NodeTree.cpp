@@ -473,10 +473,17 @@ NodeID NodeTree::createNode(NodeTypeID typeID, const std::string& name)
 	nodeType->configuration(nodeConfig);
 	if(!nodeConfig.module.empty())
 	{
+		bool res = false;
 		auto& module = _nodeSystem->nodeModule(nodeConfig.module);
 		if(module && module->ensureInitialized())
 		{
-			nodeType->init(module);
+			res = nodeType->init(module);
+		}
+		// Module not initialized
+		if(!res)
+		{
+			deallocateNodeID(id);
+			return InvalidNodeID;
 		}
 	}
 
