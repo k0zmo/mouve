@@ -19,18 +19,20 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="konfig.h" />
     <ClInclude Include="HighResolutionClock.h" />
+    <ClInclude Include="MacroUtils.h" />
     <ClInclude Include="Singleton.h" />
     <ClInclude Include="StlUtils.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="dummy.cpp" />
     <ClCompile Include="HighResolutionClock.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{201C0F8F-4B5D-4CA2-A267-1EBED6CD8460}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>Mouve.Common</RootNamespace>
+    <ProjectName>Mouve.Kommon</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">

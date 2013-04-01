@@ -1,16 +1,11 @@
 #pragma once
 
-#include <QtCore/qglobal.h>
+#include "Kommon/konfig.h"
 
-#ifdef MOUVE_LOGIC_LIB
-#  define MOUVE_LOGIC_EXPORT Q_DECL_EXPORT
+#if defined(LOGIC_LIB)
+#  define LOGIC_EXPORT K_DECL_EXPORT
 #else
-#  define MOUVE_LOGIC_EXPORT Q_DECL_IMPORT
-#endif
-
-// Disable annoying warnings about using deprecated functions
-#if defined(Q_CC_MSVC)
-#  pragma warning(disable : 4996)
+#  define LOGIC_EXPORT K_DECL_IMPORT
 #endif
 
 #define BIT(x) 1 << x

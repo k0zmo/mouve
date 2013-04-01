@@ -34,7 +34,7 @@ struct SocketAddress
 	bool isOutput;
 };
 
-struct MOUVE_LOGIC_EXPORT NodeLink
+struct LOGIC_EXPORT NodeLink
 {
 	NodeLink() {}
 

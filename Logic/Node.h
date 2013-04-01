@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Prerequisites.h"
-#include "Common/HighResolutionClock.h"
+#include "Kommon/HighResolutionClock.h"
 
 enum class ENodeFlags : int
 {
@@ -12,7 +12,7 @@ enum class ENodeFlags : int
 	OverridesTimeComp  = BIT(5)
 };
 
-class MOUVE_LOGIC_EXPORT Node
+class LOGIC_EXPORT Node
 {
 	Q_DISABLE_COPY(Node)
 public:

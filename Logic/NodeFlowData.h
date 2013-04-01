@@ -32,7 +32,7 @@ enum class ENodeFlowDataType : int
 	//DeviceKeypoints, ...
 };
 
-class MOUVE_LOGIC_EXPORT NodeFlowData
+class LOGIC_EXPORT NodeFlowData
 {
 public:
 	NodeFlowData();

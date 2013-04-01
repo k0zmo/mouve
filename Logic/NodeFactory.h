@@ -16,7 +16,7 @@ public:
 	virtual std::unique_ptr<NodeType> create();
 };
 
-class MOUVE_LOGIC_EXPORT AutoRegisterNodeBase : public NodeFactory
+class LOGIC_EXPORT AutoRegisterNodeBase : public NodeFactory
 {
 public:
 	AutoRegisterNodeBase(const std::string& typeName)

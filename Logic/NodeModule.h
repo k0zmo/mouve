@@ -2,7 +2,7 @@
 
 #include "Prerequisites.h"
 
-class MOUVE_LOGIC_EXPORT NodeModule
+class LOGIC_EXPORT NodeModule
 {
 public:
 	virtual ~NodeModule() {}

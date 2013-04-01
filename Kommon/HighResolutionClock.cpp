@@ -1,6 +1,6 @@
 #include "HighResolutionClock.h"
 
-#if defined(_WIN32)
+#if K_SYSTEM == K_SYSTEM_WINDOWS
 #  include <Windows.h>
 #  undef max
 #  undef min
@@ -20,7 +20,7 @@ double HighResolutionClock::currentTimeInSeconds()
 	return static_cast<double>(time.QuadPart) * _periodTime;
 }
 
-#else
+#elif K_SYSTEM == K_SYSTEM_LINUX
 
 HighResolutionClock::HighResolutionClock()
 {

@@ -1,6 +1,8 @@
 #pragma once
 
-#if !defined(_WIN32)
+#include "konfig.h"
+
+#if K_SYSTEM == K_SYSTEM_LINUX
 #  include <sys/time.h>
 #endif
 
@@ -11,7 +13,7 @@ public:
 	double currentTimeInSeconds();
 
 private:
-#if defined(_WIN32)
+#if K_SYSTEM == K_SYSTEM_WINDOWS
 	double _periodTime;
 #else
 	timeval _startTime;

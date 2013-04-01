@@ -1,7 +1,7 @@
 #include "Prerequisites.h"
 #include "NodeType.h"
 #include "NodeFactory.h"
-#include "Common/HighResolutionClock.h"
+#include "Kommon/HighResolutionClock.h"
 
 #include <chrono>
 #include <thread>

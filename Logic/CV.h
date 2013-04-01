@@ -15,7 +15,7 @@ enum class EStructuringElementType
 	Cross
 };
 
-MOUVE_LOGIC_EXPORT cv::Mat standardStructuringElement(int xradius,
+LOGIC_EXPORT cv::Mat standardStructuringElement(int xradius,
  int yradius, EStructuringElementType type, int rotation);
 
 enum class EPredefinedConvolutionType
@@ -76,6 +76,6 @@ enum class EPredefinedConvolutionType
 	SobelVertical
 };
 
-MOUVE_LOGIC_EXPORT cv::Mat predefinedConvolutionKernel(EPredefinedConvolutionType type);
+LOGIC_EXPORT cv::Mat predefinedConvolutionKernel(EPredefinedConvolutionType type);
 
 }

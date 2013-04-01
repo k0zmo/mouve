@@ -3,7 +3,7 @@
 #include "Prerequisites.h"
 #include "NodeFactory.h"
 
-class MOUVE_LOGIC_EXPORT NodeSystem
+class LOGIC_EXPORT NodeSystem
 {
 	Q_DISABLE_COPY(NodeSystem)
 public:

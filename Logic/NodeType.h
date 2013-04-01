@@ -3,7 +3,7 @@
 #include "Prerequisites.h"
 #include "NodeFlowData.h"
 
-class MOUVE_LOGIC_EXPORT NodeSocketReader
+class LOGIC_EXPORT NodeSocketReader
 {
 	Q_DISABLE_COPY(NodeSocketReader);
 
@@ -28,7 +28,7 @@ private:
 	NodeID _nodeID;
 };
 
-class MOUVE_LOGIC_EXPORT NodeSocketWriter
+class LOGIC_EXPORT NodeSocketWriter
 {
 	Q_DISABLE_COPY(NodeSocketWriter);
 
@@ -95,7 +95,7 @@ struct InputSocketConfig
 	ENodeFlowDataType dataType;
 	std::string name;
 	std::string humanName;
-	std::string description;	
+	std::string description;
 };
 
 struct OutputSocketConfig

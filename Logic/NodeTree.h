@@ -7,7 +7,7 @@
 class QJsonObject;
 class QJsonArray;
 
-class MOUVE_LOGIC_EXPORT NodeTree
+class LOGIC_EXPORT NodeTree
 {
 	Q_DISABLE_COPY(NodeTree)
 public:

@@ -1,6 +1,7 @@
 #pragma once
 
-#include <qglobal.h>
+#include "konfig.h"
+#include <cassert>
 
 template <class Type>
 class Singleton
@@ -15,11 +16,11 @@ public:
 protected:
 	static Type* _singleton;
 
-#if defined(Q_CC_MSVC)
+#if K_COMPILER == K_COMPILER_MSVC
 private:
 	Singleton(const Singleton<Type>&);
 	Singleton& operator=(const Singleton<Type>&);
-#elif defined(Q_CC_GNU)
+#elif K_COMPILER == K_COMPILER_GCC
 public:
 	Singleton(const Singleton<Type>&) = delete;
 	Singleton& operator=(const Singleton<Type>&) = delete;
@@ -28,15 +29,15 @@ public:
 
 template <class Type>
 inline Singleton<Type>::Singleton()
-{ Q_ASSERT(!_singleton); _singleton = static_cast<Type*>(this); }
+{ assert(!_singleton); _singleton = static_cast<Type*>(this); }
 
 template <class Type>
 inline Singleton<Type>::~Singleton()
-{ Q_ASSERT(_singleton); _singleton = nullptr; }
+{ assert(_singleton); _singleton = nullptr; }
 
 template <class Type>
 inline Type& Singleton<Type>::instance()
-{ Q_ASSERT(_singleton); return *_singleton; }
+{ assert(_singleton); return *_singleton; }
 
 template <class Type>
 inline Type* Singleton<Type>::instancePtr()
