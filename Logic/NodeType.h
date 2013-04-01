@@ -103,7 +103,7 @@ struct OutputSocketConfig
 	ENodeFlowDataType dataType;
 	std::string name;
 	std::string humanName;
-	std::string description;	
+	std::string description;
 };
 
 struct PropertyConfig

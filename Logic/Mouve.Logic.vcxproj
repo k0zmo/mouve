@@ -276,6 +276,8 @@
     <ClCompile Include="Nodes\SurfNodes.cpp" />
     <ClCompile Include="NodeTree.cpp" />
     <ClCompile Include="NodeType.cpp" />
+    <ClCompile Include="OpenCL\BasicGpuNodes.cpp" />
+    <ClCompile Include="OpenCL\GpuNodeModule.cpp" />
     <ClCompile Include="Precomp.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
@@ -288,6 +290,7 @@
     <ClInclude Include="NodeFlowData.h" />
     <ClInclude Include="NodeModule.h" />
     <ClInclude Include="Nodes\CV.h" />
+    <ClInclude Include="OpenCL\GpuNodeModule.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{DC17726C-68F2-4136-BBC4-25765372976A}</ProjectGuid>
@@ -320,6 +323,7 @@
     <Import Project="..\Mouve.Kommon.props" />
     <Import Project="..\OpenCV.Modules.Debug.props" />
     <Import Project="..\Boost.props" />
+    <Import Project="..\clw.Debug.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
@@ -332,6 +336,7 @@
     <Import Project="..\Mouve.Kommon.props" />
     <Import Project="..\OpenCV.Modules.Release.props" />
     <Import Project="..\Boost.props" />
+    <Import Project="..\clw.Release.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />

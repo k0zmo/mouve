@@ -36,6 +36,9 @@
     <Filter Include="Nodes">
       <UniqueIdentifier>{1a2e12c6-74b7-4b31-abf2-e3936507e48a}</UniqueIdentifier>
     </Filter>
+    <Filter Include="OpenCL">
+      <UniqueIdentifier>{ab4a3088-b01c-4001-aa41-f93f1a6702f4}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Precomp.cpp">
@@ -86,6 +89,12 @@
     <ClCompile Include="Nodes\BasicNodes.cpp">
       <Filter>Nodes</Filter>
     </ClCompile>
+    <ClCompile Include="OpenCL\GpuNodeModule.cpp">
+      <Filter>OpenCL</Filter>
+    </ClCompile>
+    <ClCompile Include="OpenCL\BasicGpuNodes.cpp">
+      <Filter>OpenCL</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="Node.h">
@@ -125,6 +134,9 @@
     </ClInclude>
     <ClInclude Include="Nodes\CV.h">
       <Filter>Nodes</Filter>
+    </ClInclude>
+    <ClInclude Include="OpenCL\GpuNodeModule.h">
+      <Filter>OpenCL</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

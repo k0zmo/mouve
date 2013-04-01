@@ -8,6 +8,10 @@
 #include <opencv2/core/core.hpp>
 #include <opencv2/features2d/features2d.hpp>
 
+// OpenCL
+/// TODO: I should make some device data wrapper
+#include <clw/clw.h>
+
 namespace cv {
 typedef std::vector<KeyPoint> KeyPoints;
 typedef std::vector<DMatch> DMatches;
@@ -16,7 +20,8 @@ typedef std::vector<DMatch> DMatches;
 typedef boost::variant<
 	cv::Mat,
 	cv::KeyPoints,
-	cv::DMatches
+	cv::DMatches,
+	clw::Image2D
 > flow_data;
 
 enum class ENodeFlowDataType : int
@@ -26,10 +31,11 @@ enum class ENodeFlowDataType : int
 	ImageRgb,
 	Array,
 	Keypoints,
-	Matches	
-	/// TODO: OpenCL
-	//DeviceImage,
-	//DeviceKeypoints, ...
+	Matches,
+	// Gpu part
+	/// TODO: Could merge this with above ones and add bool flag
+	///       indicating if it's in device or host memory
+	DeviceImage
 };
 
 class LOGIC_EXPORT NodeFlowData
@@ -45,6 +51,7 @@ public:
 
 	~NodeFlowData();
 
+	// Host data
 	cv::Mat& getImage();
 	const cv::Mat& getImage() const;
 
@@ -59,6 +66,10 @@ public:
 
 	cv::Mat& getArray();
 	const cv::Mat& getArray() const;
+
+	// Device data
+	clw::Image2D& getDeviceImage();
+	const clw::Image2D& getDeviceImage() const;
 
 	bool isValid() const;
 	bool canReturn(ENodeFlowDataType type) const;

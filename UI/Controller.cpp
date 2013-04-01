@@ -7,6 +7,8 @@
 #include "Logic/NodeLink.h"
 #include "Logic/Node.h"
 
+#include "Logic/OpenCL/GpuNodeModule.h"
+
 // Views
 #include "NodeView.h"
 #include "NodeLinkView.h"
@@ -72,6 +74,10 @@ Controller::Controller(QWidget* parent, Qt::WindowFlags flags)
 	updateState(EState::Stopped);
 	updateTitleBar();
 	createNewNodeScene();
+
+	// Gpu module
+	std::shared_ptr<GpuNodeModule> gpuModule = std::make_shared<GpuNodeModule>(false);
+	_nodeSystem->registerNodeModule(gpuModule->moduleName(), gpuModule);
 
 	// Context menu from node graphics view
 	connect(_ui->graphicsView, &NodeEditorView::contextMenu,

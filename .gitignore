@@ -11,7 +11,6 @@ Common/_TODO
 */Release*
 *.mkv
 *.tree
-external/*
 *.jpg
 *.png
 *.avi
