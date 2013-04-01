@@ -54,6 +54,9 @@ QColor NodeStyle::SocketGradientStop4 = QColor(40, 81, 47);
 QColor NodeStyle::SocketGradientStart5 = QColor(142, 84, 123);
 QColor NodeStyle::SocketGradientStop5 = QColor(84, 50, 73);
 
+QFont NodeStyle::SocketAnnotationFont = QFont("Segoe UI", 8, QFont::Light);
+QBrush NodeStyle::SocketAnnotationBrush = QBrush(QColor(244, 244, 224));
+
 QPen NodeStyle::SocketPen = QPen(QColor(180, 180, 180), 1.0, Qt::SolidLine);
 QRect NodeStyle::SocketSize = QRect(0, 0, 15, 15);
 float NodeStyle::NodeSocketPenWidth = 1.0f;

@@ -19,6 +19,7 @@ public:
 	virtual int type() const;
 
 	void setBrushGradient(const QColor& start, const QColor& stop);
+	void setAnnotation(const QString& annotation);
 	float penWidth() const;
 	void setPenWidth(float penWidth);
 
@@ -44,6 +45,7 @@ private:
 	QPropertyAnimation mAnimation;
 	NodeLinkView* mTemporaryLink;
 	NodeConnectorView* mHoveredConnector;
+	QGraphicsSimpleTextItem* mAnnotation;
 	bool mIsOutput;
 
 private:

@@ -14,6 +14,7 @@ public:
 	virtual int type() const;
 
 	void setConnectorBrushGradient(const QColor& start, const QColor& stop);
+	void setConnectorAnnotation(const QString& annotation);
 	void setConnectorToolTip(const QString& toolTip);
 
 	// Przelicza i ustawia rozmiary i pozycje nazwy oraz "wtyczki"

@@ -133,6 +133,14 @@ NodeSocketView* NodeView::addSocketView(SocketID socketKey,
 				NodeStyle::SocketGradientStop5);
 			socketView->setConnectorToolTip("[Matches]");
 			break;
+
+		case ENodeFlowDataType::DeviceImage:
+			socketView->setConnectorBrushGradient(NodeStyle::SocketGradientStart1,
+				NodeStyle::SocketGradientStop1);
+			socketView->setConnectorToolTip("[DeviceImage]");
+			socketView->setConnectorAnnotation(QStringLiteral("D"));
+			break;
+
 		case ENodeFlowDataType::Invalid:
 		default:
 			socketView->setConnectorBrushGradient(Qt::white, Qt::black);

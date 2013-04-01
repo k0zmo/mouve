@@ -15,10 +15,12 @@ NodeConnectorView::NodeConnectorView(bool isOutput, QGraphicsItem* parent)
 	, mAnimation(this, "penWidth")
 	, mTemporaryLink(nullptr)
 	, mHoveredConnector(nullptr)
+	, mAnnotation(new QGraphicsSimpleTextItem(this))
 	, mIsOutput(isOutput)
 {
 	setBrushGradient(Qt::white, Qt::black);
 	setPenWidth(NodeStyle::NodeSocketPenWidth);
+	setAnnotation(QString());
 
 	setAcceptHoverEvents(true);
 
@@ -36,6 +38,26 @@ void NodeConnectorView::setBrushGradient(const QColor& start, const QColor& stop
 	gradient.setColorAt(0, start);
 	gradient.setColorAt(1, stop);
 	mBrush = QBrush(gradient);
+	update();
+}
+
+void NodeConnectorView::setAnnotation(const QString& annotation)
+{
+	if(annotation.isEmpty())
+	{
+		mAnnotation->setVisible(false);
+	}
+	else
+	{
+		mAnnotation->setVisible(true);
+		mAnnotation->setFont(NodeStyle::SocketAnnotationFont);
+		mAnnotation->setBrush(NodeStyle::SocketAnnotationBrush);
+		mAnnotation->setText(annotation);
+		QRectF abbect = mAnnotation->boundingRect();
+		QRectF brect = boundingRect();	
+		mAnnotation->setPos((brect.width() - abbect.width()) * 0.5,
+			(brect.height() - abbect.height()) * 0.5);
+	}
 	update();
 }
 

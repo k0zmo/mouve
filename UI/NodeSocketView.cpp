@@ -24,6 +24,11 @@ void NodeSocketView::setConnectorBrushGradient(const QColor& start, const QColor
 	mConnector->setBrushGradient(start, stop);
 }
 
+void NodeSocketView::setConnectorAnnotation(const QString& annotation)
+{
+	mConnector->setAnnotation(annotation);
+}
+
 void NodeSocketView::setConnectorToolTip(const QString& toolTip)
 {
 	mConnector->setToolTip(toolTip);
