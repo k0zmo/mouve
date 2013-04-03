@@ -1185,6 +1185,30 @@ void Controller::keyPress(QKeyEvent* event)
 		while(iter->next(nodeID))
 			_nodeTree->tagNode(nodeID);
 	}
+	else if(event->key() == Qt::Key_G
+		&& event->modifiers() & Qt::ControlModifier)
+	{
+		if(!canQuit())
+			return;
+
+		QString filePath = "test.tree";
+
+		_ui->actionAutoRefresh->setChecked(false);
+		createNewTree();
+
+		if(openTreeFromFileImpl(filePath))
+		{
+			_nodeTreeFilePath = filePath;
+			_nodeTreeDirty = false;
+			updateTitleBar();
+			qDebug() << "Tree successfully opened from file:" << filePath;
+		}
+		else
+		{
+			showErrorMessage("Error occured during opening file! Check logs for more details.");
+			qCritical() << "Couldn't open node tree from file:" << filePath;
+		}
+	}
 #endif
 }
 
