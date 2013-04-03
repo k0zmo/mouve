@@ -343,8 +343,7 @@ class GaussianBlurNodeType : public NodeType
 {
 public:
 	GaussianBlurNodeType()
-		: _kernelRadius(2)
-		, _sigma(10.0)
+		: _sigma(1.2)
 	{
 	}
 
@@ -352,9 +351,6 @@ public:
 	{
 		switch(propId)
 		{
-		case ID_KernelSize:
-			_kernelRadius = newValue.toInt();
-			return true;
 		case ID_Sigma:
 			_sigma = newValue.toDouble();
 			return true;
@@ -367,7 +363,6 @@ public:
 	{
 		switch(propId)
 		{
-		case ID_KernelSize: return _kernelRadius;
 		case ID_Sigma: return _sigma;
 		}
 
@@ -382,7 +377,8 @@ public:
 		if(!input.data)
 			return ExecutionStatus(EStatus::Ok);
 
-		cv::GaussianBlur(input, output, cv::Size(_kernelRadius*2+1,_kernelRadius*2+1), _sigma, 0);
+		//int ksize = cvRound(_sigma * 3 * 2 + 1) | 1;
+		cv::GaussianBlur(input, output, cv::Size(0,0), _sigma, 0);
 
 		return ExecutionStatus(EStatus::Ok);
 	}
@@ -398,9 +394,7 @@ public:
 			{ ENodeFlowDataType::Invalid, "", "", "" }
 		};
 		static const PropertyConfig prop_config[] = {
-			/// TODO: In future we might use slider
-			{ EPropertyType::Integer, "Kernel radius", "min:1, max:20, step:1" },
-			{ EPropertyType::Double, "Sigma", "min:0.0" },
+			{ EPropertyType::Double, "Sigma", "min:0.1, step:0.1" },
 			{ EPropertyType::Unknown, "", "" }
 		};
 
@@ -413,11 +407,9 @@ public:
 private:
 	enum EPropertyID
 	{
-		ID_KernelSize,
 		ID_Sigma
 	};
 
-	int _kernelRadius;
 	double _sigma;
 };
 
