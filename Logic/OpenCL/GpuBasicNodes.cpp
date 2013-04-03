@@ -1,25 +1,5 @@
-#include "Prerequisites.h"
-#include "NodeType.h"
+#include "GpuNode.h"
 #include "NodeFactory.h"
-#include "GpuNodeModule.h"
-
-class GpuNodeType : public NodeType
-{
-public:
-	GpuNodeType()
-		: _gpuComputeModule(nullptr)
-	{
-	}
-
-	bool init(const std::shared_ptr<NodeModule>& nodeModule) override
-	{
-		_gpuComputeModule = std::dynamic_pointer_cast<GpuNodeModule, NodeModule>(nodeModule);
-		return _gpuComputeModule != nullptr;
-	}
-
-protected:
-	std::shared_ptr<GpuNodeModule> _gpuComputeModule;
-};
 
 /// TODO: Add properties for setting pinned/pageable memory and direct/mapped access
 class GpuUploadImageNodeType : public GpuNodeType
@@ -122,7 +102,6 @@ public:
 		nodeConfig.module = "opencl";
 	}
 };
-
 
 REGISTER_NODE("OpenCL/Download image", GpuDownloadImageNodeType);
 REGISTER_NODE("OpenCL/Upload image", GpuUploadImageNodeType);

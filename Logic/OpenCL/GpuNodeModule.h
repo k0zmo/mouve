@@ -3,6 +3,7 @@
 #include "../NodeModule.h"
 
 #include <clw/clw.h>
+
 #include <functional>
 
 class LOGIC_EXPORT GpuNodeModule : public NodeModule
@@ -20,6 +21,11 @@ public:
 	bool createDefault();
 	bool createInteractive();
 
+	/// Very temporary solution
+	bool buildProgram(const std::string& programName);
+	clw::Kernel acquireKernel(const std::string& programName, 
+			const std::string& kernelName);
+
 	clw::Context& context();
 	const clw::Context& context() const;
 	clw::Device& device();
@@ -33,6 +39,8 @@ private:
 	clw::CommandQueue _queue;
 
 	bool _interactiveInit;
+	/// Very temporary solution
+	std::unordered_map<std::string, clw::Program> _programs;
 };
 
 inline void GpuNodeModule::setInteractiveInit(bool interactiveInit)

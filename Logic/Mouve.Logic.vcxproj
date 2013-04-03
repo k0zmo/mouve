@@ -276,8 +276,9 @@
     <ClCompile Include="Nodes\SurfNodes.cpp" />
     <ClCompile Include="NodeTree.cpp" />
     <ClCompile Include="NodeType.cpp" />
-    <ClCompile Include="OpenCL\BasicGpuNodes.cpp" />
+    <ClCompile Include="OpenCL\GpuBasicNodes.cpp" />
     <ClCompile Include="OpenCL\GpuNodeModule.cpp" />
+    <ClCompile Include="OpenCL\GpuMorphologyNode.cpp" />
     <ClCompile Include="Precomp.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
@@ -290,6 +291,8 @@
     <ClInclude Include="NodeFlowData.h" />
     <ClInclude Include="NodeModule.h" />
     <ClInclude Include="Nodes\CV.h" />
+    <ClInclude Include="OpenCL\GpuException.h" />
+    <ClInclude Include="OpenCL\GpuNode.h" />
     <ClInclude Include="OpenCL\GpuNodeModule.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">

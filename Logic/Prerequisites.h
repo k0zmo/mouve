@@ -10,6 +10,10 @@
 
 #define BIT(x) 1 << x
 
+#if K_COMPILER == K_COMPILER_MSVC
+#  define noexcept throw()
+#endif
+
 // CRT
 #include <cstdio>
 #include <cstdio>

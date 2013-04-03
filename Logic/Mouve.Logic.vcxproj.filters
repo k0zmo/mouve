@@ -92,7 +92,10 @@
     <ClCompile Include="OpenCL\GpuNodeModule.cpp">
       <Filter>OpenCL</Filter>
     </ClCompile>
-    <ClCompile Include="OpenCL\BasicGpuNodes.cpp">
+    <ClCompile Include="OpenCL\GpuMorphologyNode.cpp">
+      <Filter>OpenCL</Filter>
+    </ClCompile>
+    <ClCompile Include="OpenCL\GpuBasicNodes.cpp">
       <Filter>OpenCL</Filter>
     </ClCompile>
   </ItemGroup>
@@ -136,6 +139,12 @@
       <Filter>Nodes</Filter>
     </ClInclude>
     <ClInclude Include="OpenCL\GpuNodeModule.h">
+      <Filter>OpenCL</Filter>
+    </ClInclude>
+    <ClInclude Include="OpenCL\GpuException.h">
+      <Filter>OpenCL</Filter>
+    </ClInclude>
+    <ClInclude Include="OpenCL\GpuNode.h">
       <Filter>OpenCL</Filter>
     </ClInclude>
   </ItemGroup>
