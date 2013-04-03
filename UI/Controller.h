@@ -15,6 +15,7 @@ class QLabel;
 class TreeWorker;
 class QProgressBar;
 class QTreeWidgetItem;
+class GpuNodeModule;
 
 enum class EState
 {
@@ -148,6 +149,7 @@ private:
 
 	std::unique_ptr<NodeSystem> _nodeSystem;
 	std::shared_ptr<NodeTree> _nodeTree;
+	std::shared_ptr<GpuNodeModule> _gpuModule;
 
 	QThread _workerThread;
 	TreeWorker* _treeWorker;

@@ -50,6 +50,7 @@ Controller::Controller(QWidget* parent, Qt::WindowFlags flags)
 	, _nodeScene(nullptr)
 	, _propManager(new PropertyManager(this))
 	, _nodeSystem(new NodeSystem())
+	, _gpuModule(new GpuNodeModule(false))
 	, _nodeTree(nullptr)
 	, _workerThread(QThread())
 	, _treeWorker(new TreeWorker())
@@ -76,8 +77,7 @@ Controller::Controller(QWidget* parent, Qt::WindowFlags flags)
 	createNewNodeScene();
 
 	// Gpu module
-	std::shared_ptr<GpuNodeModule> gpuModule = std::make_shared<GpuNodeModule>(false);
-	_nodeSystem->registerNodeModule(gpuModule->moduleName(), gpuModule);
+	_nodeSystem->registerNodeModule(_gpuModule->moduleName(), _gpuModule);
 
 	// Context menu from node graphics view
 	connect(_ui->graphicsView, &NodeEditorView::contextMenu,
