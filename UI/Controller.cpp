@@ -604,32 +604,44 @@ void Controller::populateAddNodeContextMenu()
 
 	// Init context menu for adding nodes
 	_contextMenuAddNodes = new QMenu(this);
+	QList<QMenu*> subMenuList;
+	subMenuList.append(_contextMenuAddNodes);
 
 	QTreeWidgetItemIterator iter(_ui->nodesTreeWidget);
-	QMenu* lastMenu = nullptr;
-
 	while(*iter)
 	{
 		QString text = (*iter)->text(0);
+		QTreeWidgetItem* i = *iter;
+		int level = 1;
+		while(i = i->parent())
+			++level;
 
-		// Categories
-		if((*iter)->childCount() > 0)
-		{
-			lastMenu = (*iter)->parent() == nullptr || !lastMenu
-				? _contextMenuAddNodes->addMenu(text)
-				: lastMenu->addMenu(text);		
-		}
 		// Bottom level items
-		else if((*iter)->childCount() == 0)
+		if((*iter)->childCount() == 0)
 		{
 			NodeTypeID typeId = (*iter)->data(0, Qt::UserRole).toUInt();
 			QAction* action = new QAction(text, this);
 			action->setData(typeId);
 
-			if(lastMenu)
-				lastMenu->addAction(action);
-			else
-				_contextMenuAddNodes->addAction(action);
+			// Level starts cunting from 1 so at worst - it's gonnaa point to 0-indexed which is main menu
+			subMenuList[level-1]->addAction(action);
+		}
+		// Categories
+		else
+		{
+			// Add new category to context menu
+			QMenu* subMenu = _contextMenuAddNodes->addMenu(text);
+
+			if(level >= subMenuList.count())
+			{
+				subMenuList.append(subMenu);
+			}
+			else if(subMenuList[level]->title() != text)
+			{
+				subMenuList[level] = subMenu;
+				while(subMenuList.count() > level + 1)
+					subMenuList.removeLast();
+			}
 		}
 
 		iter++;
