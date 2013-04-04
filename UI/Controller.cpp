@@ -630,7 +630,7 @@ void Controller::populateAddNodeContextMenu()
 		else
 		{
 			// Add new category to context menu
-			QMenu* subMenu = _contextMenuAddNodes->addMenu(text);
+			QMenu* subMenu = subMenuList[level-1]->addMenu(text);
 
 			if(level >= subMenuList.count())
 			{
