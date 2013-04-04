@@ -89,6 +89,9 @@
     <ClCompile Include="Nodes\BasicNodes.cpp">
       <Filter>Nodes</Filter>
     </ClCompile>
+    <ClCompile Include="Nodes\HoughNodes.cpp">
+      <Filter>Nodes</Filter>
+    </ClCompile>
     <ClCompile Include="OpenCL\GpuNodeModule.cpp">
       <Filter>OpenCL</Filter>
     </ClCompile>

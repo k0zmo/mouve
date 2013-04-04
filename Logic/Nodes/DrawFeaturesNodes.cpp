@@ -2,6 +2,174 @@
 #include "NodeFactory.h"
 
 #include <opencv2/features2d/features2d.hpp>
+#include <opencv2/imgproc/imgproc.hpp>
+
+enum EColor
+{
+	Color_Red,
+	Color_Green,
+	Color_Blue,
+	Color_Invalid
+};
+
+cv::Scalar getColor(EColor color)
+{
+	switch(color)
+	{
+	// Order is BGR
+	case Color_Red: return cv::Scalar(0, 0, 255);
+	case Color_Green: return cv::Scalar(0, 255, 0);
+	case Color_Blue: return cv::Scalar(255, 0, 0);
+	}
+	return cv::Scalar(255, 255, 255);
+}
+
+EColor getColor(cv::Scalar scalar)
+{
+	if(scalar == cv::Scalar(0, 0, 255))
+		return Color_Red;
+	else if(scalar == cv::Scalar(0, 255, 0))
+		return Color_Green;
+	else if(scalar == cv::Scalar(255, 0, 0))
+		return Color_Blue;
+	return Color_Invalid;
+}
+
+class DrawLinesNodeType : public NodeType
+{
+public:
+	DrawLinesNodeType()
+		: _color(cv::Scalar(255, 0, 0))
+		, _thickness(2)
+		, _type(ELineType::Line_AA)
+	{
+	}
+
+	bool setProperty(PropertyID propId, const QVariant& newValue) override
+	{
+		switch(propId)
+		{
+		case ID_LineColor:
+			_color = getColor(EColor(newValue.toUInt()));
+			return true;
+		case ID_LineThickness:
+			_thickness = newValue.toUInt();
+			return true;
+		case ID_LineType:
+			_type = lineType(newValue.toUInt());
+			return true;
+		}
+
+		return false;
+	}
+
+	QVariant property(PropertyID propId) const override
+	{
+		switch(propId)
+		{
+		case ID_LineColor: return getColor(_color);
+		case ID_LineThickness: return _thickness;
+		case ID_LineType: return lineTypeIndex(_type);
+		}
+
+		return QVariant();
+	}
+
+	ExecutionStatus execute(NodeSocketReader& reader, NodeSocketWriter& writer) override
+	{
+		const cv::Mat& imageSrc = reader.readSocket(0).getImage();
+		const cv::Mat& lines = reader.readSocket(1).getArray();
+		cv::Mat& imageDst = writer.acquireSocket(0).getImageRgb();
+
+		if(imageSrc.empty())
+			return ExecutionStatus(EStatus::Ok);
+
+		cvtColor(imageSrc, imageDst, CV_GRAY2BGR);
+
+		for(int lineIdx = 0; lineIdx < lines.rows; ++lineIdx)
+		{
+			float rho = lines.at<float>(lineIdx, 0);
+			float theta = lines.at<float>(lineIdx, 1);
+			double cos_t = cos(theta);
+			double sin_t = sin(theta);
+			double x0 = rho*cos_t;
+			double y0 = rho*sin_t;
+			double alpha = sqrt(imageSrc.cols*imageSrc.cols + imageSrc.rows*imageSrc.rows);
+
+			cv::Point pt1(cvRound(x0 + alpha*(-sin_t)), cvRound(y0 + alpha*cos_t));
+			cv::Point pt2(cvRound(x0 - alpha*(-sin_t)), cvRound(y0 - alpha*cos_t));
+			cv::line(imageDst, pt1, pt2, _color, _thickness, int(_type));
+		}
+
+		return ExecutionStatus(EStatus::Ok);
+	}
+
+	void configuration(NodeConfig& nodeConfig) const override
+	{
+		static const InputSocketConfig in_config[] = {
+			{ ENodeFlowDataType::Image, "source", "Image", "" },
+			{ ENodeFlowDataType::Array, "lines", "Lines", "" },
+			{ ENodeFlowDataType::Invalid, "", "", "" }
+		};
+		static const OutputSocketConfig out_config[] = {
+			{ ENodeFlowDataType::ImageRgb, "output", "Output", "" },
+			{ ENodeFlowDataType::Invalid, "", "", "" }
+		};
+		static const PropertyConfig prop_config[] = {
+			{ EPropertyType::Enum, "Line color", "item: Red, item: Green, item: Blue" },
+			{ EPropertyType::Integer, "Line thickness", "step:1, min:1, max:5" },
+			{ EPropertyType::Enum, "Line type", "item: 4-connected, item: 8-connected, item: AA" },
+			{ EPropertyType::Unknown, "", "" }
+		};
+
+		nodeConfig.description = "";
+		nodeConfig.pInputSockets = in_config;
+		nodeConfig.pOutputSockets = out_config;
+		nodeConfig.pProperties = prop_config;
+	}
+
+private:
+	enum EPropertyID
+	{
+		ID_LineColor,
+		ID_LineThickness,
+		ID_LineType
+	};
+
+	enum class ELineType
+	{
+		Line_4Connected = 4,
+		Line_8Connected = 8,
+		Line_AA         = CV_AA
+	};
+
+	cv::Scalar _color;
+	int _thickness;
+	ELineType _type;
+
+private:
+	ELineType lineType(int lineTypeIndex) const
+	{
+		switch(lineTypeIndex)
+		{
+		case 0: return ELineType::Line_4Connected;
+		case 1: return ELineType::Line_8Connected;
+		case 2: return ELineType::Line_AA;
+		}
+		return ELineType::Line_4Connected;
+	}
+
+	int lineTypeIndex(ELineType type) const
+	{
+		switch(type)
+		{
+		case ELineType::Line_4Connected: return 0;
+		case ELineType::Line_8Connected: return 1;
+		case ELineType::Line_AA: return 2;
+		}
+		return 0;
+	}
+};
 
 class DrawKeypointsNodeType : public NodeType
 {
@@ -179,6 +347,7 @@ public:
 	}
 };
 
-REGISTER_NODE("Features/Draw homography", DrawHomographyNodeType)
-REGISTER_NODE("Features/Draw matches", DrawMatchesNodeType)
-REGISTER_NODE("Features/Draw keypoints", DrawKeypointsNodeType)
+REGISTER_NODE("Draw features/Draw homography", DrawHomographyNodeType)
+REGISTER_NODE("Draw features/Draw matches", DrawMatchesNodeType)
+REGISTER_NODE("Draw features/Draw keypoints", DrawKeypointsNodeType)
+REGISTER_NODE("Draw features/Draw lines", DrawLinesNodeType)
