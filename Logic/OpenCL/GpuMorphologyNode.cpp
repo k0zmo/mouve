@@ -17,27 +17,24 @@ public:
 		if(se.cols == 0 || se.rows == 0 || deviceSrc.width() == 0 || deviceSrc.height() == 0)
 			return ExecutionStatus(EStatus::Ok);
 
+		// Podfunkcje ktore zwracac beda ExecutionStatus
+		// ExecutionStatus dilate(), erode(), 
+
+		// Acquire kernel
 		clw::Kernel kernel = _gpuComputeModule->acquireKernel("morphOp.cl", "morphOp_image_unorm_local_unroll2");
 		if(kernel.isNull())
 			return ExecutionStatus(EStatus::Error);
 
-		if(deviceDest.isNull() 
-			|| deviceDest.width() != deviceSrc.width()
-			|| deviceDest.height() != deviceSrc.height())
-		{
-			deviceDest = _gpuComputeModule->context().createImage2D(clw::Access_WriteOnly, clw::Location_Device,
-				clw::ImageFormat(clw::Order_R, clw::Type_Normalized_UInt8), 
-				deviceSrc.width(), deviceSrc.height());
-		}
-
+		prepareDestinationImage(deviceDest, deviceSrc.width(), deviceSrc.height());
 		auto selemCoords = structuringElementCoordinates(se);
-		clw::Buffer seBuffer = uploadStructuringElement(selemCoords);		
+		uploadStructuringElement(selemCoords);	
 
+		// Prepare it for execution
 		kernel.setLocalWorkSize(clw::Grid(16, 16));
 		kernel.setRoundedGlobalWorkSize(clw::Grid(deviceSrc.width(), deviceSrc.height()));
 		kernel.setArg(0, deviceSrc);
 		kernel.setArg(1, deviceDest);
-		kernel.setArg(2, seBuffer);
+		kernel.setArg(2, _deviceStructuringElement);
 		kernel.setArg(3, (int) selemCoords.size());
 
 		int kradx = (se.cols - 1) >> 1;
@@ -50,6 +47,7 @@ public:
 		kernel.setArg(7, sharedWidth);
 		kernel.setArg(8, sharedHeight);
 
+		// Execute the kernel
 		clw::Event evt = _gpuComputeModule->queue().asyncRunKernel(kernel);
 		_gpuComputeModule->queue().finish();
 
@@ -87,7 +85,6 @@ public:
 	}
 
 private:
-
 	std::vector<cl_int2> structuringElementCoordinates(const cv::Mat& selem)
 	{
 		std::vector<cl_int2> coords;
@@ -109,22 +106,41 @@ private:
 		return coords;
 	}
 
-	clw::Buffer uploadStructuringElement(const std::vector<cl_int2>& selemCoords)
+	void uploadStructuringElement(const std::vector<cl_int2>& selemCoords)
 	{
 		/// TODO: Check max costant memory buffer size first
 		size_t bmuSize = sizeof(cl_int2) * selemCoords.size();
-		clw::Buffer seBuffer = _gpuComputeModule->context().createBuffer(
-			clw::Access_ReadOnly, clw::Location_Device, bmuSize);
+		if(_deviceStructuringElement.isNull() ||
+			_deviceStructuringElement.size() != bmuSize)
+		{
+			_deviceStructuringElement = _gpuComputeModule->context().createBuffer(
+				clw::Access_ReadOnly, clw::Location_Device, bmuSize);
+		}
 
 		/// TODO: Benchmark Pinned memory and mapping/direct access
-		cl_int2* ptr = static_cast<cl_int2*>(_gpuComputeModule->queue().mapBuffer(seBuffer, clw::MapAccess_Write));
+		cl_int2* ptr = static_cast<cl_int2*>(_gpuComputeModule->queue().mapBuffer(
+			_deviceStructuringElement, clw::MapAccess_Write));
 		const cl_int2* data = selemCoords.data();
 		memcpy(ptr, data, bmuSize);
-		_gpuComputeModule->queue().unmap(seBuffer, ptr);	
-		//gpu->queue().writeBuffer(seBuffer, selemCoords.data(), 0, bmuSize);	
-		return seBuffer;
+		_gpuComputeModule->queue().unmap(_deviceStructuringElement, ptr);	
+		//gpu->queue().writeBuffer(_deviceStructuringElement, selemCoords.data(), 0, bmuSize);	
 	}
 
+	void prepareDestinationImage(clw::Image2D& deviceDest, int width, int height)
+	{
+		if(deviceDest.isNull() 
+			|| deviceDest.width() != width
+			|| deviceDest.height() != height)
+		{
+			deviceDest = _gpuComputeModule->context().createImage2D(
+				clw::Access_WriteOnly, clw::Location_Device,
+				clw::ImageFormat(clw::Order_R, clw::Type_Normalized_UInt8),
+				width, height);
+		}
+	}
+
+private:
+	clw::Buffer _deviceStructuringElement;
 };
 
 REGISTER_NODE("OpenCL/Image/Morphology op.", GpuMorphologyNodeType)
