@@ -272,6 +272,7 @@
     <ClCompile Include="Nodes\CV.cpp" />
     <ClCompile Include="Nodes\DrawFeaturesNodes.cpp" />
     <ClCompile Include="Nodes\HomographyNodes.cpp" />
+    <ClCompile Include="Nodes\HoughNodes.cpp" />
     <ClCompile Include="Nodes\MatcherNodes.cpp" />
     <ClCompile Include="Nodes\SurfNodes.cpp" />
     <ClCompile Include="NodeTree.cpp" />
