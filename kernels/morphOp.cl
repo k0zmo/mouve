@@ -1,4 +1,4 @@
-//#define ERODE_OP
+#define ERODE_OP
 
 #if defined(ERODE_OP)
 
