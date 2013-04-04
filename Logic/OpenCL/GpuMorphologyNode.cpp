@@ -127,4 +127,4 @@ private:
 
 };
 
-REGISTER_NODE("OpenCL/Image/Morphology op.", GpuMorphologyNodeType);
+REGISTER_NODE("OpenCL/Image/Morphology op.", GpuMorphologyNodeType)

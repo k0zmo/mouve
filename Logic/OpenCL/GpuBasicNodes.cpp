@@ -103,5 +103,5 @@ public:
 	}
 };
 
-REGISTER_NODE("OpenCL/Download image", GpuDownloadImageNodeType);
-REGISTER_NODE("OpenCL/Upload image", GpuUploadImageNodeType);
+REGISTER_NODE("OpenCL/Download image", GpuDownloadImageNodeType)
+REGISTER_NODE("OpenCL/Upload image", GpuUploadImageNodeType)
