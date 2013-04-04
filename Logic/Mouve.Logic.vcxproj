@@ -388,6 +388,11 @@
       <AdditionalDependencies>qtmaind.lib;Qt5Cored.lib;opencv_features2d$(OPENCV_VERSION)d.lib;opencv_nonfree$(OPENCV_VERSION)d.lib;opencv_flann$(OPENCV_VERSION)d.lib;opencv_calib3d$(OPENCV_VERSION)d.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <ImageHasSafeExceptionHandlers>false</ImageHasSafeExceptionHandlers>
     </Link>
+    <PostBuildEvent>
+      <Command>copy /Y  $(SolutionDir)external\clw\bin\clw_d.dll  $(SolutionDir)$(Platform)\$(Configuration)\clw_d.dll
+robocopy $(SolutionDir)kernels $(SolutionDir)$(Platform)\$(Configuration)\kernels /MIR /NJS /NJH
+if %errorlevel% leq 1 exit 0 else exit %errorlevel%</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
@@ -431,6 +436,11 @@
       <AdditionalDependencies>qtmain.lib;Qt5Core.lib;opencv_features2d$(OPENCV_VERSION).lib;opencv_nonfree$(OPENCV_VERSION).lib;opencv_flann$(OPENCV_VERSION).lib;opencv_calib3d$(OPENCV_VERSION).lib;%(AdditionalDependencies)</AdditionalDependencies>
       <ImageHasSafeExceptionHandlers>false</ImageHasSafeExceptionHandlers>
     </Link>
+    <PostBuildEvent>
+      <Command>copy /Y  $(SolutionDir)external\clw\bin\clw.dll  $(SolutionDir)$(Platform)\$(Configuration)\clw.dll
+robocopy $(SolutionDir)kernels $(SolutionDir)$(Platform)\$(Configuration)\kernels /MIR /NJS /NJH
+if %errorlevel% leq 1 exit 0 else exit %errorlevel%</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
