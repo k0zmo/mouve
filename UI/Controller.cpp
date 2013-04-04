@@ -746,7 +746,8 @@ bool Controller::shouldUpdatePreview(const std::vector<NodeID>& executedNodes)
 
 void Controller::updatePreviewImpl()
 {
-	if(_previewSelectedNodeView != nullptr)
+	if(_previewSelectedNodeView != nullptr
+		&& _previewSelectedNodeView->outputSocketCount() > 0)
 	{
 		NodeID nodeID = _previewSelectedNodeView->nodeKey();
 		SocketID socketID = _previewSelectedNodeView->previewSocketID();
