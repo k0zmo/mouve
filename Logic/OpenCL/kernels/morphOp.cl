@@ -187,9 +187,9 @@ void contextToLocalMemory_image(__read_only image2d_t src,
 */
 __attribute__((always_inline))
 void contextToLocalMemory_image2(__read_only image2d_t src,
-                                int kradx, int krady,
-                                __local uchar* sharedBlock,
-                                int sharedWidth, int sharedHeight)
+                                 int kradx, int krady,
+                                 __local uchar* sharedBlock,
+                                 int sharedWidth, int sharedHeight)
 {
     int2 gid = { get_global_id(0), get_global_id(1) };
     int2 lid = { get_local_id(0), get_local_id(1) };

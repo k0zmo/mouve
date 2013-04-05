@@ -27,10 +27,21 @@ std::string GpuNodeModule::moduleName() const
 	return "opencl";
 }
 
+//#define INTEL_DEBUGGING
+
 bool GpuNodeModule::createDefault()
 {
+#if defined(INTEL_DEBUGGING)
+	auto devs = clw::deviceFiltered(
+		clw::Filter::PlatformVendor(clw::Vendor_Intel) 
+		&& clw::Filter::DeviceType(clw::Cpu));
+	if(!_context.create(devs) || _context.numDevices() == 0)
+		return false;
+#else
 	if(!_context.create(clw::Default) || _context.numDevices() == 0)
 		return false;
+#endif
+		
 	_device = _context.devices()[0];
 	_queue = _context.createCommandQueue(_device, clw::Property_ProfilingEnabled);
 
@@ -100,8 +111,26 @@ bool GpuNodeModule::buildProgram(const std::string& programName)
 	clw::Program program = _context.createProgramFromSourceFile(programPath.toStdString());
 	if(program.isNull())
 		return false;
-	
-	if(!program.build(""))
+
+	std::string opts;
+
+#if defined(K_DEBUG) && K_COMPILER == K_COMPILER_MSVC
+	// Enable kernel debugging if device is CPU and it's Intel platform
+	if(_device.platform().vendorEnum() == clw::Vendor_Intel
+		&& _device.deviceType() == clw::Cpu)
+	{
+		QFileInfo thisFile(K_FILE);
+		QDir thisDirectory = thisFile.dir();
+		QString s = thisDirectory.dirName();
+		if(thisDirectory.cd("kernels"))
+		{
+			QString fullKernelsPath = thisDirectory.absoluteFilePath(QString::fromStdString(programName));
+			opts += " -g -s " + fullKernelsPath.toStdString();
+		}
+	}
+#endif
+
+	if(!program.build(opts))
 		throw gpu_build_exception(program.log());
 	//std::cout << program.log() << std::endl;
 
