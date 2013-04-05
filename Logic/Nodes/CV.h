@@ -110,4 +110,29 @@ enum class EPredefinedConvolutionType
 
 cv::Mat predefinedConvolutionKernel(EPredefinedConvolutionType type);
 
+// Lambda-aware paralell loop invoker based on cv::parallel_for
+template<typename Body>
+struct ParallelLoopInvoker : public cv::ParallelLoopBody
+{
+	ParallelLoopInvoker(const Body& body)
+		: _body(body)
+	{
+	}
+
+	void operator()(const cv::Range& range) const override
+	{
+		_body(range);
+	}
+
+private:
+	Body _body;
+};
+
+template<typename Body>
+void parallel_for(const cv::Range& range, const Body& body)
+{
+	ParallelLoopInvoker<Body> loopInvoker(body);
+	cv::parallel_for_(range, loopInvoker);
+}
+
 }
