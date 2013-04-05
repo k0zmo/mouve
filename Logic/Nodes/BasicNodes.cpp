@@ -1424,10 +1424,6 @@ public:
 	}
 };
 
-#if defined(Q_CC_MSVC)
-#  include <ppl.h>
-#endif
-
 class BackgroundSubtractorNodeType : public NodeType
 {
 public:
@@ -1494,47 +1490,42 @@ public:
 				threshold = cv::Scalar(127);
 			}
 
-#if defined(Q_CC_MSVC)
-			concurrency::parallel_for(0, frame.rows, [&](int y)
-#else
-			#pragma omp parallel for
-			for(int y = 0; y < frame.rows; ++y)
-#endif
+			cvu::parallel_for(cv::Range(0, frame.rows), [&](const cv::Range& range)
 			{
-				for(int x = 0; x < frame.cols; ++x)
+				for(int y = range.start; y < range.end; ++y)
 				{
-					uchar thresh = threshold.at<uchar>(y, x);
-					uchar pix = frame.at<uchar>(y, x);
-
-					// Find moving pixels
-					bool moving = std::abs(pix - _frameN1.at<uchar>(y, x)) > thresh
-						&& std::abs(pix - _frameN2.at<uchar>(y, x)) > thresh;
-					movingPixels.at<uchar>(y, x) = moving ? 255 : 0;
-
-					const int minThreshold = 20;
-
-					if(!moving)
+					for(int x = 0; x < frame.cols; ++x)
 					{
-						// Update background image
-						uchar newBackground = _alpha*float(background.at<uchar>(y, x)) + (1-_alpha)*float(pix);
-						background.at<uchar>(y, x) = newBackground;
+						uchar thresh = threshold.at<uchar>(y, x);
+						uchar pix = frame.at<uchar>(y, x);
 
-						// Update threshold image
-						float thresh = _alpha*float(threshold.at<uchar>(y, x)) + 
-							(1-_alpha)*(_threshCoeff * std::abs(pix - newBackground));
-						if(thresh > float(minThreshold))
-							threshold.at<uchar>(y, x) = thresh;
-					}
-					else
-					{
-						// Update threshold image
-						threshold.at<uchar>(y, x) = minThreshold;
+						// Find moving pixels
+						bool moving = std::abs(pix - _frameN1.at<uchar>(y, x)) > thresh
+							&& std::abs(pix - _frameN2.at<uchar>(y, x)) > thresh;
+						movingPixels.at<uchar>(y, x) = moving ? 255 : 0;
+
+						const int minThreshold = 20;
+
+						if(!moving)
+						{
+							// Update background image
+							uchar newBackground = _alpha*float(background.at<uchar>(y, x)) + (1-_alpha)*float(pix);
+							background.at<uchar>(y, x) = newBackground;
+
+							// Update threshold image
+							float thresh = _alpha*float(threshold.at<uchar>(y, x)) + 
+								(1-_alpha)*(_threshCoeff * std::abs(pix - newBackground));
+							if(thresh > float(minThreshold))
+								threshold.at<uchar>(y, x) = thresh;
+						}
+						else
+						{
+							// Update threshold image
+							threshold.at<uchar>(y, x) = minThreshold;
+						}
 					}
 				}
-			}
-#if defined(Q_CC_MSVC)
-			);
-#endif
+			});
 		}
 
 		_frameN2 = _frameN1;
