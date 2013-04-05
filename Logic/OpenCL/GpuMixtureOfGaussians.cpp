@@ -3,6 +3,12 @@
 
 static const int NMIXTURES = 5;
 
+/// TODO: Add parameters:
+/// - NMixtures
+/// - Learning param
+/// - Background ratio
+/// - Calc background
+
 class GpuMixtureOfGaussiansNodeType : public GpuNodeType
 {
 public:
@@ -111,6 +117,35 @@ public:
 		clw::Event evt = _gpuComputeModule->queue().asyncRunKernel(kernelGaussMix);
 		_gpuComputeModule->queue().finish();
 
+		if(1)
+		{
+			clw::Image2D& deviceDestBackground = writer.acquireSocket(1).getDeviceImage();
+			if(deviceDestBackground.isNull()
+				|| deviceDestBackground.width() != srcWidth
+				|| deviceDestBackground.height() != srcHeight)
+			{
+				// Obraz (w zasadzie maska) pierwszego planu
+				deviceDestBackground = _gpuComputeModule->context().createImage2D(
+					clw::Access_WriteOnly, clw::Location_Device,
+					clw::ImageFormat(clw::Order_R, clw::Type_Normalized_UInt8),
+					srcWidth, srcHeight);
+			}
+
+			clw::Kernel kernelBackground = _gpuComputeModule->acquireKernel("mog.cl", "mog_background_image_unorm");
+			if(kernelBackground.isNull())
+				return ExecutionStatus(EStatus::Error);
+
+			kernelBackground.setLocalWorkSize(16, 16);
+			kernelBackground.setRoundedGlobalWorkSize(srcWidth, srcHeight);
+			kernelBackground.setArg(0, deviceDestBackground);
+			kernelBackground.setArg(1, _mixtureDataBuffer);
+			kernelBackground.setArg(2, _mixtureParamsBuffer);
+			//evt = _gpuComputeModule->queue().asyncRunKernel(kernelBackground);
+			//_gpuComputeModule->queue().finish();
+
+			bool res = _gpuComputeModule->queue().runKernel(kernelBackground);
+		}
+
 		double elapsed = (evt.finishTime() - evt.startTime()) * 1e-6;
 		return ExecutionStatus(EStatus::Ok, elapsed);
 	}
@@ -123,7 +158,7 @@ public:
 		};
 		static const OutputSocketConfig out_config[] = {
 			{ ENodeFlowDataType::DeviceImage, "output", "Output", "" },
-			//{ ENodeFlowDataType::DeviceImage, "background", "Background", "" },
+			{ ENodeFlowDataType::DeviceImage, "background", "Background", "" },
 			{ ENodeFlowDataType::Invalid, "", "", "" }
 		};
 
