@@ -611,6 +611,7 @@ void Controller::populateAddNodeContextMenu()
 	while(*iter)
 	{
 		QString text = (*iter)->text(0);
+		text = text.replace("&", "&&");
 		QTreeWidgetItem* i = *iter;
 		int level = 1;
 		while(i = i->parent())
