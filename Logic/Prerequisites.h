@@ -8,8 +8,6 @@
 #  define LOGIC_EXPORT K_DECL_IMPORT
 #endif
 
-#define BIT(x) 1 << x
-
 // CRT
 #include <cstdio>
 #include <cstdio>

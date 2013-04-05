@@ -33,6 +33,10 @@ void TreeWorker::process(bool withInit)
 	{
 		emit error(QString("OpenCV exception caught: %1").arg(ex.what()));
 	}
+	catch(std::exception& ex)
+	{
+		emit error(QString("Exception was caught: %1").arg(ex.what()));
+	}
 	catch(...)
 	{
 		emit error(QStringLiteral("Unknown exception was thrown"));
