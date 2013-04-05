@@ -161,10 +161,10 @@ private:
 };
 HighResolutionClock VideoFromFileNodeType::_clock;
 
-class MixtureOfGaussianNodeType : public NodeType
+class MixtureOfGaussiansNodeType : public NodeType
 {
 public:
-	MixtureOfGaussianNodeType()
+	MixtureOfGaussiansNodeType()
 		: _history(200)
 		, _nmixtures(5)
 		, _backgroundRatio(0.7)
@@ -1582,7 +1582,7 @@ private:
 };
 
 REGISTER_NODE("Video/Background subtraction", BackgroundSubtractorNodeType)
-REGISTER_NODE("Video/Mixture of Gaussians", MixtureOfGaussianNodeType)
+REGISTER_NODE("Video/Mixture of Gaussians", MixtureOfGaussiansNodeType)
 
 REGISTER_NODE("Edge/Canny edge detector", CannyEdgeDetectorNodeType)
 REGISTER_NODE("Edge/Sobel", SobelNodeType)

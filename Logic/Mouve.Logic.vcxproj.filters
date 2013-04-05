@@ -104,6 +104,9 @@
     <ClCompile Include="OpenCL\GpuHoughLinesNode.cpp">
       <Filter>OpenCL</Filter>
     </ClCompile>
+    <ClCompile Include="OpenCL\GpuMixtureOfGaussians.cpp">
+      <Filter>OpenCL</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="Node.h">

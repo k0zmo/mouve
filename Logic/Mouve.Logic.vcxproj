@@ -279,6 +279,7 @@
     <ClCompile Include="NodeType.cpp" />
     <ClCompile Include="OpenCL\GpuBasicNodes.cpp" />
     <ClCompile Include="OpenCL\GpuHoughLinesNode.cpp" />
+    <ClCompile Include="OpenCL\GpuMixtureOfGaussians.cpp" />
     <ClCompile Include="OpenCL\GpuNodeModule.cpp" />
     <ClCompile Include="OpenCL\GpuMorphologyNode.cpp" />
     <ClCompile Include="Precomp.cpp">

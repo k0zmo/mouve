@@ -255,4 +255,4 @@ private:
 	clw::Buffer _deviceLines;
 };
 
-REGISTER_NODE("OpenCL/Transformation/Hough Lines", GpuHoughLinesNodeType)
+REGISTER_NODE("OpenCL/Features/Hough Lines", GpuHoughLinesNodeType)
