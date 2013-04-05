@@ -48,7 +48,7 @@ bool GpuNodeModule::createDefault()
 	clw::installErrorHandler([=](cl_int error_id, const std::string& message)
 	{
 		if(error_id != CL_BUILD_PROGRAM_FAILURE)
-			throw gpu_node_exception(error_id, message);
+			throw GpuNodeException(error_id, message);
 	});
 
 	return !_device.isNull() && !_queue.isNull();
@@ -131,7 +131,7 @@ bool GpuNodeModule::buildProgram(const std::string& programName)
 #endif
 
 	if(!program.build(opts))
-		throw gpu_build_exception(program.log());
+		throw GpuBuildException(program.log());
 	//std::cout << program.log() << std::endl;
 
 	_programs[programName] = program;

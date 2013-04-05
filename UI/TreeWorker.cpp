@@ -30,7 +30,7 @@ void TreeWorker::process(bool withInit)
 	{
 		emit error(QString("Bad socket connection, %1").arg(ex.what()));
 	}
-	catch(gpu_build_exception& ex)
+	catch(GpuBuildException& ex)
 	{
 		QString logMessage = QString::fromStdString(ex.log);
 		logMessage.truncate(1024);
@@ -41,7 +41,7 @@ void TreeWorker::process(bool withInit)
 			logMessage
 		);
 	}
-	catch(gpu_node_exception& ex)
+	catch(GpuNodeException& ex)
 	{
 		emit error(QString("OpenCL error(%1): %2")
 			.arg(ex.error)
