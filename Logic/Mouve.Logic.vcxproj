@@ -269,6 +269,7 @@
     <ClCompile Include="NodeSystem.cpp" />
     <ClCompile Include="Nodes\BriskNodes.cpp" />
     <ClCompile Include="Nodes\BasicNodes.cpp" />
+    <ClCompile Include="Nodes\ColorConversionNodes.cpp" />
     <ClCompile Include="Nodes\CV.cpp" />
     <ClCompile Include="Nodes\DrawFeaturesNodes.cpp" />
     <ClCompile Include="Nodes\HomographyNodes.cpp" />

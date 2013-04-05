@@ -15,6 +15,38 @@ enum class EStructuringElementType
 	Cross
 };
 
+enum class EBayerCode
+{
+	BG,
+	GB,
+	RG,
+	GR,
+};
+
+inline int bayerCodeGray(EBayerCode code)
+{
+	switch(code)
+	{
+	case EBayerCode::BG: return CV_BayerBG2GRAY;
+	case EBayerCode::GB: return CV_BayerGB2GRAY;
+	case EBayerCode::RG: return CV_BayerRG2GRAY;
+	case EBayerCode::GR: return CV_BayerGR2GRAY;
+	default: return CV_BayerBG2GRAY;
+	}
+}
+
+inline int bayerCodeRgb(EBayerCode code)
+{
+	switch(code)
+	{
+	case EBayerCode::BG: return CV_BayerBG2BGR;
+	case EBayerCode::GB: return CV_BayerGB2BGR;
+	case EBayerCode::RG: return CV_BayerRG2BGR;
+	case EBayerCode::GR: return CV_BayerGR2BGR;
+	default: return CV_BayerBG2GRAY;
+	}
+}
+
 cv::Mat standardStructuringElement(int xradius, int yradius, 
 	EStructuringElementType type, int rotation);
 
