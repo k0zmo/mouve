@@ -39,6 +39,9 @@
     <Filter Include="OpenCL">
       <UniqueIdentifier>{ab4a3088-b01c-4001-aa41-f93f1a6702f4}</UniqueIdentifier>
     </Filter>
+    <Filter Include="OpenCL\Kernels">
+      <UniqueIdentifier>{2bcd7856-1d37-4ec6-87b5-1b71f853f5f2}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Precomp.cpp">
@@ -156,5 +159,16 @@
     <ClInclude Include="OpenCL\GpuNode.h">
       <Filter>OpenCL</Filter>
     </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="OpenCL\kernels\hough.cl">
+      <Filter>OpenCL\Kernels</Filter>
+    </None>
+    <None Include="OpenCL\kernels\mog.cl">
+      <Filter>OpenCL\Kernels</Filter>
+    </None>
+    <None Include="OpenCL\kernels\morphOp.cl">
+      <Filter>OpenCL\Kernels</Filter>
+    </None>
   </ItemGroup>
 </Project>

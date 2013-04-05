@@ -328,7 +328,7 @@ __kernel void getLines(__global int* accum,
                        __global float2* lines,
                        counter_type pointsCount,
                        const int threshold,
-					   const int maxLines,
+                       const int maxLines,
                        const int numRho)
 {
     int2 gid = { get_global_id(0), get_global_id(1) };

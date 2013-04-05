@@ -298,6 +298,11 @@
     <ClInclude Include="OpenCL\GpuNode.h" />
     <ClInclude Include="OpenCL\GpuNodeModule.h" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="OpenCL\kernels\hough.cl" />
+    <None Include="OpenCL\kernels\mog.cl" />
+    <None Include="OpenCL\kernels\morphOp.cl" />
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{DC17726C-68F2-4136-BBC4-25765372976A}</ProjectGuid>
     <Keyword>Qt4VSv1.0</Keyword>
@@ -391,7 +396,7 @@
     </Link>
     <PostBuildEvent>
       <Command>copy /Y  $(SolutionDir)external\clw\bin\clw_d.dll  $(SolutionDir)$(Platform)\$(Configuration)\clw_d.dll
-robocopy $(SolutionDir)kernels $(SolutionDir)$(Platform)\$(Configuration)\kernels /MIR /NJS /NJH
+robocopy OpenCL\kernels $(SolutionDir)$(Platform)\$(Configuration)\kernels /MIR /NJS /NJH
 if %errorlevel% leq 1 exit 0 else exit %errorlevel%</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
@@ -439,7 +444,7 @@ if %errorlevel% leq 1 exit 0 else exit %errorlevel%</Command>
     </Link>
     <PostBuildEvent>
       <Command>copy /Y  $(SolutionDir)external\clw\bin\clw.dll  $(SolutionDir)$(Platform)\$(Configuration)\clw.dll
-robocopy $(SolutionDir)kernels $(SolutionDir)$(Platform)\$(Configuration)\kernels /MIR /NJS /NJH
+robocopy OpenCL\kernels $(SolutionDir)$(Platform)\$(Configuration)\kernels /MIR /NJS /NJH
 if %errorlevel% leq 1 exit 0 else exit %errorlevel%</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
