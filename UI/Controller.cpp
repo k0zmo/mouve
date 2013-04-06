@@ -1412,8 +1412,19 @@ bool Controller::saveTreeAs()
 	return saveTreeToFile(filePath);
 }
 
-void Controller::updatePreview()
+void Controller::updatePreview(bool res)
 {
+	// Workerer reported something gone wrong
+	if(!res)
+	{
+		_processing = false;
+		if(!_videoMode)
+			setInteractive(true);
+		else
+			stop();
+		return;
+	}
+
 	std::vector<NodeID> execList = _nodeTree->executeList();
 
 	// Update preview window if necessary
