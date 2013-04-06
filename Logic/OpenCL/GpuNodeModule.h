@@ -26,6 +26,9 @@ public:
 	clw::Kernel acquireKernel(const std::string& programName, 
 			const std::string& kernelName);
 
+	bool isConstantMemorySufficient(uint64_t memSize) const;
+	bool isLocalMemorySufficient(uint64_t memSize) const;
+
 	clw::Context& context();
 	const clw::Context& context() const;
 	clw::Device& device();
@@ -38,6 +41,9 @@ private:
 	clw::Device _device;
 	clw::CommandQueue _queue;
 
+	uint64_t _maxConstantMemory;
+	uint64_t _maxLocalMemory;
+
 	bool _interactiveInit;
 	/// Very temporary solution
 	std::unordered_map<std::string, clw::Program> _programs;
@@ -47,6 +53,10 @@ inline void GpuNodeModule::setInteractiveInit(bool interactiveInit)
 { _interactiveInit = interactiveInit; }
 inline bool GpuNodeModule::isInteractiveInit() const
 { return _interactiveInit; }
+inline bool GpuNodeModule::isConstantMemorySufficient(uint64_t memSize) const
+{ return memSize <= _maxConstantMemory; }
+inline bool GpuNodeModule::isLocalMemorySufficient(uint64_t memSize) const
+{ return memSize <= _maxLocalMemory; }
 inline clw::Context& GpuNodeModule::context()
 { return _context; }
 inline const clw::Context& GpuNodeModule::context() const

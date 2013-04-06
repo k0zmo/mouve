@@ -90,10 +90,9 @@ public:
 
 		ensureSizeIsEnough(_deviceAccum, numAngle * numRho * sizeof(cl_int));
 
-		size_t requiredSharedSize = numRho * sizeof(cl_int);
-		size_t maxAvailableSharedSize = size_t(_gpuComputeModule->device().localMemorySize());
+		uint64_t requiredSharedSize = numRho * sizeof(cl_int);
 
-		if(requiredSharedSize > maxAvailableSharedSize)
+		if(!_gpuComputeModule->isLocalMemorySufficient(requiredSharedSize))
 		{
 			clw::Kernel kernelAccumLines = _gpuComputeModule->acquireKernel("hough.cl", "accumLines");
 			if(kernelAccumLines.isNull())

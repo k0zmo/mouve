@@ -2,7 +2,9 @@
 #include "GpuException.h"
 
 GpuNodeModule::GpuNodeModule(bool interactiveInit)
-	: _interactiveInit(interactiveInit)
+	: _maxConstantMemory(0)
+	, _maxLocalMemory(0)
+	, _interactiveInit(interactiveInit)
 {
 }
 
@@ -50,6 +52,12 @@ bool GpuNodeModule::createDefault()
 		if(error_id != CL_BUILD_PROGRAM_FAILURE)
 			throw GpuNodeException(error_id, message);
 	});
+
+	if(!_device.isNull())
+	{
+		_maxConstantMemory = _device.maximumConstantBufferSize();
+		_maxLocalMemory = _device.localMemorySize();
+	}
 
 	return !_device.isNull() && !_queue.isNull();
 }
