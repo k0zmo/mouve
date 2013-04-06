@@ -110,6 +110,9 @@
     <ClCompile Include="OpenCL\GpuMixtureOfGaussians.cpp">
       <Filter>OpenCL</Filter>
     </ClCompile>
+    <ClCompile Include="OpenCL\GpuKernelLibrary.cpp">
+      <Filter>OpenCL</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="Node.h">
@@ -157,6 +160,9 @@
       <Filter>OpenCL</Filter>
     </ClInclude>
     <ClInclude Include="OpenCL\GpuNode.h">
+      <Filter>OpenCL</Filter>
+    </ClInclude>
+    <ClInclude Include="OpenCL\GpuKernelLibrary.h">
       <Filter>OpenCL</Filter>
     </ClInclude>
   </ItemGroup>

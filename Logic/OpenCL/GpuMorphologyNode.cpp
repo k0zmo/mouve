@@ -8,6 +8,13 @@ public:
 	{
 	}
 
+	bool postInit() override
+	{
+		kidErode = _gpuComputeModule->registerKernel(
+			"morphOp_image_unorm_local_unroll2", "morphOp.cl", "-DERODE_OP");
+		return kidErode != InvalidKernelID;
+	}
+
 	ExecutionStatus execute(NodeSocketReader& reader, NodeSocketWriter& writer) override
 	{
 		const clw::Image2D& deviceSrc = reader.readSocket(0).getDeviceImage();
@@ -21,9 +28,7 @@ public:
 		// ExecutionStatus dilate(), erode(), 
 
 		// Acquire kernel
-		clw::Kernel kernel = _gpuComputeModule->acquireKernel("morphOp.cl", "morphOp_image_unorm_local_unroll2");
-		if(kernel.isNull())
-			return ExecutionStatus(EStatus::Error);
+		clw::Kernel kernel = _gpuComputeModule->acquireKernel(kidErode);
 
 		prepareDestinationImage(deviceDest, deviceSrc.width(), deviceSrc.height());
 		auto selemCoords = structuringElementCoordinates(se);
@@ -141,6 +146,9 @@ private:
 
 private:
 	clw::Buffer _deviceStructuringElement;
+	KernelID kidErode;
+	///KernelID kidDilate;
+	///KernelID kidSubtract;
 };
 
 REGISTER_NODE("OpenCL/Image/Morphology op.", GpuMorphologyNodeType)

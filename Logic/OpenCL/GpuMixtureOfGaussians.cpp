@@ -1,19 +1,20 @@
 #include "GpuNode.h"
 #include "NodeFactory.h"
 
-static const int NMIXTURES = 5;
+#include <sstream>
 
 /// TODO: Add parameters:
-/// - NMixtures
-/// - Learning param
-/// - Background ratio
-/// - Calc background
+/// - NMixtures as property
+/// - Learning param as property
+/// - Background ratio as property
+/// - Calc background as property
 
 class GpuMixtureOfGaussiansNodeType : public GpuNodeType
 {
 public:
 	GpuMixtureOfGaussiansNodeType()
-		: _nframe(0)
+		: _nmixtures(5)
+		, _nframe(0)
 		, _history(200)
 		, _varianceThreshold(6.25f)
 		, _backgroundRatio(0.7f)
@@ -21,6 +22,20 @@ public:
 		, _initialVariance(500) // (15*15*4)
 		, _minVariance(0.4f) // (15*15)
 	{
+	}
+
+	bool postInit() override
+	{
+		std::ostringstream strm;
+		strm << "-DNMIXTURES=" << _nmixtures;
+		std::string opts = strm.str();
+
+		kidGaussMix = _gpuComputeModule->registerKernel(
+			"mog_image_unorm", "mog.cl", opts);
+		kidGaussBackground = _gpuComputeModule->registerKernel(
+			"mog_background_image_unorm", "mog.cl", opts);
+		return kidGaussMix != InvalidKernelID &&
+			kidGaussBackground != InvalidKernelID;
 	}
 
 	bool restart() override
@@ -79,9 +94,7 @@ public:
 		if(srcWidth == 0 || srcHeight == 0)
 			return ExecutionStatus(EStatus::Ok);
 
-		clw::Kernel kernelGaussMix = _gpuComputeModule->acquireKernel("mog.cl", "mog_image_unorm");
-		if(kernelGaussMix.isNull())
-			return ExecutionStatus(EStatus::Error);
+		clw::Kernel kernelGaussMix = _gpuComputeModule->acquireKernel(kidGaussMix);
 
 		/*
 			Create mixture data buffer
@@ -131,9 +144,7 @@ public:
 					srcWidth, srcHeight);
 			}
 
-			clw::Kernel kernelBackground = _gpuComputeModule->acquireKernel("mog.cl", "mog_background_image_unorm");
-			if(kernelBackground.isNull())
-				return ExecutionStatus(EStatus::Error);
+			clw::Kernel kernelBackground = _gpuComputeModule->acquireKernel(kidGaussBackground);
 
 			kernelBackground.setLocalWorkSize(16, 16);
 			kernelBackground.setRoundedGlobalWorkSize(srcWidth, srcHeight);
@@ -173,7 +184,7 @@ private:
 	void resetMixturesState(int pixNumbers)
 	{
 		// Dane mikstur (stan wewnetrzny estymatora tla)
-		const int mixtureDataSize = NMIXTURES * pixNumbers * 3 * sizeof(float);
+		const int mixtureDataSize = _nmixtures * pixNumbers * 3 * sizeof(float);
 
 		if(_mixtureDataBuffer.isNull()
 			|| _mixtureDataBuffer.size() != mixtureDataSize)
@@ -191,7 +202,10 @@ private:
 private:
 	clw::Buffer _mixtureDataBuffer;
 	clw::Buffer _mixtureParamsBuffer;
+	KernelID kidGaussMix;
+	KernelID kidGaussBackground;
 
+	int _nmixtures;
 	int _nframe;
 	int _history;
 	float _varianceThreshold;

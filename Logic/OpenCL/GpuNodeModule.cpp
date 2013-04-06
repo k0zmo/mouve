@@ -1,6 +1,10 @@
 #include "GpuNodeModule.h"
 #include "GpuException.h"
 
+namespace {
+string kernelsDirectory();
+}
+
 GpuNodeModule::GpuNodeModule(bool interactiveInit)
 	: _maxConstantMemory(0)
 	, _maxLocalMemory(0)
@@ -10,11 +14,19 @@ GpuNodeModule::GpuNodeModule(bool interactiveInit)
 
 bool GpuNodeModule::initialize()
 {
+	bool res;
 	if(_interactiveInit)
-		return createInteractive();
+		res = createInteractive();
 	else
-		return createDefault();
-	return false;
+		res = createDefault();
+
+	if(res)
+	{
+		static string allKernelsDirectory = kernelsDirectory() + "/";
+		_library.create(_context, allKernelsDirectory);
+	}
+
+	return res;
 }
 
 bool GpuNodeModule::ensureInitialized()
@@ -67,6 +79,43 @@ bool GpuNodeModule::createInteractive()
 	return false;
 }
 
+KernelID GpuNodeModule::registerKernel(const string& kernelName,
+									   const string& programName,
+									   const string& buildOptions)
+{
+#if defined(K_DEBUG) && K_COMPILER == K_COMPILER_MSVC
+	string opts = buildOptions;
+	// Enable kernel debugging if device is CPU and it's Intel platform
+	//if(_device.platform().vendorEnum() == clw::Vendor_Intel
+	//	&& _device.deviceType() == clw::Cpu)
+	//{
+	//	QFileInfo thisFile(K_FILE);
+	//	QDir thisDirectory = thisFile.dir();
+	//	QString s = thisDirectory.dirName();
+	//	if(thisDirectory.cd("kernels"))
+	//	{
+	//		QString fullKernelsPath = thisDirectory.absoluteFilePath(QString::fromStdString(programName));
+	//		opts += " -g -s " + fullKernelsPath.toStdString();
+	//	}
+	//}
+
+	return _library.registerKernel(kernelName, programName, opts);
+#else
+	return _library.registerKernel(kernelName, programName, buildOptions);
+#endif
+}
+
+clw::Kernel GpuNodeModule::acquireKernel(KernelID kernelId)
+{
+	return _library.acquireKernel(kernelId);
+}
+
+KernelID GpuNodeModule::updateKernel(KernelID kernelId,
+									 const string& buildOptions)
+{
+	return _library.updateKernel(kernelId, buildOptions);
+}
+
 #pragma region Kernels Directory
 
 #if K_SYSTEM == K_SYSTEM_WINDOWS
@@ -75,7 +124,9 @@ bool GpuNodeModule::createInteractive()
 #include <QFileInfo>
 #include <QDir>
 
-HMODULE GetMyModuleHandle()
+namespace {
+
+HMODULE moduleHandle()
 {
 	static int s_somevar = 0;
 	MEMORY_BASIC_INFORMATION mbi;
@@ -86,9 +137,9 @@ HMODULE GetMyModuleHandle()
 	return static_cast<HMODULE>(mbi.AllocationBase);
 }
 
-QString GetKernelDirectory()
+string kernelsDirectory()
 {
-	HMODULE hModule = GetMyModuleHandle();
+	HMODULE hModule = moduleHandle();
 	char buffer[MAX_PATH];
 	DWORD dwSize = GetModuleFileNameA(hModule, buffer, MAX_PATH);
 	//dwSize = GetModuleFileNameA(nullptr, buffer, MAX_PATH);
@@ -96,66 +147,21 @@ QString GetKernelDirectory()
 	QDir dllDir = fi.absoluteDir();
 	if(!dllDir.cd("kernels"))
 		// fallback to dll directory
-		return dllDir.absolutePath();
-	return dllDir.absolutePath();
+		return dllDir.absolutePath().toStdString();
+	return dllDir.absolutePath().toStdString();
+}
+
 }
 
 #elif K_SYSTEM == K_SYSTEM_LINUX
 
-QString GetKernelDirectory()
+namespace {
+string kernelsDirectory()
 {
-	return QStringLiteral("./");
+	return QStringLiteral(".").toStdString();
+}
 }
 
 #endif
 
 #pragma endregion
-
-bool GpuNodeModule::buildProgram(const std::string& programName)
-{
-	static QString allProgramsPath = GetKernelDirectory();
-	QString programPath = QDir(allProgramsPath).absoluteFilePath(QString::fromStdString(programName));
-
-	clw::Program program = _context.createProgramFromSourceFile(programPath.toStdString());
-	if(program.isNull())
-		return false;
-
-	std::string opts;
-
-#if defined(K_DEBUG) && K_COMPILER == K_COMPILER_MSVC
-	// Enable kernel debugging if device is CPU and it's Intel platform
-	if(_device.platform().vendorEnum() == clw::Vendor_Intel
-		&& _device.deviceType() == clw::Cpu)
-	{
-		QFileInfo thisFile(K_FILE);
-		QDir thisDirectory = thisFile.dir();
-		QString s = thisDirectory.dirName();
-		if(thisDirectory.cd("kernels"))
-		{
-			QString fullKernelsPath = thisDirectory.absoluteFilePath(QString::fromStdString(programName));
-			opts += " -g -s " + fullKernelsPath.toStdString();
-		}
-	}
-#endif
-
-	if(!program.build(opts))
-		throw GpuBuildException(program.log());
-	//std::cout << program.log() << std::endl;
-
-	_programs[programName] = program;
-	return true;
-}
-
-clw::Kernel GpuNodeModule::acquireKernel(const std::string& programName, 
-		const std::string& kernelName)
-{
-	auto it = _programs.find(programName);
-	if(it == _programs.end())
-	{
-		if(!buildProgram(programName))
-			return clw::Kernel();
-		it = _programs.find(programName);
-	}
-
-	return it->second.createKernel(kernelName);
-}

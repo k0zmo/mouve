@@ -1,10 +1,7 @@
 #pragma once
 
-#include "../NodeModule.h"
-
-#include <clw/clw.h>
-
-#include <functional>
+#include "Logic/NodeModule.h"
+#include "GpuKernelLibrary.h"
 
 class LOGIC_EXPORT GpuNodeModule : public NodeModule
 {
@@ -21,10 +18,10 @@ public:
 	bool createDefault();
 	bool createInteractive();
 
-	/// Very temporary solution
-	bool buildProgram(const std::string& programName);
-	clw::Kernel acquireKernel(const std::string& programName, 
-			const std::string& kernelName);
+	KernelID registerKernel(const string& kernelName, 
+		const string& programName, const string& buildOptions = "");
+	clw::Kernel acquireKernel(KernelID kernelId);
+	KernelID updateKernel(KernelID kernelId, const string& buildOptions);
 
 	bool isConstantMemorySufficient(uint64_t memSize) const;
 	bool isLocalMemorySufficient(uint64_t memSize) const;
@@ -45,8 +42,8 @@ private:
 	uint64_t _maxLocalMemory;
 
 	bool _interactiveInit;
-	/// Very temporary solution
-	std::unordered_map<std::string, clw::Program> _programs;
+
+	KernelLibrary _library;
 };
 
 inline void GpuNodeModule::setInteractiveInit(bool interactiveInit)
