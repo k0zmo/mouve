@@ -1,5 +1,5 @@
-#ifndef NMIXTURES 
-#  define NMIXTURES 5
+#if !defined(NMIXTURES)
+#  error("NMIXTURES must be defined")
 #endif
 
 typedef struct mogParams

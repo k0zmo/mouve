@@ -1,4 +1,6 @@
-#define ERODE_OP
+#if !defined(ERODE_OP) && !defined(DILATE_OP)
+#  error("NMIXTURES must be defined")
+#endif
 
 #if defined(ERODE_OP)
 
