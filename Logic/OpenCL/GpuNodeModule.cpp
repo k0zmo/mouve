@@ -83,26 +83,8 @@ KernelID GpuNodeModule::registerKernel(const string& kernelName,
 									   const string& programName,
 									   const string& buildOptions)
 {
-#if defined(K_DEBUG) && K_COMPILER == K_COMPILER_MSVC
-	string opts = buildOptions;
-	// Enable kernel debugging if device is CPU and it's Intel platform
-	//if(_device.platform().vendorEnum() == clw::Vendor_Intel
-	//	&& _device.deviceType() == clw::Cpu)
-	//{
-	//	QFileInfo thisFile(K_FILE);
-	//	QDir thisDirectory = thisFile.dir();
-	//	QString s = thisDirectory.dirName();
-	//	if(thisDirectory.cd("kernels"))
-	//	{
-	//		QString fullKernelsPath = thisDirectory.absoluteFilePath(QString::fromStdString(programName));
-	//		opts += " -g -s " + fullKernelsPath.toStdString();
-	//	}
-	//}
-
-	return _library.registerKernel(kernelName, programName, opts);
-#else
-	return _library.registerKernel(kernelName, programName, buildOptions);
-#endif
+	string opts = additionalBuildOptions(programName);
+	return _library.registerKernel(kernelName, programName, buildOptions + opts);
 }
 
 clw::Kernel GpuNodeModule::acquireKernel(KernelID kernelId)
@@ -113,6 +95,7 @@ clw::Kernel GpuNodeModule::acquireKernel(KernelID kernelId)
 KernelID GpuNodeModule::updateKernel(KernelID kernelId,
 									 const string& buildOptions)
 {
+	//string opts = additionalBuildOptions(programName);
 	return _library.updateKernel(kernelId, buildOptions);
 }
 
@@ -165,3 +148,24 @@ string kernelsDirectory()
 #endif
 
 #pragma endregion
+
+string GpuNodeModule::additionalBuildOptions(const std::string& programName) const
+{
+	string opts;
+#if defined(K_DEBUG) && K_COMPILER == K_COMPILER_MSVC
+	// Enable kernel debugging if device is CPU and it's Intel platform
+	if(_device.platform().vendorEnum() == clw::Vendor_Intel
+		&& _device.deviceType() == clw::Cpu)
+	{
+		QFileInfo thisFile(K_FILE);
+		QDir thisDirectory = thisFile.dir();
+		QString s = thisDirectory.dirName();
+		if(thisDirectory.cd("kernels"))
+		{
+			QString fullKernelsPath = thisDirectory.absoluteFilePath(QString::fromStdString(programName));
+			opts += " -g -s " + fullKernelsPath.toStdString();
+		}
+	}
+#endif
+	return opts;
+}

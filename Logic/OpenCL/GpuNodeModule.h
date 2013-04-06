@@ -34,6 +34,9 @@ public:
 	const clw::CommandQueue& queue() const;
 
 private:
+	std::string additionalBuildOptions(const std::string& programName) const;
+
+private:
 	clw::Context _context;
 	clw::Device _device;
 	clw::CommandQueue _queue;
