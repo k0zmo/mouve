@@ -6,6 +6,7 @@ class GpuHoughLinesNodeType : public GpuNodeType
 public:
 	GpuHoughLinesNodeType()
 		: _threshold(80)
+		, _showHoughSpace(false)
 	{
 	}
 
@@ -15,6 +16,9 @@ public:
 		{
 		case ID_Threshold:
 			_threshold = newValue.toUInt();
+			return true;
+		case ID_ShowHoughSpace:
+			_showHoughSpace = newValue.toBool();
 			return true;
 		}
 
@@ -26,6 +30,7 @@ public:
 		switch(propId)
 		{
 		case ID_Threshold: return _threshold;
+		case ID_ShowHoughSpace: return _showHoughSpace;
 		}
 
 		return QVariant();
@@ -37,11 +42,13 @@ public:
 		kidAccumLines = _gpuComputeModule->registerKernel("accumLines", "hough.cl");
 		kidAccumLinesShared = _gpuComputeModule->registerKernel("accumLines_shared", "hough.cl");
 		kidGetLines = _gpuComputeModule->registerKernel("getLines", "hough.cl");
+		kidAccumToImage = _gpuComputeModule->registerKernel("accumToImage", "hough.cl");
 
 		return kidBuildPointsList != InvalidKernelID
 			&& kidAccumLines != InvalidKernelID
 			&& kidAccumLinesShared != InvalidKernelID
-			&& kidGetLines != InvalidKernelID;
+			&& kidGetLines != InvalidKernelID
+			&& kidAccumToImage != InvalidKernelID;
 	}
 
 	ExecutionStatus execute(NodeSocketReader& reader, NodeSocketWriter& writer) override
@@ -203,18 +210,32 @@ public:
 		double elapsed = double(evt.finishTime() - evt.startTime()) * 1e-6;
 
 		
-		if(1)
+		//if(1)
+		//{
+		//	cv::Mat& accum = writer.acquireSocket(1).getImage();
+		//	accum.create(numAngle, numRho, CV_32SC1);
+
+		//	_gpuComputeModule->queue().readBuffer(_deviceAccum, accum.data, 0,
+		//		numAngle * numRho * sizeof(cl_int));
+
+		//	double maxVal;
+		//	cv::minMaxIdx(accum, nullptr, &maxVal);
+		//	accum = accum.t();
+		//	accum.convertTo(accum, CV_8UC1);
+		//}
+
+		if(_showHoughSpace)
 		{
-			cv::Mat& accum = writer.acquireSocket(1).getImage();
-			accum.create(numAngle, numRho, CV_32SC1);
+			clw::Image2D& deviceAccumImage = writer.acquireSocket(1).getDeviceImage();
+			ensureSizeIsEnough(deviceAccumImage, numAngle, numRho);
 
-			_gpuComputeModule->queue().readBuffer(_deviceAccum, accum.data, 0,
-				numAngle * numRho * sizeof(cl_int));
-
-			double maxVal;
-			cv::minMaxIdx(accum, nullptr, &maxVal);
-			accum = accum.t();
-			accum.convertTo(accum, CV_8UC1);
+			clw::Kernel kernelAccumToImage = _gpuComputeModule->acquireKernel(kidAccumToImage);
+			kernelAccumToImage.setLocalWorkSize(16, 16);
+			kernelAccumToImage.setRoundedGlobalWorkSize(numRho, numAngle);
+			kernelAccumToImage.setArg(0, _deviceAccum);
+			kernelAccumToImage.setArg(1, numRho);
+			kernelAccumToImage.setArg(2, deviceAccumImage);
+			_gpuComputeModule->queue().runKernel(kernelAccumToImage);
 		}
 		
 
@@ -229,11 +250,12 @@ public:
 		};
 		static const OutputSocketConfig out_config[] = {
 			{ ENodeFlowDataType::DeviceArray, "lines", "Lines", "" },
-			{ ENodeFlowDataType::Image, "houghSpace", "Hough space", "" },
+			{ ENodeFlowDataType::DeviceImage, "houghSpace", "Hough space", "" },
 			{ ENodeFlowDataType::Invalid, "", "", "" }
 		};
 		static const PropertyConfig prop_config[] = {
 			{ EPropertyType::Integer, "Threshold", "min:1" },
+			{ EPropertyType::Boolean, "Show Hough space", "" },
 			{ EPropertyType::Unknown, "", "" }
 		};
 
@@ -256,13 +278,28 @@ private:
 		}
 	}
 
+	void ensureSizeIsEnough(clw::Image2D& image, int width, int height)
+	{
+		if(image.isNull()
+			|| image.width() != width
+			|| image.height() != height)
+		{
+			image = _gpuComputeModule->context().createImage2D(
+				clw::Access_WriteOnly, clw::Location_Device,
+				clw::ImageFormat(clw::Order_R, clw::Type_Normalized_UInt8),
+				width, height);
+		}
+	}
+
 private:
 	enum EPropertyID
 	{
-		ID_Threshold
+		ID_Threshold,
+		ID_ShowHoughSpace
 	};
 
 	int _threshold;
+	bool _showHoughSpace;
 
 	/// TODO:
 	///float _rhoResolution;
@@ -277,6 +314,7 @@ private:
 	KernelID kidAccumLines;
 	KernelID kidAccumLinesShared;
 	KernelID kidGetLines;
+	KernelID kidAccumToImage;
 };
 
 REGISTER_NODE("OpenCL/Features/Hough Lines", GpuHoughLinesNodeType)

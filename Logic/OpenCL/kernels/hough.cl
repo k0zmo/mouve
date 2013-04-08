@@ -359,3 +359,19 @@ __kernel void getLines(__global int* accum,
         }
     }
 }
+
+__kernel void accumToImage(__global int* accum,
+                           int accumPitch,
+                           __write_only image2d_t accumImage)
+{
+    int x = get_global_id(0);
+    int y = get_global_id(1);
+    if(y >= get_image_width(accumImage)	|| x >= get_image_height(accumImage))
+        return;
+
+    int v = accum[mad24(y, accumPitch, x)];
+    float fv = /*1.0f - */min(1.0f, (float)v / 255.0f);
+    int2 coords = (int2)(y, x);
+
+    write_imagef(accumImage, coords, (float4)(fv));
+}
