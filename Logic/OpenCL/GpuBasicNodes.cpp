@@ -103,5 +103,92 @@ public:
 	}
 };
 
+
+class GpuUploadArrayNodeType : public GpuNodeType
+{
+public:
+	GpuUploadArrayNodeType()
+	{
+	}
+
+	ExecutionStatus execute(NodeSocketReader& reader, NodeSocketWriter& writer) override
+	{
+		const cv::Mat& hostArray = reader.readSocket(0).getArray();
+		DeviceArray& deviceArray = writer.acquireSocket(0).getDeviceArray();
+
+		if(hostArray.empty())
+			return ExecutionStatus(EStatus::Ok);
+
+		deviceArray.create(_gpuComputeModule->context(), clw::Access_ReadWrite,
+			clw::Location_Device, hostArray.cols, hostArray.rows,
+			DeviceArray::matToDeviceType(hostArray.type()));
+		clw::Event evt = deviceArray.upload(_gpuComputeModule->queue(), hostArray.data);
+		evt.waitForFinished();
+
+		return ExecutionStatus(EStatus::Ok);
+	}
+
+	void configuration(NodeConfig& nodeConfig) const override
+	{
+		static const InputSocketConfig in_config[] = {
+			{ ENodeFlowDataType::Array, "input", "Host array", "" },
+			{ ENodeFlowDataType::Invalid, "", "", "" }
+		};
+
+		static const OutputSocketConfig out_config[] = {
+			{ ENodeFlowDataType::DeviceArray, "output", "Device array", "" },
+			{ ENodeFlowDataType::Invalid, "", "", "" }
+		};
+
+		nodeConfig.description = "Uploads given array from host to device (GPU) memory";
+		nodeConfig.pInputSockets = in_config;
+		nodeConfig.pOutputSockets = out_config;
+		nodeConfig.module = "opencl";
+	}
+};
+
+
+class GpuDownloadArrayNodeType : public GpuNodeType
+{
+public:
+	GpuDownloadArrayNodeType()
+	{
+	}
+
+	ExecutionStatus execute(NodeSocketReader& reader, NodeSocketWriter& writer) override
+	{
+		const DeviceArray& deviceImage = reader.readSocket(0).getDeviceArray();
+		cv::Mat& hostArray = writer.acquireSocket(0).getArray();
+
+		if(deviceImage.isNull() || deviceImage.size() == 0)
+			return ExecutionStatus(EStatus::Ok);
+
+		clw::Event evt = deviceImage.download(_gpuComputeModule->queue(), hostArray);
+		evt.waitForFinished();
+
+		return ExecutionStatus(EStatus::Ok);
+	}
+
+	void configuration(NodeConfig& nodeConfig) const override
+	{
+		static const InputSocketConfig in_config[] = {
+			{ ENodeFlowDataType::DeviceArray, "input", "Device array", "" },
+			{ ENodeFlowDataType::Invalid, "", "", "" }
+		};
+
+		static const OutputSocketConfig out_config[] = {
+			{ ENodeFlowDataType::Array, "output", "Host array", "" },
+			{ ENodeFlowDataType::Invalid, "", "", "" }
+		};
+
+		nodeConfig.description = "Download given array device (GPU) to host memory";
+		nodeConfig.pInputSockets = in_config;
+		nodeConfig.pOutputSockets = out_config;
+		nodeConfig.module = "opencl";
+	}
+};
+
+REGISTER_NODE("OpenCL/Download array", GpuDownloadArrayNodeType)
+REGISTER_NODE("OpenCL/Upload array", GpuUploadArrayNodeType)
 REGISTER_NODE("OpenCL/Download image", GpuDownloadImageNodeType)
 REGISTER_NODE("OpenCL/Upload image", GpuUploadImageNodeType)

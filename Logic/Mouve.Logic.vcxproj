@@ -277,6 +277,7 @@
     <ClCompile Include="Nodes\SurfNodes.cpp" />
     <ClCompile Include="NodeTree.cpp" />
     <ClCompile Include="NodeType.cpp" />
+    <ClCompile Include="OpenCL\DeviceArray.cpp" />
     <ClCompile Include="OpenCL\GpuBasicNodes.cpp" />
     <ClCompile Include="OpenCL\GpuHoughLinesNode.cpp" />
     <ClCompile Include="OpenCL\GpuKernelLibrary.cpp" />
@@ -295,6 +296,7 @@
     <ClInclude Include="NodeFlowData.h" />
     <ClInclude Include="NodeModule.h" />
     <ClInclude Include="Nodes\CV.h" />
+    <ClInclude Include="OpenCL\DeviceArray.h" />
     <ClInclude Include="OpenCL\GpuException.h" />
     <ClInclude Include="OpenCL\GpuKernelLibrary.h" />
     <ClInclude Include="OpenCL\GpuNode.h" />

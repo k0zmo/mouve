@@ -113,6 +113,9 @@
     <ClCompile Include="OpenCL\GpuKernelLibrary.cpp">
       <Filter>OpenCL</Filter>
     </ClCompile>
+    <ClCompile Include="OpenCL\DeviceArray.cpp">
+      <Filter>OpenCL</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="Node.h">
@@ -163,6 +166,9 @@
       <Filter>OpenCL</Filter>
     </ClInclude>
     <ClInclude Include="OpenCL\GpuKernelLibrary.h">
+      <Filter>OpenCL</Filter>
+    </ClInclude>
+    <ClInclude Include="OpenCL\DeviceArray.h">
       <Filter>OpenCL</Filter>
     </ClInclude>
   </ItemGroup>

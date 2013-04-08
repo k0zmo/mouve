@@ -47,6 +47,7 @@ public:
 	ExecutionStatus execute(NodeSocketReader& reader, NodeSocketWriter& writer) override
 	{
 		const clw::Image2D& deviceImage = reader.readSocket(0).getDeviceImage();
+		DeviceArray& deviceLines = writer.acquireSocket(0).getDeviceArray();
 
 		int srcWidth = deviceImage.width();
 		int srcHeight = deviceImage.height();
@@ -145,8 +146,17 @@ public:
 
 		/// TODO: Albo const albo inna metoda bo ta jest zbyt pesymistyczna i bardzo zmienna
 		cl_int maxLines = pointsCount / 2;
-		/// TODO Wystarczylby clw::Access_WriteOnly
-		ensureSizeIsEnough(_deviceLines, maxLines * sizeof(cl_float2));
+
+		if(deviceLines.isNull()
+			// buffer is too small
+			|| deviceLines.size() <  maxLines * sizeof(cl_float2)
+			// buffer is too big (four times)
+			|| deviceLines.size() >  4 * maxLines * sizeof(cl_float2))
+			//|| deviceLines.size() !=  maxLines * sizeof(cl_float2))
+		{
+			deviceLines = DeviceArray::create(_gpuComputeModule->context(), clw::Access_WriteOnly,
+				clw::Location_Device, 2, maxLines, EDataType::Float);
+		}
 
 		/// TODO: Mozna dac to na gpuInit i PO wykonaniu kernela jako async (trzeba uzyc innego bufora)
 		dataZero = (cl_uint*) _gpuComputeModule->queue().mapBuffer(_deviceCounter, clw::MapAccess_Write);
@@ -156,7 +166,7 @@ public:
 		kernelGetLines.setLocalWorkSize(clw::Grid(32, 8));
 		kernelGetLines.setRoundedGlobalWorkSize(clw::Grid(numRho, numAngle));
 		kernelGetLines.setArg(0, _deviceAccum);
-		kernelGetLines.setArg(1, _deviceLines);
+		kernelGetLines.setArg(1, deviceLines.buffer());
 		kernelGetLines.setArg(2, _deviceCounter);
 		kernelGetLines.setArg(3, _threshold);
 		kernelGetLines.setArg(4, maxLines);
@@ -172,6 +182,9 @@ public:
 		linesCount = *linesCountPtr;
 		_gpuComputeModule->queue().unmap(_deviceCounter, linesCountPtr);
 
+		deviceLines.truncate(linesCount);
+
+#if 0
 		if(linesCount > 0)
 		{
 			std::vector<cl_float2> lines(linesCount);
@@ -183,15 +196,16 @@ public:
 			memcpy(lines.data(), linesPtr, linesCount * sizeof(cl_float2));
 			_gpuComputeModule->queue().unmap(_deviceLines, linesPtr);
 		}
+#endif
 
 		// Finish enqueued jobs
-		_gpuComputeModule->queue().finish();
+		//_gpuComputeModule->queue().finish();
 		double elapsed = double(evt.finishTime() - evt.startTime()) * 1e-6;
 
-		/*
-		if(0)
+		
+		if(1)
 		{
-			cv::Mat& accum = writer.acquireSocket(0).getImage();
+			cv::Mat& accum = writer.acquireSocket(1).getImage();
 			accum.create(numAngle, numRho, CV_32SC1);
 
 			_gpuComputeModule->queue().readBuffer(_deviceAccum, accum.data, 0,
@@ -200,9 +214,9 @@ public:
 			double maxVal;
 			cv::minMaxIdx(accum, nullptr, &maxVal);
 			accum = accum.t();
-			accum.convertTo(accum, CV_8UC1, 255.0/maxVal);
+			accum.convertTo(accum, CV_8UC1);
 		}
-		*/
+		
 
 		return ExecutionStatus(EStatus::Ok, elapsed);
 	}
@@ -214,8 +228,8 @@ public:
 			{ ENodeFlowDataType::Invalid, "", "", "" }
 		};
 		static const OutputSocketConfig out_config[] = {
-			//{ ENodeFlowDataType::DeviceArray, "lines", "Lines", "" },
-			//{ ENodeFlowDataType::Image, "houghSpace", "Hough space", "" },
+			{ ENodeFlowDataType::DeviceArray, "lines", "Lines", "" },
+			{ ENodeFlowDataType::Image, "houghSpace", "Hough space", "" },
 			{ ENodeFlowDataType::Invalid, "", "", "" }
 		};
 		static const PropertyConfig prop_config[] = {
@@ -258,7 +272,6 @@ private:
 	clw::Buffer _devicePointsList;
 	clw::Buffer _deviceCounter;
 	clw::Buffer _deviceAccum;
-	clw::Buffer _deviceLines;
 
 	KernelID kidBuildPointsList;
 	KernelID kidAccumLines;

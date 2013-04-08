@@ -38,6 +38,10 @@ NodeFlowData::NodeFlowData(ENodeFlowDataType dataType)
 		_data = clw::Image2D();
 		break;
 
+	case ENodeFlowDataType::DeviceArray:
+		_data = DeviceArray();
+		break;
+
 	case ENodeFlowDataType::Invalid:
 	default:
 		break;
@@ -150,4 +154,18 @@ const clw::Image2D& NodeFlowData::getDeviceImage() const
 		throw boost::bad_get();
 
 	return boost::get<clw::Image2D>(_data);
+}
+
+DeviceArray& NodeFlowData::getDeviceArray()
+{
+	auto& data = const_cast<const NodeFlowData*>(this)->getDeviceArray();
+	return const_cast<DeviceArray&>(data);
+}
+
+const DeviceArray& NodeFlowData::getDeviceArray() const
+{
+	if(_type != ENodeFlowDataType::DeviceArray)
+		throw boost::bad_get();
+
+	return boost::get<DeviceArray>(_data);
 }

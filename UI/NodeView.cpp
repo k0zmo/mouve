@@ -140,6 +140,12 @@ NodeSocketView* NodeView::addSocketView(SocketID socketKey,
 			socketView->setConnectorToolTip("[DeviceImage]");
 			socketView->setConnectorAnnotation(QStringLiteral("D"));
 			break;
+		case ENodeFlowDataType::DeviceArray:
+			socketView->setConnectorBrushGradient(NodeStyle::SocketGradientStart3,
+				NodeStyle::SocketGradientStop3);
+			socketView->setConnectorToolTip("[DeviceArray]");
+			socketView->setConnectorAnnotation(QStringLiteral("D"));
+			break;
 
 		case ENodeFlowDataType::Invalid:
 		default:
