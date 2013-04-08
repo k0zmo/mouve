@@ -683,7 +683,7 @@ SocketAddress NodeTree::connectedFrom(SocketAddress iSocketAddr) const
 const NodeFlowData& NodeTree::outputSocket(NodeID nodeID, SocketID socketID) const
 {
 	if(!validateNode(nodeID))
-		throw node_bad_node();
+		throw BadNodeException();
 
 	if(!allRequiredInputSocketConnected(nodeID))
 	{
@@ -699,7 +699,7 @@ const NodeFlowData& NodeTree::outputSocket(NodeID nodeID, SocketID socketID) con
 const NodeFlowData& NodeTree::inputSocket(NodeID nodeID, SocketID socketID) const
 {
 	if(!validateNode(nodeID))
-		throw node_bad_node();
+		throw BadNodeException();
 
 	SocketAddress outputAddr = connectedFrom(
 		SocketAddress(nodeID, socketID, false));

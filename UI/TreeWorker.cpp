@@ -21,10 +21,12 @@ void TreeWorker::setNodeTree(const std::shared_ptr<NodeTree>& nodeTree)
 
 void TreeWorker::process(bool withInit)
 {
+	bool res = false;
 	try
 	{
 		if(_nodeTree)
 			_nodeTree->execute(withInit);
+		res = true;
 	}
 	catch(boost::bad_get& ex)
 	{
@@ -52,11 +54,15 @@ void TreeWorker::process(bool withInit)
 	{
 		emit error(QString("OpenCV exception caught: %1").arg(ex.what()));
 	}
+	catch(std::exception& ex)
+	{
+		emit error(QString("Exception was caught: %1").arg(ex.what()));
+	}
 	catch(...)
 	{
 		emit error(QStringLiteral("Unknown exception was thrown"));
 	}
 
-	emit completed();
+	emit completed(res);
 }
 

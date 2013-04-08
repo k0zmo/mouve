@@ -4,20 +4,20 @@
 
 #include <exception>
 
-struct node_bad_socket : std::exception
+struct BadSocketException : std::exception
 {
 	virtual const char* what() const noexcept
 	{
-		return "node_bad_socket: "
+		return "BadSocketException: "
 			"bad socketID provided";
 	}
 };
 
-struct node_bad_node : std::exception
+struct BadNodeException : std::exception
 {
 	virtual const char* what() const noexcept
 	{
-		return "node_bad_node: "
+		return "BadNodeException: "
 			"validation failed for given nodeID";
 	}
 };

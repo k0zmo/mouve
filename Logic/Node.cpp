@@ -84,7 +84,7 @@ NodeFlowData& Node::outputSocket(SocketID socketID)
 {
 	Q_ASSERT(socketID < numOutputSockets());
 	if(!validateSocket(socketID, true))
-		throw node_bad_socket();
+		throw BadSocketException();
 
 	return _outputSockets[socketID];
 }
@@ -93,7 +93,7 @@ const NodeFlowData& Node::outputSocket(SocketID socketID) const
 {
 	Q_ASSERT(socketID < numOutputSockets());
 	if(!validateSocket(socketID, true))
-		throw node_bad_socket();
+		throw BadSocketException();
 
 	return _outputSockets[socketID];
 }

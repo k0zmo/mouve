@@ -116,6 +116,12 @@
     <ClCompile Include="OpenCL\DeviceArray.cpp">
       <Filter>OpenCL</Filter>
     </ClCompile>
+    <ClCompile Include="Nodes\ColorConversionNodes.cpp">
+      <Filter>Nodes</Filter>
+    </ClCompile>
+    <ClCompile Include="Nodes\JaiCameraNodes.cpp">
+      <Filter>Nodes</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="Node.h">

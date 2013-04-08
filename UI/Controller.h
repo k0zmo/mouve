@@ -124,7 +124,7 @@ private slots:
 	bool saveTreeAs();
 
 	// Called after node tree execution has been finished
-	void updatePreview();
+	void updatePreview(bool res);
 
 	// Image mode toolbar
 	void singleStep();

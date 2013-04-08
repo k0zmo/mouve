@@ -269,10 +269,12 @@
     <ClCompile Include="NodeSystem.cpp" />
     <ClCompile Include="Nodes\BriskNodes.cpp" />
     <ClCompile Include="Nodes\BasicNodes.cpp" />
+    <ClCompile Include="Nodes\ColorConversionNodes.cpp" />
     <ClCompile Include="Nodes\CV.cpp" />
     <ClCompile Include="Nodes\DrawFeaturesNodes.cpp" />
     <ClCompile Include="Nodes\HomographyNodes.cpp" />
     <ClCompile Include="Nodes\HoughNodes.cpp" />
+    <ClCompile Include="Nodes\JaiCameraNodes.cpp" />
     <ClCompile Include="Nodes\MatcherNodes.cpp" />
     <ClCompile Include="Nodes\SurfNodes.cpp" />
     <ClCompile Include="NodeTree.cpp" />
@@ -329,6 +331,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <PlatformToolset>v110</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
@@ -339,12 +342,14 @@
     <Import Project="..\OpenCV.Modules.Debug.props" />
     <Import Project="..\Boost.props" />
     <Import Project="..\clw.Debug.props" />
+    <Import Project="..\JAI.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
     <Import Project="..\Mouve.Kommon.props" />
     <Import Project="..\OpenCV.Modules.Debug.x64.props" />
     <Import Project="..\Boost.props" />
+    <Import Project="..\JAI.x64.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
@@ -352,12 +357,14 @@
     <Import Project="..\OpenCV.Modules.Release.props" />
     <Import Project="..\Boost.props" />
     <Import Project="..\clw.Release.props" />
+    <Import Project="..\JAI.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
     <Import Project="..\Mouve.Kommon.props" />
     <Import Project="..\OpenCV.Modules.Release.x64.props" />
     <Import Project="..\Boost.props" />
+    <Import Project="..\JAI.x64.props" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup>
@@ -410,7 +417,6 @@ if %errorlevel% leq 1 exit 0 else exit %errorlevel%</Command>
       <PreprocessorDefinitions>UNICODE;WIN32;QT_LARGEFILE_SUPPORT;QT_DLL;QT_CORE_LIB;LOGIC_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>.\GeneratedFiles;.;$(QTDIR)\include;.\GeneratedFiles\$(ConfigurationName);$(QTDIR)\include\QtCore;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <Optimization>Disabled</Optimization>
-      <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <TreatWChar_tAsBuiltInType>false</TreatWChar_tAsBuiltInType>
       <PrecompiledHeader>Use</PrecompiledHeader>

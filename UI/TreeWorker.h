@@ -14,7 +14,7 @@ public:
 	void setNodeTree(const std::shared_ptr<NodeTree>& nodeTree);
 
 signals:
-	void completed();
+	void completed(bool res);
 	void error(const QString& msg);
 
 public slots:

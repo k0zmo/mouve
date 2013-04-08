@@ -5,11 +5,11 @@
 
 enum class ENodeFlags : int
 {
-	Tagged             = BIT(1),
-	StateNode          = BIT(2),
-	AutoTag            = BIT(3),
-	NotFullyConnected  = BIT(4),
-	OverridesTimeComp  = BIT(5)
+	Tagged             = K_BIT(1),
+	StateNode          = K_BIT(2),
+	AutoTag            = K_BIT(3),
+	NotFullyConnected  = K_BIT(4),
+	OverridesTimeComp  = K_BIT(5)
 };
 
 class LOGIC_EXPORT Node

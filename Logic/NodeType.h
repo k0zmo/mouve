@@ -116,9 +116,9 @@ struct PropertyConfig
 enum ENodeConfigurationFlags
 {
 	Node_NoFlags                  = 0, // default 
-	Node_HasState                 = BIT(0),
-	Node_AutoTag                  = BIT(1),
-	Node_OverridesTimeComputation = BIT(2)
+	Node_HasState                 = K_BIT(0),
+	Node_AutoTag                  = K_BIT(1),
+	Node_OverridesTimeComputation = K_BIT(2)
 };
 Q_DECLARE_FLAGS(NodeConfigurationFlags, ENodeConfigurationFlags);
 Q_DECLARE_OPERATORS_FOR_FLAGS(NodeConfigurationFlags)

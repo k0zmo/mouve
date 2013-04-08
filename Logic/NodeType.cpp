@@ -35,7 +35,7 @@ const NodeFlowData& NodeSocketReader::readSocket(SocketID socketID) const
 	}
 	else
 	{
-		throw node_bad_socket();
+		throw BadSocketException();
 	}
 }
 
@@ -55,7 +55,7 @@ void NodeSocketWriter::writeSocket(SocketID socketID, NodeFlowData&& image)
 	Q_ASSERT(socketID < static_cast<int>(_outputs->size()));
 
 	if(socketID >= static_cast<int>(_outputs->size()))
-		throw node_bad_socket();;
+		throw BadSocketException();;
 
 	_outputs->at(socketID) = std::move(image);
 }
@@ -66,7 +66,7 @@ NodeFlowData& NodeSocketWriter::acquireSocket(SocketID socketID)
 	Q_ASSERT(socketID < static_cast<int>(_outputs->size()));
 
 	if(socketID >= static_cast<int>(_outputs->size()))
-		throw node_bad_socket();;
+		throw BadSocketException();;
 
 	return  _outputs->at(socketID);
 }
