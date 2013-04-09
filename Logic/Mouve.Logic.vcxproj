@@ -261,6 +261,8 @@
     </CustomBuild>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Jai\JaiCameraNodes.cpp" />
+    <ClCompile Include="Jai\JaiNodeModule.cpp" />
     <ClCompile Include="Node.cpp" />
     <ClCompile Include="NodeFactory.cpp" />
     <ClCompile Include="NodeFlowData.cpp" />
@@ -274,7 +276,6 @@
     <ClCompile Include="Nodes\DrawFeaturesNodes.cpp" />
     <ClCompile Include="Nodes\HomographyNodes.cpp" />
     <ClCompile Include="Nodes\HoughNodes.cpp" />
-    <ClCompile Include="Nodes\JaiCameraNodes.cpp" />
     <ClCompile Include="Nodes\MatcherNodes.cpp" />
     <ClCompile Include="Nodes\SurfNodes.cpp" />
     <ClCompile Include="NodeTree.cpp" />
@@ -294,6 +295,8 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Jai\JaiException.h" />
+    <ClInclude Include="Jai\JaiNodeModule.h" />
     <ClInclude Include="NodeException.h" />
     <ClInclude Include="NodeFlowData.h" />
     <ClInclude Include="NodeModule.h" />

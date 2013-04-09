@@ -1,0 +1,240 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>CameraDialog</class>
+ <widget class="QDialog" name="CameraDialog">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>612</width>
+    <height>246</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>JAI camera settings</string>
+  </property>
+  <layout class="QGridLayout" name="gridLayout" columnstretch="1,0">
+   <item row="0" column="0">
+    <widget class="QComboBox" name="cameraComboBox"/>
+   </item>
+   <item row="2" column="0" colspan="2">
+    <widget class="QDialogButtonBox" name="buttonBox">
+     <property name="standardButtons">
+      <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
+     </property>
+    </widget>
+   </item>
+   <item row="1" column="0">
+    <layout class="QFormLayout" name="formLayout">
+     <property name="fieldGrowthPolicy">
+      <enum>QFormLayout::AllNonFixedFieldsGrow</enum>
+     </property>
+     <item row="0" column="0">
+      <widget class="QLabel" name="cameraIdLabel">
+       <property name="text">
+        <string>Camera Id</string>
+       </property>
+       <property name="buddy">
+        <cstring>cameraIdLineEdit</cstring>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="0">
+      <widget class="QLabel" name="manufacturerLabel">
+       <property name="text">
+        <string>Manufacturer</string>
+       </property>
+       <property name="buddy">
+        <cstring>manufacturerLineEdit</cstring>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="1">
+      <widget class="QLineEdit" name="manufacturerLineEdit">
+       <property name="readOnly">
+        <bool>true</bool>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="0">
+      <widget class="QLabel" name="interfaceLabel">
+       <property name="text">
+        <string>Interface</string>
+       </property>
+       <property name="buddy">
+        <cstring>interfaceLineEdit</cstring>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="1">
+      <widget class="QLineEdit" name="interfaceLineEdit">
+       <property name="readOnly">
+        <bool>true</bool>
+       </property>
+      </widget>
+     </item>
+     <item row="3" column="0">
+      <widget class="QLabel" name="ipAddressLabel">
+       <property name="text">
+        <string>IP Address</string>
+       </property>
+       <property name="buddy">
+        <cstring>ipAddressLineEdit</cstring>
+       </property>
+      </widget>
+     </item>
+     <item row="3" column="1">
+      <widget class="QLineEdit" name="ipAddressLineEdit">
+       <property name="readOnly">
+        <bool>true</bool>
+       </property>
+      </widget>
+     </item>
+     <item row="4" column="0">
+      <widget class="QLabel" name="macAddressLabel">
+       <property name="text">
+        <string>MAC Address</string>
+       </property>
+       <property name="buddy">
+        <cstring>macAddressLineEdit</cstring>
+       </property>
+      </widget>
+     </item>
+     <item row="4" column="1">
+      <widget class="QLineEdit" name="macAddressLineEdit">
+       <property name="readOnly">
+        <bool>true</bool>
+       </property>
+      </widget>
+     </item>
+     <item row="0" column="1">
+      <widget class="QLineEdit" name="cameraIdLineEdit">
+       <property name="readOnly">
+        <bool>true</bool>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+   <item row="1" column="1">
+    <layout class="QFormLayout" name="formLayout_2">
+     <property name="fieldGrowthPolicy">
+      <enum>QFormLayout::AllNonFixedFieldsGrow</enum>
+     </property>
+     <item row="0" column="0">
+      <widget class="QLabel" name="offsetXLabel">
+       <property name="text">
+        <string>Offset X</string>
+       </property>
+       <property name="buddy">
+        <cstring>offsetXLineEdit</cstring>
+       </property>
+      </widget>
+     </item>
+     <item row="0" column="1">
+      <widget class="QLineEdit" name="offsetXLineEdit"/>
+     </item>
+     <item row="1" column="0">
+      <widget class="QLabel" name="offsetYLabel">
+       <property name="text">
+        <string>Offset Y</string>
+       </property>
+       <property name="buddy">
+        <cstring>offsetYLineEdit</cstring>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="1">
+      <widget class="QLineEdit" name="offsetYLineEdit"/>
+     </item>
+     <item row="2" column="0">
+      <widget class="QLabel" name="widthLabel">
+       <property name="text">
+        <string>Width</string>
+       </property>
+       <property name="buddy">
+        <cstring>widthLineEdit</cstring>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="1">
+      <widget class="QLineEdit" name="widthLineEdit"/>
+     </item>
+     <item row="3" column="0">
+      <widget class="QLabel" name="heightLabel">
+       <property name="text">
+        <string>Height</string>
+       </property>
+       <property name="buddy">
+        <cstring>heightLineEdit</cstring>
+       </property>
+      </widget>
+     </item>
+     <item row="3" column="1">
+      <widget class="QLineEdit" name="heightLineEdit"/>
+     </item>
+     <item row="4" column="0">
+      <widget class="QLabel" name="adcGainLabel">
+       <property name="text">
+        <string>ADC Gain</string>
+       </property>
+       <property name="buddy">
+        <cstring>adcGainLineEdit</cstring>
+       </property>
+      </widget>
+     </item>
+     <item row="4" column="1">
+      <widget class="QLineEdit" name="adcGainLineEdit"/>
+     </item>
+     <item row="5" column="0">
+      <widget class="QLabel" name="pixelFormatLabel">
+       <property name="text">
+        <string>Pixel format</string>
+       </property>
+       <property name="buddy">
+        <cstring>pixelFormatComboBox</cstring>
+       </property>
+      </widget>
+     </item>
+     <item row="5" column="1">
+      <widget class="QComboBox" name="pixelFormatComboBox"/>
+     </item>
+    </layout>
+   </item>
+  </layout>
+ </widget>
+ <tabstops>
+  <tabstop>cameraComboBox</tabstop>
+  <tabstop>cameraIdLineEdit</tabstop>
+  <tabstop>manufacturerLineEdit</tabstop>
+  <tabstop>interfaceLineEdit</tabstop>
+  <tabstop>ipAddressLineEdit</tabstop>
+  <tabstop>macAddressLineEdit</tabstop>
+  <tabstop>offsetXLineEdit</tabstop>
+  <tabstop>offsetYLineEdit</tabstop>
+  <tabstop>widthLineEdit</tabstop>
+  <tabstop>heightLineEdit</tabstop>
+  <tabstop>adcGainLineEdit</tabstop>
+  <tabstop>pixelFormatComboBox</tabstop>
+  <tabstop>buttonBox</tabstop>
+ </tabstops>
+ <resources/>
+ <connections>
+  <connection>
+   <sender>buttonBox</sender>
+   <signal>rejected()</signal>
+   <receiver>CameraDialog</receiver>
+   <slot>reject()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>602</x>
+     <y>236</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>641</x>
+     <y>203</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
+</ui>

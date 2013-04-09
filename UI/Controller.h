@@ -17,6 +17,10 @@ class QProgressBar;
 class QTreeWidgetItem;
 class GpuNodeModule;
 
+#if defined(HAVE_JAI)
+class JaiNodeModule;
+#endif
+
 enum class EState
 {
 	Stopped,
@@ -154,6 +158,16 @@ private:
 	QThread _workerThread;
 	TreeWorker* _treeWorker;
 	QProgressBar* _progressBar;
+
+	// JAI Module
+#if defined(HAVE_JAI)
+	std::shared_ptr<JaiNodeModule> _jaiModule;
+	QAction* _actionInitModule;
+	QAction* _actionDevices;
+	// QAction* _actionWhiteBalance;
+
+	void showDeviceSettings();
+#endif
 
 	//
 	// UI part

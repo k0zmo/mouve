@@ -7,7 +7,9 @@
 #include "Logic/NodeLink.h"
 #include "Logic/Node.h"
 
+// Modules
 #include "Logic/OpenCL/GpuNodeModule.h"
+#include "Logic/Jai/JaiNodeModule.h"
 
 // Views
 #include "NodeView.h"
@@ -51,6 +53,9 @@ Controller::Controller(QWidget* parent, Qt::WindowFlags flags)
 	, _propManager(new PropertyManager(this))
 	, _nodeSystem(new NodeSystem())
 	, _gpuModule(new GpuNodeModule(false))
+#if defined(HAVE_JAI)
+	, _jaiModule(new JaiNodeModule())
+#endif
 	, _nodeTree(nullptr)
 	, _workerThread(QThread())
 	, _treeWorker(new TreeWorker())
@@ -78,6 +83,21 @@ Controller::Controller(QWidget* parent, Qt::WindowFlags flags)
 
 	// Gpu module
 	_nodeSystem->registerNodeModule(_gpuModule->moduleName(), _gpuModule);
+
+	// JAI module
+#if defined(HAVE_JAI)
+	_nodeSystem->registerNodeModule(_jaiModule->moduleName(), _jaiModule);
+
+	_actionInitModule = new QAction(QStringLiteral("Initialize"), this);
+	_actionDevices = new QAction(QStringLiteral("Devices"), this);
+
+	auto menuJai = _ui->menuBar->addMenu("JAI module");
+	//menuJai->addAction(_actionInitModule);
+	menuJai->addAction(_actionDevices);
+
+	connect(_actionDevices, &QAction::triggered, 
+		this, &Controller::showDeviceSettings);
+#endif
 
 	// Context menu from node graphics view
 	connect(_ui->graphicsView, &NodeEditorView::contextMenu,
@@ -815,6 +835,10 @@ void Controller::setInteractive(bool allowed)
 	_ui->actionOpenTree->setEnabled(allowed);
 	_ui->actionSaveTree->setEnabled(allowed);
 	_ui->actionSaveTreeAs->setEnabled(allowed);
+
+#if defined(HAVE_JAI)
+	_actionDevices->setEnabled(allowed);
+#endif
 }
 
 void Controller::updateTitleBar()
@@ -1648,3 +1672,123 @@ void Controller::displayNodeTimeInfo(bool checked)
 	for( ; iter != _nodeViews.end(); ++iter)
 		iter.value()->setTimeInfoVisible(checked);
 }
+
+#if defined(HAVE_JAI)
+
+#include "ui_Camera.h"
+
+void queryAndFillParameters(const std::shared_ptr<JaiNodeModule>& jaiModule,
+							Ui::CameraDialog& ui, 
+							const CameraInfo& info, 
+							int index)
+{
+	ui.cameraIdLineEdit->setText(QString::fromStdString(info.id));
+	ui.manufacturerLineEdit->setText(QString::fromStdString(info.manufacturer));
+	ui.interfaceLineEdit->setText(QString::fromStdString(info.interfaceId));
+	ui.ipAddressLineEdit->setText(QString::fromStdString(info.ipAddress));
+	ui.macAddressLineEdit->setText(QString::fromStdString(info.macAddress));
+
+	CameraSettings settings = jaiModule->cameraSettings(index);
+
+	auto populateWidget = [&](QLineEdit* lineEdit, const RangedValue<int64_t>& rv)
+	{
+		lineEdit->setText(QString::number(rv.value));
+		lineEdit->setValidator(new QIntValidator(rv.minValue, rv.maxValue, lineEdit));
+		lineEdit->setToolTip(QString("[%1..%2]")
+			.arg(rv.minValue)
+			.arg(rv.maxValue));
+	};
+
+	auto modifyLabels = [&](QLabel* label, const RangedValue<int64_t>& rv)
+	{
+		label->setText(label->text() + QString(" [%1..%2]").arg(rv.minValue).arg(rv.maxValue));
+	};
+
+	populateWidget(ui.offsetXLineEdit, settings.offsetX);
+	populateWidget(ui.offsetYLineEdit, settings.offsetY);
+	populateWidget(ui.widthLineEdit, settings.width);
+	populateWidget(ui.heightLineEdit, settings.height);
+	populateWidget(ui.adcGainLineEdit, settings.gain);
+
+	modifyLabels(ui.offsetXLabel, settings.offsetX);
+	modifyLabels(ui.offsetYLabel, settings.offsetY);
+	modifyLabels(ui.widthLabel, settings.width);
+	modifyLabels(ui.heightLabel, settings.height);
+	modifyLabels(ui.adcGainLabel, settings.gain);
+
+	int pindex = 0;
+	for(auto& px : settings.pixelFormats)
+	{
+		int pxcode = std::get<0>(px);
+		ui.pixelFormatComboBox->addItem(QString::fromStdString(std::get<1>(px)), pxcode);
+		if(pxcode == settings.pixelFormat)
+			ui.pixelFormatComboBox->setCurrentIndex(pindex);
+		++pindex;
+	}
+}
+
+void Controller::showDeviceSettings()
+{
+	if(!_jaiModule->ensureInitialized())
+	{
+		showErrorMessage("Couldn't initialized properly JAI module!");
+		return;
+	}
+
+	if(_jaiModule->cameraCount() == 0)
+	{
+		showErrorMessage("No camera has been found.\nCheck your connection and try again");
+		return;
+	}
+
+	vector<CameraInfo> cameraInfos = _jaiModule->discoverCameras(EDriverType::All);
+	if(cameraInfos.empty())
+	{
+		showErrorMessage("Couldn't detect any camera devices");
+		return;
+	}
+
+	QDialog dialog;
+	Ui::CameraDialog ui;
+	ui.setupUi(&dialog);
+
+	for(auto& info : cameraInfos)
+		ui.cameraComboBox->addItem(QString::fromStdString(info.modelName));
+	queryAndFillParameters(_jaiModule, ui, cameraInfos[0], 0);
+
+	connect(ui.cameraComboBox, static_cast<void (QComboBox::*)(int)>
+		(&QComboBox::currentIndexChanged), [&](int index)
+	{
+		ui.offsetXLabel->setText("Offset X");
+		ui.offsetYLabel->setText("Offset Y");
+		ui.widthLabel->setText("Width");
+		ui.heightLabel->setText("Height");
+		ui.adcGainLabel->setText("ADC Gain");
+		ui.pixelFormatLabel->setText("Pixel format");
+		ui.pixelFormatComboBox->clear();
+		queryAndFillParameters(_jaiModule, ui, cameraInfos[index], index);
+	});
+
+	connect(ui.buttonBox, &QDialogButtonBox::accepted, [&]()
+	{
+		int index = ui.cameraComboBox->currentIndex();
+		CameraSettings settings;
+		settings.offsetX.value = ui.offsetXLineEdit->text().toInt();
+		settings.offsetY.value = ui.offsetYLineEdit->text().toInt();
+		settings.width.value = ui.widthLineEdit->text().toInt();
+		settings.height.value = ui.heightLineEdit->text().toInt();
+		settings.gain.value = ui.adcGainLineEdit->text().toInt();
+		settings.pixelFormat = ui.pixelFormatComboBox->itemData(
+			ui.pixelFormatComboBox->currentIndex()).toInt();
+
+		if(!_jaiModule->setCameraSettings(index, settings))
+			showErrorMessage("Error occured during setting given camera's parameters");
+		else
+			dialog.accept();
+	});
+
+	
+	dialog.exec();
+}
+
+#endif

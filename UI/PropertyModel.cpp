@@ -162,7 +162,7 @@ bool PropertyModel::setData(const QModelIndex& index,
 	if(index.isValid() && role == Qt::EditRole)
 	{
 		Property* item = property(index);
-		QVariant oldValue = item->value(role);
+		QVariant oldValue = item->value(Qt::UserRole);
 		
 		if(item->setValue(value, role))
 		{

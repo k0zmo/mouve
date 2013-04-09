@@ -42,6 +42,9 @@
     <Filter Include="OpenCL\Kernels">
       <UniqueIdentifier>{2bcd7856-1d37-4ec6-87b5-1b71f853f5f2}</UniqueIdentifier>
     </Filter>
+    <Filter Include="JAI">
+      <UniqueIdentifier>{9c6451d6-6afb-4654-a120-74c0e61b6396}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Precomp.cpp">
@@ -119,8 +122,11 @@
     <ClCompile Include="Nodes\ColorConversionNodes.cpp">
       <Filter>Nodes</Filter>
     </ClCompile>
-    <ClCompile Include="Nodes\JaiCameraNodes.cpp">
-      <Filter>Nodes</Filter>
+    <ClCompile Include="Jai\JaiCameraNodes.cpp">
+      <Filter>JAI</Filter>
+    </ClCompile>
+    <ClCompile Include="Jai\JaiNodeModule.cpp">
+      <Filter>JAI</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -176,6 +182,12 @@
     </ClInclude>
     <ClInclude Include="OpenCL\DeviceArray.h">
       <Filter>OpenCL</Filter>
+    </ClInclude>
+    <ClInclude Include="Jai\JaiException.h">
+      <Filter>JAI</Filter>
+    </ClInclude>
+    <ClInclude Include="Jai\JaiNodeModule.h">
+      <Filter>JAI</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
