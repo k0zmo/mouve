@@ -5,14 +5,43 @@ class GpuMorphologyNodeType : public GpuNodeType
 {
 public:
 	GpuMorphologyNodeType()
+		: _op(Erode)
 	{
 	}
 
 	bool postInit() override
 	{
-		kidErode = _gpuComputeModule->registerKernel(
+		_kidErode = _gpuComputeModule->registerKernel(
 			"morphOp_image_unorm_local_unroll2", "morphOp.cl", "-DERODE_OP");
-		return kidErode != InvalidKernelID;
+		_kidDilate = _gpuComputeModule->registerKernel(
+			"morphOp_image_unorm_local_unroll2", "morphOp.cl", "-DDILATE_OP");
+		return _kidErode != InvalidKernelID
+			&& _kidDilate != InvalidKernelID;
+	}
+
+	bool setProperty(PropertyID propId, const QVariant& newValue) override
+	{
+		switch(propId)
+		{
+		case ID_Operation:
+			if(newValue.toInt() < int(EMorphologyOperation::Gradient))
+			{
+				_op = EMorphologyOperation(newValue.toInt());
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	QVariant property(PropertyID propId) const override
+	{
+		switch(propId)
+		{
+		case ID_Operation: return int(_op);
+		}
+
+		return QVariant();
 	}
 
 	ExecutionStatus execute(NodeSocketReader& reader, NodeSocketWriter& writer) override
@@ -27,33 +56,55 @@ public:
 		// Podfunkcje ktore zwracac beda ExecutionStatus
 		// ExecutionStatus dilate(), erode(), 
 
-		// Acquire kernel
-		clw::Kernel kernel = _gpuComputeModule->acquireKernel(kidErode);
+		int width = deviceSrc.width();
+		int height = deviceSrc.height();
 
-		prepareDestinationImage(deviceDest, deviceSrc.width(), deviceSrc.height());
+		// Prepare destination image and structuring element on a device
+		ensureSizeIsEnough(deviceDest, width, height);
 		auto selemCoords = structuringElementCoordinates(se);
+		int selemCoordsSize = (int) selemCoords.size();
 		uploadStructuringElement(selemCoords);	
 
-		// Prepare it for execution
-		kernel.setLocalWorkSize(clw::Grid(16, 16));
-		kernel.setRoundedGlobalWorkSize(clw::Grid(deviceSrc.width(), deviceSrc.height()));
-		kernel.setArg(0, deviceSrc);
-		kernel.setArg(1, deviceDest);
-		kernel.setArg(2, _deviceStructuringElement);
-		kernel.setArg(3, (int) selemCoords.size());
+		// Prepare if necessary buffer for temporary result
+		if(_op > int(EMorphologyOperation::Dilate))
+			ensureSizeIsEnough(_tmpImage, width, height);
 
+		// Calculate metrics
 		int kradx = (se.cols - 1) >> 1;
-		int krady = (se.rows - 1) >> 1;
-		int sharedWidth = 16 + 2 * kradx;
-		int sharedHeight = 16 + 2 * krady;
-		kernel.setArg(4, kradx);
-		kernel.setArg(5, krady);
-		kernel.setArg(6, clw::LocalMemorySize(sharedWidth * sharedHeight));
-		kernel.setArg(7, sharedWidth);
-		kernel.setArg(8, sharedHeight);
+		int krady = (se.rows - 1) >> 1;		
+		clw::Grid grid(deviceSrc.width(), deviceSrc.height());
 
-		// Execute the kernel
-		clw::Event evt = _gpuComputeModule->queue().asyncRunKernel(kernel);
+		// Acquire kernel(s)
+		clw::Kernel kernelErode, kernelDilate, kernelSubtract;
+		
+		if(_op != EMorphologyOperation::Dilate)
+			kernelErode = _gpuComputeModule->acquireKernel(_kidErode);
+		if(_op > int(EMorphologyOperation::Erode))
+			kernelDilate = _gpuComputeModule->acquireKernel(_kidDilate);
+		//if(_op > int(EMorphologyOperation::Close))
+		//	kernelSubtract = _gpuComputeModule->acquireKernel(_kidSubtract);
+
+		clw::Event evt;
+
+		switch(_op)
+		{
+		case EMorphologyOperation::Erode:
+			evt = runMorphologyKernel(kernelErode, grid, deviceSrc, deviceDest, selemCoordsSize, kradx, krady);
+			break;
+		case EMorphologyOperation::Dilate:
+			evt = runMorphologyKernel(kernelDilate, grid, deviceSrc, deviceDest, selemCoordsSize, kradx, krady);
+			break;
+		case EMorphologyOperation::Open:
+			evt = runMorphologyKernel(kernelErode, grid, deviceSrc, _tmpImage, selemCoordsSize, kradx, krady);
+			evt = runMorphologyKernel(kernelDilate, grid, _tmpImage, deviceDest, selemCoordsSize, kradx, krady);
+			break;
+		case EMorphologyOperation::Close:
+			evt = runMorphologyKernel(kernelDilate, grid, deviceSrc, _tmpImage, selemCoordsSize, kradx, krady);
+			evt = runMorphologyKernel(kernelErode, grid, _tmpImage, deviceDest, selemCoordsSize, kradx, krady);
+			break;
+		}
+
+		// Execute it 
 		_gpuComputeModule->queue().finish();
 
 		/// TODO: A bit cheating considering we don't calculate uploading structuring element
@@ -131,24 +182,67 @@ private:
 		//gpu->queue().writeBuffer(_deviceStructuringElement, selemCoords.data(), 0, bmuSize);	
 	}
 
-	void prepareDestinationImage(clw::Image2D& deviceDest, int width, int height)
+	void ensureSizeIsEnough(clw::Image2D& image, int width, int height)
 	{
-		if(deviceDest.isNull() 
-			|| deviceDest.width() != width
-			|| deviceDest.height() != height)
+		if(image.isNull() 
+			|| image.width() != width
+			|| image.height() != height)
 		{
-			deviceDest = _gpuComputeModule->context().createImage2D(
-				clw::Access_WriteOnly, clw::Location_Device,
+			image = _gpuComputeModule->context().createImage2D(
+				clw::Access_ReadWrite, clw::Location_Device,
 				clw::ImageFormat(clw::Order_R, clw::Type_Normalized_UInt8),
 				width, height);
 		}
 	}
 
+	clw::Event runMorphologyKernel(clw::Kernel& kernel, const clw::Grid& grid,
+		const clw::Image2D& deviceSrc, clw::Image2D& deviceDst, int selemCoordsSize,
+		int kradx, int krady)
+	{
+		// Prepare it for execution
+		kernel.setLocalWorkSize(clw::Grid(16, 16));
+		kernel.setRoundedGlobalWorkSize(grid);
+		kernel.setArg(0, deviceSrc);
+		kernel.setArg(1, deviceDst);
+		kernel.setArg(2, _deviceStructuringElement);
+		kernel.setArg(3, selemCoordsSize);
+
+		int sharedWidth = 16 + 2 * kradx;
+		int sharedHeight = 16 + 2 * krady;
+		kernel.setArg(4, kradx);
+		kernel.setArg(5, krady);
+		kernel.setArg(6, clw::LocalMemorySize(sharedWidth * sharedHeight));
+		kernel.setArg(7, sharedWidth);
+		kernel.setArg(8, sharedHeight);
+
+		// Enqueue the kernel for execution
+		return _gpuComputeModule->queue().asyncRunKernel(kernel);
+	}
+
 private:
 	clw::Buffer _deviceStructuringElement;
-	KernelID kidErode;
-	///KernelID kidDilate;
-	///KernelID kidSubtract;
+	clw::Image2D _tmpImage;
+	KernelID _kidErode;
+	KernelID _kidDilate;
+	///KernelID _kidSubtract;
+
+	enum EMorphologyOperation
+	{
+		Erode    = cv::MORPH_ERODE,
+		Dilate   = cv::MORPH_DILATE,
+		Open     = cv::MORPH_OPEN,
+		Close    = cv::MORPH_CLOSE,
+		Gradient = cv::MORPH_GRADIENT,
+		TopHat   = cv::MORPH_TOPHAT,
+		BlackHat = cv::MORPH_BLACKHAT
+	};
+
+	enum EPropertyID
+	{
+		ID_Operation
+	};
+
+	EMorphologyOperation _op;
 };
 
 REGISTER_NODE("OpenCL/Image/Morphology op.", GpuMorphologyNodeType)
