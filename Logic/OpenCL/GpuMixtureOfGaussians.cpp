@@ -16,11 +16,13 @@ public:
 		: _nmixtures(5)
 		, _nframe(0)
 		, _history(200)
+		, _learningRate(-1)
 		, _varianceThreshold(6.25f)
 		, _backgroundRatio(0.7f)
 		, _initialWeight(0.05f)
 		, _initialVariance(500) // (15*15*4)
 		, _minVariance(0.4f) // (15*15)
+		, _showBackground(false)
 	{
 	}
 
@@ -30,12 +32,50 @@ public:
 		strm << "-DNMIXTURES=" << _nmixtures;
 		std::string opts = strm.str();
 
-		kidGaussMix = _gpuComputeModule->registerKernel(
+		_kidGaussMix = _gpuComputeModule->registerKernel(
 			"mog_image_unorm", "mog.cl", opts);
-		kidGaussBackground = _gpuComputeModule->registerKernel(
+		_kidGaussBackground = _gpuComputeModule->registerKernel(
 			"mog_background_image_unorm", "mog.cl", opts);
-		return kidGaussMix != InvalidKernelID &&
-			kidGaussBackground != InvalidKernelID;
+		return _kidGaussMix != InvalidKernelID &&
+			_kidGaussBackground != InvalidKernelID;
+	}
+
+	bool setProperty(PropertyID propId, const QVariant& newValue) override
+	{
+		switch(propId)
+		{
+		case ID_History:
+			_history = newValue.toInt();
+			return true;
+		case ID_NMixtures:
+			_nmixtures = newValue.toInt();
+			return true;
+		case ID_BackgroundRatio:
+			_backgroundRatio = newValue.toDouble();
+			return true;
+		case ID_LearningRate:
+			_learningRate = newValue.toDouble();
+			return true;
+		case ID_ShowBackground:
+			_showBackground = newValue.toBool();
+			return true;
+		}
+
+		return false;
+	}
+
+	QVariant property(PropertyID propId) const override
+	{
+		switch(propId)
+		{
+		case ID_History: return _history;
+		case ID_NMixtures: return _nmixtures;
+		case ID_BackgroundRatio: return _backgroundRatio;
+		case ID_LearningRate: return _learningRate;
+		case ID_ShowBackground: return _showBackground;
+		}
+
+		return QVariant();
 	}
 
 	bool restart() override
@@ -43,6 +83,7 @@ public:
 		_nframe = 0;
 
 		// TUTAJ inicjalizuj bufory???
+		// TODO: Uzyc asyncow
 
 		if(!_mixtureDataBuffer.isNull())
 		{
@@ -52,33 +93,31 @@ public:
 			_gpuComputeModule->queue().unmap(_mixtureDataBuffer, ptr);
 		}
 
-		/*
-			Create mixture parameter buffer
-		*/
+		// Parametry stale dla kernela
+		struct MogParams
+		{
+			float varThreshold;
+			float backgroundRatio;
+			float w0; // waga dla nowej mikstury
+			float var0; // wariancja dla nowej mikstury
+			float minVar; // dolny prog mozliwej wariancji
+		};
+
+		// Create mixture parameter buffer
 		if(_mixtureParamsBuffer.isNull())
 		{
-			// Parametry stale dla kernela
-			struct MogParams
-			{
-				float varThreshold;
-				float backgroundRatio;
-				float w0; // waga dla nowej mikstury
-				float var0; // wariancja dla nowej mikstury
-				float minVar; // dolny prog mozliwej wariancji
-			};
-
-			MogParams mogParams = {
-				_varianceThreshold,
-				_backgroundRatio,
-				_initialWeight,
-				_initialVariance,
-				_minVariance
-			};
-
 			_mixtureParamsBuffer = _gpuComputeModule->context().createBuffer(
-				clw::Access_ReadOnly, clw::Location_Device, 
-				sizeof(MogParams), &mogParams);
+				clw::Access_ReadOnly, clw::Location_Device, sizeof(MogParams));
 		}
+
+		MogParams* ptr = (MogParams*) _gpuComputeModule->queue().mapBuffer(
+			_mixtureParamsBuffer, clw::MapAccess_Write);
+		ptr->varThreshold = _varianceThreshold;
+		ptr->backgroundRatio = _backgroundRatio;
+		ptr->w0 = _initialWeight;
+		ptr->var0 = _initialVariance;
+		ptr->minVar = _minVariance;
+		_gpuComputeModule->queue().unmap(_mixtureParamsBuffer, ptr);
 
 		return true;
 	}
@@ -94,7 +133,7 @@ public:
 		if(srcWidth == 0 || srcHeight == 0)
 			return ExecutionStatus(EStatus::Ok);
 
-		clw::Kernel kernelGaussMix = _gpuComputeModule->acquireKernel(kidGaussMix);
+		clw::Kernel kernelGaussMix = _gpuComputeModule->acquireKernel(_kidGaussMix);
 
 		/*
 			Create mixture data buffer
@@ -112,12 +151,10 @@ public:
 				srcWidth, srcHeight);
 		}
 
-		float learningRate = -1.0;
-
 		// Calculate dynamic learning rate (if necessary)
 		++_nframe;
-		float alpha = learningRate >= 0 && _nframe > 1 
-			? learningRate
+		float alpha = _learningRate >= 0 && _nframe > 1 
+			? _learningRate
 			: 1.0f/std::min(_nframe, _history);
 
 		kernelGaussMix.setLocalWorkSize(16, 16);
@@ -130,7 +167,7 @@ public:
 		clw::Event evt = _gpuComputeModule->queue().asyncRunKernel(kernelGaussMix);
 		_gpuComputeModule->queue().finish();
 
-		if(1)
+		if(_showBackground)
 		{
 			clw::Image2D& deviceDestBackground = writer.acquireSocket(1).getDeviceImage();
 			if(deviceDestBackground.isNull()
@@ -144,7 +181,7 @@ public:
 					srcWidth, srcHeight);
 			}
 
-			clw::Kernel kernelBackground = _gpuComputeModule->acquireKernel(kidGaussBackground);
+			clw::Kernel kernelBackground = _gpuComputeModule->acquireKernel(_kidGaussBackground);
 
 			kernelBackground.setLocalWorkSize(16, 16);
 			kernelBackground.setRoundedGlobalWorkSize(srcWidth, srcHeight);
@@ -172,10 +209,19 @@ public:
 			{ ENodeFlowDataType::DeviceImage, "background", "Background", "" },
 			{ ENodeFlowDataType::Invalid, "", "", "" }
 		};
+		static const PropertyConfig prop_config[] = {
+			{ EPropertyType::Integer, "History frames", "min:1, max:500" },
+			{ EPropertyType::Integer, "Number of mixtures",  "min:1, max:9" },
+			{ EPropertyType::Double, "Background ratio", "min:0.01, max:0.99, step:0.01" },
+			{ EPropertyType::Double, "Learning rate", "min:-1, max:1, step:0.01" },
+			{ EPropertyType::Boolean, "Show background", "" },
+			{ EPropertyType::Unknown, "", "" }
+		};
 
 		nodeConfig.description = "";
 		nodeConfig.pInputSockets = in_config;
 		nodeConfig.pOutputSockets = out_config;
+		nodeConfig.pProperties = prop_config;
 		nodeConfig.flags = Node_HasState | Node_OverridesTimeComputation;
 		nodeConfig.module = "opencl";
 	}
@@ -200,19 +246,30 @@ private:
 	}
 
 private:
+	enum EPropertyID
+	{
+		ID_History,
+		ID_NMixtures,
+		ID_BackgroundRatio,
+		ID_LearningRate,
+		ID_ShowBackground
+	};
+
 	clw::Buffer _mixtureDataBuffer;
 	clw::Buffer _mixtureParamsBuffer;
-	KernelID kidGaussMix;
-	KernelID kidGaussBackground;
+	KernelID _kidGaussMix;
+	KernelID _kidGaussBackground;
 
 	int _nmixtures;
 	int _nframe;
 	int _history;
+	float _learningRate;
 	float _varianceThreshold;
 	float _backgroundRatio;
 	float _initialWeight;
 	float _initialVariance;
 	float _minVariance;
+	bool _showBackground;
 };
 
 REGISTER_NODE("OpenCL/Video/Mixture of Gaussians", GpuMixtureOfGaussiansNodeType)
