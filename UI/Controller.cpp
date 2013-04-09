@@ -7,6 +7,8 @@
 #include "Logic/NodeLink.h"
 #include "Logic/Node.h"
 
+#include "Logic/Jai/JaiNodeModule.h"
+
 // Views
 #include "NodeView.h"
 #include "NodeLinkView.h"
@@ -48,6 +50,7 @@ Controller::Controller(QWidget* parent, Qt::WindowFlags flags)
 	, _nodeScene(nullptr)
 	, _propManager(new PropertyManager(this))
 	, _nodeSystem(new NodeSystem())
+	, _jaiModule(new JaiNodeModule())
 	, _nodeTree(nullptr)
 	, _workerThread(QThread())
 	, _treeWorker(new TreeWorker())
@@ -72,6 +75,9 @@ Controller::Controller(QWidget* parent, Qt::WindowFlags flags)
 	updateState(EState::Stopped);
 	updateTitleBar();
 	createNewNodeScene();
+
+	// Gpu module
+	_nodeSystem->registerNodeModule(_jaiModule->moduleName(), _jaiModule);
 
 	// Context menu from node graphics view
 	connect(_ui->graphicsView, &NodeEditorView::contextMenu,

@@ -36,6 +36,9 @@
     <Filter Include="Nodes">
       <UniqueIdentifier>{1a2e12c6-74b7-4b31-abf2-e3936507e48a}</UniqueIdentifier>
     </Filter>
+    <Filter Include="JAI">
+      <UniqueIdentifier>{9c6451d6-6afb-4654-a120-74c0e61b6396}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Precomp.cpp">
@@ -92,8 +95,11 @@
     <ClCompile Include="Nodes\ColorConversionNodes.cpp">
       <Filter>Nodes</Filter>
     </ClCompile>
-    <ClCompile Include="Nodes\JaiCameraNodes.cpp">
-      <Filter>Nodes</Filter>
+    <ClCompile Include="Jai\JaiCameraNodes.cpp">
+      <Filter>JAI</Filter>
+    </ClCompile>
+    <ClCompile Include="Jai\JaiNodeModule.cpp">
+      <Filter>JAI</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -134,6 +140,12 @@
     </ClInclude>
     <ClInclude Include="Nodes\CV.h">
       <Filter>Nodes</Filter>
+    </ClInclude>
+    <ClInclude Include="Jai\JaiException.h">
+      <Filter>JAI</Filter>
+    </ClInclude>
+    <ClInclude Include="Jai\JaiNodeModule.h">
+      <Filter>JAI</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
