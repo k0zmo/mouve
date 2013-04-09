@@ -27,10 +27,12 @@ inline int bayerCodeGray(EBayerCode code)
 {
 	switch(code)
 	{
-	case EBayerCode::BG: return CV_BayerBG2GRAY;
-	case EBayerCode::GB: return CV_BayerGB2GRAY;
-	case EBayerCode::RG: return CV_BayerRG2GRAY;
-	case EBayerCode::GR: return CV_BayerGR2GRAY;
+	// OpenCV code is shifted one down and one left from
+	// the one that GigE Vision cameras are using
+	case EBayerCode::BG: return CV_BayerRG2GRAY;
+	case EBayerCode::GB: return CV_BayerGR2GRAY;
+	case EBayerCode::RG: return CV_BayerBG2GRAY;
+	case EBayerCode::GR: return CV_BayerGB2GRAY;
 	default: return CV_BayerBG2GRAY;
 	}
 }
@@ -39,10 +41,10 @@ inline int bayerCodeRgb(EBayerCode code)
 {
 	switch(code)
 	{
-	case EBayerCode::BG: return CV_BayerBG2BGR;
-	case EBayerCode::GB: return CV_BayerGB2BGR;
-	case EBayerCode::RG: return CV_BayerRG2BGR;
-	case EBayerCode::GR: return CV_BayerGR2BGR;
+	case EBayerCode::BG: return CV_BayerRG2BGR;
+	case EBayerCode::GB: return CV_BayerGR2BGR;
+	case EBayerCode::RG: return CV_BayerBG2BGR;
+	case EBayerCode::GR: return CV_BayerGB2BGR;
 	default: return CV_BayerBG2GRAY;
 	}
 }
