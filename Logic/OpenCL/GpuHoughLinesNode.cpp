@@ -38,17 +38,17 @@ public:
 
 	bool postInit() override
 	{
-		kidBuildPointsList = _gpuComputeModule->registerKernel("buildPointsList", "hough.cl");
-		kidAccumLines = _gpuComputeModule->registerKernel("accumLines", "hough.cl");
-		kidAccumLinesShared = _gpuComputeModule->registerKernel("accumLines_shared", "hough.cl");
-		kidGetLines = _gpuComputeModule->registerKernel("getLines", "hough.cl");
-		kidAccumToImage = _gpuComputeModule->registerKernel("accumToImage", "hough.cl");
+		_kidBuildPointsList = _gpuComputeModule->registerKernel("buildPointsList", "hough.cl");
+		_kidAccumLines = _gpuComputeModule->registerKernel("accumLines", "hough.cl");
+		_kidAccumLinesShared = _gpuComputeModule->registerKernel("accumLines_shared", "hough.cl");
+		_kidGetLines = _gpuComputeModule->registerKernel("getLines", "hough.cl");
+		_kidAccumToImage = _gpuComputeModule->registerKernel("accumToImage", "hough.cl");
 
-		return kidBuildPointsList != InvalidKernelID
-			&& kidAccumLines != InvalidKernelID
-			&& kidAccumLinesShared != InvalidKernelID
-			&& kidGetLines != InvalidKernelID
-			&& kidAccumToImage != InvalidKernelID;
+		return _kidBuildPointsList != InvalidKernelID
+			&& _kidAccumLines != InvalidKernelID
+			&& _kidAccumLinesShared != InvalidKernelID
+			&& _kidGetLines != InvalidKernelID
+			&& _kidAccumToImage != InvalidKernelID;
 	}
 
 	ExecutionStatus execute(NodeSocketReader& reader, NodeSocketWriter& writer) override
@@ -65,7 +65,7 @@ public:
 		/* 
 			1. Build list of non-zero pixels
 		*/
-		clw::Kernel kernelBuildPointsList = _gpuComputeModule->acquireKernel(kidBuildPointsList);
+		clw::Kernel kernelBuildPointsList = _gpuComputeModule->acquireKernel(_kidBuildPointsList);
 
 		/// TODO: Mozna dac to na gpuInit i PO wykonaniu kernela jako async
 		// Zero global counter
@@ -113,7 +113,7 @@ public:
 
 		if(!_gpuComputeModule->isLocalMemorySufficient(requiredSharedSize))
 		{
-			clw::Kernel kernelAccumLines = _gpuComputeModule->acquireKernel(kidAccumLines);
+			clw::Kernel kernelAccumLines = _gpuComputeModule->acquireKernel(_kidAccumLines);
 
 			//cl_int pattern = 0;
 			//clEnqueueFillBuffer(_gpuComputeModule->queue().commandQueueId(), _deviceAccum.memoryId(), &pattern,
@@ -132,7 +132,7 @@ public:
 		}
 		else
 		{
-			clw::Kernel kernelAccumLines = _gpuComputeModule->acquireKernel(kidAccumLinesShared);
+			clw::Kernel kernelAccumLines = _gpuComputeModule->acquireKernel(_kidAccumLinesShared);
 
 			kernelAccumLines.setLocalWorkSize(clw::Grid(256));
 			kernelAccumLines.setRoundedGlobalWorkSize(clw::Grid(256 * numAngle));
@@ -147,7 +147,7 @@ public:
 		/*
 			4. Retrieve lines from Hough space accumulator
 		*/
-		clw::Kernel kernelGetLines = _gpuComputeModule->acquireKernel(kidGetLines);
+		clw::Kernel kernelGetLines = _gpuComputeModule->acquireKernel(_kidGetLines);
 		if(kernelGetLines.isNull())
 			return ExecutionStatus(EStatus::Error);
 
@@ -229,7 +229,7 @@ public:
 			clw::Image2D& deviceAccumImage = writer.acquireSocket(1).getDeviceImage();
 			ensureSizeIsEnough(deviceAccumImage, numAngle, numRho);
 
-			clw::Kernel kernelAccumToImage = _gpuComputeModule->acquireKernel(kidAccumToImage);
+			clw::Kernel kernelAccumToImage = _gpuComputeModule->acquireKernel(_kidAccumToImage);
 			kernelAccumToImage.setLocalWorkSize(16, 16);
 			kernelAccumToImage.setRoundedGlobalWorkSize(numRho, numAngle);
 			kernelAccumToImage.setArg(0, _deviceAccum);
@@ -310,11 +310,11 @@ private:
 	clw::Buffer _deviceCounter;
 	clw::Buffer _deviceAccum;
 
-	KernelID kidBuildPointsList;
-	KernelID kidAccumLines;
-	KernelID kidAccumLinesShared;
-	KernelID kidGetLines;
-	KernelID kidAccumToImage;
+	KernelID _kidBuildPointsList;
+	KernelID _kidAccumLines;
+	KernelID _kidAccumLinesShared;
+	KernelID _kidGetLines;
+	KernelID _kidAccumToImage;
 };
 
 REGISTER_NODE("OpenCL/Features/Hough Lines", GpuHoughLinesNodeType)
