@@ -1724,17 +1724,27 @@ void queryAndFillParameters(const std::shared_ptr<JaiNodeModule>& jaiModule,
 void Controller::showDeviceSettings()
 {
 	if(!_jaiModule->ensureInitialized())
-		showErrorMessage("Couldn't initialized properly JAI module");
+	{
+		showErrorMessage("Couldn't initialized properly JAI module!");
+		return;
+	}
+
+	if(_jaiModule->cameraCount() == 0)
+	{
+		showErrorMessage("No camera has been found.\nCheck your connection and try again");
+		return;
+	}
+
+	vector<CameraInfo> cameraInfos = _jaiModule->discoverCameras(EDriverType::All);
+	if(cameraInfos.empty())
+	{
+		showErrorMessage("Couldn't detect any camera devices");
+		return;
+	}
 
 	QDialog dialog;
 	Ui::CameraDialog ui;
 	ui.setupUi(&dialog);
-
-	/// TODO - cameras could be opened through dialog lifetime since its modal
-
-	vector<CameraInfo> cameraInfos = _jaiModule->discoverCameras();
-	if(cameraInfos.empty())
-		return;
 
 	for(auto& info : cameraInfos)
 		ui.cameraComboBox->addItem(QString::fromStdString(info.modelName));

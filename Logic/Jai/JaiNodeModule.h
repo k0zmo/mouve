@@ -51,6 +51,8 @@ struct CameraSettings
 	vector<tuple<int64_t, string>> pixelFormats;	
 };
 
+enum class EDriverType { All, Filter, Socket };
+
 class LOGIC_EXPORT JaiNodeModule : public NodeModule
 {
 public:
@@ -62,7 +64,8 @@ public:
 
 	string moduleName() const override;
 
-	vector<CameraInfo> discoverCameras();
+	int cameraCount() const { return int(_camHandles.size()); }
+	vector<CameraInfo> discoverCameras(EDriverType driverType = EDriverType::Filter);
 	CameraSettings cameraSettings(int index);
 	bool setCameraSettings(int index, const CameraSettings& settings);
 

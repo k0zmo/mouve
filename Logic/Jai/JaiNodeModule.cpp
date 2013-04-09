@@ -67,7 +67,7 @@ string JaiNodeModule::moduleName() const
 	return "jai";
 }
 
-vector<CameraInfo> JaiNodeModule::discoverCameras()
+vector<CameraInfo> JaiNodeModule::discoverCameras(EDriverType driverType)
 {
 	vector<CameraInfo> list;
 	if(!ensureInitialized())
@@ -105,9 +105,19 @@ vector<CameraInfo> JaiNodeModule::discoverCameras()
 
 		cameraInfo.modelName = queryCameraInfo(cameraId, CAM_INFO_MODELNAME);
 		if(cameraInfo.id.find("INT=>FD") != string::npos)
-			cameraInfo.modelName += " (Filter driver)";
+		{
+			if(driverType != EDriverType::Socket)
+				cameraInfo.modelName += " (Filter driver)";
+			else
+				continue;
+		}
 		else if(cameraInfo.id.find("INT=>SD") != string::npos)
-			cameraInfo.modelName += " (Socket driver)";
+		{
+			if(driverType != EDriverType::Filter)
+				cameraInfo.modelName += " (Socket driver)";
+			else
+				continue;
+		}
 
 		cameraInfo.manufacturer = queryCameraInfo(cameraId, CAM_INFO_MANUFACTURER);
 		cameraInfo.interfaceId = queryCameraInfo(cameraId, CAM_INFO_INTERFACE_ID);
