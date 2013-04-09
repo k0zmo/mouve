@@ -15,7 +15,10 @@ class QLabel;
 class TreeWorker;
 class QProgressBar;
 class QTreeWidgetItem;
+
+#if defined(HAVE_JAI)
 class JaiNodeModule;
+#endif
 
 enum class EState
 {
@@ -149,11 +152,20 @@ private:
 
 	std::unique_ptr<NodeSystem> _nodeSystem;
 	std::shared_ptr<NodeTree> _nodeTree;
-	std::shared_ptr<JaiNodeModule> _jaiModule;
 
 	QThread _workerThread;
 	TreeWorker* _treeWorker;
 	QProgressBar* _progressBar;
+
+	// JAI Module
+#if defined(HAVE_JAI)
+	std::shared_ptr<JaiNodeModule> _jaiModule;
+	QAction* _actionInitModule;
+	QAction* _actionDevices;
+	// QAction* _actionWhiteBalance;
+
+	void showDeviceSettings();
+#endif
 
 	//
 	// UI part

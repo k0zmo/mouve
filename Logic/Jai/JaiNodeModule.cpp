@@ -103,11 +103,11 @@ vector<CameraInfo> JaiNodeModule::discoverCameras()
 				return string(reinterpret_cast<char*>(buffer));
 			};
 
-		string modelName = queryCameraInfo(cameraId, CAM_INFO_MODELNAME);
+		cameraInfo.modelName = queryCameraInfo(cameraId, CAM_INFO_MODELNAME);
 		if(cameraInfo.id.find("INT=>FD") != string::npos)
-			modelName += " (Filter driver)";
+			cameraInfo.modelName += " (Filter driver)";
 		else if(cameraInfo.id.find("INT=>SD") != string::npos)
-			modelName += " (Socket driver)";
+			cameraInfo.modelName += " (Socket driver)";
 
 		cameraInfo.manufacturer = queryCameraInfo(cameraId, CAM_INFO_MANUFACTURER);
 		cameraInfo.interfaceId = queryCameraInfo(cameraId, CAM_INFO_INTERFACE_ID);
