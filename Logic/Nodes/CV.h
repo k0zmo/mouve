@@ -2,9 +2,7 @@
 
 #include "Prerequisites.h"
 
-namespace cv {
-class Mat;
-}
+#include <opencv2/core/core.hpp>
 
 namespace cvu  {
 
@@ -20,34 +18,11 @@ enum class EBayerCode
 	BG,
 	GB,
 	RG,
-	GR,
+	GR
 };
 
-inline int bayerCodeGray(EBayerCode code)
-{
-	switch(code)
-	{
-	// OpenCV code is shifted one down and one left from
-	// the one that GigE Vision cameras are using
-	case EBayerCode::BG: return CV_BayerRG2GRAY;
-	case EBayerCode::GB: return CV_BayerGR2GRAY;
-	case EBayerCode::RG: return CV_BayerBG2GRAY;
-	case EBayerCode::GR: return CV_BayerGB2GRAY;
-	default: return CV_BayerBG2GRAY;
-	}
-}
-
-inline int bayerCodeRgb(EBayerCode code)
-{
-	switch(code)
-	{
-	case EBayerCode::BG: return CV_BayerRG2BGR;
-	case EBayerCode::GB: return CV_BayerGR2BGR;
-	case EBayerCode::RG: return CV_BayerBG2BGR;
-	case EBayerCode::GR: return CV_BayerGB2BGR;
-	default: return CV_BayerBG2GRAY;
-	}
-}
+int bayerCodeGray(EBayerCode code);
+int bayerCodeRgb(EBayerCode code);
 
 cv::Mat standardStructuringElement(int xradius, int yradius, 
 	EStructuringElementType type, int rotation);

@@ -69,7 +69,7 @@
 #  define K_FORCEINLINE inline __attribute__((always_inline))
 #  define K_ALIGNED16(a) a __attribute__ ((aligned (16)))
 #  define K_DISABLE_COPY(classname) \
-	classname(const classname&) = delete;
+	classname(const classname&) = delete; \
 	classname& operator=(const classname&) = delete;
 #elif K_COMPILER == K_COMPILER_MSVC
 #  define K_FUNCTION __FUNCSIG__

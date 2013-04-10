@@ -2,6 +2,7 @@
 #include "NodeFactory.h"
 
 #include <opencv2/core/core.hpp>
+#include <opencv2/imgproc/imgproc.hpp>
 #include "CV.h"
 
 class BayerToGrayNodeType : public NodeType
@@ -76,10 +77,10 @@ class BayerToRgbNodeType : public NodeType
 {
 public:
 	BayerToRgbNodeType()
-		: _BayerCode(cvu::EBayerCode::RG)
-		, _redGain(1.0)
+		: _redGain(1.0)
 		, _greenGain(1.0)
 		, _blueGain(1.0)
+		, _BayerCode(cvu::EBayerCode::RG)
 	{
 	}
 

@@ -5,6 +5,32 @@
 
 namespace cvu {
 
+int bayerCodeGray(EBayerCode code)
+{
+	switch(code)
+	{
+	// OpenCV code is shifted one down and one left from
+	// the one that GigE Vision cameras are using
+	case EBayerCode::BG: return CV_BayerRG2GRAY;
+	case EBayerCode::GB: return CV_BayerGR2GRAY;
+	case EBayerCode::RG: return CV_BayerBG2GRAY;
+	case EBayerCode::GR: return CV_BayerGB2GRAY;
+	default: return CV_BayerBG2GRAY;
+	}
+}
+
+int bayerCodeRgb(EBayerCode code)
+{
+	switch(code)
+	{
+	case EBayerCode::BG: return CV_BayerRG2BGR;
+	case EBayerCode::GB: return CV_BayerGR2BGR;
+	case EBayerCode::RG: return CV_BayerBG2BGR;
+	case EBayerCode::GR: return CV_BayerGB2BGR;
+	default: return CV_BayerBG2GRAY;
+	}
+}
+
 static const float PI = 3.1415926535897932384626433832795f;
 static const float RAD_PER_DEG = PI / 180.0f;
 #define DEG2RAD(x) (x * RAD_PER_DEG)

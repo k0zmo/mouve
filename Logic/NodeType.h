@@ -207,7 +207,7 @@ inline bool NodeType::restart()
 { return false; }
 inline void NodeType::finish()
 { return; }
-inline bool NodeType::init(const std::shared_ptr<NodeModule>& module)
+inline bool NodeType::init(const std::shared_ptr<NodeModule>&)
 { return false; }
 
 class NodeTypeIterator

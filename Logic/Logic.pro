@@ -5,37 +5,51 @@ QT -= gui
 include(../mouve.pri)
 
 HEADERS += \
-	CV.h \
 	Node.h \
     NodeException.h \
 	NodeFactory.h \
     NodeFlowData.h \
 	NodeLink.h \
+    NodeModule.h \
 	NodeSystem.h \
 	NodeTree.h \
 	NodeType.h \
-	Prerequisites.h
+    Prerequisites.h \
+    Jai/JaiException.h \
+    Jai/JaiNodeModule.h \
+    Nodes/CV.h
 		   
 SOURCES += \
-    BuiltInNodeBasics.cpp \
-    BuiltInNodeFeatures.cpp \
-	CV.cpp \
 	Node.cpp \
 	NodeFactory.cpp \
     NodeFlowData.cpp \
 	NodeLink.cpp \
+    NodeModule.cpp \
 	NodeSystem.cpp \
 	NodeTree.cpp \
-	NodeType.cpp
+    NodeType.cpp \
+    Jai/JaiCameraNodes.cpp \
+    Jai/JaiNodeModule.cpp \
+    Nodes/BasicNodes.cpp \
+    Nodes/BriskNodes.cpp \
+    Nodes/ColorConversionNodes.cpp \
+    Nodes/CV.cpp \
+    Nodes/DrawFeaturesNodes.cpp \
+    Nodes/HomographyNodes.cpp \
+    Nodes/HoughNodes.cpp \
+    Nodes/MatcherNodes.cpp \
+    Nodes/SurfNodes.cpp
 	
 PRECOMPILED_HEADER = Precomp.h
-
-DEFINES += MOUVE_LOGIC_LIB
-
+DEFINES += LOGIC_LIB
+LIBS += -lMouve.Kommon
 unix {
+    QMAKE_LFLAGS += -Wl,--rpath=.
 	LIBS += -lopencv_core -lopencv_imgproc -lopencv_highgui -lopencv_video
     LIBS += -lopencv_flann -lopencv_calib3d -lopencv_features2d -lopencv_nonfree
 }
+
+# TODO: Haven't been used for awhile now
 win32 {
     LIBS += -LD:/Programowanie/SDKs/opencv/lib/x86
     # TODO: version, dir and debug|release

@@ -18,4 +18,6 @@ CONFIG += c++11
 INCLUDEPATH += ../
 LIBS += -L$$DESTDIR
 
-INCLUDEPATH += D:/Programowanie/Libs/opencv-243/include
+win32 {
+    INCLUDEPATH += D:/Programowanie/SDKs/opencv/include
+}

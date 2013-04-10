@@ -1,7 +1,7 @@
 TEMPLATE = subdirs
 CONFIG += ordered
 SUBDIRS += \
-	Common \
+	Kommon \
 	Logic \
 	UI
 
