@@ -52,7 +52,7 @@ bool JaiNodeModule::initialize()
 	if(numDevices > 0)
 		_camHandles.resize(numDevices);
 
-	return numDevices > 0;
+	return true; //numDevices > 0;
 }
 
 bool JaiNodeModule::ensureInitialized()

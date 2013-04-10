@@ -9,7 +9,7 @@ class QJsonArray;
 
 class LOGIC_EXPORT NodeTree
 {
-	Q_DISABLE_COPY(NodeTree)
+	K_DISABLE_COPY(NodeTree)
 public:
 	NodeTree(NodeSystem* nodeSystem);
 	~NodeTree();

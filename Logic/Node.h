@@ -14,7 +14,7 @@ enum class ENodeFlags : int
 
 class LOGIC_EXPORT Node
 {
-	Q_DISABLE_COPY(Node)
+	K_DISABLE_COPY(Node)
 public:
 	Node();
 	Node(std::unique_ptr<NodeType> nodeType,

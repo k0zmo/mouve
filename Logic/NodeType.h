@@ -5,7 +5,7 @@
 
 class LOGIC_EXPORT NodeSocketReader
 {
-	Q_DISABLE_COPY(NodeSocketReader);
+	K_DISABLE_COPY(NodeSocketReader);
 
 	friend class NodeTree;
 public:
@@ -30,7 +30,7 @@ private:
 
 class LOGIC_EXPORT NodeSocketWriter
 {
-	Q_DISABLE_COPY(NodeSocketWriter);
+	K_DISABLE_COPY(NodeSocketWriter);
 
 	friend class Node;
 public:

@@ -2,8 +2,6 @@
 
 #include "Prerequisites.h"
 
-#include <exception>
-
 struct BadSocketException : std::exception
 {
 	virtual const char* what() const noexcept

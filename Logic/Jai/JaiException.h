@@ -4,8 +4,6 @@
 
 #include "Prerequisites.h"
 
-#include <stdexcept>
-
 /// TODO: Querying error message
 struct JaiException : public std::exception
 {

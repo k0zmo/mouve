@@ -5,7 +5,7 @@
 #include <cstdio>
 #include <cstdint>
 #include <cstddef>
-#include <stdexcept>
+#include <exception>
 
 // STL
 #include <string>
