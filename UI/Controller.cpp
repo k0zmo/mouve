@@ -63,7 +63,7 @@ Controller::Controller(QWidget* parent, Qt::WindowFlags flags)
 	, _jaiModule(new JaiNodeModule())
 #endif
 	, _nodeTree(nullptr)
-	, _workerThread(QThread())
+	//, _workerThread(QThread())
 	, _treeWorker(new TreeWorker())
 	, _progressBar(nullptr)
 	, _ui(new Ui::MainWindow())
@@ -648,7 +648,7 @@ void Controller::populateAddNodeContextMenu()
 		text = text.replace("&", "&&");
 		QTreeWidgetItem* i = *iter;
 		int level = 1;
-		while(i = i->parent())
+		while((i = i->parent()) != 0)
 			++level;
 
 		// Bottom level items

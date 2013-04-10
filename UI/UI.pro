@@ -51,11 +51,13 @@ RESOURCES += \
 
 PRECOMPILED_HEADER = Precomp.h
 
-LIBS += -lMouve.Logic
-
+LIBS += -lMouve.Logic -lMouve.Kommon
 unix {
+    QMAKE_LFLAGS += -Wl,--rpath=.
     LIBS += -lopencv_core
 }
+
+# TODO: Haven't been used for awhile now
 win32 {
     LIBS += -LD:/Programowanie/SDKs/opencv/lib/x86
     # TODO: version, dir and debug|release
