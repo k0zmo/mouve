@@ -1,5 +1,7 @@
 #pragma once
 
+#if defined(HAVE_OPENCL)
+
 #include "Prerequisites.h"
 #include "NodeType.h"
 #include "GpuNodeModule.h"
@@ -23,3 +25,5 @@ public:
 protected:
 	std::shared_ptr<GpuNodeModule> _gpuComputeModule;
 };
+
+#endif

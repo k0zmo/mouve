@@ -8,8 +8,10 @@
 #include <opencv2/core/core.hpp>
 #include <opencv2/features2d/features2d.hpp>
 
+#if defined(HAVE_OPENCL)
 // Device data
-#include "OpenCL/DeviceArray.h"
+#  include "OpenCL/DeviceArray.h"
+#endif
 
 namespace cv {
 typedef std::vector<KeyPoint> KeyPoints;
@@ -19,9 +21,11 @@ typedef std::vector<DMatch> DMatches;
 typedef boost::variant<
 	cv::Mat,
 	cv::KeyPoints,
-	cv::DMatches,
-	clw::Image2D, // TODO - replace this with some thin wrapper
+	cv::DMatches
+#if defined(HAVE_OPENCL)
+	,clw::Image2D, // TODO - replace this with some thin wrapper
 	DeviceArray
+#endif
 > flow_data;
 
 enum class ENodeFlowDataType : int
@@ -31,12 +35,14 @@ enum class ENodeFlowDataType : int
 	ImageRgb,
 	Array,
 	Keypoints,
-	Matches,
+	Matches
+#if defined(HAVE_OPENCL)
 	// Gpu part
 	/// TODO: Could merge this with above ones and add bool flag
 	///       indicating if it's in device or host memory
-	DeviceImage,
+	,DeviceImage,
 	DeviceArray,
+#endif
 };
 
 class LOGIC_EXPORT NodeFlowData
@@ -69,11 +75,13 @@ public:
 	const cv::Mat& getArray() const;
 
 	// Device data
+#if defined(HAVE_OPENCL)
 	clw::Image2D& getDeviceImage();
 	const clw::Image2D& getDeviceImage() const;
 
 	DeviceArray& getDeviceArray();
 	const DeviceArray& getDeviceArray() const;
+#endif
 
 	bool isValid() const;
 	bool canReturn(ENodeFlowDataType type) const;

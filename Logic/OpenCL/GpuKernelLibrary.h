@@ -1,5 +1,7 @@
 #pragma once
 
+#if defined(HAVE_OPENCL)
+
 #include "Prerequisites.h"
 
 #include <clw/clw.h>
@@ -101,3 +103,5 @@ struct RegisteredProgram
 	string programName;
 	vector<Build> builds;
 };
+
+#endif

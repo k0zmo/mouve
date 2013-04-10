@@ -15,7 +15,10 @@ class QLabel;
 class TreeWorker;
 class QProgressBar;
 class QTreeWidgetItem;
+
+#if defined(HAVE_OPENCL)
 class GpuNodeModule;
+#endif
 
 #if defined(HAVE_JAI)
 class JaiNodeModule;
@@ -153,11 +156,15 @@ private:
 
 	std::unique_ptr<NodeSystem> _nodeSystem;
 	std::shared_ptr<NodeTree> _nodeTree;
-	std::shared_ptr<GpuNodeModule> _gpuModule;
 
 	QThread _workerThread;
 	TreeWorker* _treeWorker;
 	QProgressBar* _progressBar;
+
+	// OpenCL Module
+#if defined(HAVE_OPENCL)
+	std::shared_ptr<GpuNodeModule> _gpuModule;
+#endif
 
 	// JAI Module
 #if defined(HAVE_JAI)

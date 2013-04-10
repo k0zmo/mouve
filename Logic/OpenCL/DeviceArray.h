@@ -1,5 +1,7 @@
 #pragma once
 
+#if defined(HAVE_OPENCL)
+
 #include "Prerequisites.h"
 
 #include <clw/clw.h>
@@ -99,3 +101,5 @@ inline EDataType DeviceArray::matToDeviceType(int type)
 	default: return EDataType::Char; 
 	}
 }
+
+#endif

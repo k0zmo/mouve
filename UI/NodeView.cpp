@@ -133,7 +133,7 @@ NodeSocketView* NodeView::addSocketView(SocketID socketKey,
 				NodeStyle::SocketGradientStop5);
 			socketView->setConnectorToolTip("[Matches]");
 			break;
-
+#if defined(HAVE_OPENCL)
 		case ENodeFlowDataType::DeviceImage:
 			socketView->setConnectorBrushGradient(NodeStyle::SocketGradientStart1,
 				NodeStyle::SocketGradientStop1);
@@ -146,7 +146,7 @@ NodeSocketView* NodeView::addSocketView(SocketID socketKey,
 			socketView->setConnectorToolTip("[DeviceArray]");
 			socketView->setConnectorAnnotation(QStringLiteral("D"));
 			break;
-
+#endif
 		case ENodeFlowDataType::Invalid:
 		default:
 			socketView->setConnectorBrushGradient(Qt::white, Qt::black);

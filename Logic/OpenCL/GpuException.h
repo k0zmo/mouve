@@ -1,5 +1,7 @@
 #pragma once
 
+#if defined(HAVE_OPENCL)
+
 #include "Prerequisites.h"
 
 #include <exception>
@@ -32,3 +34,5 @@ struct GpuBuildException : public std::exception
 
 	std::string log;
 };
+
+#endif

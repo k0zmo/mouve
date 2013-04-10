@@ -1,3 +1,5 @@
+#if defined(HAVE_OPENCL)
+
 #include "GpuNodeModule.h"
 #include "GpuException.h"
 
@@ -169,3 +171,5 @@ string GpuNodeModule::additionalBuildOptions(const std::string& programName) con
 #endif
 	return opts;
 }
+
+#endif

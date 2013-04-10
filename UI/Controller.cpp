@@ -8,8 +8,12 @@
 #include "Logic/Node.h"
 
 // Modules
-#include "Logic/OpenCL/GpuNodeModule.h"
-#include "Logic/Jai/JaiNodeModule.h"
+#if defined(HAVE_OPENCL)
+#  include "Logic/OpenCL/GpuNodeModule.h"
+#endif
+#if defined(HAVE_JAI)
+#  include "Logic/Jai/JaiNodeModule.h"
+#endif
 
 // Views
 #include "NodeView.h"
@@ -52,7 +56,9 @@ Controller::Controller(QWidget* parent, Qt::WindowFlags flags)
 	, _nodeScene(nullptr)
 	, _propManager(new PropertyManager(this))
 	, _nodeSystem(new NodeSystem())
+#if defined(HAVE_OPENCL)
 	, _gpuModule(new GpuNodeModule(false))
+#endif
 #if defined(HAVE_JAI)
 	, _jaiModule(new JaiNodeModule())
 #endif
@@ -82,7 +88,9 @@ Controller::Controller(QWidget* parent, Qt::WindowFlags flags)
 	createNewNodeScene();
 
 	// Gpu module
+#if defined(HAVE_OPENCL)
 	_nodeSystem->registerNodeModule(_gpuModule->moduleName(), _gpuModule);
+#endif
 
 	// JAI module
 #if defined(HAVE_JAI)

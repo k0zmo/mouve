@@ -1,3 +1,5 @@
+#if defined(HAVE_OPENCL)
+
 #include "GpuNode.h"
 #include "NodeFactory.h"
 
@@ -318,3 +320,5 @@ private:
 };
 
 REGISTER_NODE("OpenCL/Features/Hough Lines", GpuHoughLinesNodeType)
+
+#endif

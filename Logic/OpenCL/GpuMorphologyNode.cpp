@@ -1,3 +1,5 @@
+#if defined(HAVE_OPENCL)
+
 #include "GpuNode.h"
 #include "NodeFactory.h"
 
@@ -246,3 +248,5 @@ private:
 };
 
 REGISTER_NODE("OpenCL/Image/Morphology op.", GpuMorphologyNodeType)
+
+#endif

@@ -1,3 +1,5 @@
+#if defined(HAVE_OPENCL)
+
 #include "DeviceArray.h"
 
 DeviceArray::DeviceArray()
@@ -62,3 +64,5 @@ clw::Event DeviceArray::download(clw::CommandQueue& queue, cv::Mat& mat) const
 	mat.create(_height, _width, deviceToMatType(_dataType));
 	return queue.asyncReadBuffer(_buffer, mat.data, 0, _size);
 }
+
+#endif

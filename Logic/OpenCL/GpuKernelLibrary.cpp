@@ -1,3 +1,5 @@
+#if defined(HAVE_OPENCL)
+
 #include "GpuKernelLibrary.h"
 #include "GpuException.h"
 
@@ -277,3 +279,5 @@ void KernelLibrary::updateKernelEntry(const clw::Program& program,
 	entry.buildOptions = buildOptions;
 	entry.kernel = kernel;	
 }
+
+#endif

@@ -33,15 +33,14 @@ NodeFlowData::NodeFlowData(ENodeFlowDataType dataType)
 	case ENodeFlowDataType::Matches:
 		_data = cv::DMatches();
 		break;
-
+#if defined(HAVE_OPENCL)
 	case ENodeFlowDataType::DeviceImage:
 		_data = clw::Image2D();
 		break;
-
 	case ENodeFlowDataType::DeviceArray:
 		_data = DeviceArray();
 		break;
-
+#endif
 	case ENodeFlowDataType::Invalid:
 	default:
 		break;
@@ -142,6 +141,8 @@ const cv::Mat& NodeFlowData::getArray() const
 	return boost::get<cv::Mat>(_data);
 }
 
+#if defined(HAVE_OPENCL)
+
 clw::Image2D& NodeFlowData::getDeviceImage()
 {
 	auto& image = const_cast<const NodeFlowData*>(this)->getDeviceImage();
@@ -169,3 +170,5 @@ const DeviceArray& NodeFlowData::getDeviceArray() const
 
 	return boost::get<DeviceArray>(_data);
 }
+
+#endif

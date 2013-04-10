@@ -1,5 +1,7 @@
 #pragma once
 
+#if defined(HAVE_OPENCL)
+
 #include "Logic/NodeModule.h"
 #include "GpuKernelLibrary.h"
 
@@ -69,3 +71,5 @@ inline clw::CommandQueue& GpuNodeModule::queue()
 { return _queue; }
 inline const clw::CommandQueue& GpuNodeModule::queue() const
 { return _queue; }
+
+#endif

@@ -1,3 +1,5 @@
+#if defined(HAVE_OPENCL)
+
 #include "GpuNode.h"
 #include "NodeFactory.h"
 
@@ -192,3 +194,5 @@ REGISTER_NODE("OpenCL/Download array", GpuDownloadArrayNodeType)
 REGISTER_NODE("OpenCL/Upload array", GpuUploadArrayNodeType)
 REGISTER_NODE("OpenCL/Download image", GpuDownloadImageNodeType)
 REGISTER_NODE("OpenCL/Upload image", GpuUploadImageNodeType)
+
+#endif
