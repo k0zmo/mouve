@@ -5,6 +5,7 @@
 #include "Prerequisites.h"
 
 #include <clw/clw.h>
+#include <opencv2/core/core.hpp>
 
 enum class EDataType
 {

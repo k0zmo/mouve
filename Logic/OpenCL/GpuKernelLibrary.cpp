@@ -4,6 +4,7 @@
 #include "GpuException.h"
 
 #include <sstream>
+#include <stdexcept>
 
 KernelLibrary::KernelLibrary()
 {
@@ -91,7 +92,12 @@ clw::Kernel KernelLibrary::acquireKernel(KernelID kernelId)
 			program = buildProgram(entry.programName, entry.buildOptions);
 			// Second time's a charm
 			if(!program.isBuilt())
-				throw GpuBuildException(program.log());
+			{
+				string log = program.log();
+				if(log.empty())
+					log = "Failed to load " + entry.programName;
+				throw GpuBuildException(log);
+			}
 		}
 
 		// Update kernel
@@ -174,8 +180,7 @@ vector<RegisteredProgram> KernelLibrary::populateListOfRegisteredPrograms() cons
 	vector<RegisteredProgram> list;
 
 	// Iterate over every program name
-	for(auto iter = _programs.begin(), end = _programs.end(); iter != end;
-		iter = _programs.upper_bound(iter->first))
+	for(auto iter = _programs.begin(), end = _programs.end(); iter != end; )
 	{
 		RegisteredProgram entry;
 		entry.programName = iter->first;
@@ -196,7 +201,12 @@ vector<RegisteredProgram> KernelLibrary::populateListOfRegisteredPrograms() cons
 			}
 
 			entry.builds.emplace_back(used, ri->second.buildOptions, ri->second.program.isBuilt());
+			++iter;
 		}
+
+		// If we didn't went into above loop we gotta move the main iterator now
+		if(entry.builds.empty())
+			++iter;
 
 		list.push_back(std::move(entry));
 	}

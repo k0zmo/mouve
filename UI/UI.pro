@@ -3,6 +3,7 @@ TARGET = Mouve.UI
 QT += widgets opengl
 
 include(../mouve.pri)
+include(../clw.pri)
 
 HEADERS += \
 	Controller.h \

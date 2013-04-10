@@ -36,8 +36,11 @@ void TreeWorker::process(bool withInit)
 	catch(GpuBuildException& ex)
 	{
 		QString logMessage = QString::fromStdString(ex.log);
-		logMessage.truncate(1024);
-		logMessage.append("\n...");
+		if(logMessage.length() > 1024)
+		{
+			logMessage.truncate(1024);
+			logMessage.append("\n...");
+		}
 		
 		emit error(
 			QString("Building program failed:\n") + 

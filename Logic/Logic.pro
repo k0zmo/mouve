@@ -3,6 +3,7 @@ TARGET = Mouve.Logic
 QT -= gui
 
 include(../mouve.pri)
+include(../clw.pri)
 
 HEADERS += \
 	Node.h \
@@ -17,7 +18,12 @@ HEADERS += \
     Prerequisites.h \
     Jai/JaiException.h \
     Jai/JaiNodeModule.h \
-    Nodes/CV.h
+    Nodes/CV.h \
+    OpenCL/DeviceArray.h \
+    OpenCL/GpuException.h \
+    OpenCL/GpuKernelLibrary.h \
+    OpenCL/GpuNode.h \
+    OpenCL/GpuNodeModule.h
 		   
 SOURCES += \
 	Node.cpp \
@@ -38,7 +44,14 @@ SOURCES += \
     Nodes/HomographyNodes.cpp \
     Nodes/HoughNodes.cpp \
     Nodes/MatcherNodes.cpp \
-    Nodes/SurfNodes.cpp
+    Nodes/SurfNodes.cpp \
+    OpenCL/DeviceArray.cpp \
+    OpenCL/GpuBasicNodes.cpp \
+    OpenCL/GpuHoughLinesNode.cpp \
+    OpenCL/GpuKernelLibrary.cpp \
+    OpenCL/GpuMixtureOfGaussians.cpp \
+    OpenCL/GpuMorphologyNode.cpp \
+    OpenCL/GpuNodeModule.cpp
 	
 PRECOMPILED_HEADER = Precomp.h
 DEFINES += LOGIC_LIB

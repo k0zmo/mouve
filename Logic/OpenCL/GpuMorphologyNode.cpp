@@ -230,13 +230,13 @@ private:
 
 	enum EMorphologyOperation
 	{
-		Erode    = cv::MORPH_ERODE,
-		Dilate   = cv::MORPH_DILATE,
-		Open     = cv::MORPH_OPEN,
-		Close    = cv::MORPH_CLOSE,
-		Gradient = cv::MORPH_GRADIENT,
-		TopHat   = cv::MORPH_TOPHAT,
-		BlackHat = cv::MORPH_BLACKHAT
+		Erode,
+		Dilate,
+		Open,
+		Close,
+		Gradient,
+		TopHat,
+		BlackHat
 	};
 
 	enum EPropertyID

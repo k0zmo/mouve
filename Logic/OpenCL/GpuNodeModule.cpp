@@ -143,7 +143,7 @@ string kernelsDirectory()
 namespace {
 string kernelsDirectory()
 {
-	return QStringLiteral(".").toStdString();
+	return QStringLiteral("./kernels").toStdString();
 }
 }
 
