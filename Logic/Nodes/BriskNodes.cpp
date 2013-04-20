@@ -11,6 +11,7 @@ public:
 		: _thresh(30)
 		, _nOctaves(3)
 		, _patternScale(1.0f)
+		, _brisk(new cv::BRISK())
 	{
 	}
 
