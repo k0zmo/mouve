@@ -16,8 +16,7 @@
 
 class QToolButton;
 class QMouseEvent;
-//class QFileSystemModel;
-class QDirModel;
+class QFileSystemModel;
 
 class PropertySpinBox : public QSpinBox
 {
@@ -107,8 +106,7 @@ private:
 	QLineEdit* _fileNameLineEdit;
 	QToolButton* _openButton;
 	QString _filter;
-	//QFileSystemModel* _fsModel;
-	QDirModel* _dirModel;
+	QFileSystemModel* _fsModel;
 };
 
 class PropertyMatrixButton : public QPushButton

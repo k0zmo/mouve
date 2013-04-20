@@ -3,8 +3,7 @@
 #include <QMouseEvent>
 #include <QHBoxLayout>
 #include <QCompleter>
-//#include <QFileSystemModel>
-#include <QDirModel>
+#include <QFileSystemModel>
 #include <QShortcut>
 #include <QToolButton>
 #include <QFileDialog>
@@ -73,8 +72,7 @@ FileRequester::FileRequester(QWidget* parent)
 	, _fileNameLineEdit(new QLineEdit(this))
 	, _openButton(new QToolButton(this))
 	, _filter()
-	//, _fsModel(new QFileSystemModel(this))
-	, _dirModel(new QDirModel(this))
+	, _fsModel(new QFileSystemModel(this))
 {
 	_openButton->setSizePolicy(QSizePolicy(QSizePolicy::Fixed, QSizePolicy::MinimumExpanding));;
 	_openButton->setText("");
@@ -97,13 +95,17 @@ FileRequester::FileRequester(QWidget* parent)
 	setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed, QSizePolicy::LineEdit));
 	setFocusProxy(_fileNameLineEdit);
 
-	//_fsModel->setRootPath("/");
+	_fsModel->setRootPath("/");
 
 	auto completer = new QCompleter(this);
 	completer->setMaxVisibleItems(15);
-	//completer->setModel(_fsModel);
-	completer->setModel(_dirModel);
+	completer->setModel(_fsModel);
 	_fileNameLineEdit->setCompleter(completer);
+
+	connect(_fsModel, &QFileSystemModel::directoryLoaded,
+		[completer](const QString&){
+			completer->complete();
+	});
 
 	auto* sc = new QShortcut(QKeySequence("Ctrl+Space"), this);
 	connect(sc, &QShortcut::activated, [completer](){
@@ -170,8 +172,7 @@ void FileRequester::setFilter(const QString& filter)
 	
 	if(nameFilters.empty())
 		nameFilters.append("*.*");
-	//_fsModel->setNameFilters(nameFilters);
-	_dirModel->setNameFilters(nameFilters);
+	_fsModel->setNameFilters(nameFilters);
 }
 
 void FileRequester::_q_textChangedPrivate(const QString& text)
