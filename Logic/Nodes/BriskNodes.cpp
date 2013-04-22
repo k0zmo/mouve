@@ -24,10 +24,13 @@ public:
 		{
 		case ID_Threshold:
 			_thresh = newValue.toInt();
+			break;
 		case ID_NumOctaves:
 			_nOctaves = newValue.toInt();
+			break;
 		case ID_PatternScale:
 			_patternScale  = newValue.toFloat();
+			break;
 		}
 
 		// That's a bit cheating here - creating BRISK object takes time (approx. 200ms for PAL)
