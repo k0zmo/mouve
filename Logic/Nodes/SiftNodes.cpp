@@ -1,51 +1,53 @@
+#include "Prerequisites.h"
 #include "NodeType.h"
 #include "NodeFactory.h"
 
-#include <opencv2/features2d/features2d.hpp>
-using std::unique_ptr;
+#include <opencv2/nonfree/features2d.hpp>
 
-class BriskFeatureDetectorNodeType : public NodeType
+class SiftFeatureDetectorNodeType : public NodeType
 {
 public:
-	BriskFeatureDetectorNodeType()
-		: _thresh(30)
-		, _nOctaves(3)
-		, _patternScale(1.0f)
-		, _brisk(new cv::BRISK())
+	SiftFeatureDetectorNodeType()
+		: _nFeatures(0)
+		, _nOctaveLayers(3)
+		, _contrastThreshold(0.04)
+		, _edgeThreshold(10)
+		, _sigma(1.6)
 	{
 	}
 
 	bool setProperty(PropertyID propId, const QVariant& newValue) override
 	{
-		if(propId > ID_PatternScale || propId < ID_Threshold)
-			return false;
-
 		switch(propId)
 		{
-		case ID_Threshold:
-			_thresh = newValue.toInt();
-			break;
-		case ID_NumOctaves:
-			_nOctaves = newValue.toInt();
-			break;
-		case ID_PatternScale:
-			_patternScale  = newValue.toFloat();
-			break;
+		case ID_NumFeatures: 
+			_nFeatures = newValue.toInt();
+			return true;
+		case ID_NumOctaveLayers:  
+			_nOctaveLayers = newValue.toInt();
+			return true;
+		case ID_ContrastThreshold:
+			_contrastThreshold = newValue.toDouble();
+			return true;
+		case ID_EdgeThreshold:
+			_edgeThreshold = newValue.toDouble();
+			return true;
+		case ID_Sigma:
+			_sigma = newValue.toDouble();
+			return true;
 		}
-
-		// That's a bit cheating here - creating BRISK object takes time (approx. 200ms for PAL)
-		// which if done per frame makes it slowish (more than SIFT actually)
-		_brisk = unique_ptr<cv::BRISK>(new cv::BRISK(_thresh, _nOctaves, _patternScale));
-		return true;
+		return false;
 	}
 
 	QVariant property(PropertyID propId) const override
 	{
 		switch(propId)
 		{
-		case ID_Threshold: return _thresh;
-		case ID_NumOctaves: return _nOctaves;
-		case ID_PatternScale: return _patternScale;
+		case ID_NumFeatures: return _nFeatures;
+		case ID_NumOctaveLayers: return _nOctaveLayers;
+		case ID_ContrastThreshold: return _contrastThreshold;
+		case ID_EdgeThreshold: return _edgeThreshold;
+		case ID_Sigma: return _sigma;
 		}
 
 		return QVariant();
@@ -59,7 +61,9 @@ public:
 		if(src.rows == 0 || src.cols == 0)
 			return ExecutionStatus(EStatus::Ok);
 
-		_brisk->detect(src, keypoints);
+		cv::SiftFeatureDetector detector(_nFeatures, _nOctaveLayers,
+			_contrastThreshold, _edgeThreshold, _sigma);
+		detector.detect(src, keypoints);
 
 		return ExecutionStatus(EStatus::Ok);
 	}
@@ -75,9 +79,11 @@ public:
 			{ ENodeFlowDataType::Invalid, "", "", "" }
 		};
 		static const PropertyConfig prop_config[] = {
-			{ EPropertyType::Integer, "FAST/AGAST detection threshold score", "min:1" },
-			{ EPropertyType::Integer, "Number of octaves", "min:0" },
-			{ EPropertyType::Double, "Pattern scale", "min:0.0" },
+			{ EPropertyType::Integer, "Number of best features to retain", "min:0" },
+			{ EPropertyType::Integer, "Number of layers in each octave", "min:2" },
+			{ EPropertyType::Double, "Contrast threshold", "" },
+			{ EPropertyType::Double, "Edge threshold", "" },
+			{ EPropertyType::Double, "Input image sigma", "" },
 			{ EPropertyType::Unknown, "", "" }
 		};
 
@@ -90,26 +96,23 @@ public:
 protected:
 	enum EPropertyID
 	{
-		ID_Threshold,
-		ID_NumOctaves,
-		ID_PatternScale
+		ID_NumFeatures,
+		ID_NumOctaveLayers,
+		ID_ContrastThreshold,
+		ID_EdgeThreshold,
+		ID_Sigma
 	};
 
-	int _thresh;
-	int _nOctaves;
-	float _patternScale;
-	// Must be pointer since BRISK doesn't implement copy/move operator (they should have)
-	unique_ptr<cv::BRISK> _brisk;
+	int _nFeatures;
+	int _nOctaveLayers;
+	double _contrastThreshold;
+	double _edgeThreshold;
+	double _sigma;
 };
 
-class BriskFeatureExtractorNodeType : public NodeType
+class SiftFeatureExtractorNodeType : public NodeType
 {
 public:
-	BriskFeatureExtractorNodeType()
-		: _brisk(new cv::BRISK())
-	{
-	}
-
 	ExecutionStatus execute(NodeSocketReader& reader, NodeSocketWriter& writer) override
 	{
 		const cv::Mat& imageSrc = reader.readSocket(0).getImage();
@@ -122,7 +125,9 @@ public:
 		cv::KeyPoints& outKeypoints = writer.acquireSocket(1).getKeypoints();
 
 		outKeypoints = keypoints;
-		_brisk->compute(imageSrc, outKeypoints, outDescriptors);
+
+		cv::SiftDescriptorExtractor extractor;
+		extractor.compute(imageSrc, outKeypoints, outDescriptors);
 
 		return ExecutionStatus(EStatus::Ok);
 	}
@@ -144,16 +149,11 @@ public:
 		nodeConfig.pInputSockets = in_config;
 		nodeConfig.pOutputSockets = out_config;
 	}
-
-private:
-	// Must be pointer since BRISK doesn't implement copy/move operator (they should have)
-	unique_ptr<cv::BRISK> _brisk;
 };
 
-class BriskNodeType : public BriskFeatureDetectorNodeType
+class SiftNodeType : public SiftFeatureDetectorNodeType
 {
 public:
-
 	ExecutionStatus execute(NodeSocketReader& reader, NodeSocketWriter& writer) override
 	{
 		const cv::Mat& src = reader.readSocket(0).getImage();
@@ -163,16 +163,18 @@ public:
 		if(src.rows == 0 || src.cols == 0)
 			return ExecutionStatus(EStatus::Ok);
 
-		//cv::BRISK(_thresh, _nOctaves, _patternScale)
-		(*_brisk)(src, cv::noArray(), keypoints, descriptors);
+		cv::SIFT sift(_nFeatures, _nOctaveLayers,
+			_contrastThreshold, _edgeThreshold, _sigma);
+		sift(src, cv::noArray(), keypoints, descriptors);
 
 		return ExecutionStatus(EStatus::Ok);
 	}
 
 	void configuration(NodeConfig& nodeConfig) const override
 	{
-		BriskFeatureDetectorNodeType::configuration(nodeConfig);
+		SiftFeatureDetectorNodeType::configuration(nodeConfig);
 
+		// Just add one more output socket
 		static const OutputSocketConfig out_config[] = {
 			{ ENodeFlowDataType::Keypoints, "keypoints", "Keypoints", "" },
 			{ ENodeFlowDataType::Array, "output", "Descriptors", "" },
@@ -184,6 +186,6 @@ public:
 	}
 };
 
-REGISTER_NODE("Features/BRISK Extractor", BriskFeatureExtractorNodeType)
-REGISTER_NODE("Features/BRISK Detector", BriskFeatureDetectorNodeType)
-REGISTER_NODE("Features/BRISK", BriskNodeType)
+REGISTER_NODE("Features/SIFT Extractor", SiftFeatureExtractorNodeType)
+REGISTER_NODE("Features/SIFT Detector", SiftFeatureDetectorNodeType)
+REGISTER_NODE("Features/SIFT", SiftNodeType)

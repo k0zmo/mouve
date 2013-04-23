@@ -102,6 +102,11 @@ FileRequester::FileRequester(QWidget* parent)
 	completer->setModel(_fsModel);
 	_fileNameLineEdit->setCompleter(completer);
 
+	connect(_fsModel, &QFileSystemModel::directoryLoaded,
+		[completer](const QString&){
+			completer->complete();
+	});
+
 	auto* sc = new QShortcut(QKeySequence("Ctrl+Space"), this);
 	connect(sc, &QShortcut::activated, [completer](){
 		completer->complete();

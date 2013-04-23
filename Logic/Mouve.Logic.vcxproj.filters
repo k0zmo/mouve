@@ -109,6 +109,12 @@
     <ClCompile Include="Jai\JaiNodeModule.cpp">
       <Filter>JAI</Filter>
     </ClCompile>
+    <ClCompile Include="Nodes\SiftNodes.cpp">
+      <Filter>Nodes</Filter>
+    </ClCompile>
+    <ClCompile Include="Nodes\ImageTransformationNodes.cpp">
+      <Filter>Nodes</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="Node.h">

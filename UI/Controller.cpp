@@ -1,4 +1,4 @@
-#include "Controller.h"
+﻿#include "Controller.h"
 
 // Model part
 #include "Logic/NodeSystem.h"
@@ -488,13 +488,7 @@ void Controller::setupUi()
 	_ui->menuView->addAction(actionPreview);
 	_ui->menuView->addAction(actionLog);
 
-	QAction* actionAboutQt = new QAction(
-		QIcon(":/qt-project.org/qmessagebox/images/qtlogo-64.png"), 
-		tr("About &Qt"), this);
-	actionAboutQt->setToolTip(tr("Show information about Qt"));
-	actionAboutQt->setMenuRole(QAction::AboutQtRole);
-	connect(actionAboutQt, SIGNAL(triggered()), qApp, SLOT(aboutQt()));
-	_ui->menuHelp->addAction(actionAboutQt);
+	setupUiAbout();
 
 	_ui->actionNewTree->setShortcut(QKeySequence(QKeySequence::New));
 	_ui->actionOpenTree->setShortcut(QKeySequence(QKeySequence::Open));
@@ -544,6 +538,72 @@ void Controller::setupUi()
 	_ui->statusBar->setFixedHeight(_ui->statusBar->sizeHint().height());
 	_ui->statusBar->addWidget(_progressBar);
 	_ui->statusBar->removeWidget(_progressBar);
+}
+
+void Controller::setupUiAbout()
+{
+	QAction* actionAboutQt = new QAction(
+		QIcon(":/qt-project.org/qmessagebox/images/qtlogo-64.png"), 
+		tr("About &Qt"), this);
+	actionAboutQt->setToolTip(tr("Show information about Qt"));
+	actionAboutQt->setMenuRole(QAction::AboutQtRole);
+	connect(actionAboutQt, SIGNAL(triggered()), qApp, SLOT(aboutQt()));
+	_ui->menuHelp->addAction(actionAboutQt);
+
+	// About OpenCV
+	QAction* actionAboutOpenCV = new QAction(QIcon(":/images/opencv-logo.png"), tr("About OpenCV"), this);
+	actionAboutOpenCV->setToolTip(tr("Show information about OpenCV"));
+	connect(actionAboutOpenCV, &QAction::triggered, [=] {
+		QString translatedTextAboutOpenCVCaption = QString(
+			"<h3>About OpenCV</h3>"
+			"<p>This program uses OpenCV version %1.</p>"
+			).arg(QLatin1String(CV_VERSION));
+		QString translatedTextAboutOpenCVText = QString(
+			"<p>OpenCV (Open Source Computer Vision Library) is an open source "
+			"computer vision and machine learning software library. OpenCV was "
+			"built to provide a common infrastructure for computer vision "
+			"applications and to accelerate the use of machine perception in the "
+			"commercial products. Being a BSD-licensed product, OpenCV makes it "
+			"easy for businesses to utilize and modify the code.</p>"
+			"<p>OpenCV is developed as an open source project on "
+			"<a href=\"http://opencv.org/\">opencv.org</a>.</p>");
+		QMessageBox *msgBox = new QMessageBox(this);
+		msgBox->setAttribute(Qt::WA_DeleteOnClose);
+		msgBox->setWindowTitle(tr("About OpenCV"));
+		msgBox->setText(translatedTextAboutOpenCVCaption);
+		msgBox->setInformativeText(translatedTextAboutOpenCVText);
+
+		QPixmap pm(QLatin1String(":/images/opencv-logo.png"));
+		if (!pm.isNull())
+			msgBox->setIconPixmap(pm);
+		msgBox->exec();
+	});
+	_ui->menuHelp->addAction(actionAboutOpenCV);
+
+	// About program
+	QAction* actionAboutApplication = new QAction(tr("About ") + applicationTitle, this);
+	actionAboutApplication->setToolTip(tr("Show information about ") + applicationTitle);
+	connect(actionAboutApplication, &QAction::triggered, [=] {
+		QString translatedTextAboutCaption = QString(
+			"<h3>About %1</h3>").arg(applicationTitle);
+		QString translatedTextAboutText = QString::fromUtf16(
+			L"<p>Author: Kajetan Świerk</p>"
+			L"<p>This program uses icon set 'Super Mono Stickers' created by Double-J "
+			L"designs <a href=\"http://www.doublejdesign.co.uk/\">www.doublejdesign.co.uk</a>, "
+			L"available under a Creative Commons 3.0 Attribution license. "
+			L"© 2011, Double-J designs</p>");
+		QMessageBox *msgBox = new QMessageBox(this);
+		msgBox->setAttribute(Qt::WA_DeleteOnClose);
+		msgBox->setWindowTitle(tr("About ") + applicationTitle);
+		msgBox->setText(translatedTextAboutCaption);
+		msgBox->setInformativeText(translatedTextAboutText);
+
+		QPixmap pm(QLatin1String(":/images/button-brick.png"));
+		if (!pm.isNull())
+			msgBox->setIconPixmap(pm);
+		msgBox->exec();
+	});
+	_ui->menuHelp->addAction(actionAboutApplication);
 }
 
 void Controller::setupNodeTypesUi()

@@ -3,6 +3,12 @@
 
 #if defined(HAVE_JAI)
 
+// Needed for PathIsDirectory() used in Jai_Factory_Dynamic.h
+#pragma comment(lib, "ShLwApi.lib")
+// Needed for _T() macros and other _t* macros
+#include <tchar.h>
+#include "Jai_Factory_Dynamic.h"
+
 template<typename T> void setNodeValue(CAM_HANDLE hCamera, const char* nodeName, T value);
 template<> void setNodeValue<int64_t>(CAM_HANDLE hCamera, const char* nodeName, int64_t value);
 template<typename T> RangedValue<T> queryNodeRangedValue(CAM_HANDLE hCamera, const char* nodeName);
@@ -344,7 +350,7 @@ vector<tuple<int64_t, string>> queryNodeEnumValue(CAM_HANDLE hCamera, const char
 						}
 
 						
-						enumValues.emplace_back(std::tie(value, desc));
+						enumValues.emplace_back(std::make_tuple(value, desc));
 					}
 				}
 			}

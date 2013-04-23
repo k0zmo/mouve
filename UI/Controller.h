@@ -59,6 +59,7 @@ private:
 	void deleteNode(NodeView* nodeView);
 
 	void setupUi();
+	void setupUiAbout();
 	void setupNodeTypesUi();
 	void addNodeTypeTreeItem(NodeTypeID typeId,
 		const QStringList& tokens, QList<QTreeWidgetItem*>& treeItems);

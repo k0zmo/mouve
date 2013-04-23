@@ -2,6 +2,7 @@
 
 #include "NodeType.h"
 #include "NodeFactory.h"
+
 #include "JaiNodeModule.h"
 #include "JaiException.h"
 

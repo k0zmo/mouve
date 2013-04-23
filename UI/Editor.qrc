@@ -20,5 +20,6 @@
 		<file>images/exclamation-black.png</file>
 		<file>images/exclamation-white.png</file>
 		<file>images/question-baloon.png</file>
+		<file>images/opencv-logo.png</file>
 	</qresource>
 </RCC>

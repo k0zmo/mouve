@@ -94,7 +94,7 @@ public:
 		nodeConfig.pProperties = prop_config;
 	}
 
-private:
+protected:
 	enum EPropertyID
 	{
 		ID_HessianThreshold,
@@ -152,5 +152,43 @@ public:
 	}
 };
 
+class SurfNodeType : public SurfFeatureDetectorNodeType
+{
+public:
+	ExecutionStatus execute(NodeSocketReader& reader, NodeSocketWriter& writer) override
+	{
+		const cv::Mat& src = reader.readSocket(0).getImage();
+		cv::KeyPoints& keypoints = writer.acquireSocket(0).getKeypoints();
+		cv::Mat& descriptors = writer.acquireSocket(1).getArray();
+
+		if(src.rows == 0 || src.cols == 0)
+			return ExecutionStatus(EStatus::Ok);
+
+		keypoints.clear();
+
+		cv::SURF surf(_hessianThreshold, _nOctaves,
+			_nOctaveLayers, _extended, _upright);
+		surf(src, cv::noArray(), keypoints, descriptors);
+
+		return ExecutionStatus(EStatus::Ok);
+	}
+
+	void configuration(NodeConfig& nodeConfig) const override
+	{
+		SurfFeatureDetectorNodeType::configuration(nodeConfig);
+
+		// Just add one more output socket
+		static const OutputSocketConfig out_config[] = {
+			{ ENodeFlowDataType::Keypoints, "keypoints", "Keypoints", "" },
+			{ ENodeFlowDataType::Array, "output", "Descriptors", "" },
+			{ ENodeFlowDataType::Invalid, "", "", "" }
+		};
+
+		nodeConfig.description = "";
+		nodeConfig.pOutputSockets = out_config;
+	}
+};
+
 REGISTER_NODE("Features/SURF Extractor", SurfFeatureExtractorNodeType)
 REGISTER_NODE("Features/SURF Detector", SurfFeatureDetectorNodeType)
+REGISTER_NODE("Features/SURF", SurfNodeType)

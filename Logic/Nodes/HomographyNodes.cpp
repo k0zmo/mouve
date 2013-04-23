@@ -6,6 +6,33 @@
 class EstimateHomographyNodeType : public NodeType
 {
 public:
+	EstimateHomographyNodeType()
+		: _reprojThreshold(3.0)
+	{
+	}
+
+	bool setProperty(PropertyID propId, const QVariant& newValue) override
+	{
+		switch(propId)
+		{
+		case ID_ReprojThreshold:
+			_reprojThreshold = newValue.toDouble();
+			return true;
+		}
+
+		return false;
+	}
+
+	QVariant property(PropertyID propId) const override
+	{
+		switch(propId)
+		{
+		case ID_ReprojThreshold: return _reprojThreshold;
+		}
+
+		return QVariant();
+	}
+
 	ExecutionStatus execute(NodeSocketReader& reader, NodeSocketWriter& writer) override
 	{
 		const cv::KeyPoints& keypoints1 = reader.readSocket(0).getKeypoints();
@@ -26,7 +53,7 @@ public:
 			scene.push_back(keypoints2[match.trainIdx].pt);
 		}
 
-		H = cv::findHomography(obj, scene, cv::RANSAC);
+		H = cv::findHomography(obj, scene, cv::RANSAC, _reprojThreshold);
 
 		return ExecutionStatus(EStatus::Ok);
 	}
@@ -43,11 +70,24 @@ public:
 			{ ENodeFlowDataType::Array, "output", "Homography", "" },
 			{ ENodeFlowDataType::Invalid, "", "", "" }
 		};
+		static const PropertyConfig prop_config[] = {
+			{ EPropertyType::Integer, "Reprojection error threshold", "min:1.0, max:50.0" },
+			{ EPropertyType::Unknown, "", "" }
+		};
 
 		nodeConfig.description = "";
 		nodeConfig.pInputSockets = in_config;
 		nodeConfig.pOutputSockets = out_config;
+		nodeConfig.pProperties = prop_config;
 	}
+
+private:
+	enum EPropertyID
+	{
+		ID_ReprojThreshold
+	};
+
+	double _reprojThreshold;
 };
 
 REGISTER_NODE("Features/Estimate homography", EstimateHomographyNodeType)
