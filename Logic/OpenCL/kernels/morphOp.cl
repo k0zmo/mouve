@@ -1,5 +1,5 @@
 #if !defined(ERODE_OP) && !defined(DILATE_OP)
-#  error("NMIXTURES must be defined")
+#  error("ERODE_OP or DILATE_OP must be defined")
 #endif
 
 #if defined(ERODE_OP)
@@ -18,7 +18,6 @@ uchar morphOp(uchar a, uchar b)
 {
     return min(a, b);
 }
-
 
 #elif defined(DILATE_OP)
 
@@ -48,9 +47,8 @@ __kernel void morphOp_image_unorm(__read_only image2d_t src,
                                   const int coordsSize)
 {
     int2 gid = { get_global_id(0), get_global_id(1) };
-    int2 size = { get_image_width(src), get_image_height(src) };
     // Skip redundant threads that don't correspond to valid pixels
-    if(any(gid >= size))
+    if(any(gid >= get_image_dim(src)))
         return;
         
     float pix = PIX_INF;
@@ -69,9 +67,8 @@ __kernel void morphOp_image_unorm_unroll2(__read_only image2d_t src,
                                           const int coordsSize)
 {
     int2 gid = { get_global_id(0), get_global_id(1) };
-    int2 size = { get_image_width(src), get_image_height(src) };
     // Skip redundant threads that don't correspond to valid pixels
-    if(any(gid >= size))
+    if(any(gid >= get_image_dim(src)))
         return;
         
     float pix = PIX_INF;
@@ -97,9 +94,8 @@ __kernel void morphOp_image_unorm_unroll4(__read_only image2d_t src,
                                           const int coordsSize)
 {
     int2 gid = { get_global_id(0), get_global_id(1) };
-    int2 size = { get_image_width(src), get_image_height(src) };
     // Skip redundant threads that don't correspond to valid pixels
-    if(any(gid >= size))
+    if(any(gid >= get_image_dim(src)))
         return;
         
     float pix = PIX_INF;
@@ -132,9 +128,8 @@ __kernel void morphOp_image_unorm_unroll(__read_only image2d_t src,
                                          const int coordsSize /* dummy */)
 {
     int2 gid = { get_global_id(0), get_global_id(1) };
-    int2 size = { get_image_width(src), get_image_height(src) };
     // Skip redundant threads that don't correspond to valid pixels
-    if(any(gid >= size))
+    if(any(gid >= get_image_dim))
         return;
         
     float pix = PIX_INF;
@@ -241,9 +236,8 @@ __kernel void morphOp_image_unorm_local(__read_only image2d_t src,
 {
     int2 gid = { get_global_id(0), get_global_id(1) };
     int2 lid = { get_local_id(0), get_local_id(1) };
-    int2 size = { get_image_width(src), get_image_height(src) };
     // Skip redundant threads that don't correspond to valid pixels
-    if(any(gid >= size))
+    if(any(gid >= get_image_dim(src)))
         return;
 
     // Move context to local memory
@@ -271,8 +265,7 @@ __kernel void morphOp_image_unorm_local_unroll2(__read_only image2d_t src,
 {
     int2 gid = { get_global_id(0), get_global_id(1) };
     int2 lid = { get_local_id(0), get_local_id(1) };
-    int2 size = { get_image_width(src), get_image_height(src) };
-    if(any(gid >= size))
+    if(any(gid >= get_image_dim(src)))
         return;
 
     contextToLocalMemory_image(src, kradx, krady, sharedBlock, sharedWidth, sharedHeight);
@@ -307,8 +300,7 @@ __kernel void morphOp_image_unorm_local_unroll(__read_only image2d_t src,
 {
     int2 gid = { get_global_id(0), get_global_id(1) };
     int2 lid = { get_local_id(0), get_local_id(1) };
-    int2 size = { get_image_width(src), get_image_height(src) };
-    if(any(gid >= size))
+    if(any(gid >= get_image_dim(src)))
         return;
 
     contextToLocalMemory_image(src, kradx, krady, sharedBlock, sharedWidth, sharedHeight);

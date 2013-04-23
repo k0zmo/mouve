@@ -18,7 +18,7 @@ __kernel void mog_image_unorm(__read_only image2d_t frame,
                               const float alpha) // learning rate coefficient
 {
     const int2 gid = { get_global_id(0), get_global_id(1) };
-    const int2 size = { get_image_width(frame), get_image_height(frame) };
+    const int2 size = get_image_dim(frame);
     
     if (!all(gid < size))
         return;
@@ -181,7 +181,7 @@ __kernel void mog_background_image_unorm(__write_only image2d_t dst,
                                          __constant mogParams_t* params)
 {
     const int2 gid = { get_global_id(0), get_global_id(1) };
-    const int2 size = { get_image_width(dst), get_image_height(dst) };
+    const int2 size = get_image_dim(dst); 
     
     if (!all(gid < size))
         return;

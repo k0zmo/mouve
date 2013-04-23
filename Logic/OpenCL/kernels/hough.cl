@@ -13,10 +13,8 @@ __kernel void buildPointsList_basic(__read_only image2d_t src,
                                     __global uint* pointsList,
                                     counter_type pointsCount)
 {
-    int2 gid = (int2) { get_global_id(0), get_global_id(1) };
-    int2 size = (int2) { get_image_width(src), get_image_height(src) };
-    
-    if(any(gid >= size))
+    int2 gid = { get_global_id(0), get_global_id(1) };   
+    if(any(gid >= get_image_dim(src)))
         return;
         
     // read pixel
@@ -36,10 +34,8 @@ void buildPointsList(__read_only image2d_t src,
                      __global uint* pointsList,
                      __global uint* pointsCount)
 {
-    int2 gid = (int2) { get_global_id(0), get_global_id(1) };
-    int2 size = (int2) { get_image_width(src), get_image_height(src) };
-    
-    if(any(gid >= size))
+    int2 gid = { get_global_id(0), get_global_id(1) };   
+    if(any(gid >= get_image_dim(src)))
         return;
         
     __local uint queue[NBINS][32];
@@ -92,27 +88,20 @@ void buildPointsList(__read_only image2d_t src,
 }
 
 
-/*
-    Crashes AMD
-    
-//#define PIXELS_PER_THREAD 16
+#define PIXELS_PER_THREAD 16
 
 __kernel __attribute__((reqd_work_group_size(32,NBINS,1)))
 void buildPointsList_x16(__read_only image2d_t src,
                          __global uint* pointsList,
                          __global uint* pointsCount)
 {
-    int2 gid = (int2) { get_global_id(0), get_global_id(1) };
-    int2 size = (int2) { get_image_width(src), get_image_height(src) }; 
+    int2 gid = { get_global_id(0), get_global_id(1) };
     int2 tid = { get_local_id(0), get_local_id(1) };
+    int2 size = get_image_dim(src);
 
-    __local uint queue[NBINS][32];
+    __local uint queue[NBINS][32 * PIXELS_PER_THREAD];
     __local uint queueIndex[NBINS];
     __local uint globalQueueIndex[NBINS];
-    
-    // __local uint globalQueueIndex[NBINS];
-    // __local uint queueIndex[NBINS];
-    // __local uint queue[NBINS][32];
         
     // let first thread in a work group in each row zero queueIndex
     if(tid.x == 0)
@@ -121,9 +110,9 @@ void buildPointsList_x16(__read_only image2d_t src,
     
     if(gid.y < size.y)
     {
-        int workGroupPitch = get_local_size(0) * PIXELS_PER_THREAD;
-        int x = get_group_id(0) * workGroupPitch + tid.x;
-        const int range = min(x + workGroupPitch, size.x);
+        int workGroupStride = get_local_size(0) * PIXELS_PER_THREAD;
+        int x = get_group_id(0) * workGroupStride + tid.x;
+        const int range = min(x + workGroupStride, size.x);
         for( ; x < range; x += get_local_size(0))
         {
             // read pixel
@@ -136,6 +125,7 @@ void buildPointsList_x16(__read_only image2d_t src,
                 uint coord = (c.x << 16) | c.y;
                 // get location where to put pixel coord in local memory
                 int idx = atomic_inc(&queueIndex[tid.y]);
+
                 // push back pixel coord
                 queue[tid.y][idx] = coord;
             }
@@ -167,7 +157,6 @@ void buildPointsList_x16(__read_only image2d_t src,
     for(uint i = tid.x; i < qsize; i += get_local_size(0), gidx += get_local_size(0))
         pointsList[gidx] = queue[tid.y][i];
 }
-*/
 
 #define THETA M_PI/180.0
         
