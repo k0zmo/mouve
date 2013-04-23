@@ -157,19 +157,20 @@ void buildPointsList_x16(__read_only image2d_t src,
     for(uint i = tid.x; i < qsize; i += get_local_size(0), gidx += get_local_size(0))
         pointsList[gidx] = queue[tid.y][i];
 }
-
-#define THETA M_PI/180.0
-        
+       
 __kernel void accumLines(__global uint* pointsLists,
                          __global uint* pointsCount,
                          __global int* accum,
-                         const int numRho)
+                         const int numRho,
+                         float invRho, float theta)
 {
     int x = get_group_id(0);
-    float angle = x * THETA;
+    float angle = x * theta;
 
     float cosVal;
     float sinVal = sincos(angle, &cosVal);
+    sinVal *= invRho;
+    cosVal *= invRho;
     
     int shift = (numRho - 1) / 2;
     uint nCount = pointsCount[0];
@@ -189,15 +190,18 @@ __kernel void accumLines_shared(__global uint* pointsLists,
                                 __global uint* pointsCount,
                                 __global int* accum,  /* opencv nie ma CV_32UC1 */
                                 __local int* accumShared,
-                                const int numRho)
+                                const int numRho,
+                                float invRho, float theta)
 {
     int x = get_group_id(0);
     int tid = get_local_id(0);
     int lsize = get_local_size(0);
-    float angle = x * THETA;
+    float angle = x * theta;
 
     float cosVal;
     float sinVal = sincos(angle, &cosVal);
+    sinVal *= invRho;
+    cosVal *= invRho;
     
     int shift = (numRho - 1) / 2;
     int nCount = (int) pointsCount[0];
@@ -244,7 +248,8 @@ __kernel void getLines(__global int* accum,
                        counter_type pointsCount,
                        const int threshold,
                        const int maxLines,
-                       const int numRho)
+                       const int numRho,
+                       float rho, float theta)
 {
     int2 gid = { get_global_id(0), get_global_id(1) };
     if(gid.x >= numRho || gid.y >= 180)
@@ -264,9 +269,9 @@ __kernel void getLines(__global int* accum,
         int idx = atomic_inc(pointsCount);
         if(idx < maxLines)
         {
-            float rho = gid.x - shift;
-            float theta = gid.y * THETA;
-            lines[idx] = (float2)(rho, theta);
+            float r = (gid.x - shift) * rho;
+            float t = gid.y * theta;
+            lines[idx] = (float2)(r, t);
         }
     }
 }
@@ -277,7 +282,8 @@ __kernel void getLines(__global int* accum,
                        counter_type pointsCount,
                        const int threshold,
                        const int maxLines,
-                       const int numRho)
+                       const int numRho,
+                       float rho, float theta)
 {
     int2 gid = { get_global_id(0), get_global_id(1) };
     if(gid.x >= numRho || gid.y >= 180)
@@ -305,9 +311,9 @@ __kernel void getLines(__global int* accum,
         int idx = atomic_inc(pointsCount);
         if(idx < maxLines)
         {
-            float rho = gid.x - shift;
-            float theta = gid.y * THETA;
-            lines[idx] = (float2)(rho, theta);
+            float r = (gid.x - shift) * rho;
+            float t = gid.y * theta;
+            lines[idx] = (float2)(r, t);
         }
     }
 }
@@ -318,7 +324,8 @@ __kernel void getLines(__global int* accum,
                        counter_type pointsCount,
                        const int threshold,
                        const int maxLines,
-                       const int numRho)
+                       const int numRho,
+                       float rho, float theta)
 {
     int2 gid = { get_global_id(0), get_global_id(1) };
     if(gid.x >= numRho || gid.y >= 180)
@@ -342,9 +349,9 @@ __kernel void getLines(__global int* accum,
         int idx = atomic_inc(pointsCount);
         if(idx < maxLines)
         {
-            float rho = gid.x - shift;
-            float theta = gid.y * THETA;
-            lines[idx] = (float2)(rho, theta);
+            float r = (gid.x - shift) * rho;
+            float t = gid.y * theta;
+            lines[idx] = (float2)(r, t);
         }
     }
 }
