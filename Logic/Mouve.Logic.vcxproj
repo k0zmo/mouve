@@ -291,6 +291,7 @@
     <ClCompile Include="OpenCL\GpuMixtureOfGaussians.cpp" />
     <ClCompile Include="OpenCL\GpuNodeModule.cpp" />
     <ClCompile Include="OpenCL\GpuMorphologyNode.cpp" />
+    <ClCompile Include="OpenCL\GpuSurfNode.cpp" />
     <ClCompile Include="Precomp.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
@@ -305,7 +306,7 @@
     <ClInclude Include="NodeFlowData.h" />
     <ClInclude Include="NodeModule.h" />
     <ClInclude Include="Nodes\CV.h" />
-	<ClInclude Include="Nodes\ksurf.h" />
+    <ClInclude Include="Nodes\ksurf.h" />
     <ClInclude Include="OpenCL\DeviceArray.h" />
     <ClInclude Include="OpenCL\GpuException.h" />
     <ClInclude Include="OpenCL\GpuKernelLibrary.h" />
@@ -313,9 +314,12 @@
     <ClInclude Include="OpenCL\GpuNodeModule.h" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="OpenCL\kernels\fill.cl" />
     <None Include="OpenCL\kernels\hough.cl" />
+    <None Include="OpenCL\kernels\integral.cl" />
     <None Include="OpenCL\kernels\mog.cl" />
     <None Include="OpenCL\kernels\morphOp.cl" />
+    <None Include="OpenCL\kernels\surf.cl" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{DC17726C-68F2-4136-BBC4-25765372976A}</ProjectGuid>

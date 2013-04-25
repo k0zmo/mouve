@@ -121,6 +121,9 @@
     <ClCompile Include="Nodes\kSurfNodes.cpp">
       <Filter>Nodes</Filter>
     </ClCompile>
+    <ClCompile Include="OpenCL\GpuSurfNode.cpp">
+      <Filter>OpenCL</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="Node.h">
@@ -194,6 +197,15 @@
       <Filter>OpenCL\Kernels</Filter>
     </None>
     <None Include="OpenCL\kernels\morphOp.cl">
+      <Filter>OpenCL\Kernels</Filter>
+    </None>
+    <None Include="OpenCL\kernels\fill.cl">
+      <Filter>OpenCL\Kernels</Filter>
+    </None>
+    <None Include="OpenCL\kernels\integral.cl">
+      <Filter>OpenCL\Kernels</Filter>
+    </None>
+    <None Include="OpenCL\kernels\surf.cl">
       <Filter>OpenCL\Kernels</Filter>
     </None>
   </ItemGroup>
