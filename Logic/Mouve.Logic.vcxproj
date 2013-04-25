@@ -277,6 +277,8 @@
     <ClCompile Include="Nodes\HomographyNodes.cpp" />
     <ClCompile Include="Nodes\HoughNodes.cpp" />
     <ClCompile Include="Nodes\ImageTransformationNodes.cpp" />
+    <ClCompile Include="Nodes\ksurf.cpp" />
+    <ClCompile Include="Nodes\kSurfNodes.cpp" />
     <ClCompile Include="Nodes\MatcherNodes.cpp" />
     <ClCompile Include="Nodes\SiftNodes.cpp" />
     <ClCompile Include="Nodes\SurfNodes.cpp" />
@@ -296,6 +298,7 @@
     <ClInclude Include="NodeFlowData.h" />
     <ClInclude Include="NodeModule.h" />
     <ClInclude Include="Nodes\CV.h" />
+    <ClInclude Include="Nodes\ksurf.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{DC17726C-68F2-4136-BBC4-25765372976A}</ProjectGuid>
@@ -334,6 +337,7 @@
     <Import Project="..\OpenCV.Modules.Debug.props" />
     <Import Project="..\Boost.props" />
     <Import Project="..\JAI.props" />
+    <Import Project="..\tbb.Debug.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
@@ -341,6 +345,7 @@
     <Import Project="..\OpenCV.Modules.Debug.x64.props" />
     <Import Project="..\Boost.props" />
     <Import Project="..\JAI.x64.props" />
+    <Import Project="..\tbb.Debug.x64.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
@@ -348,6 +353,7 @@
     <Import Project="..\OpenCV.Modules.Release.props" />
     <Import Project="..\Boost.props" />
     <Import Project="..\JAI.props" />
+    <Import Project="..\tbb.Release.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
@@ -355,6 +361,7 @@
     <Import Project="..\OpenCV.Modules.Release.x64.props" />
     <Import Project="..\Boost.props" />
     <Import Project="..\JAI.x64.props" />
+    <Import Project="..\tbb.Release.x64.props" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup>
