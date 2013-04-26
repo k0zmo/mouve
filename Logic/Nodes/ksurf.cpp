@@ -27,7 +27,7 @@ struct float2
 #endif
 
 #if !defined(M_PI_F)
-#define  M_PI_F 3.14159274101257f
+#  define  M_PI_F 3.14159274101257f
 #endif
 
 #define RAD2DEG(x) (x * 180.0f/M_PI_F)
