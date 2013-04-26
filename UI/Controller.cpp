@@ -270,6 +270,7 @@ void Controller::addNodeView(const QString& nodeTitle,
 	_nodeViews[nodeID] = nodeView;
 
 	// Set time info visibility on new nodes
+	nodeView->setTimeInfo("0.000 ms");
 	nodeView->setTimeInfoVisible(_ui->actionDisplayTimeInfo->isChecked());
 }
 
