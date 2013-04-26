@@ -78,6 +78,8 @@ Controller::Controller(QWidget* parent, Qt::WindowFlags flags)
 	updateTitleBar();
 	createNewNodeScene();
 
+	auto menuModules = _ui->menuBar->addMenu("Modules");
+
 	// JAI module
 #if defined(HAVE_JAI)
 	_nodeSystem->registerNodeModule(_jaiModule->moduleName(), _jaiModule);
@@ -85,13 +87,16 @@ Controller::Controller(QWidget* parent, Qt::WindowFlags flags)
 	_actionInitModule = new QAction(QStringLiteral("Initialize"), this);
 	_actionDevices = new QAction(QStringLiteral("Devices"), this);
 
-	auto menuJai = _ui->menuBar->addMenu("JAI module");
+	auto menuJai = menuModules->addMenu("JAI");
 	//menuJai->addAction(_actionInitModule);
 	menuJai->addAction(_actionDevices);
 
 	connect(_actionDevices, &QAction::triggered, 
 		this, &Controller::showDeviceSettings);
 #endif
+
+	if(menuModules->actions().isEmpty())
+		menuModules->setEnabled(false);
 
 	// Context menu from node graphics view
 	connect(_ui->graphicsView, &NodeEditorView::contextMenu,
