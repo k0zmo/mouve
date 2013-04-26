@@ -60,6 +60,7 @@ Controller::Controller(QWidget* parent, Qt::WindowFlags flags)
 	, _ui(new Ui::MainWindow())
 	, _previewWidget(nullptr)
 	, _contextMenuAddNodes(nullptr)
+	, _totalTimeLabel(nullptr)
 	, _stateLabel(nullptr)
 	, _state(EState::Stopped)
 	, _processing(false)
@@ -519,6 +520,8 @@ void Controller::setupUi()
 	_ui->previewDockWidget->setWidget(_previewWidget);
 
 	// Init status bar
+	_totalTimeLabel = new QLabel(this);
+	_ui->statusBar->addPermanentWidget(_totalTimeLabel);
 	_stateLabel = new QLabel(this);
 	_ui->statusBar->addPermanentWidget(_stateLabel);
 
@@ -1526,12 +1529,16 @@ void Controller::updatePreview(bool res)
 	// Update time info on nodes
 	auto iter = _nodeTree->createNodeIterator();
 	NodeID nodeID;
+	double totalTimeElapsed = 0.0;
 	while(auto node = iter->next(nodeID))
 	{
-		QString text = QString::number(node->timeElapsed());
+		totalTimeElapsed += node->timeElapsed();
+		QString text = QString::number(node->timeElapsed(), 'f', 3);
 		text += QStringLiteral(" ms");
 		_nodeViews[nodeID]->setTimeInfo(text);
 	}
+	_totalTimeLabel->setText(QString("Total time: %1 ms |")
+		.arg(QString().setNum(totalTimeElapsed, 'f', 3)));
 
 	if(!_videoMode)
 	{
