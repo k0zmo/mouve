@@ -124,6 +124,9 @@
     <ClCompile Include="OpenCL\GpuSurfNode.cpp">
       <Filter>OpenCL</Filter>
     </ClCompile>
+    <ClCompile Include="OpenCL\GpuColorConversionNodes.cpp">
+      <Filter>OpenCL</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="Node.h">
@@ -206,6 +209,9 @@
       <Filter>OpenCL\Kernels</Filter>
     </None>
     <None Include="OpenCL\kernels\surf.cl">
+      <Filter>OpenCL\Kernels</Filter>
+    </None>
+    <None Include="OpenCL\kernels\bayer.cl">
       <Filter>OpenCL\Kernels</Filter>
     </None>
   </ItemGroup>
