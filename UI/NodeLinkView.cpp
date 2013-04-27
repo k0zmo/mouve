@@ -11,6 +11,7 @@ NodeLinkView::NodeLinkView(NodeSocketView* fromSocketView,
 	, mFromSocketView(fromSocketView)
 	, mToSocketView(toSocketView)
 	, mDrawDebug(false)
+	, mInvertStartPos(false)
 {
 	setFlag(QGraphicsItem::ItemIsSelectable);
 	setFlag(QGraphicsItem::ItemIsFocusable);
@@ -19,13 +20,15 @@ NodeLinkView::NodeLinkView(NodeSocketView* fromSocketView,
 }
 
 NodeLinkView::NodeLinkView(const QPointF& startPosition,
-	const QPointF& endPosition, QGraphicsItem* parent)
+	const QPointF& endPosition, QGraphicsItem* parent,
+	bool invertStartPos)
 	: QGraphicsItem(parent)
 	, mPen(NodeStyle::TemporaryLinkPen)
 	, mEndPosition(mapFromScene(endPosition))
 	, mFromSocketView(nullptr)
 	, mToSocketView(nullptr)
 	, mDrawDebug(false)
+	, mInvertStartPos(invertStartPos)
 {
 	setPos(startPosition);
 	setZValue(NodeStyle::ZValueTemporaryLink);
@@ -138,17 +141,17 @@ QPainterPath NodeLinkView::shape() const
 
 QPainterPath NodeLinkView::shapeImpl() const
 {
-	int drawMode = 1;
-	// 0,0 (origin) is at startPosition
-	if((qAbs(mEndPosition.y()) / qAbs(mEndPosition.x()) > 2.5)
-		|| mEndPosition.x() < 0.0)
-	{
-		drawMode = 2;
-	}
+	bool targetBefore = mEndPosition.x() < 0.0;
+	if(mInvertStartPos)
+		targetBefore = !targetBefore;
 
-	if(drawMode == 1)
+	int drawMode = 0;
+	if(targetBefore || (qAbs(mEndPosition.y()) / qAbs(mEndPosition.x()) > 2.5))
+		drawMode = 1;
+
+	if(drawMode == 0)
 	{
-		QPointF c1(mEndPosition.x() / 2.0, 0);
+		QPointF c1(mEndPosition.x() / 2.0, 0.0);
 		QPointF c2(mEndPosition.x() / 2.0, mEndPosition.y());
 
 		QPainterPath painterPath;
@@ -157,13 +160,24 @@ QPainterPath NodeLinkView::shapeImpl() const
 	}
 	else
 	{
-		qreal tangentLength = qAbs(mEndPosition.x()) / 2.0 +
-			qAbs(mEndPosition.y()) / 4.0;
-		QPointF startTangent(tangentLength, 0.0);
-		QPointF endTangent(mEndPosition.x() - tangentLength, mEndPosition.y());
+		QPointF start(0, 0), end = mEndPosition;
+
+		if(mInvertStartPos)
+			qSwap(start, end);
+
+		qreal start_x = start.x();
+		qreal start_y = start.y();
+		qreal end_x = end.x();
+		qreal end_y = end.y();
+
+		// More steep curve
+		qreal tangentLength = qAbs(mEndPosition.x())*0.5 + qAbs(mEndPosition.y())*0.33;
+		QPointF startTangent(start_x + tangentLength, start_y);
+		QPointF endTangent(end_x - tangentLength, end_y);
 
 		QPainterPath painterPath;
-		painterPath.cubicTo(startTangent, endTangent, mEndPosition);
+		painterPath.moveTo(start);
+		painterPath.cubicTo(startTangent, endTangent, end);
 		return painterPath;
 	}	
 }

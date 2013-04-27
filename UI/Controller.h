@@ -185,6 +185,7 @@ private:
 	PreviewWidget* _previewWidget;
 	QMenu* _contextMenuAddNodes;
 
+	QLabel* _totalTimeLabel;
 	QLabel* _stateLabel;
 	EState _state;
 	bool _processing;

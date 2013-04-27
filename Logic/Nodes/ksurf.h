@@ -31,7 +31,8 @@ public:
     kSURF(double hessianThreshold, 
         int numOctaves = 4,
         int numScales = 4,
-        int initSampling = 1);
+        int initSampling = 1,
+        bool upright = false);
 
     int descriptorSize() const;
     int descriptorType() const;
@@ -44,13 +45,15 @@ public:
         cv::OutputArray descriptors, 
         bool useProvidedKeypoints=false) const;
 
-    double hessianThreshold;
-    int nOctaves;
-    int nScales;
-    int initSampling;
-
 protected:
     void detectImpl(const cv::Mat& image, std::vector<cv::KeyPoint>& keypoints, const cv::Mat& mask=cv::Mat()) const;
     void computeImpl(const cv::Mat& image, std::vector<cv::KeyPoint>& keypoints, cv::Mat& descriptors) const;
+
+private:
+    double _hessianThreshold;
+    int _nOctaves;
+    int _nScales;
+    int _initSampling;
+    bool _upright;
 };
 

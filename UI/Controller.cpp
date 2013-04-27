@@ -69,6 +69,7 @@ Controller::Controller(QWidget* parent, Qt::WindowFlags flags)
 	, _ui(new Ui::MainWindow())
 	, _previewWidget(nullptr)
 	, _contextMenuAddNodes(nullptr)
+	, _totalTimeLabel(nullptr)
 	, _stateLabel(nullptr)
 	, _state(EState::Stopped)
 	, _processing(false)
@@ -87,11 +88,13 @@ Controller::Controller(QWidget* parent, Qt::WindowFlags flags)
 	updateTitleBar();
 	createNewNodeScene();
 
+	auto menuModules = _ui->menuBar->addMenu("Modules");
+
 	// Gpu module
 #if defined(HAVE_OPENCL)
 	_nodeSystem->registerNodeModule(_gpuModule->moduleName(), _gpuModule);
 #endif
-
+	
 	// JAI module
 #if defined(HAVE_JAI)
 	_nodeSystem->registerNodeModule(_jaiModule->moduleName(), _jaiModule);
@@ -99,13 +102,16 @@ Controller::Controller(QWidget* parent, Qt::WindowFlags flags)
 	_actionInitModule = new QAction(QStringLiteral("Initialize"), this);
 	_actionDevices = new QAction(QStringLiteral("Devices"), this);
 
-	auto menuJai = _ui->menuBar->addMenu("JAI module");
+	auto menuJai = menuModules->addMenu("JAI");
 	//menuJai->addAction(_actionInitModule);
 	menuJai->addAction(_actionDevices);
 
 	connect(_actionDevices, &QAction::triggered, 
 		this, &Controller::showDeviceSettings);
 #endif
+
+	if(menuModules->actions().isEmpty())
+		menuModules->setEnabled(false);
 
 	// Context menu from node graphics view
 	connect(_ui->graphicsView, &NodeEditorView::contextMenu,
@@ -278,6 +284,7 @@ void Controller::addNodeView(const QString& nodeTitle,
 	_nodeViews[nodeID] = nodeView;
 
 	// Set time info visibility on new nodes
+	nodeView->setTimeInfo("0.000 ms");
 	nodeView->setTimeInfoVisible(_ui->actionDisplayTimeInfo->isChecked());
 }
 
@@ -528,6 +535,8 @@ void Controller::setupUi()
 	_ui->previewDockWidget->setWidget(_previewWidget);
 
 	// Init status bar
+	_totalTimeLabel = new QLabel(this);
+	_ui->statusBar->addPermanentWidget(_totalTimeLabel);
 	_stateLabel = new QLabel(this);
 	_ui->statusBar->addPermanentWidget(_stateLabel);
 
@@ -1535,12 +1544,16 @@ void Controller::updatePreview(bool res)
 	// Update time info on nodes
 	auto iter = _nodeTree->createNodeIterator();
 	NodeID nodeID;
+	double totalTimeElapsed = 0.0;
 	while(auto node = iter->next(nodeID))
 	{
-		QString text = QString::number(node->timeElapsed());
+		totalTimeElapsed += node->timeElapsed();
+		QString text = QString::number(node->timeElapsed(), 'f', 3);
 		text += QStringLiteral(" ms");
 		_nodeViews[nodeID]->setTimeInfo(text);
 	}
+	_totalTimeLabel->setText(QString("Total time: %1 ms |")
+		.arg(QString().setNum(totalTimeElapsed, 'f', 3)));
 
 	if(!_videoMode)
 	{

@@ -24,6 +24,7 @@ public:
 #endif
 		, _startFrame(0)
 		, _frameInterval(0)
+		, _ignoreFps(false)
 	{
 	}
 
@@ -37,6 +38,9 @@ public:
 		case ID_StartFrame:
 			_startFrame = newValue.toUInt();
 			return true;
+		case ID_IgnoreFps:
+			_ignoreFps = newValue.toBool();
+			return true;
 		}
 
 		return false;
@@ -48,6 +52,7 @@ public:
 		{
 		case ID_VideoPath: return QString::fromStdString(_videoPath);
 		case ID_StartFrame: return _startFrame;
+		case ID_IgnoreFps: return _ignoreFps;
 		}
 
 		return QVariant();
@@ -67,7 +72,7 @@ public:
 		if(_startFrame > 0)
 			_capture.set(CV_CAP_PROP_POS_FRAMES, _startFrame);
 
-		double fps = _capture.get(CV_CAP_PROP_FPS);
+		double fps = _ignoreFps ? 0 : _capture.get(CV_CAP_PROP_FPS);
 
 		_frameInterval = (fps != 0)
 			? unsigned(ceil(1000.0 / fps))
@@ -136,6 +141,7 @@ public:
 		static const PropertyConfig prop_config[] = {
 			{ EPropertyType::Filepath, "Video path", "filter:Video files (*.mkv *.mp4 *.avi)" },
 			{ EPropertyType::Integer, "Start frame", "min:0" },
+			{ EPropertyType::Boolean, "Ignore FPS", "" },
 			{ EPropertyType::Unknown, "", "" }
 		};
 
@@ -149,7 +155,8 @@ private:
 	enum EPropertyID
 	{
 		ID_VideoPath,
-		ID_StartFrame
+		ID_StartFrame,
+		ID_IgnoreFps
 	};
 
 	std::string _videoPath;
@@ -158,6 +165,7 @@ private:
 	unsigned _frameInterval;
 	std::chrono::high_resolution_clock::time_point _timeStamp;
 	static HighResolutionClock _clock;
+	bool _ignoreFps;
 };
 HighResolutionClock VideoFromFileNodeType::_clock;
 

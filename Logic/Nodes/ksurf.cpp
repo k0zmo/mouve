@@ -27,7 +27,7 @@ struct float2
 #endif
 
 #if !defined(M_PI_F)
-#define  M_PI_F 3.14159274101257f
+#  define  M_PI_F 3.14159274101257f
 #endif
 
 #define RAD2DEG(x) (x * 180.0f/M_PI_F)
@@ -304,6 +304,10 @@ inline double Gaussian(double x, double y, double sig)
 
 void buildScaleSpace_layer(ScaleSpaceLayer& scaleLayer, const cv::Mat &intImage) 
 {
+    if((intImage.cols - 1) < scaleLayer.filterSize
+    || (intImage.rows - 1) < scaleLayer.filterSize)
+        return;
+
     // Promien filtru: dla 9x9 jest to 4
     int fw = (scaleLayer.filterSize - 1) / 2;
     // wielkosc 'garbu' (1/3 wielkosci filtru)
@@ -504,6 +508,10 @@ vector<KeyPoint> findScaleSpaceMaxima(double hessianThreshold,
                                       vector<ScaleSpaceLayer>& scaleLayers,
                                       int numOctaves, int numScales)
 {
+    CV_Assert(!scaleLayers.empty());
+    int cols = scaleLayers[0].width;
+    int rows = scaleLayers[0].height;
+
 #if defined(HAVE_TBB)
     tbb::concurrent_vector<KeyPoint> kpoints;
 
@@ -538,6 +546,10 @@ vector<KeyPoint> findScaleSpaceMaxima(double hessianThreshold,
             auto&& layerBottom = scaleLayers[indexMiddle - 1];
             auto&& layerMiddle = scaleLayers[indexMiddle];
             auto&& layerTop = scaleLayers[indexMiddle + 1];
+
+            if(cols < layerTop.filterSize
+            || rows < layerTop.filterSize)
+                continue;
 
             findScaleSpaceMaxima_layer(hessianThreshold, layerBottom, 
                 layerMiddle, layerTop, kpoints);
@@ -899,18 +911,20 @@ void surfDescriptors(const vector<KeyPoint>& kpoints,
 }
 
 kSURF::kSURF()
-    : hessianThreshold(40.0)
-    , nOctaves(4)
-    , nScales(4)
-    , initSampling(1)
+    : _hessianThreshold(40.0)
+    , _nOctaves(4)
+    , _nScales(4)
+    , _initSampling(1)
+    , _upright(false)
 {
 }
 
-kSURF::kSURF(double hessianThreshold, int numOctaves, int numScales, int initSampling)
-    : hessianThreshold(hessianThreshold)
-    , nOctaves(numOctaves)
-    , nScales(numScales)
-    , initSampling(initSampling)
+kSURF::kSURF(double hessianThreshold, int numOctaves, int numScales, int initSampling, bool upright)
+    : _hessianThreshold(hessianThreshold)
+    , _nOctaves(numOctaves)
+    , _nScales(numScales)
+    , _initSampling(initSampling)
+    , _upright(upright)
 {
 }
 
@@ -936,9 +950,9 @@ void kSURF::operator()(cv::InputArray _img, cv::InputArray _mask,
         cvtColor(img, img, cv::COLOR_BGR2GRAY);
 
     CV_Assert(mask.empty() || (mask.type() == CV_8U && mask.size() == img.size()));
-    CV_Assert(hessianThreshold >= 0);
-    CV_Assert(nOctaves > 0);
-    CV_Assert(nScales > 0);
+    CV_Assert(_hessianThreshold >= 0);
+    CV_Assert(_nOctaves > 0);
+    CV_Assert(_nScales > 0);
 
     cv::integral(img, sum, CV_32S);
     vector<KeyPoint> kpoints;
@@ -949,12 +963,30 @@ void kSURF::operator()(cv::InputArray _img, cv::InputArray _mask,
     }
     else
     {
-        kpoints = fastHessianDetector(sum, hessianThreshold, nOctaves, nScales, 1);
-        surfOrientation(kpoints, sum);
+        kpoints = fastHessianDetector(sum, _hessianThreshold, _nOctaves, _nScales, _initSampling);
+        if(!_upright)
+        {
+            surfOrientation(kpoints, sum);
+        }
+        else
+        {
+            // Set orientation to 0 for every keypoint
+#if defined(HAVE_TBB)
+            tbb::parallel_for_each(begin(kpoints), end(kpoints),
+                [&](KeyPoint& kp) {
+                    kp.orientation = 0;
+            });
+#else
+            for_each(begin(kpoints), end(kpoints),
+                [&](KeyPoint& kp) {
+                    kp.orientation = 0;
+            });
+#endif
+        }
     }
 
-    int N = (int)kpoints.size();
-    if( N > 0 )
+    int N = (int) kpoints.size();
+    if(N > 0)
     {
         if(doDescriptors)
         {

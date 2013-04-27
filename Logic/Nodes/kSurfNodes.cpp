@@ -12,6 +12,7 @@ public:
 		, _nOctaves(4)
 		, _nScales(4)
 		, _initSampling(1)
+		, _upright(false)
 	{
 	}
 
@@ -31,6 +32,9 @@ public:
 		case ID_InitSampling:
 			_initSampling = newValue.toInt();
 			return true;
+		case ID_Upright:
+			_upright = newValue.toBool();
+			return true;
 		}
 
 		return false;
@@ -44,6 +48,7 @@ public:
 		case ID_NumOctaves: return _nOctaves;
 		case ID_NumScales: return _nScales;
 		case ID_InitSampling: return _initSampling;
+		case ID_Upright : return _upright;
 		}
 
 		return QVariant();
@@ -58,7 +63,7 @@ public:
 		if(src.rows == 0 || src.cols == 0)
 			return ExecutionStatus(EStatus::Ok);
 
-		kSURF surf(_hessianThreshold, _nOctaves, _nScales, _initSampling);
+		kSURF surf(_hessianThreshold, _nOctaves, _nScales, _initSampling, _upright);
 		surf(src, cv::noArray(), keypoints, descriptors);
 
 		return ExecutionStatus(EStatus::Ok);
@@ -80,6 +85,7 @@ public:
 			{ EPropertyType::Integer, "Number of octaves", "min:1" },
 			{ EPropertyType::Integer, "Number of scales", "min:1" },
 			{ EPropertyType::Integer, "Initial sampling rate", "min:1" },
+			{ EPropertyType::Boolean, "Upright", "" },
 			{ EPropertyType::Unknown, "", "" }
 		};
 
@@ -95,13 +101,15 @@ protected:
 		ID_HessianThreshold,
 		ID_NumOctaves,
 		ID_NumScales,
-		ID_InitSampling
+		ID_InitSampling,
+		ID_Upright
 	};
 
 	double _hessianThreshold;
 	int _nOctaves;
 	int _nScales;
 	int _initSampling;
+	bool _upright;
 };
 
 REGISTER_NODE("Features/kSURF", kSurfNodeType)

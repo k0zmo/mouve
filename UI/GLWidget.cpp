@@ -486,9 +486,12 @@ void GLWidget::mouseMoveEvent(QMouseEvent* event)
 	QPoint diff = event->pos() - _mouseAnchor;
 	_mouseAnchor = event->pos();
 
-	float area = (_right - _left) * (_top - _bottom);
-	if(area > 1.0f)
-		return;
+	if(_resizeBehavior != EResizeBehavior::MaintainImageSize)
+	{
+		float area = (_right - _left) * (_top - _bottom);
+		if(area > 1.0f)
+			return;
+	}
 
 	float c = 0.001f;// * area; // connect with current zoom level 
 	
