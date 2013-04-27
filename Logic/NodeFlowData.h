@@ -45,6 +45,9 @@ public:
 
 	~NodeFlowData();
 
+	void saveToDisk(const std::string& filename) const;
+	bool isValidImage() const;
+
 	cv::Mat& getImage();
 	const cv::Mat& getImage() const;
 

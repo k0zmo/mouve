@@ -1189,47 +1189,79 @@ void Controller::contextMenu(const QPoint& globalPos,
 		{
 			auto item = items[i];
 
-			if(item->type() == NodeView::Type)
+			if(item->type() != NodeView::Type)
+				continue;
+
+			QMenu menu;
+			QAction actionRemoveNode("Remove node", nullptr);
+			if(treeIdle())
+				menu.addAction(&actionRemoveNode);
+
+			// Preview socket menu
+			NodeView* nodeView = static_cast<NodeView*>(item);
+			int previewsCount = nodeView->outputSocketCount();
+			if(previewsCount > 0)
 			{
-				QMenu menu;
-				QAction actionRemoveNode("Remove node", nullptr);
-				if(treeIdle())
-					menu.addAction(&actionRemoveNode);
+				if(_state == EState::Stopped && !_processing)
+					menu.addSeparator();
 
-				NodeView* nodeView = static_cast<NodeView*>(item);
-				int previewsCount = nodeView->outputSocketCount();
-				if(previewsCount > 0)
+				int curr = nodeView->previewSocketID();
+				for(int imwrite = 0; imwrite < previewsCount; ++imwrite)
 				{
-					if(_state == EState::Stopped && !_processing)
-						menu.addSeparator();
-
-					int curr = nodeView->previewSocketID();
-					for(int i = 0; i < previewsCount; ++i)
-					{
-						QAction* actionPreviewSocket = new QAction
-							(QString("Preview socket: %1").arg(i), &menu);
-						actionPreviewSocket->setCheckable(true);
-						actionPreviewSocket->setChecked(i == curr);
-						actionPreviewSocket->setData(i);
-						connect(actionPreviewSocket, &QAction::triggered,
-							[=](bool checked)
+					QAction* actionPreviewSocket = new QAction
+						(QString("Preview socket: %1").arg(imwrite), &menu);
+					actionPreviewSocket->setCheckable(true);
+					actionPreviewSocket->setChecked(imwrite == curr);
+					actionPreviewSocket->setData(imwrite);
+					connect(actionPreviewSocket, &QAction::triggered,
+						[=](bool checked)
+						{
+							if(checked)
 							{
-								if(checked)
-								{
-									nodeView->setPreviewSocketID
-										(actionPreviewSocket->data().toInt());
-									updatePreviewImpl();
-								}
-							});
-						menu.addAction(actionPreviewSocket);
-					}
+								nodeView->setPreviewSocketID
+									(actionPreviewSocket->data().toInt());
+								updatePreviewImpl();
+							}
+						});
+					menu.addAction(actionPreviewSocket);
 				}
 
-				QAction* ret = menu.exec(globalPos);
-				if(ret == &actionRemoveNode && treeIdle())
-					deleteNode(nodeView);
-				return;
+				// Save socket image menu (disable when tree is still being processed
+				if(_state != EState::Playing && !_processing)
+				{
+					for(int socketID = 0; socketID < previewsCount; ++socketID)
+					{
+						NodeID nodeID = nodeView->nodeKey();
+
+						const NodeFlowData& outputData = _nodeTree->outputSocket(nodeID, socketID);
+						if(!outputData.isValidImage())
+							continue;
+
+						QAction* actionSaveImageSocket = new QAction
+							(QString("Save image socket: %1").arg(socketID), &menu);
+						connect(actionSaveImageSocket, &QAction::triggered,
+							[=]
+							{
+								QString filePath = QFileDialog::getSaveFileName(
+									this, tr("Save file"), QString(), ""
+									"PNG (*.png);;"
+									"BMP (*.bmp);;"
+									"JPEG (*.jpg);;"
+									"JPEG 2000 (*.jp2)");
+								if(filePath.isEmpty())
+									return;
+
+								outputData.saveToDisk(filePath.toStdString());
+							});	
+						menu.addAction(actionSaveImageSocket);
+					}
+				}
 			}
+
+			QAction* ret = menu.exec(globalPos);
+			if(ret == &actionRemoveNode && treeIdle())
+				deleteNode(nodeView);
+			return;
 		}
 	}
 }
