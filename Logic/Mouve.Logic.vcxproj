@@ -281,6 +281,7 @@
     <ClCompile Include="Nodes\kSurfNodes.cpp" />
     <ClCompile Include="Nodes\MatcherNodes.cpp" />
     <ClCompile Include="Nodes\SiftNodes.cpp" />
+    <ClCompile Include="Nodes\SourceNodes.cpp" />
     <ClCompile Include="Nodes\SurfNodes.cpp" />
     <ClCompile Include="NodeTree.cpp" />
     <ClCompile Include="NodeType.cpp" />
