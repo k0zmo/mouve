@@ -55,12 +55,14 @@ public:
 		_kidAccumLinesShared = _gpuComputeModule->registerKernel("accumLines_shared", "hough.cl");
 		_kidGetLines = _gpuComputeModule->registerKernel("getLines", "hough.cl");
 		_kidAccumToImage = _gpuComputeModule->registerKernel("accumToImage", "hough.cl");
+		_kidFillAccumSpace = _gpuComputeModule->registerKernel("fill_buffer_int", "fill.cl");
 
 		return _kidBuildPointsList != InvalidKernelID
 			&& _kidAccumLines != InvalidKernelID
 			&& _kidAccumLinesShared != InvalidKernelID
 			&& _kidGetLines != InvalidKernelID
-			&& _kidAccumToImage != InvalidKernelID;
+			&& _kidAccumToImage != InvalidKernelID
+			&& _kidFillAccumSpace != InvalidKernelID;
 	}
 
 	ExecutionStatus execute(NodeSocketReader& reader, NodeSocketWriter& writer) override
@@ -170,17 +172,20 @@ private:
 		ensureSizeIsEnough(_deviceAccum, numAngle * numRho * sizeof(cl_int));
 
 		uint64_t requiredSharedSize = numRho * sizeof(cl_int);
+		float invRho = 1.0f / _rhoResolution;
+		float theta = CL_M_PI_F/180.0f * _thetaResolution;
 
 		if(!_gpuComputeModule->isLocalMemorySufficient(requiredSharedSize))
 		{
 			clw::Kernel kernelAccumLines = _gpuComputeModule->acquireKernel(_kidAccumLines);
+			clw::Kernel kernelFillAccumSpace = _gpuComputeModule->acquireKernel(_kidFillAccumSpace);
 
-			//cl_int pattern = 0;
-			//clEnqueueFillBuffer(_gpuComputeModule->queue().commandQueueId(), _deviceAccum.memoryId(), &pattern,
-			//	sizeof(pattern), 0, numAngle * numRho * sizeof(cl_int), 0, nullptr, nullptr);
-			cl_int* accumPtr = (cl_int*) _gpuComputeModule->queue().mapBuffer(_deviceAccum, clw::MapAccess_Write);
-			memset(accumPtr, 0, sizeof(cl_int) * numAngle * numRho);
-			_gpuComputeModule->queue().unmap(_deviceAccum, accumPtr);
+			kernelFillAccumSpace.setLocalWorkSize(256);
+			kernelFillAccumSpace.setRoundedGlobalWorkSize(numAngle * numRho);
+			kernelFillAccumSpace.setArg(0, _deviceAccum);
+			kernelFillAccumSpace.setArg(1, 0);
+			kernelFillAccumSpace.setArg(2, numAngle * numRho);
+			_gpuComputeModule->queue().asyncRunKernel(kernelFillAccumSpace);		
 
 			kernelAccumLines.setLocalWorkSize(clw::Grid(256));
 			kernelAccumLines.setRoundedGlobalWorkSize(clw::Grid(256 * numAngle));
@@ -188,8 +193,8 @@ private:
 			kernelAccumLines.setArg(1, _deviceCounter);
 			kernelAccumLines.setArg(2, _deviceAccum);
 			kernelAccumLines.setArg(3, numRho);
-			kernelAccumLines.setArg(4, 1.0f / _rhoResolution);
-			kernelAccumLines.setArg(5, _thetaResolution);
+			kernelAccumLines.setArg(4, invRho);
+			kernelAccumLines.setArg(5, theta);
 			_gpuComputeModule->queue().asyncRunKernel(kernelAccumLines);
 		}
 		else
@@ -203,8 +208,8 @@ private:
 			kernelAccumLines.setArg(2, _deviceAccum);
 			kernelAccumLines.setArg(3, clw::LocalMemorySize(requiredSharedSize));
 			kernelAccumLines.setArg(4, numRho);
-			kernelAccumLines.setArg(5, 1.0f / _rhoResolution);
-			kernelAccumLines.setArg(6, _thetaResolution);
+			kernelAccumLines.setArg(5, invRho);
+			kernelAccumLines.setArg(6, theta);
 			_gpuComputeModule->queue().asyncRunKernel(kernelAccumLines);
 		}
 	}
@@ -223,6 +228,8 @@ private:
 				clw::Location_Device, 2, maxLines, EDataType::Float);
 		}
 
+		float theta = CL_M_PI_F/180.0f * _thetaResolution;
+
 		/// TODO: Mozna dac to na gpuInit i PO wykonaniu kernela jako async (trzeba uzyc innego bufora)
 		cl_uint* dataZero = (cl_uint*) _gpuComputeModule->queue().mapBuffer(_deviceCounter, clw::MapAccess_Write);
 		*dataZero = 0;
@@ -236,8 +243,9 @@ private:
 		kernelGetLines.setArg(3, _threshold);
 		kernelGetLines.setArg(4, maxLines);
 		kernelGetLines.setArg(5, numRho);
-		kernelGetLines.setArg(6, _rhoResolution);
-		kernelGetLines.setArg(7, _thetaResolution);
+		kernelGetLines.setArg(6, numAngle);
+		kernelGetLines.setArg(7, _rhoResolution);
+		kernelGetLines.setArg(8, theta);
 		_gpuComputeModule->queue().asyncRunKernel(kernelGetLines);
 
 		// Read results
@@ -309,6 +317,7 @@ private:
 	KernelID _kidAccumLinesShared;
 	KernelID _kidGetLines;
 	KernelID _kidAccumToImage;
+	KernelID _kidFillAccumSpace;
 };
 
 REGISTER_NODE("OpenCL/Features/Hough Lines", GpuHoughLinesNodeType)

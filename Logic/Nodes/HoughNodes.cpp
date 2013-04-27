@@ -57,7 +57,7 @@ public:
 			return ExecutionStatus(EStatus::Ok);
 
 		std::vector<cv::Vec2f> linesVector;
-		cv::HoughLines(src, linesVector, _rhoResolution, CV_PI/180 / _thetaResolution, _threshold);
+		cv::HoughLines(src, linesVector, _rhoResolution, CV_PI/180 * _thetaResolution, _threshold);
 		lines.create(linesVector.size(), 2, CV_32F);
 
 		float* linesPtr = lines.ptr<float>();

@@ -188,7 +188,7 @@ __kernel void accumLines(__global uint* pointsLists,
 
 __kernel void accumLines_shared(__global uint* pointsLists,
                                 __global uint* pointsCount,
-                                __global int* accum,  /* opencv nie ma CV_32UC1 */
+                                __global int* accum,
                                 __local int* accumShared,
                                 const int numRho,
                                 float invRho, float theta)
@@ -249,13 +249,14 @@ __kernel void getLines(__global int* accum,
                        const int threshold,
                        const int maxLines,
                        const int numRho,
+                       const int numAngle,
                        float rho, float theta)
 {
     int2 gid = { get_global_id(0), get_global_id(1) };
-    if(gid.x >= numRho || gid.y >= 180)
+    if(gid.x >= numRho || gid.y >= numAngle)
         return;
         
-#define FETCH(X, Y) read_buffer_clamp(accum, numRho, 180, numRho, X, Y)
+#define FETCH(X, Y) read_buffer_clamp(accum, numRho, numAngle, numRho, X, Y)
 
     const float shift = (numRho - 1) * 0.5f;
 
@@ -274,6 +275,7 @@ __kernel void getLines(__global int* accum,
             lines[idx] = (float2)(r, t);
         }
     }
+#undef FETCH
 }
 */
 /*
@@ -283,13 +285,14 @@ __kernel void getLines(__global int* accum,
                        const int threshold,
                        const int maxLines,
                        const int numRho,
+                       const int numAngle,
                        float rho, float theta)
 {
     int2 gid = { get_global_id(0), get_global_id(1) };
-    if(gid.x >= numRho || gid.y >= 180)
+    if(gid.x >= numRho || gid.y >= numAngle)
         return;
         
-#define FETCH(X, Y) read_buffer_clamp(accum, numRho, 180, numRho, X, Y)
+#define FETCH(X, Y) read_buffer_clamp(accum, numRho, numAngle, numRho, X, Y)
 
     const float shift = (numRho - 1) * 0.5f;
 
@@ -316,6 +319,7 @@ __kernel void getLines(__global int* accum,
             lines[idx] = (float2)(r, t);
         }
     }
+#undef FETCH
 }
 */
 
@@ -325,13 +329,14 @@ __kernel void getLines(__global int* accum,
                        const int threshold,
                        const int maxLines,
                        const int numRho,
+                       const int numAngle,
                        float rho, float theta)
 {
     int2 gid = { get_global_id(0), get_global_id(1) };
-    if(gid.x >= numRho || gid.y >= 180)
+    if(gid.x >= numRho || gid.y >= numAngle)
         return;
         
-#define FETCH(X, Y) read_buffer_clamp(accum, numRho, 180, numRho, X, Y)
+#define FETCH(X, Y) read_buffer_clamp(accum, numRho, numAngle, numRho, X, Y)
 
     const float shift = (numRho - 1) * 0.5f;
 
@@ -354,6 +359,7 @@ __kernel void getLines(__global int* accum,
             lines[idx] = (float2)(r, t);
         }
     }
+#undef FETCH
 }
 
 __kernel void accumToImage(__global int* accum,

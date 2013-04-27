@@ -18,3 +18,10 @@ __kernel void fill_image_norm(__write_only image2d_t dst, float value)
     if(all(gid < get_image_dim(dst)))
         write_imagef(dst, gid, (float4)(value));
 }
+
+__kernel void fill_buffer_int(__global int* dst, int value, int n)
+{
+    int gid = get_global_id(0);
+    if(gid < n)
+        dst[gid] = value;
+}
