@@ -53,111 +53,12 @@ float3 convert_bayer2rgb(__read_only image2d_t src,
         (y_even ? out2.xyz : out1.zyx);
 }
 
-__constant float3 greyscale = { 0.2989f, 0.5870f, 0.1140f };
-__constant sampler_t sampler = CLK_NORMALIZED_COORDS_FALSE | CLK_FILTER_NEAREST | CLK_ADDRESS_CLAMP;
-
-#if defined(TEMPLATES_SUPPORTED)
-
-template<bool xodd, bool yodd, bool toGray>
-__kernel void bayerKernel(__read_only image2d_t src,
-                          __write_only image2d_t dst,
-                          float3 gains)
-{
-    int2 gid = (int2) { get_global_id(0), get_global_id(1) };
-    int2 size = get_image_dim(src);
-    if(any(gid >= size))
-        return;
-    bool x_odd = gid.x & 0x01; bool y_odd = gid.y & 0x01;
-    float3 rgb = convert_bayer2rgb(src, sampler, x_odd == xodd, y_odd == yodd);
-    rgb *= gains.xyz;
-
-    if(toGray)
-    {
-        float gray = dot(rgb, greyscale);
-        write_imagef(dst, gid, (float4)(gray));
-    }
-    else
-    {
-        write_imagef(dst, gid, (float4)(rgb, 1.0f));
-    }
-}
-
-template __attribute__((mangled_name(convert_rg2rgb)))
-__kernel void bayerKernel<false, false, false>(__read_only image2d_t src,
-                                               __write_only image2d_t dst,
-                                               float3 gains);
-template __attribute__((mangled_name(convert_gb2rgb)))
-__kernel void bayerKernel<false, true, false>(__read_only image2d_t src,
-                                              __write_only image2d_t dst,
-                                              float3 gains);
-template __attribute__((mangled_name(convert_gr2rgb)))
-__kernel void bayerKernel<true, false, false>(__read_only image2d_t src,
-                                              __write_only image2d_t dst,
-                                              float3 gains);
-template __attribute__((mangled_name(convert_bg2rgb)))
-__kernel void bayerKernel<true, true, false>(__read_only image2d_t src,
-                                             __write_only image2d_t dst,
-                                             float3 gains);
-template __attribute__((mangled_name(convert_rg2gray)))
-__kernel void bayerKernel<false, false, true>(__read_only image2d_t src,
-                                              __write_only image2d_t dst,
-                                              float3 gains);
-template __attribute__((mangled_name(convert_gb2gray)))
-__kernel void bayerKernel<false, true, true>(__read_only image2d_t src,
-                                             __write_only image2d_t dst,
-                                             float3 gains);
-template __attribute__((mangled_name(convert_gr2gray)))
-__kernel void bayerKernel<true, false, true>(__read_only image2d_t src,
-                                             __write_only image2d_t dst,
-                                             float3 gains);
-template __attribute__((mangled_name(convert_bg2gray)))
-__kernel void bayerKernel<true, true, true>(__read_only image2d_t src,
-                                            __write_only image2d_t dst,
-                                            float3 gains);
-
-#else
-    __attribute__((always_inline)) bool opTrue(bool o) { return o; }
-    __attribute__((always_inline)) bool opFalse(bool o) { return !o; }
-
-    #define DEFINE_BAYER_KERNEL(name, xo, yo, toGray) \
-        __kernel void name(__read_only image2d_t src, \
-                           __write_only image2d_t dst) \
-        { \
-            int2 gid = (int2) { get_global_id(0), get_global_id(1) }; \
-            int2 size = get_image_dim(src); \
-            if(any(gid >= size)) \
-                return; \
-            bool x_odd = gid.x & 0x01; bool y_odd = gid.y & 0x01; \
-            float3 rgb = convert_bayer2rgb(src, sampler, xo(x_odd), yo(y_odd)); \
-            \
-            if(toGray) \
-            { \
-                float gray = dot(rgb, greyscale); \
-                write_imagef(dst, gid, (float4)(gray)); \
-            } \
-            else \
-            { \
-                write_imagef(dst, gid, (float4)(rgb, 1.0f)); \
-            } \
-        }
-
-    DEFINE_BAYER_KERNEL(convert_rg2rgb,  opFalse, opFalse, false)
-    DEFINE_BAYER_KERNEL(convert_gb2rgb,  opFalse, opTrue,  false)
-    DEFINE_BAYER_KERNEL(convert_gr2rgb,  opTrue,  opFalse, false)
-    DEFINE_BAYER_KERNEL(convert_bg2rgb,  opTrue,  opTrue,  false)
-    DEFINE_BAYER_KERNEL(convert_rg2gray, opFalse, opFalse, true)
-    DEFINE_BAYER_KERNEL(convert_gb2gray, opFalse, opTrue,  true)
-    DEFINE_BAYER_KERNEL(convert_gr2gray, opTrue,  opFalse, true)
-    DEFINE_BAYER_KERNEL(convert_bg2gray, opTrue,  opTrue,  true)
-#endif
-
-/// TODO
-/*
 __attribute__((always_inline))
 void contextToLocalMemory_image2(__read_only image2d_t src,
-                                int kradx, int krady,
-                                __local float* sharedBlock,
-                                int sharedWidth, int sharedHeight)
+                                 sampler_t sampler,
+                                 int kradx, int krady,
+                                 __local float* sharedBlock,
+                                 int sharedWidth, int sharedHeight)
 {
     int2 gid = { get_global_id(0), get_global_id(1) };
     int2 lid = { get_local_id(0), get_local_id(1) };
@@ -229,10 +130,41 @@ float3 convert_bayer2rgb_local(__local float* smem,
         (y_even ? out2.xyz : out1.zyx);   
 }
 
-__kernel void convert_bg2rgb_local(__read_only image2d_t src,
-                                   __write_only image2d_t dst,
-                                   __local float* smem,
-                                   int smemWidth, int smemHeight)
+__constant float3 greyscale = { 0.2989f, 0.5870f, 0.1140f };
+__constant sampler_t sampler = CLK_NORMALIZED_COORDS_FALSE | CLK_FILTER_NEAREST | CLK_ADDRESS_CLAMP;
+
+#if defined(TEMPLATES_SUPPORTED)
+
+template<bool xodd, bool yodd, bool toGray>
+__kernel void bayerKernel(__read_only image2d_t src,
+                          __write_only image2d_t dst,
+                          float3 gains)
+{
+    int2 gid = (int2) { get_global_id(0), get_global_id(1) };
+    int2 size = get_image_dim(src);
+    if(any(gid >= size))
+        return;
+    bool x_odd = gid.x & 0x01; bool y_odd = gid.y & 0x01;
+    float3 rgb = convert_bayer2rgb(src, sampler, x_odd == xodd, y_odd == yodd);
+    rgb *= gains.xyz;
+
+    if(toGray)
+    {
+        float gray = dot(rgb, greyscale);
+        write_imagef(dst, gid, (float4)(gray));
+    }
+    else
+    {
+        write_imagef(dst, gid, (float4)(rgb, 1.0f));
+    }
+}
+
+template<bool xodd, bool yodd, bool toGray>
+__kernel void bayerKernel_local(__read_only image2d_t src,
+                                __write_only image2d_t dst,
+                                float3 gains,
+                                __local float* smem,
+                                int smemWidth, int smemHeight)
 {
     int2 gid = (int2) { get_global_id(0), get_global_id(1) };
     int2 lid = { get_local_id(0), get_local_id(1) };
@@ -241,11 +173,174 @@ __kernel void convert_bg2rgb_local(__read_only image2d_t src,
         return;
     bool x_odd = gid.x & 0x01; bool y_odd = gid.y & 0x01;
     
-    contextToLocalMemory_image2(src, 1, 1, smem, smemWidth, smemHeight);
+    contextToLocalMemory_image2(src, sampler, 1, 1, smem, smemWidth, smemHeight);
     barrier(CLK_LOCAL_MEM_FENCE); 
     
-    float3 rgb = convert_bayer2rgb_local(smem, smemWidth, !x_odd, !y_odd);
-    
-    write_imagef(dst, gid, (float4)(rgb, 1.0f));
+    float3 rgb = convert_bayer2rgb_local(smem, smemWidth, x_odd == xodd, y_odd == yodd);
+    rgb *= gains.xyz;
+
+    if(toGray)
+    {
+        float gray = dot(rgb, greyscale);
+        write_imagef(dst, gid, (float4)(gray));
+    }
+    else
+    {
+        write_imagef(dst, gid, (float4)(rgb, 1.0f));
+    }
 }
-*/
+
+template __attribute__((mangled_name(convert_rg2rgb)))
+__kernel void bayerKernel<false, false, false>(__read_only image2d_t src,
+                                               __write_only image2d_t dst,
+                                               float3 gains);
+template __attribute__((mangled_name(convert_gb2rgb)))
+__kernel void bayerKernel<false, true, false>(__read_only image2d_t src,
+                                              __write_only image2d_t dst,
+                                              float3 gains);
+template __attribute__((mangled_name(convert_gr2rgb)))
+__kernel void bayerKernel<true, false, false>(__read_only image2d_t src,
+                                              __write_only image2d_t dst,
+                                              float3 gains);
+template __attribute__((mangled_name(convert_bg2rgb)))
+__kernel void bayerKernel<true, true, false>(__read_only image2d_t src,
+                                             __write_only image2d_t dst,
+                                             float3 gains);
+template __attribute__((mangled_name(convert_rg2gray)))
+__kernel void bayerKernel<false, false, true>(__read_only image2d_t src,
+                                              __write_only image2d_t dst,
+                                              float3 gains);
+template __attribute__((mangled_name(convert_gb2gray)))
+__kernel void bayerKernel<false, true, true>(__read_only image2d_t src,
+                                             __write_only image2d_t dst,
+                                             float3 gains);
+template __attribute__((mangled_name(convert_gr2gray)))
+__kernel void bayerKernel<true, false, true>(__read_only image2d_t src,
+                                             __write_only image2d_t dst,
+                                             float3 gains);
+template __attribute__((mangled_name(convert_bg2gray)))
+__kernel void bayerKernel<true, true, true>(__read_only image2d_t src,
+                                            __write_only image2d_t dst,
+                                            float3 gains);
+
+template __attribute__((mangled_name(convert_rg2rgb_local)))
+__kernel void bayerKernel_local<false, false, false>(__read_only image2d_t src,
+                                                     __write_only image2d_t dst,
+                                                     float3 gains,
+                                                     __local float* smem,
+                                                     int smemWidth, int smemHeight);
+template __attribute__((mangled_name(convert_gb2rgb_local)))
+__kernel void bayerKernel_local<false, true, false>(__read_only image2d_t src,
+                                                    __write_only image2d_t dst,
+                                                    float3 gains,
+                                                    __local float* smem,
+                                                    int smemWidth, int smemHeight);
+template __attribute__((mangled_name(convert_gr2rgb_local)))
+__kernel void bayerKernel_local<true, false, false>(__read_only image2d_t src,
+                                                    __write_only image2d_t dst,
+                                                    float3 gains,
+                                                    __local float* smem,
+                                                    int smemWidth, int smemHeight);
+template __attribute__((mangled_name(convert_bg2rgb_local)))
+__kernel void bayerKernel_local<true, true, false>(__read_only image2d_t src,
+                                                   __write_only image2d_t dst,
+                                                   float3 gains,
+                                                   __local float* smem,
+                                                   int smemWidth, int smemHeight);
+template __attribute__((mangled_name(convert_rg2gray_local)))
+__kernel void bayerKernel_local<false, false, true>(__read_only image2d_t src,
+                                                    __write_only image2d_t dst,
+                                                    float3 gains,
+                                                    __local float* smem,
+                                                    int smemWidth, int smemHeight);
+template __attribute__((mangled_name(convert_gb2gray_local)))
+__kernel void bayerKernel_local<false, true, true>(__read_only image2d_t src,
+                                                   __write_only image2d_t dst,
+                                                   float3 gains,
+                                                   __local float* smem,
+                                                   int smemWidth, int smemHeight);
+template __attribute__((mangled_name(convert_gr2gray_local)))
+__kernel void bayerKernel_local<true, false, true>(__read_only image2d_t src,
+                                                   __write_only image2d_t dst,
+                                                   float3 gains,
+                                                   __local float* smem,
+                                                   int smemWidth, int smemHeight);
+template __attribute__((mangled_name(convert_bg2gray_local)))
+__kernel void bayerKernel_local<true, true, true>(__read_only image2d_t src,
+                                                  __write_only image2d_t dst,
+                                                  float3 gains,
+                                                  __local float* smem,
+                                                  int smemWidth, int smemHeight);
+#else
+    __attribute__((always_inline)) bool opTrue(bool o) { return o; }
+    __attribute__((always_inline)) bool opFalse(bool o) { return !o; }
+
+    #define DEFINE_BAYER_KERNEL(name, xo, yo, toGray) \
+        __kernel void name(__read_only image2d_t src, \
+                           __write_only image2d_t dst) \
+        { \
+            int2 gid = (int2) { get_global_id(0), get_global_id(1) }; \
+            int2 size = get_image_dim(src); \
+            if(any(gid >= size)) \
+                return; \
+            bool x_odd = gid.x & 0x01; bool y_odd = gid.y & 0x01; \
+            float3 rgb = convert_bayer2rgb(src, sampler, xo(x_odd), yo(y_odd)); \
+            \
+            if(toGray) \
+            { \
+                float gray = dot(rgb, greyscale); \
+                write_imagef(dst, gid, (float4)(gray)); \
+            } \
+            else \
+            { \
+                write_imagef(dst, gid, (float4)(rgb, 1.0f)); \
+            } \
+        }
+    #define DEFINE_BAYER_KERNEL_LOCAL(name, xo, yo, toGray) \
+        __kernel void name##_local(__read_only image2d_t src, \
+                                   __write_only image2d_t dst, \
+                                   float3 gains, \
+                                   __local float* smem, \
+                                   int smemWidth, int smemHeight) \
+        { \
+            int2 gid = (int2) { get_global_id(0), get_global_id(1) }; \
+            int2 lid = { get_local_id(0), get_local_id(1) }; \
+            int2 size = get_image_dim(src); \
+            if(any(gid >= size)) \
+                return; \
+            bool x_odd = gid.x & 0x01; bool y_odd = gid.y & 0x01; \
+            \
+            contextToLocalMemory_image2(src, sampler, 1, 1, smem, smemWidth, smemHeight); \
+            barrier(CLK_LOCAL_MEM_FENCE); \
+            \
+            float3 rgb = convert_bayer2rgb_local(smem, smemWidth, xo(x_odd), yo(y_odd)); \
+            rgb *= gains.xyz; \
+            \
+            if(toGray) \
+            { \
+                float gray = dot(rgb, greyscale); \
+                write_imagef(dst, gid, (float4)(gray)); \
+            } \
+            else \
+            { \
+                write_imagef(dst, gid, (float4)(rgb, 1.0f)); \
+            } \
+        }
+
+    DEFINE_BAYER_KERNEL(convert_rg2rgb,  opFalse, opFalse, false)
+    DEFINE_BAYER_KERNEL(convert_gb2rgb,  opFalse, opTrue,  false)
+    DEFINE_BAYER_KERNEL(convert_gr2rgb,  opTrue,  opFalse, false)
+    DEFINE_BAYER_KERNEL(convert_bg2rgb,  opTrue,  opTrue,  false)
+    DEFINE_BAYER_KERNEL(convert_rg2gray, opFalse, opFalse, true)
+    DEFINE_BAYER_KERNEL(convert_gb2gray, opFalse, opTrue,  true)
+    DEFINE_BAYER_KERNEL(convert_gr2gray, opTrue,  opFalse, true)
+    DEFINE_BAYER_KERNEL(convert_bg2gray, opTrue,  opTrue,  true)
+    DEFINE_BAYER_KERNEL_LOCAL(convert_rg2rgb,  opFalse, opFalse, false)
+    DEFINE_BAYER_KERNEL_LOCAL(convert_gb2rgb,  opFalse, opTrue,  false)
+    DEFINE_BAYER_KERNEL_LOCAL(convert_gr2rgb,  opTrue,  opFalse, false)
+    DEFINE_BAYER_KERNEL_LOCAL(convert_bg2rgb,  opTrue,  opTrue,  false)
+    DEFINE_BAYER_KERNEL_LOCAL(convert_rg2gray, opFalse, opFalse, true)
+    DEFINE_BAYER_KERNEL_LOCAL(convert_gb2gray, opFalse, opTrue,  true)
+    DEFINE_BAYER_KERNEL_LOCAL(convert_gr2gray, opTrue,  opFalse, true)
+    DEFINE_BAYER_KERNEL_LOCAL(convert_bg2gray, opTrue,  opTrue,  true)
+#endif

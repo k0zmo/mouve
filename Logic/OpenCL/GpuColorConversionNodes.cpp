@@ -60,10 +60,11 @@ public:
 			opts = "-DTEMPLATES_SUPPORTED -x clc++";
 		}
 
-		_kidConvertRG2Gray = _gpuComputeModule->registerKernel("convert_rg2gray", "bayer.cl", opts);
-		_kidConvertGB2Gray = _gpuComputeModule->registerKernel("convert_gb2gray", "bayer.cl", opts);
-		_kidConvertGR2Gray = _gpuComputeModule->registerKernel("convert_gr2gray", "bayer.cl", opts);
-		_kidConvertBG2Gray = _gpuComputeModule->registerKernel("convert_bg2gray", "bayer.cl", opts);
+		// Local version is a bit faster
+		_kidConvertRG2Gray = _gpuComputeModule->registerKernel("convert_rg2gray_local", "bayer.cl", opts);
+		_kidConvertGB2Gray = _gpuComputeModule->registerKernel("convert_gb2gray_local", "bayer.cl", opts);
+		_kidConvertGR2Gray = _gpuComputeModule->registerKernel("convert_gr2gray_local", "bayer.cl", opts);
+		_kidConvertBG2Gray = _gpuComputeModule->registerKernel("convert_bg2gray_local", "bayer.cl", opts);
 
 		return _kidConvertRG2Gray != InvalidKernelID
 			&& _kidConvertGB2Gray != InvalidKernelID
@@ -112,16 +113,23 @@ public:
 		}
 
 		cl_float3 gains = { (float) _redGain, (float) _greenGain, (float) _blueGain };
+		int sharedWidth = 16 + 2;
+		int sharedHeight = 16 + 2;
 
 		kernelConvertBayer2Gray.setLocalWorkSize(16, 16);
 		kernelConvertBayer2Gray.setRoundedGlobalWorkSize(imageWidth, imageHeight);
 		kernelConvertBayer2Gray.setArg(0, input);
 		kernelConvertBayer2Gray.setArg(1, output);
 		kernelConvertBayer2Gray.setArg(2, gains);
+		kernelConvertBayer2Gray.setArg(3, clw::LocalMemorySize(sharedWidth*sharedHeight*sizeof(float)));
+		kernelConvertBayer2Gray.setArg(4, sharedWidth);
+		kernelConvertBayer2Gray.setArg(5, sharedHeight);
 
 		clw::Event evt = _gpuComputeModule->queue().asyncRunKernel(kernelConvertBayer2Gray);
 		evt.waitForFinished();
 		double elapsed = (evt.finishTime() - evt.startTime()) * 1e-6;
+
+		_gpuComputeModule->queue().finish();
 
 		return ExecutionStatus(EStatus::Ok, elapsed);
 	}
