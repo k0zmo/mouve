@@ -1878,13 +1878,7 @@ void Controller::showProgramsList()
 			}
 			catch (GpuBuildException& ex)
 			{
-				QString logMessage = QString::fromStdString(ex.log);
-				if(logMessage.length() > 1024)
-				{
-					logMessage.truncate(1024);
-					logMessage.append("\n...");
-				}
-				showErrorMessage(QString("Building program failed:\n") + logMessage);
+				showErrorMessage(QString::fromStdString(ex.formatted));
 			}
 		}
 	});
