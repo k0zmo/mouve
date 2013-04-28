@@ -87,6 +87,8 @@ private:
 
 	bool validateLink(SocketAddress& from, SocketAddress& to);
 	bool validateNode(NodeID nodeID) const;
+	void cleanUpAfterExecution(std::vector<NodeID>& selfTagging);
+	void handleException(const std::string& nodeName, const std::string& nodeTypeName);
 
 private:
 	std::vector<Node> _nodes;

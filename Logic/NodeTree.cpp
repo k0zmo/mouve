@@ -389,6 +389,46 @@ std::vector<NodeID> NodeTree::prepareList()
 	return _executeList;
 }
 
+void NodeTree::cleanUpAfterExecution(std::vector<NodeID>& selfTagging)
+{
+	// Clean
+	for(Node& node : _nodes)
+		node.unsetFlag(ENodeFlags::Tagged);
+	_executeListDirty = true;
+
+	// tag all self-tagging nodes
+	for(auto id : selfTagging)
+		tagNode(id);
+}
+
+void NodeTree::handleException(const std::string& nodeName, const std::string& nodeTypeName)
+{
+	try
+	{
+		// Exception dispatcher
+		throw;
+	}
+	catch(ExecutionError& ex)
+	{
+		// Dummy but a must - if not std::exception handler would catch it
+		throw;
+	}
+	catch(boost::bad_get& ex)
+	{
+		throw ExecutionError(nodeName, nodeTypeName, 
+			"Wrong socket connection");
+	}
+	catch(cv::Exception& ex)
+	{
+		throw ExecutionError(nodeName, nodeTypeName, 
+			std::string("OpenCV exception - ") + ex.what());
+	}
+	catch(std::exception& ex)
+	{
+		throw ExecutionError(nodeName, nodeTypeName, ex.what());
+	}
+}
+
 void NodeTree::execute(bool withInit)
 {
 	if(_executeListDirty)
@@ -398,18 +438,6 @@ void NodeTree::execute(bool withInit)
 	NodeSocketWriter writer;
 
 	std::vector<NodeID> selfTagging;
-
-	auto cleanUp = [this, &selfTagging]()
-	{
-		// Clean
-		for(Node& node : _nodes)
-			node.unsetFlag(ENodeFlags::Tagged);
-		_executeListDirty = true;
-
-		// tag all self-tagging nodes
-		for(auto id : selfTagging)
-			tagNode(id);
-	};
 
 	// Traverse through just-built exec list and process each node 
 	for(NodeID nodeID : _executeList)
@@ -422,23 +450,30 @@ void NodeTree::execute(bool withInit)
 		{
 			if(withInit && _nodes[nodeID].flag(ENodeFlags::StateNode))
 			{
-				/// TODO:
-				/*bool res = */node.restart(/*reader, writer*/);
+				// Try to restart node internal state if any
+				if(!node.restart())
+				{
+					throw ExecutionError(node.nodeName(), 
+						nodeTypeName(nodeID), "Error during node state restart");
+				}
 			}
 
-			/// TODO: throw if status is error
 			ExecutionStatus ret = node.execute(reader, writer);
 			if(ret.status == EStatus::Tag)
 				selfTagging.push_back(nodeID);
+			// If node reported an error
+			else if(ret.status == EStatus::Error)
+				throw ExecutionError(node.nodeName(), 
+					nodeTypeName(nodeID), ret.errorMessage);
 		}
-		catch(boost::bad_get& ex)
+		catch(...)
 		{
-			cleanUp();
-			throw;
+			cleanUpAfterExecution(selfTagging);
+			handleException(node.nodeName(), nodeTypeName(nodeID));
 		}
 	}
 
-	cleanUp();
+	cleanUpAfterExecution(selfTagging);
 }
 
 std::vector<NodeID> NodeTree::executeList() const
