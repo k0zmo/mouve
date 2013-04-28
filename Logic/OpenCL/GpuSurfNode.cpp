@@ -67,6 +67,9 @@ public:
 				strm << _gpuComputeModule->device().warpSize();
 		}
 
+		if(_gpuComputeModule->device().supportsExtension("cl_ext_atomic_counters_32"))
+			strm << " -DUSE_ATOMIC_COUNTERS";
+
 		strm << " -DKEYPOINT_MAX=" << KEYPOINTS_MAX;
 		string opts = strm.str();
 

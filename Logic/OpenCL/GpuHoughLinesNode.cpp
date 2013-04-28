@@ -50,12 +50,16 @@ public:
 
 	bool postInit() override
 	{
-		_kidBuildPointsList = _gpuComputeModule->registerKernel("buildPointsList", "hough.cl");
-		_kidAccumLines = _gpuComputeModule->registerKernel("accumLines", "hough.cl");
-		_kidAccumLinesShared = _gpuComputeModule->registerKernel("accumLines_shared", "hough.cl");
-		_kidGetLines = _gpuComputeModule->registerKernel("getLines", "hough.cl");
-		_kidAccumToImage = _gpuComputeModule->registerKernel("accumToImage", "hough.cl");
-		_kidFillAccumSpace = _gpuComputeModule->registerKernel("fill_buffer_int", "fill.cl");
+		string opts;
+		if(_gpuComputeModule->device().supportsExtension("cl_ext_atomic_counters_32"))
+			opts = "-DUSE_ATOMIC_COUNTERS";
+
+		_kidBuildPointsList = _gpuComputeModule->registerKernel("buildPointsList", "hough.cl", opts);
+		_kidAccumLines = _gpuComputeModule->registerKernel("accumLines", "hough.cl", opts);
+		_kidAccumLinesShared = _gpuComputeModule->registerKernel("accumLines_shared", "hough.cl", opts);
+		_kidGetLines = _gpuComputeModule->registerKernel("getLines", "hough.cl", opts);
+		_kidAccumToImage = _gpuComputeModule->registerKernel("accumToImage", "hough.cl", opts);
+		_kidFillAccumSpace = _gpuComputeModule->registerKernel("fill_buffer_int", "fill.cl", opts);
 
 		return _kidBuildPointsList != InvalidKernelID
 			&& _kidAccumLines != InvalidKernelID
