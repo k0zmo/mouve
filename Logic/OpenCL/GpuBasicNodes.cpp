@@ -3,7 +3,9 @@
 #include "GpuNode.h"
 #include "NodeFactory.h"
 
-/// TODO: Add properties for setting pinned/pageable memory and direct/mapped access
+/// TODO: Add property for setting pinned/pageable memory
+/// For now we got conditional compilation
+
 class GpuUploadImageNodeType : public GpuNodeType
 {
 public:
@@ -28,13 +30,33 @@ public:
 				clw::Access_ReadOnly, clw::Location_Device,
 				clw::ImageFormat(clw::Order_R, clw::Type_Normalized_UInt8),
 				hostImage.cols, hostImage.rows);
+
+			_pinnedBuffer = _gpuComputeModule->context().createBuffer(clw::Access_ReadWrite,
+				clw::Location_AllocHostMemory, hostImage.cols * hostImage.rows * sizeof(uchar));
 		}
 
-		/// TODO: Try different methods for data transfers
+#if 0
 		bool res = _gpuComputeModule->queue().writeImage2D(deviceImage, hostImage.data, 
 			0, 0, hostImage.cols, hostImage.rows, hostImage.step);
-
 		return ExecutionStatus(res ? EStatus::Ok : EStatus::Error);
+#else
+
+		void* ptr = _gpuComputeModule->queue().mapBuffer(_pinnedBuffer, clw::MapAccess_Write);
+		if(!ptr)
+			return ExecutionStatus(EStatus::Error, "Couldn't mapped pinned memory for device image transfer");
+		if(hostImage.step != hostImage.cols)
+		{
+			for(int row = 0; row < hostImage.rows; ++row)
+				memcpy((uchar*)ptr + row*hostImage.step, (uchar*)hostImage.data + row*hostImage.step, hostImage.step);
+		}
+		else
+		{
+			memcpy(ptr, hostImage.data, hostImage.step * hostImage.rows);
+		}
+		_gpuComputeModule->queue().asyncUnmap(_pinnedBuffer, ptr);
+		_gpuComputeModule->queue().asyncCopyBufferToImage(_pinnedBuffer, deviceImage);
+		return ExecutionStatus(EStatus::Ok);
+#endif
 	}
 
 	void configuration(NodeConfig& nodeConfig) const override
@@ -54,10 +76,12 @@ public:
 		nodeConfig.pOutputSockets = out_config;
 		nodeConfig.module = "opencl";
 	}
+
+private:
+	clw::Buffer _pinnedBuffer;
 };
 
 
-/// TODO: Add properties for setting pinned/pageable memory and direct/mapped access
 class GpuDownloadImageNodeType : public GpuNodeType
 {
 public:
@@ -76,14 +100,41 @@ public:
 		if(deviceImage.format().order != clw::Order_R)
 			return ExecutionStatus(EStatus::Error, "Wrong data type (should be one channel device image)");
 
-		/// TODO: For now we assume it's always 1 channel image
-		hostImage.create(deviceImage.height(), deviceImage.width(), CV_8UC1);
+		int width = deviceImage.width();
+		int height = deviceImage.height();
 
-		/// TODO: Try different methods for data transfers
+		/// TODO: For now we assume it's always 1 channel image
+		hostImage.create(height, width, CV_8UC1);
+
+#if 0
 		bool res = _gpuComputeModule->queue().readImage2D(deviceImage, hostImage.data, 
 			0, 0, hostImage.cols, hostImage.rows, hostImage.step);
-
 		return ExecutionStatus(res ? EStatus::Ok : EStatus::Error);
+#else
+		if(_pinnedBuffer.isNull() || (width*height*sizeof(uchar) != _pinnedBuffer.size()))
+		{
+
+			_pinnedBuffer = _gpuComputeModule->context().createBuffer(clw::Access_ReadWrite,
+				clw::Location_AllocHostMemory, hostImage.cols * hostImage.rows * sizeof(uchar));
+		}
+
+		_gpuComputeModule->queue().asyncCopyImageToBuffer(deviceImage, _pinnedBuffer);
+		void* ptr = _gpuComputeModule->queue().mapBuffer(_pinnedBuffer, clw::MapAccess_Read);
+		if(!ptr)
+			return ExecutionStatus(EStatus::Error, "Couldn't mapped pinned memory for device image transfer");
+		if(hostImage.step != hostImage.cols)
+		{
+			for(int row = 0; row < hostImage.rows; ++row)
+				memcpy((uchar*)hostImage.data + row*hostImage.step, (uchar*)ptr + row*hostImage.step, hostImage.step);
+		}
+		else
+		{
+			memcpy(hostImage.data, ptr, hostImage.step * hostImage.rows);
+		}
+		// Unmapping device memory when reading is practically 'no-cost'
+		_gpuComputeModule->queue().asyncUnmap(_pinnedBuffer, ptr);
+		return ExecutionStatus(EStatus::Ok);
+#endif
 	}
 
 	void configuration(NodeConfig& nodeConfig) const override
@@ -103,6 +154,9 @@ public:
 		nodeConfig.pOutputSockets = out_config;
 		nodeConfig.module = "opencl";
 	}
+
+private:
+	clw::Buffer _pinnedBuffer;
 };
 
 
