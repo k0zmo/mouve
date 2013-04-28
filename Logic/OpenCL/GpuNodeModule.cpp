@@ -101,6 +101,16 @@ KernelID GpuNodeModule::updateKernel(KernelID kernelId,
 	return _library.updateKernel(kernelId, buildOptions);
 }
 
+vector<RegisteredProgram> GpuNodeModule::populateListOfRegisteredPrograms() const
+{
+	return _library.populateListOfRegisteredPrograms();
+}
+
+void GpuNodeModule::rebuildProgram(const string& programName)
+{
+	_library.rebuildProgram(programName);
+}
+
 #pragma region Kernels Directory
 
 #if K_SYSTEM == K_SYSTEM_WINDOWS

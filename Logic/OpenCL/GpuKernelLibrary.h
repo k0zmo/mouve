@@ -89,13 +89,13 @@ struct RegisteredProgram
 	struct Build
 	{
 		Build() {}
-		Build(int kernelUsing, const string& options, bool built)
-			: kernelUsing(kernelUsing)
+		Build(const vector<string>& kernels, const string& options, bool built)
+			: kernels(kernels)
 			, options(options)
 			, built(built)
 		{}
 
-		int kernelUsing;
+		vector<string> kernels;
 		string options;
 		bool built;
 	};

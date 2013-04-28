@@ -25,6 +25,9 @@ public:
 	clw::Kernel acquireKernel(KernelID kernelId);
 	KernelID updateKernel(KernelID kernelId, const string& buildOptions);
 
+	vector<RegisteredProgram> populateListOfRegisteredPrograms() const;
+	void rebuildProgram(const string& programName);
+
 	bool isConstantMemorySufficient(uint64_t memSize) const;
 	bool isLocalMemorySufficient(uint64_t memSize) const;
 

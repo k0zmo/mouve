@@ -93,6 +93,13 @@ Controller::Controller(QWidget* parent, Qt::WindowFlags flags)
 	// Gpu module
 #if defined(HAVE_OPENCL)
 	_nodeSystem->registerNodeModule(_gpuModule->moduleName(), _gpuModule);
+
+	_actionListPrograms = new QAction(QStringLiteral("List programs"), this);
+	auto menuGpu = menuModules->addMenu("GPU");
+	menuGpu->addAction(_actionListPrograms);
+
+	connect(_actionListPrograms, &QAction::triggered,
+		this, &Controller::showProgramsList);
 #endif
 	
 	// JAI module
@@ -1753,6 +1760,117 @@ void Controller::displayNodeTimeInfo(bool checked)
 	for( ; iter != _nodeViews.end(); ++iter)
 		iter.value()->setTimeInfoVisible(checked);
 }
+
+#if defined(HAVE_OPENCL)
+
+#include <thread>
+#include "Logic/OpenCL/GpuException.h"
+
+void Controller::showProgramsList()
+{
+	auto list = _gpuModule->populateListOfRegisteredPrograms();
+	
+	QList<QTreeWidgetItem*> items;
+	for(auto&& programEntry : list)
+	{
+		QTreeWidgetItem* item = new QTreeWidgetItem((QTreeWidget*)nullptr, 
+			QStringList() << QString::fromStdString(programEntry.programName));
+
+		for(auto&& build : programEntry.builds)
+		{
+			QString buildOptions = QString::fromStdString(build.options);
+			if(buildOptions.isEmpty())
+				buildOptions = QStringLiteral("[no build options]");
+			QTreeWidgetItem* buildItem = new QTreeWidgetItem(item, QStringList() << buildOptions);
+			
+			for(auto&& kernel : build.kernels)
+			{
+				QString kernelName = QString::fromStdString(kernel);
+				QTreeWidgetItem* kernelItem = new QTreeWidgetItem(buildItem, QStringList() << kernelName);
+			}
+		}
+
+		items.append(item);
+	}
+
+	QDialog dialog;
+	dialog.resize(500,400);
+	QHBoxLayout* horizontalLayout = new QHBoxLayout(&dialog);
+
+	QTreeWidget* treeWidget = new QTreeWidget(&dialog);
+	treeWidget->setColumnCount(1);
+	treeWidget->insertTopLevelItems(0, items);
+	treeWidget->headerItem()->setText(0, QStringLiteral("Registered programs:"));
+	treeWidget->header()->setSectionResizeMode(QHeaderView::ResizeToContents);
+	treeWidget->expandAll();
+
+	horizontalLayout->addWidget(treeWidget);
+
+	QAction* actionRebuildProgram = new QAction("Rebuild", &dialog);
+	connect(actionRebuildProgram, &QAction::triggered, [&] {
+		QModelIndex index = treeWidget->currentIndex();
+		int r = index.row();
+		if(r < list.size())
+		{
+			std::string programName = list[r].programName;
+
+			QProgressDialog	progress;
+			progress.setLabel(new QLabel(QString("Rebuilding program %1...")
+				.arg(QString::fromStdString(programName)), &progress));
+			progress.setCancelButton(nullptr);
+			progress.setRange(0, 0);
+			progress.setWindowModality(Qt::ApplicationModal);
+
+			std::exception_ptr exception;
+			std::thread buildThread([&] {
+				try
+				{
+					// Will throw if program build won't succeed
+					_gpuModule->rebuildProgram(programName);
+				}
+				catch (...)
+				{
+					// Exception propagate to main thread
+					exception = std::current_exception();
+				}
+				QMetaObject::invokeMethod(&progress, "close", Qt::QueuedConnection);				
+			});
+
+			progress.exec();
+			buildThread.join(); // when user forced progress dialog to be closed
+
+			try
+			{
+				if(exception != nullptr)
+					std::rethrow_exception(exception);
+			}
+			catch (GpuBuildException& ex)
+			{
+				QString logMessage = QString::fromStdString(ex.log);
+				if(logMessage.length() > 1024)
+				{
+					logMessage.truncate(1024);
+					logMessage.append("\n...");
+				}
+				showErrorMessage(QString("Building program failed:\n") + logMessage);
+			}
+		}
+	});
+
+	connect(treeWidget, &QTreeWidget::itemSelectionChanged, [&] {
+		QModelIndex index = treeWidget->currentIndex();
+		QModelIndex parent;
+		if((parent = index.parent()).isValid())
+			treeWidget->removeAction(actionRebuildProgram);
+		else
+			treeWidget->addAction(actionRebuildProgram);			
+	});
+	treeWidget->setContextMenuPolicy(Qt::ActionsContextMenu);
+
+	dialog.exec();
+}
+
+#endif
 
 #if defined(HAVE_JAI)
 

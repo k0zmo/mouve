@@ -165,6 +165,9 @@ private:
 	// OpenCL Module
 #if defined(HAVE_OPENCL)
 	std::shared_ptr<GpuNodeModule> _gpuModule;
+	QAction* _actionListPrograms;
+
+	void showProgramsList();
 #endif
 
 	// JAI Module

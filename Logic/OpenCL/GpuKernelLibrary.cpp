@@ -190,17 +190,17 @@ vector<RegisteredProgram> KernelLibrary::populateListOfRegisteredPrograms() cons
 		for(auto ri = range.first, re = range.second; ri != re; ++ri)
 		{
 			// find how many kernels uses this program-build options configuration
-			int used = 0;
+			vector<string> kernelNames;
 			for(auto& kentry : _kernels)
 			{
 				if(kentry.programName == entry.programName
 					&& kentry.buildOptions == ri->second.buildOptions)
 				{
-					++used;
+					kernelNames.emplace_back(kentry.kernelName);
 				}
 			}
 
-			entry.builds.emplace_back(used, ri->second.buildOptions, ri->second.program.isBuilt());
+			entry.builds.emplace_back(std::move(kernelNames), ri->second.buildOptions, ri->second.program.isBuilt());
 			++iter;
 		}
 
