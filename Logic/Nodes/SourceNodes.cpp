@@ -269,9 +269,7 @@ public:
 	{
 		_capture.open(_deviceId);
 		if(!_capture.isOpened())
-			throw cv::Exception(0, "QWEQWEQWE", __FUNCTION__, __FILE__, __LINE__);
-			//return false;
-
+			return false;
 		return true;
 	}
 

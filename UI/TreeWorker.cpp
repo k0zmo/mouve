@@ -2,7 +2,7 @@
 
 #include "Logic/NodeTree.h"
 #include "Logic/NodeFlowData.h"
-#include "Logic/OpenCL/GpuException.h"
+#include "Logic/NodeException.h"
 
 TreeWorker::TreeWorker(QObject* parent)
 	: QObject(parent)
@@ -28,44 +28,17 @@ void TreeWorker::process(bool withInit)
 			_nodeTree->execute(withInit);
 		res = true;
 	}
-	catch(boost::bad_get& ex)
+	catch(ExecutionError& ex)
 	{
-		emit error(QString("Bad socket connection, %1").arg(ex.what()));
-	}
-#if defined(HAVE_OPENCL)
-	catch(GpuBuildException& ex)
-	{
-		QString logMessage = QString::fromStdString(ex.log);
-		if(logMessage.length() > 1024)
-		{
-			logMessage.truncate(1024);
-			logMessage.append("\n...");
-		}
-		
-		emit error(
-			QString("Building program failed:\n") + 
-			logMessage
-		);
-	}
-	catch(GpuNodeException& ex)
-	{
-		emit error(QString("OpenCL error(%1): %2")
-			.arg(ex.error)
-			.arg(QString::fromStdString(ex.message))
-		);
-	}
-#endif
-	catch(cv::Exception& ex)
-	{
-		emit error(QString("OpenCV exception caught: %1").arg(ex.what()));
-	}
-	catch(std::exception& ex)
-	{
-		emit error(QString("Exception was caught: %1").arg(ex.what()));
+		emit error(QString("Execution error in:\nNode: %1\n"
+			"Node typename: %2\n\nError message:\n%3")
+				.arg(ex.nodeName.c_str())
+				.arg(ex.nodeTypeName.c_str())
+				.arg(ex.errorMessage.c_str()));
 	}
 	catch(...)
 	{
-		emit error(QStringLiteral("Unknown exception was thrown"));
+		emit error(QStringLiteral("Unknown exception was caught"));
 	}
 
 	emit completed(res);
