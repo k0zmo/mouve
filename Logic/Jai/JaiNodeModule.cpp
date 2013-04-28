@@ -61,11 +61,9 @@ bool JaiNodeModule::initialize()
 	return true; //numDevices > 0;
 }
 
-bool JaiNodeModule::ensureInitialized()
+bool JaiNodeModule::isInitialized()
 {
-	if(!_factoryHandle)
-		return initialize();
-	return true;
+	return _factoryHandle != nullptr;
 }
 
 string JaiNodeModule::moduleName() const

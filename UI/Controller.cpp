@@ -1210,47 +1210,79 @@ void Controller::contextMenu(const QPoint& globalPos,
 		{
 			auto item = items[i];
 
-			if(item->type() == NodeView::Type)
+			if(item->type() != NodeView::Type)
+				continue;
+
+			QMenu menu;
+			QAction actionRemoveNode("Remove node", nullptr);
+			if(treeIdle())
+				menu.addAction(&actionRemoveNode);
+
+			// Preview socket menu
+			NodeView* nodeView = static_cast<NodeView*>(item);
+			int previewsCount = nodeView->outputSocketCount();
+			if(previewsCount > 0)
 			{
-				QMenu menu;
-				QAction actionRemoveNode("Remove node", nullptr);
-				if(treeIdle())
-					menu.addAction(&actionRemoveNode);
+				if(_state == EState::Stopped && !_processing)
+					menu.addSeparator();
 
-				NodeView* nodeView = static_cast<NodeView*>(item);
-				int previewsCount = nodeView->outputSocketCount();
-				if(previewsCount > 0)
+				int curr = nodeView->previewSocketID();
+				for(int imwrite = 0; imwrite < previewsCount; ++imwrite)
 				{
-					if(_state == EState::Stopped && !_processing)
-						menu.addSeparator();
-
-					int curr = nodeView->previewSocketID();
-					for(int i = 0; i < previewsCount; ++i)
-					{
-						QAction* actionPreviewSocket = new QAction
-							(QString("Preview socket: %1").arg(i), &menu);
-						actionPreviewSocket->setCheckable(true);
-						actionPreviewSocket->setChecked(i == curr);
-						actionPreviewSocket->setData(i);
-						connect(actionPreviewSocket, &QAction::triggered,
-							[=](bool checked)
+					QAction* actionPreviewSocket = new QAction
+						(QString("Preview socket: %1").arg(imwrite), &menu);
+					actionPreviewSocket->setCheckable(true);
+					actionPreviewSocket->setChecked(imwrite == curr);
+					actionPreviewSocket->setData(imwrite);
+					connect(actionPreviewSocket, &QAction::triggered,
+						[=](bool checked)
+						{
+							if(checked)
 							{
-								if(checked)
-								{
-									nodeView->setPreviewSocketID
-										(actionPreviewSocket->data().toInt());
-									updatePreviewImpl();
-								}
-							});
-						menu.addAction(actionPreviewSocket);
-					}
+								nodeView->setPreviewSocketID
+									(actionPreviewSocket->data().toInt());
+								updatePreviewImpl();
+							}
+						});
+					menu.addAction(actionPreviewSocket);
 				}
 
-				QAction* ret = menu.exec(globalPos);
-				if(ret == &actionRemoveNode && treeIdle())
-					deleteNode(nodeView);
-				return;
+				// Save socket image menu (disable when tree is still being processed
+				if(_state != EState::Playing && !_processing)
+				{
+					for(int socketID = 0; socketID < previewsCount; ++socketID)
+					{
+						NodeID nodeID = nodeView->nodeKey();
+
+						const NodeFlowData& outputData = _nodeTree->outputSocket(nodeID, socketID);
+						if(!outputData.isValidImage())
+							continue;
+
+						QAction* actionSaveImageSocket = new QAction
+							(QString("Save image socket: %1").arg(socketID), &menu);
+						connect(actionSaveImageSocket, &QAction::triggered,
+							[=]
+							{
+								QString filePath = QFileDialog::getSaveFileName(
+									this, tr("Save file"), QString(), ""
+									"PNG (*.png);;"
+									"BMP (*.bmp);;"
+									"JPEG (*.jpg);;"
+									"JPEG 2000 (*.jp2)");
+								if(filePath.isEmpty())
+									return;
+
+								outputData.saveToDisk(filePath.toStdString());
+							});	
+						menu.addAction(actionSaveImageSocket);
+					}
+				}
 			}
+
+			QAction* ret = menu.exec(globalPos);
+			if(ret == &actionRemoveNode && treeIdle())
+				deleteNode(nodeView);
+			return;
 		}
 	}
 }
@@ -1874,6 +1906,7 @@ void Controller::showProgramsList()
 
 #if defined(HAVE_JAI)
 
+#include <future>
 #include "ui_Camera.h"
 
 void queryAndFillParameters(const std::shared_ptr<JaiNodeModule>& jaiModule,
@@ -1928,10 +1961,29 @@ void queryAndFillParameters(const std::shared_ptr<JaiNodeModule>& jaiModule,
 
 void Controller::showDeviceSettings()
 {
-	if(!_jaiModule->ensureInitialized())
+	QProgressDialog	progress;
+	progress.setLabel(new QLabel("Initializing JAI module...", &progress));
+	progress.setCancelButton(nullptr);
+	progress.setRange(0, 0);
+	progress.setWindowModality(Qt::ApplicationModal);
+
+	if(!_jaiModule->isInitialized())
 	{
-		showErrorMessage("Couldn't initialized properly JAI module!");
-		return;
+		std::future<bool> res = std::async(std::launch::async, [&] {
+			bool res = _jaiModule->initialize();
+			// Situation when close() is called before progress.exec() 
+			// is not possible as it goes to its own EventLoop 
+			// Or at least it think that's the case
+			QMetaObject::invokeMethod(&progress, "close", Qt::QueuedConnection);
+			return res;
+		});
+		progress.exec();
+
+		if(!res.get())
+		{
+			showErrorMessage("Couldn't initialized properly JAI module!");
+			return;
+		}
 	}
 
 	if(_jaiModule->cameraCount() == 0)
@@ -1956,8 +2008,7 @@ void Controller::showDeviceSettings()
 	queryAndFillParameters(_jaiModule, ui, cameraInfos[0], 0);
 
 	connect(ui.cameraComboBox, static_cast<void (QComboBox::*)(int)>
-		(&QComboBox::currentIndexChanged), [&](int index)
-	{
+		(&QComboBox::currentIndexChanged), [&](int index) {
 		ui.offsetXLabel->setText("Offset X");
 		ui.offsetYLabel->setText("Offset Y");
 		ui.widthLabel->setText("Width");
@@ -1968,8 +2019,7 @@ void Controller::showDeviceSettings()
 		queryAndFillParameters(_jaiModule, ui, cameraInfos[index], index);
 	});
 
-	connect(ui.buttonBox, &QDialogButtonBox::accepted, [&]()
-	{
+	connect(ui.buttonBox, &QDialogButtonBox::accepted, [&] {
 		int index = ui.cameraComboBox->currentIndex();
 		CameraSettings settings;
 		settings.offsetX.value = ui.offsetXLineEdit->text().toInt();

@@ -1,5 +1,7 @@
 #include "NodeFlowData.h"
 
+#include <opencv2/highgui/highgui.hpp>
+
 NodeFlowData::NodeFlowData()
 	: _type(ENodeFlowDataType::Invalid)
 	, _width(0)
@@ -59,6 +61,29 @@ NodeFlowData::NodeFlowData(ENodeFlowDataType dataType)
 
 NodeFlowData::~NodeFlowData()
 {
+}
+
+void NodeFlowData::saveToDisk(const std::string& filename) const
+{
+	if(_type == ENodeFlowDataType::Image
+		|| _type == ENodeFlowDataType::ImageRgb)
+	{
+		const cv::Mat& img = boost::get<cv::Mat>(_data);
+		if(!img.empty())
+			cv::imwrite(filename, img);
+	}
+}
+
+bool NodeFlowData::isValidImage() const
+{
+	if(_type == ENodeFlowDataType::Image
+		|| _type == ENodeFlowDataType::ImageRgb)
+	{
+		const cv::Mat& img = boost::get<cv::Mat>(_data);
+		if(!img.empty())
+			return true;
+	}
+	return false;
 }
 
 cv::Mat& NodeFlowData::getImage()

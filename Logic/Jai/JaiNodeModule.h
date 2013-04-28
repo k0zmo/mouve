@@ -60,7 +60,7 @@ public:
 	~JaiNodeModule() override;
 
 	bool initialize() override;
-	bool ensureInitialized() override;
+	bool isInitialized() override;
 
 	string moduleName() const override;
 
