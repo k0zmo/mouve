@@ -166,8 +166,7 @@ public:
 		kernelGaussMix.setArg(2, _mixtureDataBuffer);
 		kernelGaussMix.setArg(3, _mixtureParamsBuffer);
 		kernelGaussMix.setArg(4, alpha);
-		clw::Event evt = _gpuComputeModule->queue().asyncRunKernel(kernelGaussMix);
-		_gpuComputeModule->queue().finish();
+		_gpuComputeModule->queue().asyncRunKernel(kernelGaussMix);
 
 		if(_showBackground)
 		{
@@ -190,14 +189,11 @@ public:
 			kernelBackground.setArg(0, deviceDestBackground);
 			kernelBackground.setArg(1, _mixtureDataBuffer);
 			kernelBackground.setArg(2, _mixtureParamsBuffer);
-			//evt = _gpuComputeModule->queue().asyncRunKernel(kernelBackground);
-			//_gpuComputeModule->queue().finish();
-
-			bool res = _gpuComputeModule->queue().runKernel(kernelBackground);
+			_gpuComputeModule->queue().asyncRunKernel(kernelBackground);
 		}
 
-		double elapsed = (evt.finishTime() - evt.startTime()) * 1e-6;
-		return ExecutionStatus(EStatus::Ok, elapsed);
+		_gpuComputeModule->queue().finish();
+		return ExecutionStatus(EStatus::Ok);
 	}
 
 	void configuration(NodeConfig& nodeConfig) const override
@@ -224,7 +220,7 @@ public:
 		nodeConfig.pInputSockets = in_config;
 		nodeConfig.pOutputSockets = out_config;
 		nodeConfig.pProperties = prop_config;
-		nodeConfig.flags = Node_HasState | Node_OverridesTimeComputation;
+		nodeConfig.flags = Node_HasState;
 		nodeConfig.module = "opencl";
 	}
 
