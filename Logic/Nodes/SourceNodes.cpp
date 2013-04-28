@@ -200,10 +200,9 @@ public:
 
 		output = cv::imread(_filePath, CV_LOAD_IMAGE_GRAYSCALE);
 
-		if(output.data && output.rows > 0 && output.cols > 0)
-			return ExecutionStatus(EStatus::Ok);
-		else
+		if(output.empty())
 			return ExecutionStatus(EStatus::Error, "File not found");
+		return ExecutionStatus(EStatus::Ok);
 	}
 
 	void configuration(NodeConfig& nodeConfig) const override

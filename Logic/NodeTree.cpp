@@ -463,8 +463,11 @@ void NodeTree::execute(bool withInit)
 				selfTagging.push_back(nodeID);
 			// If node reported an error
 			else if(ret.status == EStatus::Error)
+			{
+				selfTagging.push_back(nodeID);
 				throw ExecutionError(node.nodeName(), 
 					nodeTypeName(nodeID), ret.errorMessage);
+			}
 		}
 		catch(...)
 		{
