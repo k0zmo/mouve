@@ -280,6 +280,14 @@ float getAngle(float x, float y)
     return angle;
 }
 
+__kernel void uprightKeypointOrientation(__global float* keypoints,
+                                         int numKeypoints)
+{
+    int gid = get_global_id(0);
+    if(gid < numKeypoints)
+        keypoints[KEYPOINT_MAX*KEYPOINT_ORIENTATION + gid] = 0.0f;
+}
+
 // These defines aren't here for easy tweak but rather for better readability
 // Do NOT change it!
 #define ORIENTATION_WINDOW_SIZE M_PI_F/3.0f

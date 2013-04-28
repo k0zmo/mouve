@@ -40,6 +40,7 @@ public:
 		, _nOctaves(4)
 		, _nScales(4)
 		, _initSampling(1)
+		, _upright(false)
 		, _nTotalLayers(0)
 		, _constantsUploaded(false)
 	{
@@ -74,6 +75,7 @@ public:
 		_kidMultiScan_vert = _gpuComputeModule->registerKernel("multiscan_vert_image", "integral.cl", opts);
 		_kidBuildScaleSpace = _gpuComputeModule->registerKernel("buildScaleSpace", "surf.cl", opts);
 		_kidFindScaleSpaceMaxima = _gpuComputeModule->registerKernel("findScaleSpaceMaxima", "surf.cl", opts);
+		_kidUprightKeypointOrientation = _gpuComputeModule->registerKernel("uprightKeypointOrientation", "surf.cl", opts);
 		_kidFindKeypointOrientation = _gpuComputeModule->registerKernel("findKeypointOrientation", "surf.cl", opts);
 		_kidCalculateDescriptors = _gpuComputeModule->registerKernel("calculateDescriptors2", "surf.cl", opts);
 		_kidNormalizeDescriptors = _gpuComputeModule->registerKernel("normalizeDescriptors", "surf.cl", opts);
@@ -83,6 +85,7 @@ public:
 			_kidMultiScan_vert != InvalidKernelID &&
 			_kidBuildScaleSpace != InvalidKernelID &&
 			_kidFindScaleSpaceMaxima != InvalidKernelID &&
+			_kidUprightKeypointOrientation != InvalidKernelID &&
 			_kidFindKeypointOrientation != InvalidKernelID &&
 			_kidCalculateDescriptors != InvalidKernelID &&
 			_kidNormalizeDescriptors != InvalidKernelID;
@@ -104,6 +107,9 @@ public:
 		case ID_InitSampling:
 			_initSampling = newValue.toInt();
 			return true;
+		case ID_Upright:
+			_upright = newValue.toBool();
+			return true;
 		}
 
 		return false;
@@ -117,6 +123,7 @@ public:
 		case ID_NumOctaves: return _nOctaves;
 		case ID_NumScales: return _nScales;
 		case ID_InitSampling: return _initSampling;
+		case ID_Upright: return _upright;
 		}
 
 		return QVariant();
@@ -138,31 +145,71 @@ public:
 
 		ensureKeypointsBufferIsEnough();
 
-		// Zero keypoints counter
-		int* ptr = (int*) _gpuComputeModule->queue().mapBuffer(_keypointsCount_cl, clw::MapAccess_Write);
-		ptr[0] = 0;
-		_gpuComputeModule->queue().unmap(_keypointsCount_cl, ptr);
+		// Zero keypoints counter (use pinned memory)
+		// Another way would be to map pinned buffer (allocated on a host) 
+		// and read the device buffer using just obtained pointer. If data transfer is single-direction
+		// we don't need to map and unmap every time - just after creation and before destruction of a buffer
+
+		// From AMD APP OpenCL Programming Guide:
+		// pinnedBuffer = clCreateBuffer(CL_MEM_ALLOC_HOST_PTR or CL_MEM_USE_HOST_PTR)
+		// deviceBuffer = clCreateBuffer()
+
+		// 1)
+		// void* pinnedMemory = clEnqueueMapBuffer(pinnedBuffer) -> can be done only once
+		// clEnqueueRead/WriteBuffer(deviceBuffer, pinnedMemory)
+		// clEnqueueUnmapMemObject(pinnedBuffer, pinnedMemory) -> can be done only once
+		//
+		// 2) 
+		// void* pinnedMemory = clEnqueueMapBuffer(pinnedBuffer)
+		// [Application writes or modifies memory (host memory bandwith)]
+		// clEnqueueUnmapMemObject(pinnedBuffer, pinnedMemory)
+		// clEnqueueCopyBuffer(pinnedBuffer, deviceBuffer)
+		//  - or -
+		// clEnqueueCopyBuffer(deviceBuffer, pinnedBuffer)
+		// void* pinnedMemory = clEnqueueMapBuffer(pinnedBuffer)
+		// [Application reads memory (host memory bandwith)]
+		// clEnqueueUnmapMemObject(pinnedBuffer, pinnedMemory)
+
+
+		// On AMD these are the same solutions
+		int* intPtr = (int*) _gpuComputeModule->queue().mapBuffer(_pinnedKeypointsCount_cl, clw::MapAccess_Write);
+		if(!intPtr)
+			return ExecutionStatus(EStatus::Error, "Couldn't mapped keypoints counter buffer to host address space");
+		intPtr[0] = 0;
+		_gpuComputeModule->queue().asyncUnmap(_pinnedKeypointsCount_cl, intPtr);
+		_gpuComputeModule->queue().asyncCopyBuffer(_pinnedKeypointsCount_cl, _keypointsCount_cl);
 
 		convertImageToIntegral(deviceImage, imageWidth, imageHeight);
 		prepareScaleSpaceLayers(imageWidth, imageHeight);
 		buildScaleSpace(imageWidth, imageHeight);
 		findScaleSpaceMaxima();
 
-		/// TODO Experiment with pinned memory
-		int* intPtr = (int*) _gpuComputeModule->queue().mapBuffer(_keypointsCount_cl, clw::MapAccess_Read);
+		// Read keypoints counter (use pinned memory)
+		_gpuComputeModule->queue().asyncCopyBuffer(_keypointsCount_cl, _pinnedKeypointsCount_cl);
+		intPtr = (int*) _gpuComputeModule->queue().mapBuffer(_pinnedKeypointsCount_cl, clw::MapAccess_Read);
+		if(!intPtr)
+			return ExecutionStatus(EStatus::Error, "Couldn't mapped keypoints counter buffer to host address space");
 		int keypointsCount = min(intPtr[0], KEYPOINTS_MAX);
-		_gpuComputeModule->queue().asyncUnmap(_keypointsCount_cl, intPtr);
+		_gpuComputeModule->queue().asyncUnmap(_pinnedKeypointsCount_cl, intPtr);
 
 		if(keypointsCount > 0)
 		{
-			findKeypointOrientation(keypointsCount);
+			if(!_upright)
+				findKeypointOrientation(keypointsCount);
+			else
+				uprightKeypointOrientation(keypointsCount);
 			calculateDescriptors(keypointsCount);
+
+			// Start copying descriptors to pinned buffer
+			_gpuComputeModule->queue().asyncCopyBuffer(_descriptors_cl, _pinnedDescriptors_cl);
 
 			vector<KeyPoint> kps = downloadKeypoints(keypointsCount);
 			keyPoints = transformKeyPoint(kps);
 
 			descriptors.create(keypointsCount, 64, CV_32F);
-			float* floatPtr = (float*) _gpuComputeModule->queue().mapBuffer(_descriptors_cl, clw::MapAccess_Read);
+			float* floatPtr = (float*) _gpuComputeModule->queue().mapBuffer(_pinnedDescriptors_cl, clw::MapAccess_Read);
+			if(!floatPtr)
+				return ExecutionStatus(EStatus::Error, "Couldn't mapped descriptors buffer to host address space");
 			if(descriptors.step == 64*sizeof(float))
 			{
 				//copy(floatPtr, floatPtr + 64*keypointsCount, descriptors.ptr<float>());
@@ -174,7 +221,7 @@ public:
 					//copy(floatPtr + 64*row, floatPtr + 64*row + 64, descriptors.ptr<float>(row));
 					memcpy(descriptors.ptr<float>(row), floatPtr + 64*row, sizeof(float)*64);
 			}
-			_gpuComputeModule->queue().asyncUnmap(_descriptors_cl, floatPtr);
+			_gpuComputeModule->queue().asyncUnmap(_pinnedDescriptors_cl, floatPtr);
 		}
 		else
 		{
@@ -202,6 +249,7 @@ public:
 			{ EPropertyType::Integer, "Number of octaves", "min:1" },
 			{ EPropertyType::Integer, "Number of scales", "min:1" },
 			{ EPropertyType::Integer, "Initial sampling rate", "min:1" },
+			{ EPropertyType::Boolean, "Upright", "" },
 			{ EPropertyType::Unknown, "", "" }
 		};
 
@@ -226,6 +274,8 @@ private:
 
 		float* gaussianPtr = (float*) _gpuComputeModule->queue().mapBuffer(_gaussianWeights_cl, clw::MapAccess_Write);
 		cl_int2* samplesPtr = (cl_int2*) _gpuComputeModule->queue().mapBuffer(_samplesCoords_cl, clw::MapAccess_Write);
+		if(!gaussianPtr || !samplesPtr)
+			return;
 		int index = 0;
 
 		// Builds list of pixel coordinates to process and their Gaussian-based weight
@@ -296,12 +346,16 @@ private:
 		{
 			_keypoints_cl = _gpuComputeModule->context().createBuffer(
 				clw::Access_ReadWrite, clw::Location_Device, KEYPOINTS_MAX*sizeof(KeyPoint));
+			_pinnedKeypoints_cl = _gpuComputeModule->context().createBuffer(
+				clw::Access_ReadWrite, clw::Location_AllocHostMemory, KEYPOINTS_MAX*sizeof(KeyPoint));
 		}
 
 		if(_keypointsCount_cl.isNull())
 		{
 			_keypointsCount_cl = _gpuComputeModule->context().createBuffer(
 				clw::Access_ReadWrite, clw::Location_Device, sizeof(int));
+			_pinnedKeypointsCount_cl = _gpuComputeModule->context().createBuffer(
+				clw::Access_ReadWrite, clw::Location_AllocHostMemory, sizeof(int));
 		}
 	}
 
@@ -474,6 +528,17 @@ private:
 		_gpuComputeModule->queue().asyncRunKernel(kernelFindKeypointOrientation);
 	}
 
+	void uprightKeypointOrientation(int keypointsCount)
+	{
+		clw::Kernel kernelUprightKeypointOrientation = _gpuComputeModule->acquireKernel(_kidUprightKeypointOrientation);
+
+		kernelUprightKeypointOrientation.setLocalWorkSize(64);
+		kernelUprightKeypointOrientation.setRoundedGlobalWorkSize(keypointsCount);
+		kernelUprightKeypointOrientation.setArg(0, _keypoints_cl);
+		kernelUprightKeypointOrientation.setArg(1, keypointsCount);
+		_gpuComputeModule->queue().asyncRunKernel(kernelUprightKeypointOrientation);
+	}
+
 	void calculateDescriptors(int keypointsCount) 
 	{
 		if(_descriptors_cl.isNull() || 
@@ -482,6 +547,8 @@ private:
 		{
 			_descriptors_cl = _gpuComputeModule->context().createBuffer(clw::Access_WriteOnly, 
 				clw::Location_Device, sizeof(float)*64*keypointsCount);
+			_pinnedDescriptors_cl = _gpuComputeModule->context().createBuffer(clw::Access_WriteOnly, 
+				clw::Location_AllocHostMemory, sizeof(float)*64*keypointsCount);
 		}
 
 		clw::Kernel kernelCalculateDescriptors = _gpuComputeModule->acquireKernel(_kidCalculateDescriptors);
@@ -504,7 +571,10 @@ private:
 	vector<KeyPoint> downloadKeypoints(int keypointsCount) 
 	{
 		vector<KeyPoint> kps(keypointsCount);
-		float* ptrBase = (float*) _gpuComputeModule->queue().mapBuffer(_keypoints_cl, clw::MapAccess_Read);
+		_gpuComputeModule->queue().asyncCopyBuffer(_keypoints_cl, _pinnedKeypoints_cl);
+		float* ptrBase = (float*) _gpuComputeModule->queue().mapBuffer(_pinnedKeypoints_cl, clw::MapAccess_Read);
+		if(!ptrBase)
+			return kps;
 
 		float* ptr = ptrBase + KEYPOINTS_MAX * 0;
 		for(int i = 0; i < keypointsCount; ++i)
@@ -530,7 +600,7 @@ private:
 		for(int i = 0; i < keypointsCount; ++i)
 			kps[i].orientation = *ptr++;
 
-		_gpuComputeModule->queue().asyncUnmap(_keypoints_cl, ptrBase);
+		_gpuComputeModule->queue().asyncUnmap(_pinnedKeypoints_cl, ptrBase);
 
 		return kps;
 	}
@@ -541,19 +611,22 @@ private:
 		ID_HessianThreshold,
 		ID_NumOctaves,
 		ID_NumScales,
-		ID_InitSampling
+		ID_InitSampling,
+		ID_Upright
 	};
 
 	double _hessianThreshold;
 	int _nOctaves;
 	int _nScales;
 	int _initSampling;
+	bool _upright;
 
 	KernelID _kidFillImage;
 	KernelID _kidMultiScan_horiz;
 	KernelID _kidMultiScan_vert;
 	KernelID _kidBuildScaleSpace;
 	KernelID _kidFindScaleSpaceMaxima;
+	KernelID _kidUprightKeypointOrientation;
 	KernelID _kidFindKeypointOrientation;
 	KernelID _kidCalculateDescriptors;
 	KernelID _kidNormalizeDescriptors;
@@ -572,6 +645,10 @@ private:
 	clw::Buffer _keypoints_cl;
 	clw::Buffer _keypointsCount_cl;
 	clw::Buffer _descriptors_cl;
+
+	clw::Buffer _pinnedKeypoints_cl;
+	clw::Buffer _pinnedKeypointsCount_cl;
+	clw::Buffer _pinnedDescriptors_cl;
 };
 
 REGISTER_NODE("OpenCL/Features/SURF", GpuSurfNodeType)
