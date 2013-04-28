@@ -14,7 +14,7 @@ public:
 	bool isInteractiveInit() const;
 
 	bool initialize() override;
-	bool ensureInitialized() override;
+	bool isInitialized() override;
 	std::string moduleName() const override;
 
 	bool createDefault();

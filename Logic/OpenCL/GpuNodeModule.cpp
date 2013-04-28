@@ -31,11 +31,9 @@ bool GpuNodeModule::initialize()
 	return res;
 }
 
-bool GpuNodeModule::ensureInitialized()
+bool GpuNodeModule::isInitialized()
 {
-	if(!_context.isCreated())
-		return initialize();
-	return true;
+	return _context.isCreated();
 }
 
 std::string GpuNodeModule::moduleName() const
