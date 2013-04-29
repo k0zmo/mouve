@@ -334,6 +334,11 @@ __kernel void findKeypointOrientation(__read_only image2d_t integralImage,
                 smem_dy[i] = dxdy.y * gaussianWeights[i];
                 smem_angle[i] = getAngle(dxdy.x, dxdy.y);            
             }
+            else
+            {
+                // this should stop this dx, dy from adding to any window
+                smem_angle[i] = 999.0f;
+            }
         }
     }
     barrier(CLK_LOCAL_MEM_FENCE);

@@ -228,8 +228,8 @@ __kernel void scan_horiz_image(__read_only image2d_t src,
 }
 
 __attribute__((reqd_work_group_size(WARP_SIZE,1,1)))
-__kernel void scan_vert_image_unorm(__read_only image2d_t src,
-                                    __write_only image2d_t dst)
+__kernel void scan_vert_image(__read_only image2d_t src,
+                              __write_only image2d_t dst)
 {
     // Each work group is responsible for scanning a row
     __local uint smem[SCAN_STRIDE];
