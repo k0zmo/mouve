@@ -33,7 +33,9 @@
 #define BOXSIZE_TO_SCALE_COEFF 1.2f/9.0f
 #define BASIC_DESC_SIGMA 3.3f
 
-__constant sampler_t samp = CLK_NORMALIZED_COORDS_FALSE | CLK_FILTER_NEAREST | CLK_ADDRESS_NONE;
+//__constant sampler_t samp = CLK_NORMALIZED_COORDS_FALSE | CLK_FILTER_NEAREST | CLK_ADDRESS_NONE;
+// On Intel SDK it crashes with CLK_ADDRESS_NONE during findKeypointOrientation()
+__constant sampler_t samp = CLK_NORMALIZED_COORDS_FALSE | CLK_FILTER_NEAREST | CLK_ADDRESS_CLAMP_TO_EDGE;
 
 // Tu podaje sie srodek i promienie filtru
 int boxFilterIntegral(__read_only image2d_t integral, int x, int y, int w, int h)
@@ -43,6 +45,7 @@ int boxFilterIntegral(__read_only image2d_t integral, int x, int y, int w, int h
     int C = read_imageui(integral, samp, (int2)(x-w  ,y+h+1)).x;
     int D = read_imageui(integral, samp, (int2)(x+w+1,y+h+1)).x;
 
+    // is max() necessary here?
     return max(0, A + D - B - C);
 }
 
@@ -214,6 +217,7 @@ int boxFilterIntegral_(__read_only image2d_t integral, int x, int y, int w, int 
     int C = read_imageui(integral, samp, (int2)(x  ,y+h)).x;
     int D = read_imageui(integral, samp, (int2)(x+w,y+h)).x;
 
+    // is max() necessary here
     return max(0, A + D - B - C);
 }
 
@@ -342,7 +346,7 @@ __kernel void findKeypointOrientation(__read_only image2d_t integralImage,
         }
     }
     barrier(CLK_LOCAL_MEM_FENCE);
-    
+
     // Each thread computes one sliding window (64 in total)
     // This way we got fast window calculation with broadcasting
     float windowBegin = ORIENTATION_WINDOW_STEP*tid;
@@ -463,9 +467,9 @@ __kernel void calculateDescriptors(__read_only image2d_t integralImage,
             int subRegionX = regionX + (ii % 5); // Can't use AND here 
             int subRegionY = regionY + (ii / 5);
 
-            int sample_x = (int) round(featureX + (subRegionX*featureScale*c - subRegionY*featureScale*s));
-            int sample_y = (int) round(featureY + (subRegionX*featureScale*s + subRegionY*featureScale*c));
-            int grad_radius = (int) round(featureScale);
+            int sample_x = convert_int(round(featureX + (subRegionX*featureScale*c - subRegionY*featureScale*s)));
+            int sample_y = convert_int(round(featureY + (subRegionX*featureScale*s + subRegionY*featureScale*c)));
+            int grad_radius = convert_int(round(featureScale));
 
             // If there's no full neighbourhood for this gradient - set it to 0 response
             if(haarInBounds(integralImage, sample_x, sample_y, grad_radius))

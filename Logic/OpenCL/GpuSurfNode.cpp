@@ -401,20 +401,30 @@ private:
 			_gpuComputeModule->queue().asyncRunKernel(kernelFillImage);
 		}
 
-		clw::Kernel kernelMultiScan_horiz = _gpuComputeModule->acquireKernel(_kidMultiScan_horiz);
-		clw::Kernel kernelMultiScan_vert = _gpuComputeModule->acquireKernel(_kidMultiScan_vert);
+		if(_gpuComputeModule->device().deviceType() != clw::Cpu)
+		{
+			clw::Kernel kernelMultiScan_horiz = _gpuComputeModule->acquireKernel(_kidMultiScan_horiz);
+			clw::Kernel kernelMultiScan_vert = _gpuComputeModule->acquireKernel(_kidMultiScan_vert);
 
-		kernelMultiScan_horiz.setLocalWorkSize(256,1);
-		kernelMultiScan_horiz.setRoundedGlobalWorkSize(256,imageHeight);
-		kernelMultiScan_horiz.setArg(0, srcImage_cl);
-		kernelMultiScan_horiz.setArg(1, _tempImage_cl);
-		_gpuComputeModule->queue().asyncRunKernel(kernelMultiScan_horiz);
+			kernelMultiScan_horiz.setLocalWorkSize(256,1);
+			kernelMultiScan_horiz.setRoundedGlobalWorkSize(256,imageHeight);
+			kernelMultiScan_horiz.setArg(0, srcImage_cl);
+			kernelMultiScan_horiz.setArg(1, _tempImage_cl);
+			_gpuComputeModule->queue().asyncRunKernel(kernelMultiScan_horiz);
 
-		kernelMultiScan_vert.setLocalWorkSize(256,1);
-		kernelMultiScan_vert.setRoundedGlobalWorkSize(256,imageWidth);
-		kernelMultiScan_vert.setArg(0, _tempImage_cl);
-		kernelMultiScan_vert.setArg(1, _imageIntegral_cl);
-		_gpuComputeModule->queue().asyncRunKernel(kernelMultiScan_vert);
+			kernelMultiScan_vert.setLocalWorkSize(256,1);
+			kernelMultiScan_vert.setRoundedGlobalWorkSize(256,imageWidth);
+			kernelMultiScan_vert.setArg(0, _tempImage_cl);
+			kernelMultiScan_vert.setArg(1, _imageIntegral_cl);
+			_gpuComputeModule->queue().asyncRunKernel(kernelMultiScan_vert);
+		}
+		else
+		{
+			cv::Mat srcHost(imageHeight, imageWidth, CV_8UC1), integralHost;
+			_gpuComputeModule->queue().readImage2D(srcImage_cl, srcHost.data, srcHost.step);
+			cv::integral(srcHost, integralHost);
+			_gpuComputeModule->queue().writeImage2D(_imageIntegral_cl, integralHost.data, integralHost.step);
+		}
 	}
 
 	void buildScaleSpace(int imageWidth, int imageHeight) 
