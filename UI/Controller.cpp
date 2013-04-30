@@ -47,6 +47,9 @@
 #include "ui_MainWindow.h"
 #include "TreeWorker.h"
 
+#include <future>
+#include <thread>
+
 static const QString applicationTitle = QStringLiteral("mouve");
 template<> Controller* Singleton<Controller>::_singleton = nullptr;
 
@@ -189,8 +192,27 @@ void Controller::addNode(NodeTypeID nodeTypeID, const QPointF& scenePos)
 		++num;
 	}
 
-	// Try to create new node 
-	NodeID nodeID = _nodeTree->createNode(nodeTypeID, nodeTitle);
+	QProgressDialog progress;
+	progress.setLabelText("Please wait...");
+	progress.setWindowModality(Qt::ApplicationModal);
+	progress.setCancelButton(nullptr);
+	progress.setMinimumDuration(150);
+	// Quick hack
+	progress.setRange(0, 1);
+	progress.setValue(0);
+	progress.setRange(0, 0);
+
+	QEventLoop localEventLoop;
+	std::future<NodeID> future = std::async(std::launch::async, [&] {
+		NodeID nodeID = _nodeTree->createNode(nodeTypeID, nodeTitle);
+		QMetaObject::invokeMethod(&localEventLoop, "quit", Qt::QueuedConnection);
+		return nodeID;
+	});
+
+	localEventLoop.exec(QEventLoop::ExcludeUserInputEvents);
+	progress.cancel();
+
+	NodeID nodeID = future.get();
 	if(nodeID == InvalidNodeID)
 	{
 		showErrorMessage("[NodeTree] Couldn't create given node");
@@ -1795,7 +1817,6 @@ void Controller::displayNodeTimeInfo(bool checked)
 
 #if defined(HAVE_OPENCL)
 
-#include <thread>
 #include "Logic/OpenCL/GpuException.h"
 
 void Controller::showProgramsList()
@@ -1900,7 +1921,6 @@ void Controller::showProgramsList()
 
 #if defined(HAVE_JAI)
 
-#include <future>
 #include "ui_Camera.h"
 
 void queryAndFillParameters(const std::shared_ptr<JaiNodeModule>& jaiModule,
