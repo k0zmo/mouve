@@ -668,8 +668,8 @@
     <Import Project="..\OpenCV.Debug.props" />
     <Import Project="..\VisualLeakDetector.props" />
     <Import Project="..\Boost.props" />
-    <Import Project="..\clw.Debug.props" />
     <Import Project="..\JAI.props" />
+    <Import Project="..\clw.Debug.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
@@ -678,6 +678,7 @@
     <Import Project="..\OpenCV.Debug.x64.props" />
     <Import Project="..\Boost.props" />
     <Import Project="..\JAI.x64.props" />
+    <Import Project="..\clw.Debug.x64.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
@@ -685,17 +686,18 @@
     <Import Project="..\Mouve.Logic.props" />
     <Import Project="..\OpenCV.Release.props" />
     <Import Project="..\Boost.props" />
-    <Import Project="..\clw.Release.props" />
     <Import Project="..\JAI.props" />
+    <Import Project="..\clw.Release.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
     <Import Project="..\Mouve.Kommon.props" />
     <Import Project="..\Mouve.Logic.props" />
-    <Import Project="..\Boost.props" />
     <Import Project="..\VisualLeakDetector.x64.props" />
     <Import Project="..\OpenCV.Release.x64.props" />
+    <Import Project="..\Boost.props" />
     <Import Project="..\JAI.x64.props" />
+    <Import Project="..\clw.Release.x64.props" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup>

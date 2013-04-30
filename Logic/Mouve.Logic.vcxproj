@@ -360,9 +360,9 @@
     <Import Project="..\Mouve.Kommon.props" />
     <Import Project="..\OpenCV.Modules.Debug.props" />
     <Import Project="..\Boost.props" />
-    <Import Project="..\clw.Debug.props" />
     <Import Project="..\JAI.props" />
     <Import Project="..\tbb.Debug.props" />
+    <Import Project="..\clw.Debug.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
@@ -371,15 +371,16 @@
     <Import Project="..\Boost.props" />
     <Import Project="..\JAI.x64.props" />
     <Import Project="..\tbb.Debug.x64.props" />
+    <Import Project="..\clw.Debug.x64.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
     <Import Project="..\Mouve.Kommon.props" />
     <Import Project="..\OpenCV.Modules.Release.props" />
     <Import Project="..\Boost.props" />
-    <Import Project="..\clw.Release.props" />
     <Import Project="..\JAI.props" />
     <Import Project="..\tbb.Release.props" />
+    <Import Project="..\clw.Release.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
@@ -388,6 +389,7 @@
     <Import Project="..\Boost.props" />
     <Import Project="..\JAI.x64.props" />
     <Import Project="..\tbb.Release.x64.props" />
+    <Import Project="..\clw.Release.x64.props" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup>
@@ -454,6 +456,11 @@ if %errorlevel% leq 1 exit 0 else exit %errorlevel%</Command>
       <AdditionalDependencies>qtmaind.lib;Qt5Cored.lib;opencv_features2d$(OPENCV_VERSION)d.lib;opencv_nonfree$(OPENCV_VERSION)d.lib;opencv_flann$(OPENCV_VERSION)d.lib;opencv_calib3d$(OPENCV_VERSION)d.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <ImageHasSafeExceptionHandlers>false</ImageHasSafeExceptionHandlers>
     </Link>
+    <PostBuildEvent>
+      <Command>copy /Y  $(SolutionDir)external\clw\bin64\clw_d.dll  $(SolutionDir)$(Platform)\$(Configuration)\clw_d.dll
+robocopy OpenCL\kernels $(SolutionDir)$(Platform)\$(Configuration)\kernels /MIR /NJS /NJH
+if %errorlevel% leq 1 exit 0 else exit %errorlevel%</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -497,6 +504,11 @@ if %errorlevel% leq 1 exit 0 else exit %errorlevel%</Command>
       <GenerateDebugInformation>false</GenerateDebugInformation>
       <AdditionalDependencies>qtmain.lib;Qt5Core.lib;opencv_features2d$(OPENCV_VERSION).lib;opencv_nonfree$(OPENCV_VERSION).lib;opencv_flann$(OPENCV_VERSION).lib;opencv_calib3d$(OPENCV_VERSION).lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
+    <PostBuildEvent>
+      <Command>copy /Y  $(SolutionDir)external\clw\bin64\clw.dll  $(SolutionDir)$(Platform)\$(Configuration)\clw.dll
+robocopy OpenCL\kernels $(SolutionDir)$(Platform)\$(Configuration)\kernels /MIR /NJS /NJH
+if %errorlevel% leq 1 exit 0 else exit %errorlevel%</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
