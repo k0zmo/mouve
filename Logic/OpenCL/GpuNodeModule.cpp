@@ -58,6 +58,7 @@ bool GpuNodeModule::createDefault()
 		
 	_device = _context.devices()[0];
 	_queue = _context.createCommandQueue(_device, clw::Property_ProfilingEnabled);
+	_dataQueue = _context.createCommandQueue(_device, clw::Property_ProfilingEnabled);
 
 	clw::installErrorHandler([=](cl_int error_id, const std::string& message)
 	{

@@ -37,6 +37,8 @@ public:
 	const clw::Device& device() const;
 	clw::CommandQueue& queue();
 	const clw::CommandQueue& queue() const;
+	clw::CommandQueue& dataQueue();
+	const clw::CommandQueue& dataQueue() const;
 
 private:
 	std::string additionalBuildOptions(const std::string& programName) const;
@@ -45,6 +47,7 @@ private:
 	clw::Context _context;
 	clw::Device _device;
 	clw::CommandQueue _queue;
+	clw::CommandQueue _dataQueue;
 
 	uint64_t _maxConstantMemory;
 	uint64_t _maxLocalMemory;
@@ -74,5 +77,9 @@ inline clw::CommandQueue& GpuNodeModule::queue()
 { return _queue; }
 inline const clw::CommandQueue& GpuNodeModule::queue() const
 { return _queue; }
+inline clw::CommandQueue& GpuNodeModule::dataQueue()
+{ return _dataQueue; }
+inline const clw::CommandQueue& GpuNodeModule::dataQueue() const
+{ return _dataQueue; }
 
 #endif
