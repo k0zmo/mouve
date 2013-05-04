@@ -11,7 +11,7 @@ using namespace std;
 // Interpolate hessian value across (x,y,s) using taylor series instead of 2nd order polynomial fit
 #define INTERPOLATE_HESSIAN 0
 // Use basic 20s region descriptor instead of 24s with 2s overlapping between subregions
-#define BASIC_DESCRIPTOR 1
+#define BASIC_DESCRIPTOR 0
 // Use modified haar wavelets (gradient approximation)
 #define SYMETRIC_HAAR 1
 // Use exactly the same filters sizes as H. Bay in his paper
@@ -131,8 +131,7 @@ vector<KeyPoint> transformKeyPoint(const vector<cv::KeyPoint>& keypoints)
         auto&& kp = keypoints[idx];
         KeyPoint kpoint = {
             kp.pt.x,  kp.pt.y, 
-            // scalling is only required if you transform from keypoints detected by cv:SURF
-            kp.size,// * BOXSIZE_TO_SCALE_COEFF,
+            kp.size * BOXSIZE_TO_SCALE_COEFF,
             kp.response,
             kp.class_id,
             DEG2RAD(kp.angle)
@@ -148,8 +147,7 @@ vector<KeyPoint> transformKeyPoint(const vector<cv::KeyPoint>& keypoints)
     {
         KeyPoint kpoint = {
             kp.pt.x,  kp.pt.y, 
-            // scalling is only required if you transform from keypoints detected by cv:SURF
-            kp.size,// * BOXSIZE_TO_SCALE_COEFF,
+            kp.size * BOXSIZE_TO_SCALE_COEFF,
             kp.response,
             kp.class_id,
             DEG2RAD(kp.angle)
@@ -546,10 +544,6 @@ vector<KeyPoint> findScaleSpaceMaxima(double hessianThreshold,
             auto&& layerBottom = scaleLayers[indexMiddle - 1];
             auto&& layerMiddle = scaleLayers[indexMiddle];
             auto&& layerTop = scaleLayers[indexMiddle + 1];
-
-            if(cols < layerTop.filterSize
-            || rows < layerTop.filterSize)
-                continue;
 
             findScaleSpaceMaxima_layer(hessianThreshold, layerBottom, 
                 layerMiddle, layerTop, kpoints);

@@ -30,10 +30,10 @@ NodeFlowData::NodeFlowData(ENodeFlowDataType dataType)
 		_data = cv::Mat();
 		break;
 	case ENodeFlowDataType::Keypoints:
-		_data = cv::KeyPoints();
+		_data = KeyPoints();
 		break;
 	case ENodeFlowDataType::Matches:
-		_data = cv::DMatches();
+		_data = Matches();
 		break;
 #if defined(HAVE_OPENCL)
 	case ENodeFlowDataType::DeviceImage:
@@ -118,36 +118,36 @@ const cv::Mat& NodeFlowData::getImageRgb() const
 	return boost::get<cv::Mat>(_data);
 }
 
-cv::KeyPoints& NodeFlowData::getKeypoints()
+KeyPoints& NodeFlowData::getKeypoints()
 {
 	if(_type != ENodeFlowDataType::Keypoints)
 		throw boost::bad_get();
 
-	return boost::get<cv::KeyPoints>(_data);
+	return boost::get<KeyPoints>(_data);
 }
 
-const cv::KeyPoints& NodeFlowData::getKeypoints() const
+const KeyPoints& NodeFlowData::getKeypoints() const
 {
 	if(_type != ENodeFlowDataType::Keypoints)
 		throw boost::bad_get();
 
-	return boost::get<cv::KeyPoints>(_data);
+	return boost::get<KeyPoints>(_data);
 }
 
-cv::DMatches& NodeFlowData::getMatches()
+Matches& NodeFlowData::getMatches()
 {
 	if(_type != ENodeFlowDataType::Matches)
 		throw boost::bad_get();
 
-	return boost::get<cv::DMatches>(_data);
+	return boost::get<Matches>(_data);
 }
 
-const cv::DMatches& NodeFlowData::getMatches() const
+const Matches& NodeFlowData::getMatches() const
 {
 	if(_type != ENodeFlowDataType::Matches)
 		throw boost::bad_get();
 
-	return boost::get<cv::DMatches>(_data);
+	return boost::get<Matches>(_data);
 }
 
 cv::Mat& NodeFlowData::getArray()

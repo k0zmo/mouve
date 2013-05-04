@@ -4,43 +4,6 @@
 
 #include <opencv2/features2d/features2d.hpp>
 
-static void matchImpl(const cv::DescriptorMatcher& matcher, 
-					  const cv::Mat& queryDescriptors,
-					  const cv::Mat& trainDescriptors,
-					  cv::DMatches& matches,
-					  double threshold)
-{
-	if(qFuzzyCompare(0.0, threshold))
-	{
-		matcher.match(queryDescriptors, trainDescriptors, matches);
-	}
-	else
-	{
-		cv::DMatches tmpMatches;
-		matcher.match(queryDescriptors, trainDescriptors, tmpMatches);
-
-		double max_dist = -std::numeric_limits<double>::max();
-		double min_dist = +std::numeric_limits<double>::max();
-
-		for(int i = 0; i < queryDescriptors.rows; ++i)
-		{
-			double dist = tmpMatches[i].distance;
-			min_dist = qMin(min_dist, dist);
-			max_dist = qMax(max_dist, dist);
-		}
-
-		matches.clear();
-
-		double th = threshold * min_dist;
-
-		for(int i = 0; i < queryDescriptors.rows; ++i)
-		{
-			if(tmpMatches[i].distance < th)
-				matches.push_back(tmpMatches[i]);
-		}
-	}
-}
-
 class BruteForceMatcherNodeType : public NodeType
 {
 public:
@@ -78,20 +41,73 @@ public:
 
 	ExecutionStatus execute(NodeSocketReader& reader, NodeSocketWriter& writer) override
 	{
-		const cv::Mat& queryDescriptors = reader.readSocket(0).getArray();
-		const cv::Mat& trainDescriptors = reader.readSocket(1).getArray();
+		// inputs
+		const KeyPoints& queryKp = reader.readSocket(0).getKeypoints();
+		const cv::Mat& queryDesc = reader.readSocket(1).getArray();
+		const KeyPoints& trainKp = reader.readSocket(2).getKeypoints();
+		const cv::Mat& trainDesc = reader.readSocket(3).getArray();
+		// outputs
+		Matches& mt = writer.acquireSocket(0).getMatches();
 
-		if(!queryDescriptors.data || !trainDescriptors.data)
+		// validate inputs
+		if(trainDesc.empty() || queryDesc.empty())
 			return ExecutionStatus(EStatus::Ok);
 
-		cv::DMatches& matches = writer.acquireSocket(0).getMatches();
+		if(trainDesc.rows != trainKp.kpoints.size()
+		|| queryDesc.rows != queryKp.kpoints.size())
+		{
+			return ExecutionStatus(EStatus::Error, "Keypoints and descriptors mismatched");
+		}
 
 		int normType = cv::NORM_L2;
-		if(queryDescriptors.depth() == CV_8U && trainDescriptors.depth() == CV_8U)
+		// If BRISK, ORB or FREAK was used as a descriptor
+		if(queryDesc.depth() == CV_8U && trainDesc.depth() == CV_8U)
 			normType = cv::NORM_HAMMING;
 
+		mt.queryPoints.clear();
+		mt.trainPoints.clear();
+
 		cv::BFMatcher matcher(normType, _crossCheck);
-		matchImpl(matcher, queryDescriptors, trainDescriptors, matches, _threshold);
+		vector<cv::DMatch> matches;
+		
+		if(qFuzzyCompare(0.0, _threshold))
+		{
+			matcher.match(queryDesc, trainDesc, matches);
+
+			for(auto&& match : matches)
+			{
+				mt.queryPoints.emplace_back(queryKp.kpoints[match.queryIdx].pt);
+				mt.trainPoints.emplace_back(trainKp.kpoints[match.trainIdx].pt);
+			}
+		}
+		else
+		{
+			matcher.match(queryDesc, trainDesc, matches);
+
+			double max_dist = -std::numeric_limits<double>::max();
+			double min_dist = +std::numeric_limits<double>::max();
+
+			for(auto&& match : matches)
+			{
+				double dist = match.distance;
+				min_dist = qMin(min_dist, dist);
+				max_dist = qMax(max_dist, dist);
+			}
+
+			double th = _threshold * min_dist;
+
+			for(auto&& match : matches)
+			{
+				if(match.distance < th)
+				{
+					mt.queryPoints.emplace_back(queryKp.kpoints[match.queryIdx].pt);
+					mt.trainPoints.emplace_back(trainKp.kpoints[match.trainIdx].pt);
+				}
+			}
+		}
+
+		mt.queryImage = queryKp.image;
+		mt.trainImage = trainKp.image;
 
 		return ExecutionStatus(EStatus::Ok);
 	}
@@ -99,8 +115,10 @@ public:
 	void configuration(NodeConfig& nodeConfig) const override
 	{
 		static const InputSocketConfig in_config[] = {
-			{ ENodeFlowDataType::Array, "descriptors1", "1st descriptors", "" },
-			{ ENodeFlowDataType::Array, "descriptors2", "2nd descriptors", "" },
+			{ ENodeFlowDataType::Keypoints, "keypoints1", "Query keypoints", "" },
+			{ ENodeFlowDataType::Array, "descriptors1", "Query descriptors", "" },
+			{ ENodeFlowDataType::Keypoints, "keypoints2", "Train keypoints", "" },
+			{ ENodeFlowDataType::Array, "descriptors2", "Train descriptors", "" },
 			{ ENodeFlowDataType::Invalid, "", "", "" }
 		};
 		static const OutputSocketConfig out_config[] = {
@@ -130,11 +148,11 @@ private:
 	double _threshold;
 };
 
-class NearestNeighborMatcherNodeType : public NodeType
+class NearestNeighborDistanceRatioMatcherNodeType : public NodeType
 {
 public:
-	NearestNeighborMatcherNodeType()
-		: _threshold(2.0)
+	NearestNeighborDistanceRatioMatcherNodeType()
+		: _distanceRatio(0.8)
 	{
 	}
 
@@ -142,8 +160,8 @@ public:
 	{
 		switch(propId)
 		{
-		case ID_Threshold:
-			_threshold = newValue.toDouble();
+		case ID_DistanceRatio:
+			_distanceRatio = newValue.toDouble();
 			return true;
 		}
 
@@ -154,7 +172,7 @@ public:
 	{
 		switch(propId)
 		{
-		case ID_Threshold: return _threshold;
+		case ID_DistanceRatio: return _distanceRatio;
 		}
 
 		return QVariant();
@@ -162,16 +180,45 @@ public:
 
 	ExecutionStatus execute(NodeSocketReader& reader, NodeSocketWriter& writer) override
 	{
-		const cv::Mat& queryDescriptors = reader.readSocket(0).getArray();
-		const cv::Mat& trainDescriptors = reader.readSocket(1).getArray();
+		// inputs
+		const KeyPoints& queryKp = reader.readSocket(0).getKeypoints();
+		const cv::Mat& queryDesc = reader.readSocket(1).getArray();
+		const KeyPoints& trainKp = reader.readSocket(2).getKeypoints();
+		const cv::Mat& trainDesc = reader.readSocket(3).getArray();
+		// outputs
+		Matches& mt = writer.acquireSocket(0).getMatches();
 
-		if(!queryDescriptors.data || !trainDescriptors.data)
+		// validate inputs
+		if(trainDesc.empty() || queryDesc.empty())
 			return ExecutionStatus(EStatus::Ok);
 
-		cv::DMatches& matches = writer.acquireSocket(0).getMatches();
+		if(trainDesc.rows != trainKp.kpoints.size()
+		|| queryDesc.rows != queryKp.kpoints.size())
+		{
+			return ExecutionStatus(EStatus::Error, "Keypoints and descriptors mismatched");
+		}
 
 		cv::FlannBasedMatcher matcher;
-		matchImpl(matcher, queryDescriptors, trainDescriptors, matches, _threshold);
+		vector<vector<cv::DMatch>> knMatches;
+		matcher.knnMatch(queryDesc, trainDesc, knMatches, 2);
+		
+		mt.queryPoints.clear();
+		mt.trainPoints.clear();
+
+		for(auto&& knMatch : knMatches)
+		{
+			auto&& best = knMatch[0];
+			auto&& good = knMatch[1];
+
+			if(best.distance <= _distanceRatio * good.distance)
+			{
+				mt.queryPoints.emplace_back(queryKp.kpoints[best.queryIdx].pt);
+				mt.trainPoints.emplace_back(trainKp.kpoints[best.trainIdx].pt);
+			}
+		}
+
+		mt.queryImage = queryKp.image;
+		mt.trainImage = trainKp.image;
 
 		return ExecutionStatus(EStatus::Ok);
 	}
@@ -179,8 +226,10 @@ public:
 	void configuration(NodeConfig& nodeConfig) const override
 	{
 		static const InputSocketConfig in_config[] = {
-			{ ENodeFlowDataType::Array, "descriptors1", "1st descriptors", "" },
-			{ ENodeFlowDataType::Array, "descriptors2", "2nd descriptors", "" },
+			{ ENodeFlowDataType::Keypoints, "keypoints1", "Query keypoints", "" },
+			{ ENodeFlowDataType::Array, "descriptors1", "Query descriptors", "" },
+			{ ENodeFlowDataType::Keypoints, "keypoints2", "Train keypoints", "" },
+			{ ENodeFlowDataType::Array, "descriptors2", "Train descriptors", "" },
 			{ ENodeFlowDataType::Invalid, "", "", "" }
 		};
 		static const OutputSocketConfig out_config[] = {
@@ -188,7 +237,7 @@ public:
 			{ ENodeFlowDataType::Invalid, "", "", "" }
 		};
 		static const PropertyConfig prop_config[] = {
-			{ EPropertyType::Double, "Threshold", "min:0, step:0.1" },
+			{ EPropertyType::Double, "ID_DistanceRatio", "min:0.0, max:1.0, step:0.1" },
 			{ EPropertyType::Unknown, "", "" }
 		};
 
@@ -201,11 +250,11 @@ public:
 private:
 	enum EPropertyID
 	{
-		ID_Threshold
+		ID_DistanceRatio
 	};
 
-	double _threshold;
+	double _distanceRatio;
 };
 
 REGISTER_NODE("Features/BForce Matcher", BruteForceMatcherNodeType);
-REGISTER_NODE("Features/1NN Matcher", NearestNeighborMatcherNodeType)
+REGISTER_NODE("Features/NNDR Matcher", NearestNeighborDistanceRatioMatcherNodeType)

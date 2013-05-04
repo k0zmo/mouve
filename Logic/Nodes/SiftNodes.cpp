@@ -55,15 +55,19 @@ public:
 
 	ExecutionStatus execute(NodeSocketReader& reader, NodeSocketWriter& writer) override
 	{
+		// inputs
 		const cv::Mat& src = reader.readSocket(0).getImage();
-		cv::KeyPoints& keypoints = writer.acquireSocket(0).getKeypoints();
+		// outputs
+		KeyPoints& kp = writer.acquireSocket(0).getKeypoints();
 
-		if(src.rows == 0 || src.cols == 0)
+		// validate inputs
+		if(src.empty())
 			return ExecutionStatus(EStatus::Ok);
 
 		cv::SiftFeatureDetector detector(_nFeatures, _nOctaveLayers,
 			_contrastThreshold, _edgeThreshold, _sigma);
-		detector.detect(src, keypoints);
+		detector.detect(src, kp.kpoints);
+		kp.image = src;
 
 		return ExecutionStatus(EStatus::Ok);
 	}
@@ -115,19 +119,20 @@ class SiftFeatureExtractorNodeType : public NodeType
 public:
 	ExecutionStatus execute(NodeSocketReader& reader, NodeSocketWriter& writer) override
 	{
-		const cv::Mat& imageSrc = reader.readSocket(0).getImage();
-		const cv::KeyPoints& keypoints = reader.readSocket(1).getKeypoints();
+		// inputs
+		const KeyPoints& kp = reader.readSocket(0).getKeypoints();
 
-		if(keypoints.empty() || imageSrc.cols == 0 || imageSrc.rows == 0)
+		// validate inputs
+		if(kp.kpoints.empty() || kp.image.empty())
 			return ExecutionStatus(EStatus::Ok);
 
-		cv::Mat& outDescriptors = writer.acquireSocket(0).getArray();
-		cv::KeyPoints& outKeypoints = writer.acquireSocket(1).getKeypoints();
-
-		outKeypoints = keypoints;
+		// outputs
+		KeyPoints& outKp = writer.acquireSocket(0).getKeypoints();
+		cv::Mat& outDescriptors = writer.acquireSocket(1).getArray();
+		outKp = kp;
 
 		cv::SiftDescriptorExtractor extractor;
-		extractor.compute(imageSrc, outKeypoints, outDescriptors);
+		extractor.compute(kp.image, outKp.kpoints, outDescriptors);
 
 		return ExecutionStatus(EStatus::Ok);
 	}
@@ -135,13 +140,12 @@ public:
 	void configuration(NodeConfig& nodeConfig) const override
 	{
 		static const InputSocketConfig in_config[] = {
-			{ ENodeFlowDataType::Image, "source", "Image", "" },
 			{ ENodeFlowDataType::Keypoints, "keypoints", "Keypoints", "" },
 			{ ENodeFlowDataType::Invalid, "", "", "" }
 		};
 		static const OutputSocketConfig out_config[] = {
-			{ ENodeFlowDataType::Array, "output", "Descriptors", "" },
 			{ ENodeFlowDataType::Keypoints, "output", "Keypoints", "" },
+			{ ENodeFlowDataType::Array, "output", "Descriptors", "" },
 			{ ENodeFlowDataType::Invalid, "", "", "" }
 		};
 
@@ -156,16 +160,20 @@ class SiftNodeType : public SiftFeatureDetectorNodeType
 public:
 	ExecutionStatus execute(NodeSocketReader& reader, NodeSocketWriter& writer) override
 	{
+		// inputs
 		const cv::Mat& src = reader.readSocket(0).getImage();
-		cv::KeyPoints& keypoints = writer.acquireSocket(0).getKeypoints();
+		// outputs
+		KeyPoints& kp = writer.acquireSocket(0).getKeypoints();
 		cv::Mat& descriptors = writer.acquireSocket(1).getArray();
 
-		if(src.rows == 0 || src.cols == 0)
+		// validate inputs
+		if(src.empty())
 			return ExecutionStatus(EStatus::Ok);
 
 		cv::SIFT sift(_nFeatures, _nOctaveLayers,
 			_contrastThreshold, _edgeThreshold, _sigma);
-		sift(src, cv::noArray(), keypoints, descriptors);
+		sift(src, cv::noArray(), kp.kpoints, descriptors);
+		kp.image = src;
 
 		return ExecutionStatus(EStatus::Ok);
 	}

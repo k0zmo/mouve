@@ -35,25 +35,69 @@ public:
 
 	ExecutionStatus execute(NodeSocketReader& reader, NodeSocketWriter& writer) override
 	{
-		const cv::KeyPoints& keypoints1 = reader.readSocket(0).getKeypoints();
-		const cv::KeyPoints& keypoints2 = reader.readSocket(1).getKeypoints();
-		const cv::DMatches& matches = reader.readSocket(2).getMatches();
+		// inputs
+		const Matches& mt = reader.readSocket(0).getMatches();
+		// outputs
 		cv::Mat& H = writer.acquireSocket(0).getArray();
+		Matches& outMt = writer.acquireSocket(1).getMatches();
 
-		if(keypoints1.empty() || keypoints2.empty() || matches.size() < 4)
+		// validate inputs
+		if(mt.queryPoints.empty() || mt.trainPoints.empty()
+		|| mt.queryImage.empty() || mt.trainImage.empty())
 			return ExecutionStatus(EStatus::Ok);
 
-		//-- Localize the object
-		std::vector<cv::Point2f> obj;
-		std::vector<cv::Point2f> scene;
+		if(mt.queryPoints.size() != mt.trainPoints.size())
+			return ExecutionStatus(EStatus::Error, 
+				"Points from one images doesn't correspond to key points in another one");
 
-		for(auto& match : matches)
+		outMt.queryImage = mt.queryImage;
+		outMt.trainImage = mt.trainImage;
+		outMt.queryPoints.clear();
+		outMt.trainPoints.clear();
+		size_t kpSize = mt.queryPoints.size();
+
+		vector<uchar> inliersMask;
+		cv::Mat homography = cv::findHomography(mt.queryPoints, mt.trainPoints, 
+			CV_RANSAC, _reprojThreshold, inliersMask);
+		int inliersCount = (int) std::count(begin(inliersMask), end(inliersMask), 1);
+		if(inliersCount < 4)
+			return ExecutionStatus(EStatus::Ok);
+
+		vector<cv::Point2f> queryPoints(inliersCount), trainPoints(inliersCount);
+
+		// Create vector of inliers only
+		for(size_t inlier = 0, idx = 0; inlier < kpSize; ++inlier)
 		{
-			obj.push_back(keypoints1[match.queryIdx].pt);
-			scene.push_back(keypoints2[match.trainIdx].pt);
+			if(inliersMask[inlier] == 0)
+				continue;
+
+			queryPoints[idx] = mt.queryPoints[inlier];
+			trainPoints[idx] = mt.trainPoints[inlier];
+			++idx;
 		}
 
-		H = cv::findHomography(obj, scene, cv::RANSAC, _reprojThreshold);
+		// Use only good points to find refined homography
+		H = cv::findHomography(queryPoints, trainPoints,
+			CV_LMEDS, _reprojThreshold);
+
+		// Reproject again
+		vector<cv::Point2f> srcReprojected;
+		cv::perspectiveTransform(trainPoints, srcReprojected, H.inv());
+		kpSize = queryPoints.size();
+
+		for (size_t i = 0; i < kpSize; i++)
+		{
+			cv::Point2f actual = queryPoints[i];
+			cv::Point2f expect = srcReprojected[i];
+			cv::Point2f v = actual - expect;
+			float distanceSquared = v.dot(v);
+
+			if (distanceSquared <= _reprojThreshold * _reprojThreshold)
+			{
+				outMt.queryPoints.emplace_back(queryPoints[i]);
+				outMt.trainPoints.emplace_back(trainPoints[i]);
+			}
+		}
 
 		return ExecutionStatus(EStatus::Ok);
 	}
@@ -61,13 +105,12 @@ public:
 	void configuration(NodeConfig& nodeConfig) const override
 	{
 		static const InputSocketConfig in_config[] = {
-			{ ENodeFlowDataType::Keypoints, "keypoints1", "1st Keypoints", "" },
-			{ ENodeFlowDataType::Keypoints, "keypoints1", "2nd Keypoints", "" },
 			{ ENodeFlowDataType::Matches, "matches", "Matches", "" },
 			{ ENodeFlowDataType::Invalid, "", "", "" }
 		};
 		static const OutputSocketConfig out_config[] = {
 			{ ENodeFlowDataType::Array, "output", "Homography", "" },
+			{ ENodeFlowDataType::Matches, "inliers", "Inliers", "" },
 			{ ENodeFlowDataType::Invalid, "", "", "" }
 		};
 		static const PropertyConfig prop_config[] = {

@@ -36,7 +36,7 @@ class GpuSurfNodeType : public GpuNodeType
 {
 public:
 	GpuSurfNodeType()
-		: _hessianThreshold(40.0)
+		: _hessianThreshold(35.0)
 		, _nOctaves(4)
 		, _nScales(4)
 		, _initSampling(1)
@@ -135,7 +135,7 @@ public:
 	ExecutionStatus execute(NodeSocketReader& reader, NodeSocketWriter& writer) override
 	{
 		const clw::Image2D& deviceImage = reader.readSocket(0).getDeviceImage();
-		cv::KeyPoints& keyPoints = writer.acquireSocket(0).getKeypoints();
+		KeyPoints& kp = writer.acquireSocket(0).getKeypoints();
 		cv::Mat& descriptors = writer.acquireSocket(1).getArray();
 
 		int imageWidth = deviceImage.width();
@@ -187,6 +187,10 @@ public:
 		buildScaleSpace(imageWidth, imageHeight);
 		findScaleSpaceMaxima();
 
+		kp.image.create(imageHeight, imageWidth, CV_8UC1);
+		_gpuComputeModule->dataQueue().asyncReadImage2D(deviceImage, kp.image.data, (int) kp.image.step);
+		_gpuComputeModule->dataQueue().flush();
+
 		// Read keypoints counter (use pinned memory)
 		_gpuComputeModule->queue().asyncCopyBuffer(_keypointsCount_cl, _pinnedKeypointsCount_cl);
 		intPtr = (int*) _gpuComputeModule->queue().mapBuffer(_pinnedKeypointsCount_cl, clw::MapAccess_Read);
@@ -207,7 +211,7 @@ public:
 			_gpuComputeModule->queue().asyncCopyBuffer(_descriptors_cl, _pinnedDescriptors_cl);
 
 			vector<KeyPoint> kps = downloadKeypoints(keypointsCount);
-			keyPoints = transformKeyPoint(kps);
+			kp.kpoints = transformKeyPoint(kps);
 
 			descriptors.create(keypointsCount, 64, CV_32F);
 			float* floatPtr = (float*) _gpuComputeModule->queue().mapBuffer(_pinnedDescriptors_cl, clw::MapAccess_Read);
@@ -225,10 +229,11 @@ public:
 					memcpy(descriptors.ptr<float>(row), floatPtr + 64*row, sizeof(float)*64);
 			}
 			_gpuComputeModule->queue().asyncUnmap(_pinnedDescriptors_cl, floatPtr);
+			_gpuComputeModule->dataQueue().finish();
 		}
 		else
 		{
-			keyPoints = cv::KeyPoints();
+			kp = KeyPoints();
 			descriptors = cv::Mat();
 		}
 
@@ -437,6 +442,10 @@ private:
 			{
 				auto&& layer = _scaleLayers[octave*_nScales + scale];
 
+				if(imageWidth < layer.filterSize
+				|| imageWidth < layer.filterSize)
+					continue;
+
 				// Promien filtru: dla 9x9 jest to 4
 				int fw = (layer.filterSize - 1) / 2;
 				// wielkosc 'garbu' (1/3 wielkosci filtru)
@@ -504,6 +513,9 @@ private:
 
 				int samples_y = layerMiddle.height - 2*layerMargin;
 				int samples_x = layerMiddle.width - 2*layerMargin;
+
+				if(samples_x <= 0 || samples_y <= 0)
+					continue;
 
 				kernelFindScaleSpaceMaxima.setLocalWorkSize(16, 16);
 				kernelFindScaleSpaceMaxima.setGlobalWorkOffset(layerMargin, layerMargin);

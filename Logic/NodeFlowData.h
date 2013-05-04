@@ -13,15 +13,29 @@
 #  include "OpenCL/DeviceArray.h"
 #endif
 
-namespace cv {
-typedef std::vector<KeyPoint> KeyPoints;
-typedef std::vector<DMatch> DMatches;
-}
+using std::vector;
+
+struct KeyPoints
+{
+	vector<cv::KeyPoint> kpoints;
+	// could use shared_ptr BUT cv::Mat already
+	// got reference counting under a table
+	cv::Mat image;
+};
+
+struct Matches
+{
+	vector<cv::Point2f> queryPoints;
+	vector<cv::Point2f> trainPoints;
+	// same here
+	cv::Mat queryImage;
+	cv::Mat trainImage;
+};
 
 typedef boost::variant<
 	cv::Mat,
-	cv::KeyPoints,
-	cv::DMatches
+	KeyPoints,
+	Matches
 #if defined(HAVE_OPENCL)
 	,clw::Image2D, // TODO - replace this with some thin wrapper
 	DeviceArray
@@ -68,11 +82,11 @@ public:
 	cv::Mat& getImageRgb();
 	const cv::Mat& getImageRgb() const;
 
-	cv::KeyPoints& getKeypoints();
-	const cv::KeyPoints& getKeypoints() const;
+	KeyPoints& getKeypoints();
+	const KeyPoints& getKeypoints() const;
 
-	cv::DMatches& getMatches();
-	const cv::DMatches& getMatches() const;
+	Matches& getMatches();
+	const Matches& getMatches() const;
 
 	cv::Mat& getArray();
 	const cv::Mat& getArray() const;

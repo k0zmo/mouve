@@ -8,7 +8,7 @@ class kSurfNodeType : public NodeType
 {
 public:
 	kSurfNodeType()
-		: _hessianThreshold(40.0)
+		: _hessianThreshold(35.0)
 		, _nOctaves(4)
 		, _nScales(4)
 		, _initSampling(1)
@@ -56,15 +56,19 @@ public:
 
 	ExecutionStatus execute(NodeSocketReader& reader, NodeSocketWriter& writer) override
 	{
+		// inputs
 		const cv::Mat& src = reader.readSocket(0).getImage();
-		cv::KeyPoints& keypoints = writer.acquireSocket(0).getKeypoints();
+		// outputs
+		KeyPoints& kp = writer.acquireSocket(0).getKeypoints();
 		cv::Mat& descriptors = writer.acquireSocket(1).getArray();
 
-		if(src.rows == 0 || src.cols == 0)
+		// validate inputs
+		if(src.empty())
 			return ExecutionStatus(EStatus::Ok);
 
 		kSURF surf(_hessianThreshold, _nOctaves, _nScales, _initSampling, _upright);
-		surf(src, cv::noArray(), keypoints, descriptors);
+		surf(src, cv::noArray(), kp.kpoints, descriptors);
+		kp.image = src;
 
 		return ExecutionStatus(EStatus::Ok);
 	}
