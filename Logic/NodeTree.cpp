@@ -389,15 +389,16 @@ std::vector<NodeID> NodeTree::prepareList()
 	return _executeList;
 }
 
-void NodeTree::cleanUpAfterExecution(std::vector<NodeID>& selfTagging)
+void NodeTree::cleanUpAfterExecution(const std::vector<NodeID>& selfTagging,
+									 const std::vector<NodeID>& correctlyExecutedNodes)
 {
-	// Clean
-	for(Node& node : _nodes)
-		node.unsetFlag(ENodeFlags::Tagged);
+	// Only untag nodes that were correctly executed
+	for(NodeID id : correctlyExecutedNodes)
+		_nodes[id].unsetFlag(ENodeFlags::Tagged);
 	_executeListDirty = true;
 
 	// tag all self-tagging nodes
-	for(auto id : selfTagging)
+	for(NodeID id : selfTagging)
 		tagNode(id);
 }
 
@@ -438,6 +439,7 @@ void NodeTree::execute(bool withInit)
 	NodeSocketWriter writer;
 
 	std::vector<NodeID> selfTagging;
+	std::vector<NodeID> correctlyExecutedNodes;
 
 	// Traverse through just-built exec list and process each node 
 	for(NodeID nodeID : _executeList)
@@ -468,15 +470,17 @@ void NodeTree::execute(bool withInit)
 				throw ExecutionError(node.nodeName(), 
 					nodeTypeName(nodeID), ret.errorMessage);
 			}
+
+			correctlyExecutedNodes.push_back(nodeID);
 		}
 		catch(...)
 		{
-			cleanUpAfterExecution(selfTagging);
+			cleanUpAfterExecution(selfTagging, correctlyExecutedNodes);
 			handleException(node.nodeName(), nodeTypeName(nodeID));
 		}
 	}
 
-	cleanUpAfterExecution(selfTagging);
+	cleanUpAfterExecution(selfTagging, correctlyExecutedNodes);
 }
 
 std::vector<NodeID> NodeTree::executeList() const
