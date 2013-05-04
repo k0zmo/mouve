@@ -50,6 +50,10 @@ public:
 			return ExecutionStatus(EStatus::Error, 
 				"Points from one images doesn't correspond to key points in another one");
 
+		if(mt.queryPoints.size() < 4)
+			return ExecutionStatus(EStatus::Error, 
+				"Homography estimation with less than 4 matched points doesn't work");
+
 		outMt.queryImage = mt.queryImage;
 		outMt.trainImage = mt.trainImage;
 		outMt.queryPoints.clear();
