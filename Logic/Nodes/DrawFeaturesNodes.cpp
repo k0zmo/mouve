@@ -39,10 +39,10 @@ EColor getColor(const cv::Scalar& scalar)
 		return Color_AllRandom;
 }
 
-class DrawLinesNodeType : public NodeType
+class DrawSomethingLinesNodeType : public NodeType
 {
 public:
-	DrawLinesNodeType()
+	DrawSomethingLinesNodeType()
 		: _color(cv::Scalar(255, 0, 0))
 		, _thickness(2)
 		, _type(ELineType::Line_AA)
@@ -83,7 +83,7 @@ public:
 	{
 		// inputs
 		const cv::Mat& imageSrc = reader.readSocket(0).getImage();
-		const cv::Mat& lines = reader.readSocket(1).getArray();
+		const cv::Mat& circles = reader.readSocket(1).getArray();
 		// ouputs
 		cv::Mat& imageDst = writer.acquireSocket(0).getImageRgb();
 
@@ -93,26 +93,7 @@ public:
 
 		cvtColor(imageSrc, imageDst, CV_GRAY2BGR);
 
-		cv::RNG& rng = cv::theRNG();
-		bool isRandColor = _color == cv::Scalar::all(-1);
-
-		for(int lineIdx = 0; lineIdx < lines.rows; ++lineIdx)
-		{
-			float rho = lines.at<float>(lineIdx, 0);
-			float theta = lines.at<float>(lineIdx, 1);
-			double cos_t = cos(theta);
-			double sin_t = sin(theta);
-			double x0 = rho*cos_t;
-			double y0 = rho*sin_t;
-			double alpha = sqrt(imageSrc.cols*imageSrc.cols + imageSrc.rows*imageSrc.rows);
-
-			cv::Scalar color = isRandColor ? cv::Scalar(rng(256), rng(256), rng(256)) : _color;
-			cv::Point pt1(cvRound(x0 + alpha*(-sin_t)), cvRound(y0 + alpha*cos_t));
-			cv::Point pt2(cvRound(x0 - alpha*(-sin_t)), cvRound(y0 - alpha*cos_t));
-			cv::line(imageDst, pt1, pt2, color, _thickness, int(_type));
-		}
-
-		return ExecutionStatus(EStatus::Ok);
+		return executeImpl(circles, imageSrc, imageDst);
 	}
 
 	void configuration(NodeConfig& nodeConfig) const override
@@ -139,7 +120,7 @@ public:
 		nodeConfig.pProperties = prop_config;
 	}
 
-private:
+protected:
 	enum EPropertyID
 	{
 		ID_LineColor,
@@ -158,7 +139,7 @@ private:
 	int _thickness;
 	ELineType _type;
 
-private:
+protected:
 	ELineType lineType(int lineTypeIndex) const
 	{
 		switch(lineTypeIndex)
@@ -179,6 +160,63 @@ private:
 		case ELineType::Line_AA: return 2;
 		}
 		return 0;
+	}
+
+	virtual ExecutionStatus executeImpl(const cv::Mat& objects, 
+		const cv::Mat& imageSrc, cv::Mat& imageDest) = 0;
+};
+
+class DrawLinesNodeType : public DrawSomethingLinesNodeType
+{
+public:
+	ExecutionStatus executeImpl(const cv::Mat& objects, 
+		const cv::Mat& imageSrc, cv::Mat& imageDest) override
+	{
+		cv::RNG& rng = cv::theRNG();
+		bool isRandColor = _color == cv::Scalar::all(-1);
+
+		for(int lineIdx = 0; lineIdx < objects.rows; ++lineIdx)
+		{
+			float rho = objects.at<float>(lineIdx, 0);
+			float theta = objects.at<float>(lineIdx, 1);
+			double cos_t = cos(theta);
+			double sin_t = sin(theta);
+			double x0 = rho*cos_t;
+			double y0 = rho*sin_t;
+			double alpha = sqrt(imageSrc.cols*imageSrc.cols + imageSrc.rows*imageSrc.rows);
+
+			cv::Scalar color = isRandColor ? cv::Scalar(rng(256), rng(256), rng(256)) : _color;
+			cv::Point pt1(cvRound(x0 + alpha*(-sin_t)), cvRound(y0 + alpha*cos_t));
+			cv::Point pt2(cvRound(x0 - alpha*(-sin_t)), cvRound(y0 - alpha*cos_t));
+			cv::line(imageDest, pt1, pt2, color, _thickness, int(_type));
+		}
+
+		return ExecutionStatus(EStatus::Ok);
+	}
+};
+
+class DrawCirclesNodeType : public DrawSomethingLinesNodeType
+{
+public:
+	ExecutionStatus executeImpl(const cv::Mat& objects,
+		const cv::Mat& /*imageSrc*/, cv::Mat& imageDest) override
+	{
+		cv::RNG& rng = cv::theRNG();
+		bool isRandColor = _color == cv::Scalar::all(-1);
+
+		for(int circleIdx = 0; circleIdx < objects.cols; ++circleIdx)
+		{
+			cv::Vec3f circle = objects.at<cv::Vec3f>(circleIdx);
+			cv::Point center(cvRound(circle[0]), cvRound(circle[1]));
+			int radius = cvRound(circle[2]);
+			cv::Scalar color = isRandColor ? cv::Scalar(rng(256), rng(256), rng(256)) : _color;
+			// draw the circle center
+			cv::circle(imageDest, center, 3, color, _thickness, int(_type));
+			// draw the circle outline
+			cv::circle(imageDest, center, radius, color, _thickness, int(_type));
+		}
+
+		return ExecutionStatus(EStatus::Ok);
 	}
 };
 
@@ -459,4 +497,5 @@ public:
 REGISTER_NODE("Draw features/Draw homography", DrawHomographyNodeType)
 REGISTER_NODE("Draw features/Draw matches", DrawMatchesNodeType)
 REGISTER_NODE("Draw features/Draw keypoints", DrawKeypointsNodeType)
+REGISTER_NODE("Draw features/Draw circles", DrawCirclesNodeType)
 REGISTER_NODE("Draw features/Draw lines", DrawLinesNodeType)
