@@ -1593,10 +1593,8 @@ void Controller::updatePreview(bool res)
 		return;
 	}
 
-	std::vector<NodeID> execList = _nodeTree->executeList();
-
 	// Update preview window if necessary
-	if(shouldUpdatePreview(execList))
+	if(shouldUpdatePreview(_nodeTree->executeList()))
 		updatePreviewImpl();
 
 	// Job is done - enable editing
