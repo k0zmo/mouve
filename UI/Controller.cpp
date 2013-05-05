@@ -1529,7 +1529,10 @@ void Controller::changeProperty(NodeID nodeID,
 void Controller::newTree()
 {
 	if(canQuit())
+	{
 		createNewTree();
+		_ui->graphicsView->setZoom(1.0f);
+	}
 }
 
 void Controller::openTree()
@@ -1550,6 +1553,7 @@ void Controller::openTree()
 		_nodeTreeFilePath = filePath;
 		_nodeTreeDirty = false;
 		updateTitleBar();
+		fitToView();
 		qDebug() << "Tree successfully opened from file:" << filePath;
 	}
 	else
@@ -1768,7 +1772,7 @@ void Controller::fitToView()
 	// We assume there's no rotation
 	QTransform t = _ui->graphicsView->transform();
 	
-	_ui->graphicsView->setZoom(t.m11());
+	_ui->graphicsView->setZoom(t.m11()-0.15f);
 }
 
 void Controller::updateControlButtonState(EState state)
