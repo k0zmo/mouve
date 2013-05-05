@@ -50,15 +50,17 @@ public:
 			return ExecutionStatus(EStatus::Error, 
 				"Points from one images doesn't correspond to key points in another one");
 
-		if(mt.queryPoints.size() < 4)
-			return ExecutionStatus(EStatus::Error, 
-				"Homography estimation with less than 4 matched points doesn't work");
-
 		outMt.queryImage = mt.queryImage;
 		outMt.trainImage = mt.trainImage;
 		outMt.queryPoints.clear();
 		outMt.trainPoints.clear();
 		size_t kpSize = mt.queryPoints.size();
+
+		if(mt.queryPoints.size() < 4)
+		{
+			H = cv::Mat::ones(3, 3, CV_64F);
+			return ExecutionStatus(EStatus::Ok);
+		}
 
 		vector<uchar> inliersMask;
 		cv::Mat homography = cv::findHomography(mt.queryPoints, mt.trainPoints, 
@@ -81,8 +83,7 @@ public:
 		}
 
 		// Use only good points to find refined homography
-		H = cv::findHomography(queryPoints, trainPoints,
-			CV_LMEDS, _reprojThreshold);
+		H = cv::findHomography(queryPoints, trainPoints, 0);
 
 		// Reproject again
 		vector<cv::Point2f> srcReprojected;
