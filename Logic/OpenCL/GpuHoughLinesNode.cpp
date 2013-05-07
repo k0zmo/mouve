@@ -59,7 +59,7 @@ public:
 		_kidAccumLinesShared = _gpuComputeModule->registerKernel("accumLines_shared", "hough.cl", opts);
 		_kidGetLines = _gpuComputeModule->registerKernel("getLines", "hough.cl", opts);
 		_kidAccumToImage = _gpuComputeModule->registerKernel("accumToImage", "hough.cl", opts);
-		_kidFillAccumSpace = _gpuComputeModule->registerKernel("fill_buffer_int", "fill.cl", opts);
+		_kidFillAccumSpace = _gpuComputeModule->registerKernel("fill_buffer_int", "fill.cl");
 
 		return _kidBuildPointsList != InvalidKernelID
 			&& _kidAccumLines != InvalidKernelID
