@@ -69,15 +69,17 @@ public:
 				strm << _gpuComputeModule->device().warpSize();
 		}
 
-		if(_gpuComputeModule->device().supportsExtension("cl_ext_atomic_counters_32"))
-			strm << " -DUSE_ATOMIC_COUNTERS";
-
-		strm << " -DKEYPOINT_MAX=" << KEYPOINTS_MAX;
 		string opts = strm.str();
 
 		_kidFillImage = _gpuComputeModule->registerKernel("fill_image_uint", "fill.cl");
 		_kidMultiScan_horiz = _gpuComputeModule->registerKernel("multiscan_horiz_image", "integral.cl", opts);
 		_kidMultiScan_vert = _gpuComputeModule->registerKernel("multiscan_vert_image", "integral.cl", opts);
+
+		if(_gpuComputeModule->device().supportsExtension("cl_ext_atomic_counters_32"))
+			strm << " -DUSE_ATOMIC_COUNTERS";
+		strm << " -DKEYPOINT_MAX=" << KEYPOINTS_MAX;
+		opts = strm.str();
+
 		_kidBuildScaleSpace = _gpuComputeModule->registerKernel("buildScaleSpace", "surf.cl", opts);
 		_kidFindScaleSpaceMaxima = _gpuComputeModule->registerKernel("findScaleSpaceMaxima", "surf.cl", opts);
 		_kidUprightKeypointOrientation = _gpuComputeModule->registerKernel("uprightKeypointOrientation", "surf.cl", opts);

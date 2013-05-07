@@ -50,8 +50,20 @@ public:
 			_history = newValue.toInt();
 			return true;
 		case ID_NMixtures:
-			_nmixtures = newValue.toInt();
-			return true;
+			{
+				_nmixtures = newValue.toInt();
+
+				std::ostringstream strm;
+				strm << "-DNMIXTURES=" << _nmixtures;
+				std::string opts = strm.str();
+
+				_kidGaussMix = _gpuComputeModule->registerKernel(
+					"mog_image_unorm", "mog.cl", opts);
+				_kidGaussBackground = _gpuComputeModule->registerKernel(
+					"mog_background_image_unorm", "mog.cl", opts);
+
+				return true;
+			}
 		case ID_BackgroundRatio:
 			_backgroundRatio = newValue.toDouble();
 			return true;
