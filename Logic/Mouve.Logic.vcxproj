@@ -280,6 +280,7 @@
     <ClCompile Include="Nodes\ksurf.cpp" />
     <ClCompile Include="Nodes\kSurfNodes.cpp" />
     <ClCompile Include="Nodes\MatcherNodes.cpp" />
+    <ClCompile Include="Nodes\OrbFreakNodes.cpp" />
     <ClCompile Include="Nodes\SiftNodes.cpp" />
     <ClCompile Include="Nodes\SourceNodes.cpp" />
     <ClCompile Include="Nodes\SurfNodes.cpp" />

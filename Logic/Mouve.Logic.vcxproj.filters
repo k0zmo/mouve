@@ -130,6 +130,9 @@
     <ClCompile Include="OpenCL\GpuColorConversionNodes.cpp">
       <Filter>OpenCL</Filter>
     </ClCompile>
+    <ClCompile Include="Nodes\OrbFreakNodes.cpp">
+      <Filter>Nodes</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="Node.h">
