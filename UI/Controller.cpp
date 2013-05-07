@@ -1913,6 +1913,19 @@ void Controller::showProgramsList()
 				{
 					// Will throw if program build won't succeed
 					_gpuModule->rebuildProgram(programName);
+
+					// go through all gpu nodes (could be somehow filtered later) and tag them
+					auto nit = _nodeTree->createNodeIterator();
+					NodeID nodeID;
+					while(nit->next(nodeID))
+					{
+						NodeConfig nodeConfig;
+						if(_nodeTree->nodeConfiguration(nodeID, nodeConfig))
+						{
+							if(nodeConfig.module == "opencl")
+								_nodeTree->tagNode(nodeID);
+						}						
+					}
 				}
 				catch (...)
 				{
