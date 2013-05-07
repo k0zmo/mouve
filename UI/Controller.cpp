@@ -1235,84 +1235,107 @@ void Controller::contextMenu(const QPoint& globalPos,
 	}
 	else
 	{
+		// Preview socket menu
+		NodeView* nodeView = nullptr;
+
 		for(int i = 0; i < items.size(); ++i)
 		{
 			auto item = items[i];
 
 			if(item->type() != NodeView::Type)
 				continue;
+			nodeView = static_cast<NodeView*>(item);
+		}
 
-			QMenu menu;
-			QAction actionRemoveNode("Remove node", nullptr);
-			if(treeIdle())
-				menu.addAction(&actionRemoveNode);
+		// did we clicked on a node view
+		if(!nodeView)
+			return;
 
-			// Preview socket menu
-			NodeView* nodeView = static_cast<NodeView*>(item);
-			int previewsCount = nodeView->outputSocketCount();
-			if(previewsCount > 0)
+		QMenu menu;
+		QAction actionTagNode("Tag node", nullptr);
+		if(!_processing)
+		{
+			connect(&actionTagNode, &QAction::triggered,
+				[=]
+				{
+					NodeID nodeID = nodeView->nodeKey();
+					_nodeTree->tagNode(nodeID);
+				});	
+			menu.addAction(&actionTagNode);
+		}
+
+		QAction actionRemoveNode("Remove node", nullptr);
+		if(treeIdle())
+		{
+			connect(&actionRemoveNode, &QAction::triggered,
+				[=]
+				{
+					deleteNode(nodeView);
+				});	
+			menu.addAction(&actionRemoveNode);
+		}
+
+		int previewsCount = nodeView->outputSocketCount();
+		if(previewsCount > 0)
+		{
+			if(_state == EState::Stopped && !_processing)
+				menu.addSeparator();
+
+			int curr = nodeView->previewSocketID();
+			for(int imwrite = 0; imwrite < previewsCount; ++imwrite)
 			{
-				if(_state == EState::Stopped && !_processing)
-					menu.addSeparator();
-
-				int curr = nodeView->previewSocketID();
-				for(int imwrite = 0; imwrite < previewsCount; ++imwrite)
-				{
-					QAction* actionPreviewSocket = new QAction
-						(QString("Preview socket: %1").arg(imwrite), &menu);
-					actionPreviewSocket->setCheckable(true);
-					actionPreviewSocket->setChecked(imwrite == curr);
-					actionPreviewSocket->setData(imwrite);
-					connect(actionPreviewSocket, &QAction::triggered,
-						[=](bool checked)
-						{
-							if(checked)
-							{
-								nodeView->setPreviewSocketID
-									(actionPreviewSocket->data().toInt());
-								updatePreviewImpl();
-							}
-						});
-					menu.addAction(actionPreviewSocket);
-				}
-
-				// Save socket image menu (disable when tree is still being processed
-				if(_state != EState::Playing && !_processing)
-				{
-					for(int socketID = 0; socketID < previewsCount; ++socketID)
+				QAction* actionPreviewSocket = new QAction
+					(QString("Preview socket: %1").arg(imwrite), &menu);
+				actionPreviewSocket->setCheckable(true);
+				actionPreviewSocket->setChecked(imwrite == curr);
+				actionPreviewSocket->setData(imwrite);
+				connect(actionPreviewSocket, &QAction::triggered,
+					[=](bool checked)
 					{
-						NodeID nodeID = nodeView->nodeKey();
-
-						const NodeFlowData& outputData = _nodeTree->outputSocket(nodeID, socketID);
-						if(!outputData.isValidImage())
-							continue;
-
-						QAction* actionSaveImageSocket = new QAction
-							(QString("Save image socket: %1").arg(socketID), &menu);
-						connect(actionSaveImageSocket, &QAction::triggered,
-							[=]
-							{
-								QString filePath = QFileDialog::getSaveFileName(
-									this, tr("Save file"), QString(), ""
-									"PNG (*.png);;"
-									"BMP (*.bmp);;"
-									"JPEG (*.jpg);;"
-									"JPEG 2000 (*.jp2)");
-								if(filePath.isEmpty())
-									return;
-
-								outputData.saveToDisk(filePath.toStdString());
-							});	
-						menu.addAction(actionSaveImageSocket);
-					}
-				}
+						if(checked)
+						{
+							nodeView->setPreviewSocketID
+								(actionPreviewSocket->data().toInt());
+							updatePreviewImpl();
+						}
+					});
+				menu.addAction(actionPreviewSocket);
 			}
 
-			QAction* ret = menu.exec(globalPos);
-			if(ret == &actionRemoveNode && treeIdle())
-				deleteNode(nodeView);
-			return;
+			// Save socket image menu (disable when tree is still being processed
+			if(_state != EState::Playing && !_processing)
+			{
+				for(int socketID = 0; socketID < previewsCount; ++socketID)
+				{
+					NodeID nodeID = nodeView->nodeKey();
+
+					const NodeFlowData& outputData = _nodeTree->outputSocket(nodeID, socketID);
+					if(!outputData.isValidImage())
+						continue;
+
+					QAction* actionSaveImageSocket = new QAction
+						(QString("Save image socket: %1").arg(socketID), &menu);
+					connect(actionSaveImageSocket, &QAction::triggered,
+						[=]
+						{
+							QString filePath = QFileDialog::getSaveFileName(
+								this, tr("Save file"), QString(), ""
+								"PNG (*.png);;"
+								"BMP (*.bmp);;"
+								"JPEG (*.jpg);;"
+								"JPEG 2000 (*.jp2)");
+							if(filePath.isEmpty())
+								return;
+
+							outputData.saveToDisk(filePath.toStdString());
+						});	
+					menu.addAction(actionSaveImageSocket);
+				}
+			}
 		}
+
+		// finally, show a menu
+		menu.exec(globalPos);
 	}
 }
 
