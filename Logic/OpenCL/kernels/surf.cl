@@ -33,6 +33,9 @@
 #define BOXSIZE_TO_SCALE_COEFF 1.2f/9.0f
 #define BASIC_DESC_SIGMA 3.3f
 
+#define DESC_SUBREGION_SIGMA 2.5f
+#define DESC_REGION_SIGMA 1.5f
+
 //__constant sampler_t samp = CLK_NORMALIZED_COORDS_FALSE | CLK_FILTER_NEAREST | CLK_ADDRESS_NONE;
 // On Intel SDK it crashes with CLK_ADDRESS_NONE during findKeypointOrientation()
 __constant sampler_t samp = CLK_NORMALIZED_COORDS_FALSE | CLK_FILTER_NEAREST | CLK_ADDRESS_CLAMP_TO_EDGE;
@@ -426,155 +429,10 @@ float Gaussian(int x, int y, float sigma)
     return (1.0f/(M_PI_F*sigma2)) * exp(-(x*x+y*y)/(sigma2));
 }
 
-// 7 pixels per thread because we need to calculate gradients for 25 samples in total: 6*4+1 
-#define SHARED_STRIDE 4
-#define PIXELS_PER_THREAD 7
-
-__attribute__((reqd_work_group_size(16,4,1)))
+__attribute__((reqd_work_group_size(5,5,1)))
 __kernel void calculateDescriptors(__read_only image2d_t integralImage,
                                    __global float* keypoints,
                                    __global float* descriptors)
-{
-    // One work group computes descriptor for one feature point
-    int bid = get_group_id(0);
-    // Each 4 work items work on one subregion out of 16 in total
-    int tidx = get_local_id(0);
-    int tidy = get_local_id(1);
-    int flatTid = tidx + tidy * get_local_size(0);
-
-    // Load in keypoint parameters
-    // Tried loading using shared memory but in the end this is faster (at least on AMD)
-    float featureX = keypoints[KEYPOINT_MAX*KEYPOINT_X + bid];
-    float featureY = keypoints[KEYPOINT_MAX*KEYPOINT_Y + bid];
-    float featureScale = keypoints[KEYPOINT_MAX*KEYPOINT_SCALE + bid];
-    float featureOrientation = keypoints[KEYPOINT_MAX*KEYPOINT_ORIENTATION + bid];
-
-    float c, s;
-    s = sincos(featureOrientation, &c);
-
-    // WARNING: Many magic numbers ahead
-    // x & 3 := x % 4 but AND is faster
-    int regionX = ((tidx & 3) - 2) * 5; // regionX = [-10,-5,0,5]
-    int regionY = ((tidx / 4) - 2) * 5; // regionY = [-10,-5,0,5]
-
-    float partial_sumDx = 0.0f, partial_sumDy = 0.0f, partial_sumADx = 0.0f, partial_sumADy = 0.0f;
-
-    for(int i = 0; i < PIXELS_PER_THREAD; ++i)
-    {
-        int ii = i*SHARED_STRIDE+tidy;
-        if(ii < 25)
-        {
-            int subRegionX = regionX + (ii % 5); // Can't use AND here 
-            int subRegionY = regionY + (ii / 5);
-
-            int sample_x = convert_int(round(featureX + (subRegionX*featureScale*c - subRegionY*featureScale*s)));
-            int sample_y = convert_int(round(featureY + (subRegionX*featureScale*s + subRegionY*featureScale*c)));
-            int grad_radius = convert_int(round(featureScale));
-
-            // If there's no full neighbourhood for this gradient - set it to 0 response
-            if(haarInBounds(integralImage, sample_x, sample_y, grad_radius))
-            {
-                float2 dxdy = calcHaarResponses(integralImage, sample_x, sample_y, grad_radius);
-                float weight = Gaussian(subRegionX, subRegionY, BASIC_DESC_SIGMA*featureScale);
-                dxdy.x *= weight;
-                dxdy.y *= weight;
-
-                float tdx =  c*dxdy.x + s*dxdy.y;
-                float tdy = -s*dxdy.x + c*dxdy.y;
-
-                partial_sumDx += tdx;
-                partial_sumDy += tdy;
-                partial_sumADx += fabs(tdx);
-                partial_sumADy += fabs(tdy);
-            }
-        }
-    }
-
-#if 0
-    // Share the hackwork 
-    // Each work item produces a set of 4 numbers - dx, dy, |dx|, |dy|
-    // They are partial results from subregions and need to be reduced now
-    __local float smem[4*64];
-
-    __local float* smem_sumDx  = smem + 0*64;
-    __local float* smem_sumDy  = smem + 1*64;
-    __local float* smem_sumADx = smem + 2*64;
-    __local float* smem_sumADy = smem + 3*64;
-
-    smem_sumDx [flatTid] = partial_sumDx;
-    smem_sumDy [flatTid] = partial_sumDy;
-    smem_sumADx[flatTid] = partial_sumADx;
-    smem_sumADy[flatTid] = partial_sumADy;
-
-    barrier(CLK_LOCAL_MEM_FENCE);
-
-    if(flatTid < 32)
-    {
-        smem_sumDx [flatTid] += smem_sumDx [flatTid + 32];
-        smem_sumDy [flatTid] += smem_sumDy [flatTid + 32];
-        smem_sumADx[flatTid] += smem_sumADx[flatTid + 32];
-        smem_sumADy[flatTid] += smem_sumADy[flatTid + 32];
-    }
-
-    barrier(CLK_LOCAL_MEM_FENCE);
-
-    if(flatTid < 16)
-    {
-        smem_sumDx [flatTid] += smem_sumDx [flatTid + 16];
-        smem_sumDy [flatTid] += smem_sumDy [flatTid + 16];
-        smem_sumADx[flatTid] += smem_sumADx[flatTid + 16];
-        smem_sumADy[flatTid] += smem_sumADy[flatTid + 16];
-    }
-
-    barrier(CLK_LOCAL_MEM_FENCE);
-
-    // Convert from [16,4] range to [4,16] range and write descriptor value (unnormalized at this point)
-    descriptors[bid*64 + flatTid] = smem[(flatTid & 3)*64 + (flatTid / 4)];
-#else
-    __local float smem_sumDx[ 16][4];
-    __local float smem_sumDy[ 16][4];
-    __local float smem_sumADx[16][4];
-    __local float smem_sumADy[16][4];
-
-    smem_sumDx[ tidx][tidy] = partial_sumDx;
-    smem_sumDy[ tidx][tidy] = partial_sumDy;
-    smem_sumADx[tidx][tidy] = partial_sumADx;
-    smem_sumADy[tidx][tidy] = partial_sumADy;
-
-    barrier(CLK_LOCAL_MEM_FENCE);
-
-    if(tidy < 2)
-    {
-        smem_sumDx[ tidx][tidy] += smem_sumDx[ tidx][tidy+2];
-        smem_sumDy[ tidx][tidy] += smem_sumDy[ tidx][tidy+2];
-        smem_sumADx[tidx][tidy] += smem_sumADx[tidx][tidy+2];
-        smem_sumADy[tidx][tidy] += smem_sumADy[tidx][tidy+2];
-    }
-    barrier(CLK_LOCAL_MEM_FENCE);
-
-    if(tidy < 1)
-    {
-        smem_sumDx[ tidx][tidy] += smem_sumDx[ tidx][tidy+1];
-        smem_sumDy[ tidx][tidy] += smem_sumDy[ tidx][tidy+1];
-        smem_sumADx[tidx][tidy] += smem_sumADx[tidx][tidy+1];
-        smem_sumADy[tidx][tidy] += smem_sumADy[tidx][tidy+1];
-    }
-    barrier(CLK_LOCAL_MEM_FENCE);
-
-    if(tidy == 0)
-    {
-        descriptors[bid*64 + 4*tidx + 0] = smem_sumDx[ tidx][0];
-        descriptors[bid*64 + 4*tidx + 1] = smem_sumDy[ tidx][0];
-        descriptors[bid*64 + 4*tidx + 2] = smem_sumADx[tidx][0];
-        descriptors[bid*64 + 4*tidx + 3] = smem_sumADy[tidx][0];
-    }
-#endif
-}
-
-__attribute__((reqd_work_group_size(5,5,1)))
-__kernel void calculateDescriptors2(__read_only image2d_t integralImage,
-                                    __global float* keypoints,
-                                    __global float* descriptors)
 {
     int keypointId = get_group_id(0);
     int regionId = get_group_id(1);
@@ -629,7 +487,6 @@ __kernel void calculateDescriptors2(__read_only image2d_t integralImage,
     barrier(CLK_LOCAL_MEM_FENCE);
 
     // Reduction
-#if WARP_SIZE == 32 || WARP_SIZE == 64
     if(tid < 9)
     {
         smem_sumDx [tid] += smem_sumDx [tid + 16];
@@ -638,6 +495,8 @@ __kernel void calculateDescriptors2(__read_only image2d_t integralImage,
         smem_sumADy[tid] += smem_sumADy[tid + 16];
     }
 
+    // NVIDIA and AMD can do it without barriers
+#if WARP_SIZE == 32 || WARP_SIZE == 64
     if(tid < 8)
     {
         smem_sumDx [tid] += smem_sumDx [tid + 8];
@@ -661,50 +520,20 @@ __kernel void calculateDescriptors2(__read_only image2d_t integralImage,
         smem_sumADy[tid] += smem_sumADy[tid + 1]; 
     }
 #else
-    if(tid < 9)
-    {
-        smem_sumDx [tid] += smem_sumDx [tid + 16];
-        smem_sumDy [tid] += smem_sumDy [tid + 16];
-        smem_sumADx[tid] += smem_sumADx[tid + 16];
-        smem_sumADy[tid] += smem_sumADy[tid + 16];
-    }
     barrier(CLK_LOCAL_MEM_FENCE);
 
-    if(tid < 8)
+    #pragma unroll 4
+    for(int s = 8; s > 0; s >>= 1)
     {
-        smem_sumDx [tid] += smem_sumDx [tid + 8];
-        smem_sumDy [tid] += smem_sumDy [tid + 8];
-        smem_sumADx[tid] += smem_sumADx[tid + 8];
-        smem_sumADy[tid] += smem_sumADy[tid + 8]; 
+        if(tid < s)
+        {
+            smem_sumDx [tid] += smem_sumDx [tid + s];
+            smem_sumDy [tid] += smem_sumDy [tid + s];
+            smem_sumADx[tid] += smem_sumADx[tid + s];
+            smem_sumADy[tid] += smem_sumADy[tid + s];
+        }
+        barrier(CLK_LOCAL_MEM_FENCE);
     }
-    barrier(CLK_LOCAL_MEM_FENCE);
-
-    if(tid < 4)
-    {
-        smem_sumDx [tid] += smem_sumDx [tid + 4];
-        smem_sumDy [tid] += smem_sumDy [tid + 4];
-        smem_sumADx[tid] += smem_sumADx[tid + 4];
-        smem_sumADy[tid] += smem_sumADy[tid + 4]; 
-    }
-    barrier(CLK_LOCAL_MEM_FENCE);
-
-    if(tid < 2)
-    {
-        smem_sumDx [tid] += smem_sumDx [tid + 2];
-        smem_sumDy [tid] += smem_sumDy [tid + 2];
-        smem_sumADx[tid] += smem_sumADx[tid + 2];
-        smem_sumADy[tid] += smem_sumADy[tid + 2]; 
-    }
-    barrier(CLK_LOCAL_MEM_FENCE);
-
-    if(tid < 1)
-    {
-        smem_sumDx [tid] += smem_sumDx [tid + 1];
-        smem_sumDy [tid] += smem_sumDy [tid + 1];
-        smem_sumADx[tid] += smem_sumADx[tid + 1];
-        smem_sumADy[tid] += smem_sumADy[tid + 1]; 
-    }
-    barrier(CLK_LOCAL_MEM_FENCE);
 #endif
 
     if(tid == 0)
@@ -713,6 +542,107 @@ __kernel void calculateDescriptors2(__read_only image2d_t integralImage,
         descriptors[keypointId*64 + 4*regionId + 1] = smem_sumDy [0];
         descriptors[keypointId*64 + 4*regionId + 2] = smem_sumADx[0];
         descriptors[keypointId*64 + 4*regionId + 3] = smem_sumADy[0];        
+    }
+}
+
+__attribute__((always_inline))
+float Gaussianf(float x, float y, float sigma)
+{
+    float sigma2 = 2.0f*sigma*sigma;
+    return (1.0f/(M_PI_F*sigma2)) * exp(-(x*x+y*y)/(sigma2));
+}
+
+__attribute__((reqd_work_group_size(9,9,1)))
+__kernel void calculateDescriptorsMSURF(__read_only image2d_t integralImage,
+                                        __global float* keypoints,
+                                        __global float* descriptors)
+{
+    int keypointId = get_group_id(0);
+    int regionId = get_group_id(1);
+    int tid = get_local_id(0) + get_local_id(1) * 9;
+
+    // Load in keypoint parameters
+    // Tried loading using shared memory but in the end this is faster (at least on AMD)
+    float featureX = keypoints[KEYPOINT_MAX*KEYPOINT_X + keypointId];
+    float featureY = keypoints[KEYPOINT_MAX*KEYPOINT_Y + keypointId];
+    float featureScale = keypoints[KEYPOINT_MAX*KEYPOINT_SCALE + keypointId];
+    float featureOrientation = keypoints[KEYPOINT_MAX*KEYPOINT_ORIENTATION + keypointId];
+
+    float c, s;
+    s = sincos(featureOrientation, &c);
+
+    // WARNING: Many magic numbers ahead
+    // x & 3 := x % 4 but AND is faster
+    int regionX = ((regionId & 3) - 2) * 5; // regionX = [-10,-5,0,5]
+    int regionY = ((regionId / 4) - 2) * 5; // regionY = [-10,-5,0,5]
+
+    // regionX + {-2,..6}
+    int subRegionX = regionX + (get_local_id(0) - 2);
+    int subRegionY = regionY + (get_local_id(1) - 2);
+
+    int sample_x = (int) round(featureX + (subRegionX*featureScale*c - subRegionY*featureScale*s));
+    int sample_y = (int) round(featureY + (subRegionX*featureScale*s + subRegionY*featureScale*c));
+    int grad_radius = (int) round(featureScale);
+
+    volatile __local float smem_sumDx[81];
+    volatile __local float smem_sumDy[81];
+    volatile __local float smem_sumADx[81];
+    volatile __local float smem_sumADy[81];
+
+    __private float dx = 0.0f, dy = 0.0f;
+
+    // If there's no full neighbourhood for this gradient - set it to 0 response
+    if(haarInBounds(integralImage, sample_x, sample_y, grad_radius))
+    {
+        float2 dxdy = calcHaarResponses(integralImage, sample_x, sample_y, grad_radius);
+        float weight = Gaussian(get_local_id(0)-4, get_local_id(1)-4, DESC_SUBREGION_SIGMA);
+        dxdy.x *= weight;
+        dxdy.y *= weight;
+
+        dx =  c*dxdy.x + s*dxdy.y;
+        dy = -s*dxdy.x + c*dxdy.y;
+    }
+
+    smem_sumDx[tid]  = dx;
+    smem_sumDy[tid]  = dy;
+    smem_sumADx[tid] = fabs(dx);
+    smem_sumADy[tid] = fabs(dy);
+
+    barrier(CLK_LOCAL_MEM_FENCE);
+
+    // Reduction
+    if(tid < 17)
+    {
+        smem_sumDx [tid] += smem_sumDx [tid + 64];
+        smem_sumDy [tid] += smem_sumDy [tid + 64];
+        smem_sumADx[tid] += smem_sumADx[tid + 64];
+        smem_sumADy[tid] += smem_sumADy[tid + 64];
+    }
+    barrier(CLK_LOCAL_MEM_FENCE);
+
+    #pragma unroll 6
+    for(int s = 32; s > 0; s >>= 1)
+    {
+        if(tid < s)
+        {
+            smem_sumDx [tid] += smem_sumDx [tid + s];
+            smem_sumDy [tid] += smem_sumDy [tid + s];
+            smem_sumADx[tid] += smem_sumADx[tid + s];
+            smem_sumADy[tid] += smem_sumADy[tid + s];
+        }
+        barrier(CLK_LOCAL_MEM_FENCE);
+    }
+
+    if(tid == 0)
+    {
+        float cx = regionX*0.2f + 0.5f;
+        float cy = regionY*0.2f + 0.5f;
+        float weight = Gaussianf(cx, cy, DESC_REGION_SIGMA);
+
+        descriptors[keypointId*64 + 4*regionId + 0] = weight*smem_sumDx [0];
+        descriptors[keypointId*64 + 4*regionId + 1] = weight*smem_sumDy [0];
+        descriptors[keypointId*64 + 4*regionId + 2] = weight*smem_sumADx[0];
+        descriptors[keypointId*64 + 4*regionId + 3] = weight*smem_sumADy[0];        
     }
 }
 

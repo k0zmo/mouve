@@ -42,6 +42,7 @@ public:
 		, _nOctaves(4)
 		, _nScales(4)
 		, _initSampling(1)
+		, _msurf(true)
 		, _upright(false)
 		, _nTotalLayers(0)
 		, _constantsUploaded(false)
@@ -84,7 +85,8 @@ public:
 		_kidFindScaleSpaceMaxima = _gpuComputeModule->registerKernel("findScaleSpaceMaxima", "surf.cl", opts);
 		_kidUprightKeypointOrientation = _gpuComputeModule->registerKernel("uprightKeypointOrientation", "surf.cl", opts);
 		_kidFindKeypointOrientation = _gpuComputeModule->registerKernel("findKeypointOrientation", "surf.cl", opts);
-		_kidCalculateDescriptors = _gpuComputeModule->registerKernel("calculateDescriptors2", "surf.cl", opts);
+		_kidCalculateDescriptors = _gpuComputeModule->registerKernel("calculateDescriptors", "surf.cl", opts);
+		_kidCalculateDescriptorsMSurf = _gpuComputeModule->registerKernel("calculateDescriptorsMSURF", "surf.cl", opts);
 		_kidNormalizeDescriptors = _gpuComputeModule->registerKernel("normalizeDescriptors", "surf.cl", opts);
 			
 		return _kidFillImage != InvalidKernelID &&
@@ -95,6 +97,7 @@ public:
 			_kidUprightKeypointOrientation != InvalidKernelID &&
 			_kidFindKeypointOrientation != InvalidKernelID &&
 			_kidCalculateDescriptors != InvalidKernelID &&
+			_kidCalculateDescriptorsMSurf != InvalidKernelID &&
 			_kidNormalizeDescriptors != InvalidKernelID;
 	}
 
@@ -114,6 +117,9 @@ public:
 		case ID_InitSampling:
 			_initSampling = newValue.toInt();
 			return true;
+		case ID_MSurfDescriptor:
+			_msurf = newValue.toBool();
+			return true;
 		case ID_Upright:
 			_upright = newValue.toBool();
 			return true;
@@ -130,6 +136,7 @@ public:
 		case ID_NumOctaves: return _nOctaves;
 		case ID_NumScales: return _nScales;
 		case ID_InitSampling: return _initSampling;
+		case ID_MSurfDescriptor: return _msurf;
 		case ID_Upright: return _upright;
 		}
 
@@ -261,6 +268,7 @@ public:
 			{ EPropertyType::Integer, "Number of octaves", "min:1" },
 			{ EPropertyType::Integer, "Number of scales", "min:1" },
 			{ EPropertyType::Integer, "Initial sampling rate", "min:1" },
+			{ EPropertyType::Boolean, "MSURF descriptor", "" },
 			{ EPropertyType::Boolean, "Upright", "" },
 			{ EPropertyType::Unknown, "", "" }
 		};
@@ -580,14 +588,26 @@ private:
 				clw::Location_AllocHostMemory, sizeof(float)*64*keypointsCount);
 		}
 
-		clw::Kernel kernelCalculateDescriptors = _gpuComputeModule->acquireKernel(_kidCalculateDescriptors);
-
-		kernelCalculateDescriptors.setLocalWorkSize(5, 5);
-		kernelCalculateDescriptors.setGlobalWorkSize(keypointsCount * 5, 4*4 * 5);
-		kernelCalculateDescriptors.setArg(0, _imageIntegral_cl);
-		kernelCalculateDescriptors.setArg(1, _keypoints_cl);
-		kernelCalculateDescriptors.setArg(2, _descriptors_cl);
-		_gpuComputeModule->queue().asyncRunKernel(kernelCalculateDescriptors);
+		if(_msurf)
+		{
+			clw::Kernel kernelCalculateDescriptorsMSurf = _gpuComputeModule->acquireKernel(_kidCalculateDescriptorsMSurf);
+			kernelCalculateDescriptorsMSurf.setLocalWorkSize(9, 9);
+			kernelCalculateDescriptorsMSurf.setGlobalWorkSize(keypointsCount * 9, 4*4 * 9);
+			kernelCalculateDescriptorsMSurf.setArg(0, _imageIntegral_cl);
+			kernelCalculateDescriptorsMSurf.setArg(1, _keypoints_cl);
+			kernelCalculateDescriptorsMSurf.setArg(2, _descriptors_cl);
+			_gpuComputeModule->queue().asyncRunKernel(kernelCalculateDescriptorsMSurf);
+		}
+		else
+		{
+			clw::Kernel kernelCalculateDescriptors = _gpuComputeModule->acquireKernel(_kidCalculateDescriptors);
+			kernelCalculateDescriptors.setLocalWorkSize(5, 5);
+			kernelCalculateDescriptors.setGlobalWorkSize(keypointsCount * 5, 4*4 * 5);
+			kernelCalculateDescriptors.setArg(0, _imageIntegral_cl);
+			kernelCalculateDescriptors.setArg(1, _keypoints_cl);
+			kernelCalculateDescriptors.setArg(2, _descriptors_cl);
+			_gpuComputeModule->queue().asyncRunKernel(kernelCalculateDescriptors);
+		}
 
 		clw::Kernel kernelNormalizeDescriptors = _gpuComputeModule->acquireKernel(_kidNormalizeDescriptors);
 
@@ -641,6 +661,7 @@ private:
 		ID_NumOctaves,
 		ID_NumScales,
 		ID_InitSampling,
+		ID_MSurfDescriptor,
 		ID_Upright
 	};
 
@@ -648,6 +669,7 @@ private:
 	int _nOctaves;
 	int _nScales;
 	int _initSampling;
+	bool _msurf;
 	bool _upright;
 
 	KernelID _kidFillImage;
@@ -658,6 +680,7 @@ private:
 	KernelID _kidUprightKeypointOrientation;
 	KernelID _kidFindKeypointOrientation;
 	KernelID _kidCalculateDescriptors;
+	KernelID _kidCalculateDescriptorsMSurf;
 	KernelID _kidNormalizeDescriptors;
 
 	clw::Image2D _srcImage_cl;
