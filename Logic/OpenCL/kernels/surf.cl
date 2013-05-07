@@ -15,9 +15,6 @@
 // TODO!
 // Interpolate hessian value across (x,y,s) using taylor series instead of 2nd order polynomial fit
 #define INTERPOLATE_HESSIAN 0
-// TODO!
-// Use basic 20s region descriptor instead of 24s with 2s overlapping between subregions
-#define BASIC_DESCRIPTOR 1
 // Use modified haar wavelets (gradient approximation)
 #define SYMETRIC_HAAR 1
 

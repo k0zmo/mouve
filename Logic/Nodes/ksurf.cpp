@@ -718,9 +718,9 @@ void normalizeDescriptor(float desc[N])
     if(fabsf(len) > 1e-6)
     {
         // Normalize descriptor
-        len = sqrtf(len);
+        len = 1.0f / sqrtf(len);
         for(int i = 0; i < N; ++i)
-            desc[i] /= len;
+            desc[i] *= len;
     }
 }
 
@@ -781,17 +781,17 @@ void msurfDescriptors_kpoint(const KeyPoint& kpoint,
                 for(int x = 0; x < DESC_SUBREGION_SAMPLES; ++x)
                 {
                     // Scalling sigma by keypoint scale doesn't give any visible boost
-                    // That gives us an oppurtunity to use precomputed Gauss table
+                    // That gives us an opportunity to use precomputed Gauss table
                     //float gauss = (float) Gaussian(x-(DESC_SUBREGION_SAMPLES/2), 
-                    //	y-(DESC_SUBREGION_SAMPLES/2), DESC_SUBREGION_SIGMA);
+                    //    y-(DESC_SUBREGION_SAMPLES/2), DESC_SUBREGION_SIGMA);
                     float gauss = gaussWeights[x]*gaussWeights[y];
 
                     float dx = gauss*gradsX[index];
                     float dy = gauss*gradsY[index];
                     ++index;
 
-                    float tdx = -s*dx + c*dy;
-                    float tdy =  c*dx + s*dy;
+                    float tdx =  c*dx + s*dy;
+                    float tdy = -s*dx + c*dy;
 
                     sumDx += tdx;
                     sumDy += tdy;
