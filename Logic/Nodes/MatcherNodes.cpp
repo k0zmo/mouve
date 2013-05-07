@@ -198,7 +198,16 @@ public:
 			return ExecutionStatus(EStatus::Error, "Keypoints and descriptors mismatched");
 		}
 
-		cv::FlannBasedMatcher matcher;
+		cv::Ptr<cv::flann::IndexParams> indexParams = new cv::flann::KDTreeIndexParams();
+		cv::Ptr<cv::flann::SearchParams> searchParams = new cv::flann::SearchParams();
+
+		if(trainDesc.depth() == CV_8U)
+		{
+			indexParams->setAlgorithm(cvflann::FLANN_INDEX_LSH);
+			searchParams->setAlgorithm(cvflann::FLANN_INDEX_LSH);
+		}
+
+		cv::FlannBasedMatcher matcher(indexParams, searchParams);
 		vector<vector<cv::DMatch>> knMatches;
 		matcher.knnMatch(queryDesc, trainDesc, knMatches, 2);
 		
@@ -207,6 +216,9 @@ public:
 
 		for(auto&& knMatch : knMatches)
 		{
+			if(knMatch.size() != 2)
+				continue;
+
 			auto&& best = knMatch[0];
 			auto&& good = knMatch[1];
 
