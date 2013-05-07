@@ -228,7 +228,7 @@ private:
 	void resetMixturesState(int pixNumbers)
 	{
 		// Dane mikstur (stan wewnetrzny estymatora tla)
-		const int mixtureDataSize = _nmixtures * pixNumbers * 3 * sizeof(float);
+		const size_t mixtureDataSize = _nmixtures * pixNumbers * 3 * sizeof(float);
 
 		if(_mixtureDataBuffer.isNull()
 			|| _mixtureDataBuffer.size() != mixtureDataSize)

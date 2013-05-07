@@ -44,7 +44,7 @@ public:
 		void* ptr = _gpuComputeModule->queue().mapBuffer(_pinnedBuffer, clw::MapAccess_Write);
 		if(!ptr)
 			return ExecutionStatus(EStatus::Error, "Couldn't mapped pinned memory for device image transfer");
-		if(hostImage.step != hostImage.cols)
+		if((int) hostImage.step != hostImage.cols)
 		{
 			for(int row = 0; row < hostImage.rows; ++row)
 				memcpy((uchar*)ptr + row*hostImage.step, (uchar*)hostImage.data + row*hostImage.step, hostImage.step);
@@ -122,7 +122,7 @@ public:
 		void* ptr = _gpuComputeModule->queue().mapBuffer(_pinnedBuffer, clw::MapAccess_Read);
 		if(!ptr)
 			return ExecutionStatus(EStatus::Error, "Couldn't mapped pinned memory for device image transfer");
-		if(hostImage.step != hostImage.cols)
+		if((int) hostImage.step != hostImage.cols)
 		{
 			for(int row = 0; row < hostImage.rows; ++row)
 				memcpy((uchar*)hostImage.data + row*hostImage.step, (uchar*)ptr + row*hostImage.step, hostImage.step);

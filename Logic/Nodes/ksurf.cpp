@@ -507,8 +507,6 @@ vector<KeyPoint> findScaleSpaceMaxima(double hessianThreshold,
                                       int numOctaves, int numScales)
 {
     CV_Assert(!scaleLayers.empty());
-    int cols = scaleLayers[0].width;
-    int rows = scaleLayers[0].height;
 
 #if defined(HAVE_TBB)
     tbb::concurrent_vector<KeyPoint> kpoints;

@@ -4,6 +4,8 @@
 #include "NodeFactory.h"
 
 #include <sstream>
+#include <opencv2/imgproc/imgproc.hpp>
+
 #include "Logic/Nodes/ksurf.h"
 
 using namespace std;
@@ -369,7 +371,7 @@ private:
 
 	void ensureHessianAndLaplacianBufferIsEnough(ScaleSpaceLayer_cl& layer)
 	{
-		int layerSizeBytes = layer.width * layer.height * sizeof(float);
+		const size_t layerSizeBytes = layer.width * layer.height * sizeof(float);
 
 		if(layer.hessian_cl.isNull() || layer.hessian_cl.size() != layerSizeBytes)
 		{

@@ -104,6 +104,10 @@ public:
 			evt = runMorphologyKernel(kernelDilate, grid, deviceSrc, _tmpImage, selemCoordsSize, kradx, krady);
 			evt = runMorphologyKernel(kernelErode, grid, _tmpImage, deviceDest, selemCoordsSize, kradx, krady);
 			break;
+		case EMorphologyOperation::Gradient:
+		case EMorphologyOperation::TopHat:
+		case EMorphologyOperation::BlackHat:
+			return ExecutionStatus(EStatus::Error, "Gradient, TopHat and BlackHat not yet implemented for GPU module");
 		}
 
 		// Execute it 

@@ -38,6 +38,7 @@
 #include <QDesktopWidget>
 #include <QDebug>
 #include <QProgressBar>
+#include <QProgressDialog>
 
 #include <QJsonDocument>
 #include <QJsonObject>
@@ -624,7 +625,7 @@ void Controller::setupUiAbout()
 	connect(actionAboutApplication, &QAction::triggered, [=] {
 		QString translatedTextAboutCaption = QString(
 			"<h3>About %1</h3>").arg(applicationTitle);
-		QString translatedTextAboutText = QString::fromUtf16(
+		QString translatedTextAboutText = QString::fromWCharArray(
 			L"<p>Author: Kajetan Świerk</p>"
 			L"<p>This program uses icon set 'Super Mono Stickers' created by Double-J "
 			L"designs <a href=\"http://www.doublejdesign.co.uk/\">www.doublejdesign.co.uk</a>, "
@@ -1842,6 +1843,7 @@ void Controller::showProgramsList()
 			{
 				QString kernelName = QString::fromStdString(kernel);
 				QTreeWidgetItem* kernelItem = new QTreeWidgetItem(buildItem, QStringList() << kernelName);
+				Q_UNUSED(kernelItem);
 			}
 		}
 
@@ -1865,7 +1867,7 @@ void Controller::showProgramsList()
 	connect(actionRebuildProgram, &QAction::triggered, [&] {
 		QModelIndex index = treeWidget->currentIndex();
 		int r = index.row();
-		if(r < list.size())
+		if((size_t) r < list.size())
 		{
 			std::string programName = list[r].programName;
 

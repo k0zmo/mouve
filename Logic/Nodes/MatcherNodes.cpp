@@ -53,8 +53,8 @@ public:
 		if(trainDesc.empty() || queryDesc.empty())
 			return ExecutionStatus(EStatus::Ok);
 
-		if(trainDesc.rows != trainKp.kpoints.size()
-		|| queryDesc.rows != queryKp.kpoints.size())
+		if((size_t) trainDesc.rows != trainKp.kpoints.size()
+		|| (size_t) queryDesc.rows != queryKp.kpoints.size())
 		{
 			return ExecutionStatus(EStatus::Error, "Keypoints and descriptors mismatched");
 		}
@@ -192,8 +192,8 @@ public:
 		if(trainDesc.empty() || queryDesc.empty())
 			return ExecutionStatus(EStatus::Ok);
 
-		if(trainDesc.rows != trainKp.kpoints.size()
-		|| queryDesc.rows != queryKp.kpoints.size())
+		if((size_t) trainDesc.rows != trainKp.kpoints.size()
+		|| (size_t) queryDesc.rows != queryKp.kpoints.size())
 		{
 			return ExecutionStatus(EStatus::Error, "Keypoints and descriptors mismatched");
 		}

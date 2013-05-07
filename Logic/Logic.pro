@@ -19,6 +19,7 @@ HEADERS += \
     Jai/JaiException.h \
     Jai/JaiNodeModule.h \
     Nodes/CV.h \
+    Nodes/ksurf.h \
     OpenCL/DeviceArray.h \
     OpenCL/GpuException.h \
     OpenCL/GpuKernelLibrary.h \
@@ -43,15 +44,22 @@ SOURCES += \
     Nodes/DrawFeaturesNodes.cpp \
     Nodes/HomographyNodes.cpp \
     Nodes/HoughNodes.cpp \
+    Nodes/ImageTransformationNodes.cpp \
+    Nodes/ksurf.cpp \
+    Nodes/kSurfNodes.cpp \
     Nodes/MatcherNodes.cpp \
+    Nodes/SiftNodes.cpp \
+    Nodes/SourceNodes.cpp \
     Nodes/SurfNodes.cpp \
     OpenCL/DeviceArray.cpp \
     OpenCL/GpuBasicNodes.cpp \
+    OpenCL/GpuColorConversionNodes.cpp \
     OpenCL/GpuHoughLinesNode.cpp \
     OpenCL/GpuKernelLibrary.cpp \
     OpenCL/GpuMixtureOfGaussians.cpp \
     OpenCL/GpuMorphologyNode.cpp \
-    OpenCL/GpuNodeModule.cpp
+    OpenCL/GpuNodeModule.cpp \
+    OpenCL/GpuSurfNode.cpp
 	
 PRECOMPILED_HEADER = Precomp.h
 DEFINES += LOGIC_LIB
