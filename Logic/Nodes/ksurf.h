@@ -32,6 +32,7 @@ public:
         int numOctaves = 4,
         int numScales = 4,
         int initSampling = 1,
+        bool mSurfDescriptor = true,
         bool upright = false);
 
     int descriptorSize() const;
@@ -54,6 +55,7 @@ private:
     int _nOctaves;
     int _nScales;
     int _initSampling;
+    bool _msurf;
     bool _upright;
 };
 

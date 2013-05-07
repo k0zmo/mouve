@@ -10,8 +10,6 @@ using namespace std;
 
 // Interpolate hessian value across (x,y,s) using taylor series instead of 2nd order polynomial fit
 #define INTERPOLATE_HESSIAN 0
-// Use basic 20s region descriptor instead of 24s with 2s overlapping between subregions
-#define BASIC_DESCRIPTOR 0
 // Use modified haar wavelets (gradient approximation)
 #define SYMETRIC_HAAR 1
 // Use exactly the same filters sizes as H. Bay in his paper
@@ -710,7 +708,23 @@ void surfOrientation(vector<KeyPoint>& kpoints,
     });
 }
 
-void surfDescriptors_kpoint(const KeyPoint& kpoint, 
+template<size_t N>
+void normalizeDescriptor(float desc[N])
+{
+    float len = 0.0f;
+    for(int i = 0; i < N; ++i)
+        len += desc[i]*desc[i];
+
+    if(fabsf(len) > 1e-6)
+    {
+        // Normalize descriptor
+        len = sqrtf(len);
+        for(int i = 0; i < N; ++i)
+            desc[i] /= len;
+    }
+}
+
+void msurfDescriptors_kpoint(const KeyPoint& kpoint, 
                             const cv::Mat& intImage, 
                             float desc[], float gaussWeights[])
 {
@@ -719,55 +733,6 @@ void surfDescriptors_kpoint(const KeyPoint& kpoint,
     float s = sinf(kpoint.orientation);
     int count = 0;
 
-#if BASIC_DESCRIPTOR != 0
-    for(int j = -BASIC_DESC_SIZE/2; j < BASIC_DESC_SIZE/2; j += BASIC_DESC_SUBREGION_SAMPLES)
-    {
-        for(int x = -BASIC_DESC_SIZE/2; x < BASIC_DESC_SIZE/2; x += BASIC_DESC_SUBREGION_SAMPLES)
-        {
-            float sumDx = 0, sumDy = 0, sumADx = 0, sumADy = 0;
-
-            for(int l = j; l < j + BASIC_DESC_SUBREGION_SAMPLES; ++l)
-            {
-                float regionY = l*scale;
-
-                for(int k = x; k < x + BASIC_DESC_SUBREGION_SAMPLES; ++k)
-                {
-                    float regionX = k*scale;
-
-                    // Calculate pixel coordinates of a sample in a feature region
-                    int sample_x = cvRound(kpoint.x + (regionX*c - regionY*s));
-                    int sample_y = cvRound(kpoint.y + (regionX*s + regionY*c));
-                    int grad_radius = cvRound(scale);
-
-                    // If there's no full neighbourhood for this gradient - set it to 0 response
-                    if(!haarInBounds(sample_x, sample_y, grad_radius, intImage))
-                        continue;
-
-                    // Calculate weighted gradient along x and y directions
-                    float2 dxdy = calcHaarResponses(intImage, sample_x, sample_y, grad_radius);
-                    float weight = (float) Gaussian(k, l, BASIC_DESC_SIGMA*scale);
-                    float dx = weight * dxdy.x;
-                    float dy = weight * dxdy.y;
-
-                    // Transform gradient along the local feature direction
-                    float tdx =  c*dx + s*dy;
-                    float tdy = -s*dx + c*dy;
-
-                    // Sum values up
-                    sumDx += tdx;
-                    sumDy += tdy;
-                    sumADx += fabsf(tdx);
-                    sumADy += fabsf(tdy);
-                }
-            }
-
-            desc[count++] = sumDx;
-            desc[count++] = sumDy;
-            desc[count++] = sumADx;
-            desc[count++] = sumADy;
-        }
-    }
-#else
     float gradsX[DESC_REGION_CACHE_SIZE];
     float gradsY[DESC_REGION_CACHE_SIZE];
 
@@ -797,7 +762,7 @@ void surfDescriptors_kpoint(const KeyPoint& kpoint,
         }
     }
 
-    // cy goes from -1.5 to 1.5 with 0.5 step
+    // cy goes from -1.5 to 1.5 with 1.0 step
     float cy = -1.5f;
 
     for(int j = -DESC_SIZE/2; j < DESC_SIZE/2; j += DESC_SUBREGION_UNIQUE_SAMPLES)
@@ -846,29 +811,77 @@ void surfDescriptors_kpoint(const KeyPoint& kpoint,
         }
         cy += 1.0;
     }
-#endif
 
-    float len = 0.0f;
-    for(int i = 0; i < 64; ++i)
-        len += desc[i]*desc[i];
-
-    if(fabsf(len) > 1e-6)
-    {
-        // Normalize descriptor
-        len = sqrtf(len);
-        for(int i = 0; i < 64; ++i)
-            desc[i] /= len;
-    }
+    normalizeDescriptor<64>(desc);
 }
 
-void surfDescriptors(const vector<KeyPoint>& kpoints,
+void surfDescriptors_kpoint(const KeyPoint& kpoint, 
+                            const cv::Mat& intImage, 
+                            float desc[])
+{
+    float scale = kpoint.scale;
+    float c = cosf(kpoint.orientation);
+    float s = sinf(kpoint.orientation);
+    int count = 0;
+
+    for(int j = -BASIC_DESC_SIZE/2; j < BASIC_DESC_SIZE/2; j += BASIC_DESC_SUBREGION_SAMPLES)
+    {
+        for(int x = -BASIC_DESC_SIZE/2; x < BASIC_DESC_SIZE/2; x += BASIC_DESC_SUBREGION_SAMPLES)
+        {
+            float sumDx = 0, sumDy = 0, sumADx = 0, sumADy = 0;
+
+            for(int l = j; l < j + BASIC_DESC_SUBREGION_SAMPLES; ++l)
+            {
+                float regionY = l*scale;
+
+                for(int k = x; k < x + BASIC_DESC_SUBREGION_SAMPLES; ++k)
+                {
+                    float regionX = k*scale;
+
+                    // Calculate pixel coordinates of a sample in a feature region
+                    int sample_x = cvRound(kpoint.x + (regionX*c - regionY*s));
+                    int sample_y = cvRound(kpoint.y + (regionX*s + regionY*c));
+                    int grad_radius = cvRound(scale);
+
+                    // If there's no full neighbourhood for this gradient - set it to 0 response
+                    if(!haarInBounds(sample_x, sample_y, grad_radius, intImage))
+                        continue;
+
+                    // Calculate weighted gradient along x and y directions
+                    float2 dxdy = calcHaarResponses(intImage, sample_x, sample_y, grad_radius);
+                    float weight = (float) Gaussian(k, l, BASIC_DESC_SIGMA*scale);
+                    float dx = weight * dxdy.x;
+                    float dy = weight * dxdy.y;
+
+                    // Transform gradient along the local feature direction
+                    float tdx =  c*dx + s*dy;
+                    float tdy = -s*dx + c*dy;
+
+                    // Sum values up
+                    sumDx += tdx;
+                    sumDy += tdy;
+                    sumADx += fabsf(tdx);
+                    sumADy += fabsf(tdy);
+                }
+            }
+
+            desc[count++] = sumDx;
+            desc[count++] = sumDy;
+            desc[count++] = sumADx;
+            desc[count++] = sumADy;
+        }
+    }
+
+    normalizeDescriptor<64>(desc);
+}
+
+void msurfDescriptors(const vector<KeyPoint>& kpoints,
                      const cv::Mat& intImage,
                      cv::Mat& descriptors)
 {
     if(descriptors.empty())
         descriptors.create((int) kpoints.size(), 64, CV_32F);
 
-#if BASIC_DESCRIPTOR == 0
     float gaussWeights[DESC_SUBREGION_SAMPLES];
     float sum = 0.0f;
     for(int i = 0; i < DESC_SUBREGION_SAMPLES; ++i)
@@ -880,9 +893,6 @@ void surfDescriptors(const vector<KeyPoint>& kpoints,
     sum = 1.f/sum;
     for(int i = 0; i < DESC_SUBREGION_SAMPLES; ++i)
         gaussWeights[i] *= sum;
-#else
-    float* gaussWeights = nullptr;
-#endif
 
 #if defined(HAVE_TBB)
     // We need idx for a index in descriptors matrix - no for_each for us this time
@@ -890,14 +900,39 @@ void surfDescriptors(const vector<KeyPoint>& kpoints,
     {
         auto&& kpoint = kpoints[idx];
         float* desc = descriptors.ptr<float>(idx);
-        surfDescriptors_kpoint(kpoint, intImage, desc, gaussWeights);
+        msurfDescriptors_kpoint(kpoint, intImage, desc, gaussWeights);
     });
 #else
     for(int idx = 0; idx < (int) kpoints.size(); ++idx)
     {
         auto&& kpoint = kpoints[idx];
         float* desc = descriptors.ptr<float>(idx);
-        surfDescriptors_kpoint(kpoint, intImage, desc, gaussWeights);
+        msurfDescriptors_kpoint(kpoint, intImage, desc, gaussWeights);
+    }
+#endif
+}
+
+void surfDescriptors(const vector<KeyPoint>& kpoints,
+                     const cv::Mat& intImage,
+                     cv::Mat& descriptors)
+{
+    if(descriptors.empty())
+        descriptors.create((int) kpoints.size(), 64, CV_32F);
+
+#if defined(HAVE_TBB)
+    // We need idx for a index in descriptors matrix - no for_each for us this time
+    tbb::parallel_for(0, (int) kpoints.size(), [&](int idx)
+    {
+        auto&& kpoint = kpoints[idx];
+        float* desc = descriptors.ptr<float>(idx);
+        surfDescriptors_kpoint(kpoint, intImage, desc);
+    });
+#else
+    for(int idx = 0; idx < (int) kpoints.size(); ++idx)
+    {
+        auto&& kpoint = kpoints[idx];
+        float* desc = descriptors.ptr<float>(idx);
+        surfDescriptors_kpoint(kpoint, intImage, desc);
     }
 #endif
 }
@@ -907,15 +942,17 @@ kSURF::kSURF()
     , _nOctaves(4)
     , _nScales(4)
     , _initSampling(1)
+    , _msurf(true)
     , _upright(false)
 {
 }
 
-kSURF::kSURF(double hessianThreshold, int numOctaves, int numScales, int initSampling, bool upright)
+kSURF::kSURF(double hessianThreshold, int numOctaves, int numScales, int initSampling, bool mSurfDescriptor, bool upright)
     : _hessianThreshold(hessianThreshold)
     , _nOctaves(numOctaves)
     , _nScales(numScales)
     , _initSampling(initSampling)
+    , _msurf(mSurfDescriptor)
     , _upright(upright)
 {
 }
@@ -984,7 +1021,10 @@ void kSURF::operator()(cv::InputArray _img, cv::InputArray _mask,
         {
             cv::Mat& descriptors = _descriptors.getMatRef();
             descriptors.create(N, 64, CV_32F);
-            surfDescriptors(kpoints, sum, descriptors);
+            if(_msurf)
+                msurfDescriptors(kpoints, sum, descriptors);
+            else
+                surfDescriptors(kpoints, sum, descriptors);
         }
 
         keypoints = transformKeyPoint(kpoints);
