@@ -21,7 +21,13 @@ public:
 			_crossCheck = newValue.toBool();
 			return true;
 		case ID_Threshold:
-			_threshold = newValue.toDouble();
+			{
+				double th = newValue.toDouble();
+				if(th > 0 &&  th < 1.0)
+					return false;
+				_threshold = th;
+			}			
+			
 			return true;
 		}
 

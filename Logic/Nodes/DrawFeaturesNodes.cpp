@@ -345,8 +345,7 @@ public:
 		cv::Mat& imageMatches = writer.acquireSocket(0).getImageRgb();
 
 		// validate inputs
-		if(mt.queryPoints.empty() || mt.trainPoints.empty()
-		|| mt.queryImage.empty() || mt.trainImage.empty())
+		if(mt.queryImage.empty() || mt.trainImage.empty())
 			return ExecutionStatus(EStatus::Ok);
 
 		if(mt.queryPoints.size() != mt.trainPoints.size())
