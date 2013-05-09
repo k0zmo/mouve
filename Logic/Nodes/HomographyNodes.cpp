@@ -59,7 +59,7 @@ public:
 		if(mt.queryPoints.size() < 4)
 		{
 			H = cv::Mat::ones(3, 3, CV_64F);
-			return ExecutionStatus(EStatus::Ok);
+			return ExecutionStatus(EStatus::Ok, "Not enough matches for homography estimation");
 		}
 
 		vector<uchar> inliersMask;
@@ -104,7 +104,11 @@ public:
 			}
 		}
 
-		return ExecutionStatus(EStatus::Ok);
+		std::ostringstream strm;
+		strm << "Inliers found: " << outMt.queryPoints.size() << std::endl;
+		strm << "Percent of correct matches: " << (double) outMt.queryPoints.size() / mt.queryPoints.size() * 100.0 << "%" << std::endl;
+
+		return ExecutionStatus(EStatus::Ok, strm.str());
 	}
 
 	void configuration(NodeConfig& nodeConfig) const override

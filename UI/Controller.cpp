@@ -880,27 +880,33 @@ bool Controller::shouldUpdatePreview(const std::vector<NodeID>& executedNodes)
 
 void Controller::updatePreviewImpl()
 {
-	if(_previewSelectedNodeView != nullptr
-		&& _previewSelectedNodeView->outputSocketCount() > 0)
+	if(_previewSelectedNodeView != nullptr)
 	{
 		NodeID nodeID = _previewSelectedNodeView->nodeKey();
-		SocketID socketID = _previewSelectedNodeView->previewSocketID();
 
-		const NodeFlowData& outputData = _nodeTree->outputSocket(nodeID, socketID);
+		QString text = QString::fromStdString(_nodeTree->nodeExecuteInformation(nodeID));
+		_previewWidget->updateInformation(text);
 
-		if(outputData.isValid())
-		{	
-			switch(outputData.type())
-			{
-			case ENodeFlowDataType::Image:
-				_previewWidget->show(outputData.getImage());
-				return;
+		if(_previewSelectedNodeView->outputSocketCount() > 0)
+		{
+			SocketID socketID = _previewSelectedNodeView->previewSocketID();
 
-			case ENodeFlowDataType::ImageRgb:
-				_previewWidget->show(outputData.getImageRgb());
-				return;
-			default:
-				break;
+			const NodeFlowData& outputData = _nodeTree->outputSocket(nodeID, socketID);
+
+			if(outputData.isValid())
+			{	
+				switch(outputData.type())
+				{
+				case ENodeFlowDataType::Image:
+					_previewWidget->show(outputData.getImage());
+					return;
+
+				case ENodeFlowDataType::ImageRgb:
+					_previewWidget->show(outputData.getImageRgb());
+					return;
+				default:
+					break;
+				}
 			}
 		}
 	}

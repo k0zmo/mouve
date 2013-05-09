@@ -70,7 +70,10 @@ public:
 		detector.detect(src, kp.kpoints);
 		kp.image = src;
 
-		return ExecutionStatus(EStatus::Ok);
+		std::ostringstream strm;
+		strm << "Keypoints detected: " << kp.kpoints.size();
+
+		return ExecutionStatus(EStatus::Ok, strm.str());
 	}
 
 	void configuration(NodeConfig& nodeConfig) const override
@@ -176,7 +179,10 @@ public:
 		surf(src, cv::noArray(), kp.kpoints, descriptors);
 		kp.image = src;
 
-		return ExecutionStatus(EStatus::Ok);
+		std::ostringstream strm;
+		strm << "Keypoints detected: " << kp.kpoints.size();
+
+		return ExecutionStatus(EStatus::Ok, strm.str());
 	}
 
 	void configuration(NodeConfig& nodeConfig) const override

@@ -13,7 +13,8 @@ using namespace std;
 // Use exactly the same filters sizes as H. Bay in his paper
 #define FILTER_SIZE_BAY 1
 
-static const int KEYPOINTS_MAX = 16384;
+//static const int KEYPOINTS_MAX = 16384;
+static const int KEYPOINTS_MAX = 65535;
 // Size of a 1st box filter in 1st octave (9x9 is default)
 static const int FILTER_SIZE_BASE = 9;
 static const int FILTER_SIZE_BASE_INCREASE = 6;
@@ -248,7 +249,10 @@ public:
 			descriptors = cv::Mat();
 		}
 
-		return ExecutionStatus(EStatus::Ok, 0);
+		std::ostringstream strm;
+		strm << "Keypoints detected: " << kp.kpoints.size();
+
+		return ExecutionStatus(EStatus::Ok, strm.str());
 	}
 
 	void configuration(NodeConfig& nodeConfig) const override

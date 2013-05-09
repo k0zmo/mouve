@@ -4,6 +4,8 @@
 
 #include "ksurf.h"
 
+#include <sstream>
+
 class kSurfNodeType : public NodeType
 {
 public:
@@ -75,7 +77,10 @@ public:
 		surf(src, cv::noArray(), kp.kpoints, descriptors);
 		kp.image = src;
 
-		return ExecutionStatus(EStatus::Ok);
+		std::ostringstream strm;
+		strm << "Keypoints detected: " << kp.kpoints.size();
+
+		return ExecutionStatus(EStatus::Ok, strm.str());
 	}
 
 	void configuration(NodeConfig& nodeConfig) const override

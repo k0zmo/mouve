@@ -43,6 +43,11 @@ void PreviewWidget::showDummy()
 	_ui->glwidget->showDummy();
 }
 
+void PreviewWidget::updateInformation(const QString& str)
+{
+	_ui->plainTextEdit->setPlainText(str);
+}
+
 void PreviewWidget::changeBehavior(bool checked)
 {
 	if(!checked)

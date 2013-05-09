@@ -50,6 +50,7 @@ public:
 	ExecutionStatus execute(NodeSocketReader& reader, NodeSocketWriter& writer);
 	bool setProperty(PropertyID propID, const QVariant& value);
 	QVariant property(PropertyID propID) const;
+	const std::string& executeInformation() const;
 	bool restart();
 	void finish();
 
@@ -67,6 +68,7 @@ private:
 	NodeTypeID _nodeTypeID;
 	uint _flags;
 	double _timeElapsed;
+	std::string _message;
 
 	// Only one node can be executed at once
 	static HighResolutionClock _stopWatch;

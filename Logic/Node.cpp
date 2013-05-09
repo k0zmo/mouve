@@ -76,6 +76,7 @@ Node& Node::operator=(Node&& rhs)
 		_nodeTypeID = rhs._nodeTypeID;
 		_flags = rhs._flags;
 		_timeElapsed = rhs._timeElapsed;
+		_message = rhs._message;
 	}
 	return *this;
 }
@@ -110,6 +111,8 @@ ExecutionStatus Node::execute(NodeSocketReader& reader, NodeSocketWriter& writer
 	ExecutionStatus status = _nodeType->execute(reader, writer);
 	double stop = _stopWatch.currentTimeInSeconds();
 
+	_message = status.message;
+
 	if(!flag(ENodeFlags::OverridesTimeComp))
 	{
 		// Save in milliseconds
@@ -130,6 +133,11 @@ bool Node::setProperty(PropertyID propID, const QVariant& value)
 QVariant Node::property(PropertyID propID) const
 {
 	return _nodeType->property(propID);
+}
+
+const std::string& Node::executeInformation() const
+{
+	return _message;
 }
 
 bool Node::restart()

@@ -468,7 +468,7 @@ void NodeTree::execute(bool withInit)
 			{
 				selfTagging.push_back(nodeID);
 				throw ExecutionError(node.nodeName(), 
-					nodeTypeName(nodeID), ret.errorMessage);
+					nodeTypeName(nodeID), ret.message);
 			}
 
 			correctlyExecutedNodes.push_back(nodeID);
@@ -814,6 +814,15 @@ QVariant NodeTree::nodeProperty(NodeID nodeID, PropertyID propID)
 		return QVariant();
 
 	return _nodes[nodeID].property(propID);
+}
+
+const std::string& NodeTree::nodeExecuteInformation(NodeID nodeID) const
+{
+	static const std::string empty;
+	if(!validateNode(nodeID))
+		return empty;
+
+	return _nodes[nodeID].executeInformation();
 }
 
 NodeID NodeTree::allocateNodeID()

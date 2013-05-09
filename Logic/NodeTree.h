@@ -68,6 +68,7 @@ public:
 	bool nodeConfiguration(NodeID nodeID, NodeConfig& nodeConfig) const;
 	bool nodeSetProperty(NodeID nodeID, PropertyID propID, const QVariant& value);
 	QVariant nodeProperty(NodeID nodeID, PropertyID propID);
+	const std::string& nodeExecuteInformation(NodeID nodeID) const;
 
 	std::unique_ptr<NodeIterator> createNodeIterator();
 	std::unique_ptr<NodeLinkIterator> createNodeLinkIterator();	

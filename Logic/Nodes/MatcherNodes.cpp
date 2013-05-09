@@ -115,7 +115,12 @@ public:
 		mt.queryImage = queryKp.image;
 		mt.trainImage = trainKp.image;
 
-		return ExecutionStatus(EStatus::Ok);
+		std::ostringstream strm;
+		strm << "Initial matches found: " << matches.size() << std::endl;
+		if(!qFuzzyCompare(0.0, _threshold))
+			strm << "Matches after thresholding found: " << mt.queryPoints.size() << std::endl;
+
+		return ExecutionStatus(EStatus::Ok, strm.str());
 	}
 
 	void configuration(NodeConfig& nodeConfig) const override
@@ -238,7 +243,11 @@ public:
 		mt.queryImage = queryKp.image;
 		mt.trainImage = trainKp.image;
 
-		return ExecutionStatus(EStatus::Ok);
+		std::ostringstream strm;
+		strm << "Initial matches found: " << knMatches.size() << std::endl;
+		strm << "NNDR Matches found: " << mt.queryPoints.size() << std::endl;
+
+		return ExecutionStatus(EStatus::Ok, strm.str());
 	}
 
 	void configuration(NodeConfig& nodeConfig) const override

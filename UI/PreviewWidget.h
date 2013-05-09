@@ -22,6 +22,7 @@ public slots:
 	void show(const QImage& image);
 	void show(const cv::Mat& image);
 	void showDummy();
+	void updateInformation(const QString& str);
 
 private slots:
 	void changeBehavior(bool checked);

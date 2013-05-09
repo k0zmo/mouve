@@ -155,30 +155,30 @@ struct ExecutionStatus
 	ExecutionStatus()
 		: timeElapsed(0)
 		, status(EStatus::Ok)
-		, errorMessage()
+		, message()
 	{
 	}
 
 	ExecutionStatus(EStatus status, 
-		const std::string& errorMessage = std::string())
+		const std::string& message = std::string())
 		: timeElapsed(0)
 		, status(status)
-		, errorMessage(errorMessage)
+		, message(message)
 	{
 	}
 
 	ExecutionStatus(EStatus status,
 		double timeElapsed,
-		const std::string& errorMessage = std::string())
+		const std::string& message = std::string())
 		: timeElapsed(timeElapsed)
 		, status(status)
-		, errorMessage(errorMessage)
+		, message(message)
 	{
 	}
 
 	double timeElapsed;
 	EStatus status;
-	std::string errorMessage;
+	std::string message;
 };
 
 class NodeType
