@@ -11,7 +11,7 @@
     </ClCompile>
     <Link>
       <AdditionalLibraryDirectories>$(OPENCVDIR)\lib\x64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>opencv_core$(OPENCV_VERSION).lib;opencv_imgproc$(OPENCV_VERSION).lib;opencv_highgui$(OPENCV_VERSION).lib;opencv_video$(OPENCV_VERSION).lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>opencv_core$(OPENCV_VERSION).lib;opencv_imgproc$(OPENCV_VERSION).lib;opencv_highgui$(OPENCV_VERSION).lib;opencv_video$(OPENCV_VERSION).lib;opencv_features2d$(OPENCV_VERSION).lib;opencv_nonfree$(OPENCV_VERSION).lib;opencv_flann$(OPENCV_VERSION).lib;opencv_calib3d$(OPENCV_VERSION).lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup />

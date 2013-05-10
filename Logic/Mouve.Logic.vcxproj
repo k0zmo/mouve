@@ -429,7 +429,7 @@
       <SubSystem>Windows</SubSystem>
       <AdditionalLibraryDirectories>$(QTDIR)\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>qtmaind.lib;Qt5Cored.lib;opencv_features2d$(OPENCV_VERSION)d.lib;opencv_nonfree$(OPENCV_VERSION)d.lib;opencv_flann$(OPENCV_VERSION)d.lib;opencv_calib3d$(OPENCV_VERSION)d.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>Qt5Cored.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <ImageHasSafeExceptionHandlers>false</ImageHasSafeExceptionHandlers>
     </Link>
     <PostBuildEvent>
@@ -454,7 +454,7 @@ if %errorlevel% leq 1 exit 0 else exit %errorlevel%</Command>
       <SubSystem>Windows</SubSystem>
       <AdditionalLibraryDirectories>$(QTDIR)\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>qtmaind.lib;Qt5Cored.lib;opencv_features2d$(OPENCV_VERSION)d.lib;opencv_nonfree$(OPENCV_VERSION)d.lib;opencv_flann$(OPENCV_VERSION)d.lib;opencv_calib3d$(OPENCV_VERSION)d.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>Qt5Cored.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <ImageHasSafeExceptionHandlers>false</ImageHasSafeExceptionHandlers>
     </Link>
     <PostBuildEvent>
@@ -479,7 +479,7 @@ if %errorlevel% leq 1 exit 0 else exit %errorlevel%</Command>
       <SubSystem>Windows</SubSystem>
       <AdditionalLibraryDirectories>$(QTDIR)\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <GenerateDebugInformation>false</GenerateDebugInformation>
-      <AdditionalDependencies>qtmain.lib;Qt5Core.lib;opencv_features2d$(OPENCV_VERSION).lib;opencv_nonfree$(OPENCV_VERSION).lib;opencv_flann$(OPENCV_VERSION).lib;opencv_calib3d$(OPENCV_VERSION).lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>Qt5Core.lib;opencv_features2d$(OPENCV_VERSION).lib;opencv_nonfree$(OPENCV_VERSION).lib;opencv_flann$(OPENCV_VERSION).lib;opencv_calib3d$(OPENCV_VERSION).lib;%(AdditionalDependencies)</AdditionalDependencies>
       <ImageHasSafeExceptionHandlers>false</ImageHasSafeExceptionHandlers>
     </Link>
     <PostBuildEvent>
@@ -503,7 +503,7 @@ if %errorlevel% leq 1 exit 0 else exit %errorlevel%</Command>
       <SubSystem>Windows</SubSystem>
       <AdditionalLibraryDirectories>$(QTDIR)\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <GenerateDebugInformation>false</GenerateDebugInformation>
-      <AdditionalDependencies>qtmain.lib;Qt5Core.lib;opencv_features2d$(OPENCV_VERSION).lib;opencv_nonfree$(OPENCV_VERSION).lib;opencv_flann$(OPENCV_VERSION).lib;opencv_calib3d$(OPENCV_VERSION).lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>Qt5Core.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
       <Command>copy /Y  $(SolutionDir)external\clw\bin64\clw.dll  $(SolutionDir)$(Platform)\$(Configuration)\clw.dll
