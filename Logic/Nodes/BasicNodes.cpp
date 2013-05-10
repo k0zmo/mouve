@@ -1133,6 +1133,63 @@ public:
 	}
 };
 
+class DrawHistogramNodeType : public NodeType
+{
+public:
+	ExecutionStatus execute(NodeSocketReader& reader, NodeSocketWriter& writer) override
+	{
+		// inputs
+		const cv::Mat& src = reader.readSocket(0).getImage();
+		// outputs
+		cv::Mat& canvas = writer.acquireSocket(0).getImageRgb();
+
+		// validate inputs
+		if(src.empty())
+			return ExecutionStatus(EStatus::Ok);
+
+		// Compute histogram
+		const int bins = 256;
+		const float range[] = { 0, 256 } ;
+		const float* histRange = { range };
+		const bool uniform = true; 
+		const bool accumulate = false;
+		cv::Mat hist;
+		cv::calcHist(&src, 1, 0, cv::noArray(), hist, 1, &bins, &histRange, uniform, accumulate);
+
+		// Draw histogram
+		const int hist_h = 125;
+		canvas = cv::Mat::zeros(hist_h, bins, CV_8UC3);
+		cv::normalize(hist, hist, 0, canvas.rows, cv::NORM_MINMAX, -1, cv::noArray());
+
+		for(int j = 0; j < bins-1; ++j)
+		{
+			cv::line(canvas, 
+				cv::Point(j, hist_h),
+				cv::Point(j, hist_h - (hist.at<float>(j))),
+				cv::Scalar(200,200,200),
+				1, 8, 0);
+		}
+
+		return ExecutionStatus(EStatus::Ok);
+	}
+
+	void configuration(NodeConfig& nodeConfig) const override
+	{
+		static const InputSocketConfig in_config[] = {
+			{ ENodeFlowDataType::Image, "source", "Source", "" },
+			{ ENodeFlowDataType::Invalid, "", "", "" }
+		};
+		static const OutputSocketConfig out_config[] = {
+			{ ENodeFlowDataType::ImageRgb, "output", "Output", "" },
+			{ ENodeFlowDataType::Invalid, "", "", "" }
+		};
+
+		nodeConfig.description = "";
+		nodeConfig.pInputSockets = in_config;
+		nodeConfig.pOutputSockets = out_config;
+	}
+};
+
 class DownsampleNodeType : public NodeType
 {
 public:
@@ -1356,7 +1413,8 @@ REGISTER_NODE("Edge/Laplacian", LaplacianFilterNodeType)
 
 REGISTER_NODE("Image/Upsample", UpsampleNodeType)
 REGISTER_NODE("Image/Downsample", DownsampleNodeType)
-REGISTER_NODE("Image/Equalize hist.", EqualizeHistogramNodeType)
+REGISTER_NODE("Image/Equalize histogram", EqualizeHistogramNodeType)
+REGISTER_NODE("Image/Draw histogram", DrawHistogramNodeType)
 REGISTER_NODE("Image/Convolution", CustomConvolutionNodeType)
 REGISTER_NODE("Image/Predefined convolution", PredefinedConvolutionNodeType)
 REGISTER_NODE("Image/Morphology op.", MorphologyNodeType)
