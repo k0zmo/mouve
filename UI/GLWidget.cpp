@@ -306,6 +306,16 @@ void GLWidget::zoom(int dir, qreal scale)
 		const qreal maxw = _rightBase - _leftBase;
 		const qreal maxh = _topBase - _bottomBase;
 
+		if(distx > maxw && disty > maxh)
+		{
+			_left = _leftBase;
+			_right = _rightBase;
+			_top = _topBase;
+			_bottom = _bottomBase;
+			updateGL();
+			return;
+		}
+
 		const qreal distx1 = qBound(maxZoom, distx - aspect * scale * dir, maxw);
 		const qreal disty1 = qBound(maxZoom, disty - scale * dir, maxh);
 
