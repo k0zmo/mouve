@@ -11,9 +11,8 @@ class QImage;
 
 enum class EResizeBehavior
 {
-	Scale,
-	MaintainImageSize,
-	/// TODO: MaintainAspectRatio
+	FitToView,
+	MaintainAspectRatio
 };
 
 class GLWidget : public QGLWidget
@@ -23,25 +22,22 @@ public:
 	explicit GLWidget(QWidget* parent = nullptr);
 	virtual ~GLWidget();
 
-	EResizeBehavior resizeBehavior() const;
-
 public slots:
 	void show(const QImage& image);
 	void show(const cv::Mat& image);
 	void showDummy();
 	/// TODO: void show(GLuint texture);
 
-	void setResizeBehavior(EResizeBehavior behavior);
-
-	/// TODO: Ignores aspect ratio
 	void fitInView();
 	void scaleToOriginalSize(); 
 
 	void zoomIn();
 	void zoomOut();
+	void zoomOriginal();
 
 private:
-	void zoom(int dir, float scale);
+	void zoom(int dir, qreal scale);
+	void move(int dx, int dy);
 	void recalculateTexCoords();
 	void setDefaultSamplerParameters();
 
@@ -60,6 +56,11 @@ private:
 	float _right;
 	float _bottom;
 
+	qreal _topBase;
+	qreal _leftBase;
+	qreal _rightBase;
+	qreal _bottomBase;
+
 	GLuint _textureId;
 	GLuint _foreignTextureId;
 	GLuint _textureCheckerId;
@@ -71,6 +72,3 @@ private:
 	EResizeBehavior _resizeBehavior;
 	bool _showDummy;
 };
-
-inline EResizeBehavior GLWidget::resizeBehavior() const
-{ return _resizeBehavior; }

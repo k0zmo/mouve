@@ -14,6 +14,8 @@ PreviewWidget::PreviewWidget(QWidget* parent)
 		_ui->glwidget, &GLWidget::zoomIn);
 	connect(_ui->toolButtonZoomOut, &QToolButton::clicked,
 		_ui->glwidget, &GLWidget::zoomOut);
+	connect(_ui->toolButtonOriginal, &QToolButton::clicked,
+		_ui->glwidget, &GLWidget::zoomOriginal);
 }
 
 PreviewWidget::~PreviewWidget()
@@ -41,27 +43,20 @@ void PreviewWidget::showDummy()
 
 void PreviewWidget::changeBehavior(bool checked)
 {
-	if(checked)
+	if(!checked)
 	{
 		_ui->glwidget->scaleToOriginalSize();
-
-		_ui->toolButtonZoomIn->setEnabled(false);
-		_ui->toolButtonZoomOut->setEnabled(false);
 	}
 	else
 	{
 		_ui->glwidget->fitInView();
-
-		_ui->toolButtonZoomIn->setEnabled(true);
-		_ui->toolButtonZoomOut->setEnabled(true);
 	}
 }
 
 void PreviewWidget::setToolbarEnabled(bool enabled)
 {
 	_ui->toolButtonBehavior->setEnabled(enabled);
-
-	bool zoomEnabled = enabled && !_ui->toolButtonBehavior->isChecked();
-	_ui->toolButtonZoomIn->setEnabled(zoomEnabled);
-	_ui->toolButtonZoomOut->setEnabled(zoomEnabled);
+	_ui->toolButtonOriginal->setEnabled(enabled);
+	_ui->toolButtonZoomIn->setEnabled(enabled);
+	_ui->toolButtonZoomOut->setEnabled(enabled);
 }

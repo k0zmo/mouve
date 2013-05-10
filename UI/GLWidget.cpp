@@ -10,12 +10,16 @@ GLWidget::GLWidget(QWidget* parent)
 	, _left(0)
 	, _right(1)
 	, _bottom(0)
+	, _topBase(1)
+	, _leftBase(0)
+	, _rightBase(1)
+	, _bottomBase(0)
 	, _textureId(0)
 	, _foreignTextureId(0)
 	, _textureCheckerId(0)
 	, _textureWidth(0)
 	, _textureHeight(0)
-	, _resizeBehavior(EResizeBehavior::Scale)
+	, _resizeBehavior(EResizeBehavior::MaintainAspectRatio)
 	, _showDummy(true)
 {
 }
@@ -213,15 +217,9 @@ void GLWidget::showDummy()
 	updateGL();
 }
 
-void GLWidget::setResizeBehavior(EResizeBehavior behavior)
-{
-	_resizeBehavior = behavior;
-	updateGL();
-}
-
 void GLWidget::fitInView()
 {
-	_resizeBehavior = EResizeBehavior::Scale;
+	_resizeBehavior = EResizeBehavior::FitToView;
 
 	if(_showDummy)
 		return;
@@ -232,7 +230,7 @@ void GLWidget::fitInView()
 
 void GLWidget::scaleToOriginalSize()
 {
-	_resizeBehavior = EResizeBehavior::MaintainImageSize;
+	_resizeBehavior = EResizeBehavior::MaintainAspectRatio;
 
 	if(_showDummy)
 		return;
@@ -241,55 +239,149 @@ void GLWidget::scaleToOriginalSize()
 	updateGL();
 }
 
-
 void GLWidget::zoomIn()
 {
-	zoom(1, 0.15f);
+	zoom(1, 0.15);
 }
 
 void GLWidget::zoomOut()
 {
-	zoom(-1, 0.15f);
+	zoom(-1, 0.15);
 }
 
-void GLWidget::zoom(int dir, float scale)
+void GLWidget::zoomOriginal()
 {
-	const float maxZoom = 0.05f;
+	recalculateTexCoords();
+	updateGL();
+}
 
-	float distx = fabsf(_right - _left);
-	float disty = fabsf(_top - _bottom);
+void GLWidget::zoom(int dir, qreal scale)
+{
+	// use rather varying max zoom, depending on image size
+	// Old version: const qreal maxZoom = 0.05f;
+	const qreal maxZoom = 20.0f / qMax(_textureHeight, _textureHeight);
 
-	float distx1 = qBound(maxZoom, distx - scale * dir, 1.0f);
-	float disty1 = qBound(maxZoom, disty - scale * dir, 1.0f);
+	qreal distx = fabsf(_right - _left);
+	qreal disty = fabsf(_top - _bottom);
 
-	float dx = (-distx1 + distx) * 0.5f;
-	float dy = (-disty1 + disty) * 0.5f;
-
-	_left += dx;
-	_right -= dx;
-	_top -= dy;
-	_bottom += dy;
- 
-	// TODO: This could cause some coords to be too much corrected
-	if(_right > 1.0f)
+	if(_resizeBehavior == EResizeBehavior::FitToView)
 	{
-		_left = _left - (_right - 1.0f);
-		_right = 1.0f;
+		qreal distx1 = qBound(maxZoom, distx - scale * dir, 1.0);
+		qreal disty1 = qBound(maxZoom, disty - scale * dir, 1.0);
+
+		qreal dx = (-distx1 + distx) * 0.5;
+		qreal dy = (-disty1 + disty) * 0.5;
+
+		_left += dx;
+		_right -= dx;
+		_top -= dy;
+		_bottom += dy;
 	}
-	if(_left < 0.0f)
+	else if(_resizeBehavior == EResizeBehavior::MaintainAspectRatio)
 	{
-		_right = _right - _left;
-		_left = 0.0f;		
+		// we could check which aspect (y/x or x/y) is less than 1.0 and use that
+		// but because 95% of images are not portrait type we can assume y < x in most cases
+		// and make it much simpler (note inverted fractional)
+		const qreal aspect = distx / disty;
+		
+		const qreal maxw = _rightBase - _leftBase;
+		const qreal maxh = _topBase - _bottomBase;
+
+		const qreal distx1 = qBound(maxZoom, distx - aspect * scale * dir, maxw);
+		const qreal disty1 = qBound(maxZoom, disty - scale * dir, maxh);
+
+		const qreal aspect1 = distx1 / disty1;
+		qreal dx, dy;
+
+		// Check if last op. changed aspect ratio
+		if(!qFuzzyCompare(aspect, aspect1))
+		{
+			qreal a = distx - (dir > 0 ? maxZoom : maxw);
+			qreal b = disty - (dir > 0 ? maxZoom : maxh);
+
+			dx = aspect * qMin(a,b) * 0.5;
+			dy = qMin(a,b) * 0.5;
+		}
+		else
+		{
+			dx = (distx - distx1) * 0.5;
+			dy = (disty - disty1) * 0.5;
+		}
+
+		_left += dx;
+		_right -= dx;
+		_top -= dy;
+		_bottom += dy;
 	}
-	if(_top > 1.0f)
+
+	if(_right > _rightBase)
 	{
-		_bottom = _bottom - (_top - 1.0f);
-		_top = 1.0f;
+		_left = _left - (_right - _rightBase);
+		_right = _rightBase;
 	}
-	if(_bottom < 0.0f)
+	if(_left < _leftBase)
 	{
-		_top = _top - _bottom;
-		_bottom = 0.0f;
+		_right = _right - (_left - _leftBase);
+		_left = _leftBase;		
+	}
+	if(_top > _topBase)
+	{
+		_bottom = _bottom - (_top - _topBase);
+		_top = _topBase;
+	}
+	if(_bottom < _bottomBase)
+	{
+		_top = _top - (_bottom - _bottomBase);
+		_bottom = _bottomBase;
+	}
+
+	updateGL();
+}
+
+void GLWidget::move(int dx, int dy)
+{
+	// when image is smaller than a widget
+	qreal area = (_right - _left) * (_top - _bottom);
+	//if(area >= 1.0)
+	//	return;
+
+	static const qreal c = 0.001;
+	// watch out for log(1) == 0
+	//const qreal c = 0.001f / log((_rightBase - _leftBase) / (_right - _left));
+
+	if(_top > _topBase && _bottom < _bottomBase)
+		dy = 0;
+	if(_right > _rightBase && _left < _leftBase)
+		dx = 0;
+
+	// translate to right 
+	if(dx > 0)
+	{
+		qreal right = qBound(_leftBase, _right + c * dx, _rightBase);
+		_left = _left - (_right - right);
+		_right = right;
+	}
+	// translate to left
+	else if(dx < 0)
+	{
+		qreal left = qBound(_leftBase, _left + c * dx, _rightBase);
+		_right = _right - (_left - left);
+		_left = left;
+	}
+
+	// translate to top
+	if(dy > 0)
+	{
+		qreal top = qBound(_bottomBase, _top + c * dy, _topBase);
+		_bottom = _bottom - (_top - top);
+		_top = top;
+	}
+	// translate to top
+	else if(dy < 0)
+	{
+		qreal bottom = qBound(_bottomBase, _bottom + c * dy, _topBase);
+		_top = _top - (_bottom - bottom);
+		_bottom = bottom;
 	}
 
 	updateGL();
@@ -297,26 +389,36 @@ void GLWidget::zoom(int dir, float scale)
 
 void GLWidget::recalculateTexCoords()
 {
-	if(_resizeBehavior == EResizeBehavior::Scale)
+	if(_resizeBehavior == EResizeBehavior::FitToView)
 	{
-		_left = 0;
-		_bottom = 0;
-		_right = 1;
-		_top = 1;
+		_leftBase = 0;
+		_bottomBase = 0;
+		_rightBase = 1;
+		_topBase = 1;
 	}
-	else if(_resizeBehavior == EResizeBehavior::MaintainImageSize)
+	else if(_resizeBehavior == EResizeBehavior::MaintainAspectRatio)
 	{
 		QSize widgetSize = size();
 
 		int width = widgetSize.width();
 		int height = widgetSize.height();
 
-		_left = (_textureWidth - width) * 0.5f * (1.0f / float(_textureWidth));
-		_right = (_textureWidth + width) * 0.5f * (1.0f / float(_textureWidth));
+		qreal waspect = width / (qreal) _textureWidth;
+		qreal haspect = height / (qreal) _textureHeight;
 
-		_bottom = (_textureHeight - height) * 0.5f * (1.0f / float(_textureHeight));
-		_top = (_textureHeight + height) * 0.5f * (1.0f / float(_textureHeight));
+		qreal w = _textureWidth * qMin(waspect, haspect);
+		qreal h = _textureHeight * qMin(waspect, haspect);
+
+		_leftBase = (w - width) * 0.5 * (1.0 / w);
+		_rightBase = (w + width) * 0.5 * (1.0 / w);
+		_bottomBase = (h - height) * 0.5 * (1.0 / h);
+		_topBase = (h + height) * 0.5 * (1.0 / h);
 	}
+
+	_left = _leftBase;
+	_right = _rightBase;
+	_top = _topBase;
+	_bottom = _bottomBase;
 }
 
 void GLWidget::setDefaultSamplerParameters()
@@ -403,9 +505,8 @@ void GLWidget::resizeGL(int width, int height)
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
 
-	if(_resizeBehavior == EResizeBehavior::MaintainImageSize 
-		&& !_showDummy)
-		scaleToOriginalSize();
+	if(!_showDummy && _resizeBehavior == EResizeBehavior::MaintainAspectRatio)
+		recalculateTexCoords();
 }
 
 void GLWidget::paintGL()
@@ -461,14 +562,11 @@ void GLWidget::wheelEvent(QWheelEvent* event)
 	if(_showDummy)
 		return;
 
-	if(_resizeBehavior == EResizeBehavior::MaintainImageSize)
-		return;
-
 	int dir = event->delta() > 0 ? 1 : -1;
 
-	float c = 0.05f;
+	qreal c = 0.05;
 	if(event->modifiers() & Qt::ControlModifier)
-		c *= 5.0f;
+		c *= 5.0;
 	
 	zoom(dir, c);
 }
@@ -486,52 +584,5 @@ void GLWidget::mouseMoveEvent(QMouseEvent* event)
 	QPoint diff = event->pos() - _mouseAnchor;
 	_mouseAnchor = event->pos();
 
-	if(_resizeBehavior != EResizeBehavior::MaintainImageSize)
-	{
-		float area = (_right - _left) * (_top - _bottom);
-		if(area > 1.0f)
-			return;
-	}
-
-	float c = 0.001f;// * area; // connect with current zoom level 
-	
-	int dx = -diff.x();
-	int dy = +diff.y();
-
-	if(_top > 1.0f && _bottom < 0.0f)
-		dy = 0;
-	if(_right > 1.0f && _left < 0.0f)
-		dx = 0;
-
-	// translate to right 
-	if(dx > 0)
-	{
-		float right = qBound(0.0f, _right + c * dx, 1.0f);
-		_left = _left - (_right - right);
-		_right = right;
-	}
-	// translate to left
-	else if(dx < 0)
-	{
-		float left = qBound(0.0f, _left + c * dx, 1.0f);
-		_right = _right - (_left - left);
-		_left = left;
-	}
-
-	// translate to top
-	if(dy > 0)
-	{
-		float top = qBound(0.0f, _top + c * dy, 1.0f);
-		_bottom = _bottom - (_top - top);
-		_top = top;
-	}
-	// translate to top
-	else if(dy < 0)
-	{
-		float bottom = qBound(0.0f, _bottom + c * dy, 1.0f);
-		_top = _top - (_bottom - bottom);
-		_bottom = bottom;
-	}
-
-	updateGL();
+	move(-diff.x(), +diff.y());
 }
