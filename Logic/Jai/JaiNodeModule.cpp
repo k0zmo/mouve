@@ -170,7 +170,7 @@ CameraSettings JaiNodeModule::cameraSettings(int index)
 
 		return set;
 	}
-	catch(JaiException& ex)
+	catch(JaiException&)
 	{
 		return set;
 	}
@@ -208,7 +208,7 @@ bool JaiNodeModule::setCameraSettings(int index, const CameraSettings& settings)
 
 		return true;
 	}
-	catch(JaiException& ex)
+	catch(JaiException&)
 	{
 		return false;
 	}

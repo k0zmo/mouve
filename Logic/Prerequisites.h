@@ -35,9 +35,9 @@ typedef std::uint16_t NodeTypeID;
 // Id of a property - unique in each node
 typedef std::int8_t PropertyID;
 
-static const NodeID InvalidNodeID         = ~NodeID(0);
-static const SocketID InvalidSocketID     = ~SocketID(0);
-static const PropertyID InvalidPropertyID = ~PropertyID(0);
+static const NodeID InvalidNodeID         = (NodeID) ~NodeID(0);
+static const SocketID InvalidSocketID     = (SocketID) ~SocketID(0);
+static const PropertyID InvalidPropertyID = (PropertyID) ~PropertyID(0);
 static const NodeTypeID InvalidNodeTypeID = NodeTypeID(0);
 
 // Forward declarations

@@ -1260,7 +1260,7 @@ class BackgroundSubtractorNodeType : public NodeType
 {
 public:
 	BackgroundSubtractorNodeType()
-		: _alpha(0.92)
+		: _alpha(0.92f)
 		, _threshCoeff(3)
 	{
 	}

@@ -42,9 +42,10 @@ void GLWidget::show(const QImage& image)
 
 	setDefaultSamplerParameters();
 
-	GLenum format;
-	GLenum internalFormat;
-	GLenum type;
+	// Just to shut down compiler
+	GLenum format = GL_RED;
+	GLenum internalFormat = GL_R8;
+	GLenum type = GL_UNSIGNED_BYTE;
 
 	switch(image.format())
 	{
@@ -341,7 +342,7 @@ void GLWidget::zoom(int dir, qreal scale)
 void GLWidget::move(int dx, int dy)
 {
 	// when image is smaller than a widget
-	qreal area = (_right - _left) * (_top - _bottom);
+	//qreal area = (_right - _left) * (_top - _bottom);
 	//if(area >= 1.0)
 	//	return;
 

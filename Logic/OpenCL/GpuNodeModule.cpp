@@ -135,7 +135,7 @@ string kernelsDirectory()
 {
 	HMODULE hModule = moduleHandle();
 	char buffer[MAX_PATH];
-	DWORD dwSize = GetModuleFileNameA(hModule, buffer, MAX_PATH);
+	/*DWORD dwSize = */GetModuleFileNameA(hModule, buffer, MAX_PATH);
 	//dwSize = GetModuleFileNameA(nullptr, buffer, MAX_PATH);
 	QFileInfo fi(QString::fromLatin1(buffer));
 	QDir dllDir = fi.absoluteDir();
@@ -177,6 +177,8 @@ string GpuNodeModule::additionalBuildOptions(const std::string& programName) con
 			opts += " -g -s " + fullKernelsPath.toStdString();
 		}
 	}
+#else
+	Q_UNUSED(programName)
 #endif
 	return opts;
 }

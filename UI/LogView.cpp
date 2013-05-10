@@ -64,6 +64,8 @@ void LogView::messageHandler(QtMsgType type,
 							 const QMessageLogContext& context,
 							 const QString& msg)
 {
+	Q_UNUSED(context)
+
 	// This should be fixed in 5.0.2
 	if(msg == "QWindowsNativeInterface::nativeResourceForWindow: 'handle' "
 		"requested for null window or window without handle.")

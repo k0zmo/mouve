@@ -31,7 +31,7 @@ public:
 			_hCamera = _jaiModule->openCamera(0);
 			return _hCamera != nullptr;
 		}
-		catch(JaiException& ex)
+		catch(JaiException&)
 		{
 			return false;
 		}

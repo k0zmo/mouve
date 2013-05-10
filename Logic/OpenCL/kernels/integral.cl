@@ -58,6 +58,7 @@ __kernel void multiscan_horiz_image(__read_only image2d_t src,
             uint totalsSum = total;
             s2[0] = total;
 
+            // exclusive scan
             #pragma unroll
             for(int offset = 1; offset < NUM_WARPS; offset <<= 1)
             {
@@ -135,6 +136,7 @@ __kernel void multiscan_vert_image(__read_only image2d_t src,
             uint totalsSum = total;
             s2[0] = total;
 
+            // exclusive scan
             #pragma unroll
             for(int offset = 1; offset < NUM_WARPS; offset <<= 1)
             {

@@ -409,12 +409,12 @@ void NodeTree::handleException(const std::string& nodeName, const std::string& n
 		// Exception dispatcher
 		throw;
 	}
-	catch(ExecutionError& ex)
+	catch(ExecutionError&)
 	{
 		// Dummy but a must - if not std::exception handler would catch it
 		throw;
 	}
-	catch(boost::bad_get& ex)
+	catch(boost::bad_get&)
 	{
 		throw ExecutionError(nodeName, nodeTypeName, 
 			"Wrong socket connection");

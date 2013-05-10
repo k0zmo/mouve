@@ -424,6 +424,7 @@
       <PrecompiledHeaderOutputFile>$(IntDir)$(TargetName).pch</PrecompiledHeaderOutputFile>
       <ForcedIncludeFiles>Precomp.h</ForcedIncludeFiles>
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
+      <WarningLevel>Level3</WarningLevel>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -449,6 +450,7 @@ if %errorlevel% leq 1 exit 0 else exit %errorlevel%</Command>
       <PrecompiledHeaderFile>Precomp.h</PrecompiledHeaderFile>
       <PrecompiledHeaderOutputFile>$(IntDir)$(TargetName).pch</PrecompiledHeaderOutputFile>
       <ForcedIncludeFiles>Precomp.h</ForcedIncludeFiles>
+      <WarningLevel>Level3</WarningLevel>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -474,6 +476,7 @@ if %errorlevel% leq 1 exit 0 else exit %errorlevel%</Command>
       <PrecompiledHeaderOutputFile>$(IntDir)$(TargetName).pch</PrecompiledHeaderOutputFile>
       <ForcedIncludeFiles>Precomp.h</ForcedIncludeFiles>
       <WholeProgramOptimization>true</WholeProgramOptimization>
+      <WarningLevel>Level3</WarningLevel>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -498,6 +501,7 @@ if %errorlevel% leq 1 exit 0 else exit %errorlevel%</Command>
       <PrecompiledHeaderFile>Precomp.h</PrecompiledHeaderFile>
       <PrecompiledHeaderOutputFile>$(IntDir)$(TargetName).pch</PrecompiledHeaderOutputFile>
       <ForcedIncludeFiles>Precomp.h</ForcedIncludeFiles>
+      <WarningLevel>Level3</WarningLevel>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
