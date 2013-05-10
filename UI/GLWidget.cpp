@@ -218,9 +218,9 @@ void GLWidget::showDummy()
 	updateGL();
 }
 
-void GLWidget::fitInView()
+void GLWidget::fitWithWidget()
 {
-	_resizeBehavior = EResizeBehavior::FitToView;
+	_resizeBehavior = EResizeBehavior::FitWithWidget;
 
 	if(_showDummy)
 		return;
@@ -229,7 +229,7 @@ void GLWidget::fitInView()
 	updateGL();
 }
 
-void GLWidget::scaleToOriginalSize()
+void GLWidget::fitWithAspect()
 {
 	_resizeBehavior = EResizeBehavior::MaintainAspectRatio;
 
@@ -250,10 +250,28 @@ void GLWidget::zoomOut()
 	zoom(-1, 0.15);
 }
 
-void GLWidget::zoomOriginal()
+void GLWidget::zoomFitWhole()
 {
 	recalculateTexCoords();
 	updateGL();
+}
+
+void GLWidget::zoomOriginal()
+{
+	if(_resizeBehavior == EResizeBehavior::MaintainAspectRatio)
+	{
+		QSize widgetSize = size();
+
+		int width = widgetSize.width();
+		int height = widgetSize.height();
+
+		_left = (_textureWidth - width) * 0.5 * (1.0 / (qreal) _textureWidth);
+		_right = (_textureWidth + width) * 0.5 * (1.0 / (qreal) _textureWidth);
+		_bottom = (_textureHeight - height) * 0.5 * (1.0 / (qreal) _textureHeight);
+		_top = (_textureHeight + height) * 0.5 * (1.0 / (qreal) _textureHeight);
+
+		updateGL();
+	}
 }
 
 void GLWidget::zoom(int dir, qreal scale)
@@ -265,7 +283,7 @@ void GLWidget::zoom(int dir, qreal scale)
 	qreal distx = fabsf(_right - _left);
 	qreal disty = fabsf(_top - _bottom);
 
-	if(_resizeBehavior == EResizeBehavior::FitToView)
+	if(_resizeBehavior == EResizeBehavior::FitWithWidget)
 	{
 		qreal distx1 = qBound(maxZoom, distx - scale * dir, 1.0);
 		qreal disty1 = qBound(maxZoom, disty - scale * dir, 1.0);
@@ -390,7 +408,7 @@ void GLWidget::move(int dx, int dy)
 
 void GLWidget::recalculateTexCoords()
 {
-	if(_resizeBehavior == EResizeBehavior::FitToView)
+	if(_resizeBehavior == EResizeBehavior::FitWithWidget)
 	{
 		_leftBase = 0;
 		_bottomBase = 0;

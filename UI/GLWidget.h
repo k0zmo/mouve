@@ -11,7 +11,7 @@ class QImage;
 
 enum class EResizeBehavior
 {
-	FitToView,
+	FitWithWidget,
 	MaintainAspectRatio
 };
 
@@ -28,11 +28,12 @@ public slots:
 	void showDummy();
 	/// TODO: void show(GLuint texture);
 
-	void fitInView();
-	void scaleToOriginalSize(); 
+	void fitWithWidget();
+	void fitWithAspect(); 
 
 	void zoomIn();
 	void zoomOut();
+	void zoomFitWhole();
 	void zoomOriginal();
 
 private:

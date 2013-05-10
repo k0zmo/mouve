@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>228</width>
-    <height>224</height>
+    <width>266</width>
+    <height>253</height>
    </rect>
   </property>
   <property name="minimumSize">
@@ -40,7 +40,7 @@
      <item>
       <widget class="QToolButton" name="toolButtonBehavior">
        <property name="toolTip">
-        <string>Fit preview image to widget size</string>
+        <string>Fit preview image to widget size instead of maintaining image ratio</string>
        </property>
        <property name="text">
         <string/>
@@ -110,7 +110,33 @@
       </widget>
      </item>
      <item>
+      <widget class="QToolButton" name="toolButtonWholeImage">
+       <property name="toolTip">
+        <string>Show whole image</string>
+       </property>
+       <property name="text">
+        <string/>
+       </property>
+       <property name="icon">
+        <iconset resource="Editor.qrc">
+         <normaloff>:/images/button-search.png</normaloff>:/images/button-search.png</iconset>
+       </property>
+       <property name="iconSize">
+        <size>
+         <width>24</width>
+         <height>24</height>
+        </size>
+       </property>
+       <property name="autoRaise">
+        <bool>true</bool>
+       </property>
+      </widget>
+     </item>
+     <item>
       <widget class="QToolButton" name="toolButtonOriginal">
+       <property name="toolTip">
+        <string>Scale image to original size</string>
+       </property>
        <property name="styleSheet">
         <string notr="true">QToolButton {
   font-size: 12px
@@ -118,12 +144,6 @@
        </property>
        <property name="text">
         <string>100%</string>
-       </property>
-       <property name="iconSize">
-        <size>
-         <width>24</width>
-         <height>24</height>
-        </size>
        </property>
        <property name="autoRaise">
         <bool>true</bool>
