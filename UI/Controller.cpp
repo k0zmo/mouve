@@ -673,16 +673,6 @@ void Controller::setupNodeTypesUi()
 		addNodeTypeTreeItem(info.typeID, tokens, treeItems);
 	}
 
-	// Set proper item flags
-	for(QTreeWidgetItem* item : treeItems)
-	{
-		Qt::ItemFlags flags = Qt::ItemIsSelectable | Qt::ItemIsEnabled;
-		// Is it leaf?
-		if(item->childCount() == 0)
-			flags |=  Qt::ItemIsDragEnabled;			
-		item->setFlags(flags);
-	}
-
 	_ui->nodesTreeWidget->insertTopLevelItems(0, treeItems);
 }
 
@@ -711,6 +701,8 @@ void Controller::addNodeTypeTreeItem(NodeTypeID typeId, const QStringList& token
 		return nullptr;
 	};
 
+	Qt::ItemFlags flags = Qt::ItemIsSelectable | Qt::ItemIsEnabled;
+
 	if(tokens.count() > 1)
 	{
 		for(int level = 0; level < tokens.count() - 1; ++level)
@@ -724,6 +716,7 @@ void Controller::addNodeTypeTreeItem(NodeTypeID typeId, const QStringList& token
 				p = new QTreeWidgetItem(parent, QStringList(parentToken));
 				if(level == 0)
 					treeItems.append(p);
+				p->setFlags(flags);
 			}
 			parent = p;
 		}
@@ -732,6 +725,7 @@ void Controller::addNodeTypeTreeItem(NodeTypeID typeId, const QStringList& token
 	QTreeWidgetItem* item = new QTreeWidgetItem(parent);
 	item->setText(0, tokens.last());
 	item->setData(0, Qt::UserRole, typeId);
+	item->setFlags(flags | Qt::ItemIsDragEnabled);
 
 	treeItems.append(item);
 }
