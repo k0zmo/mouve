@@ -821,7 +821,7 @@ void Controller::updateState(EState state)
 	{
 	case EState::Stopped:
 		if(_processing)
-			_stateLabel->setText("Stopped (wait)");
+			_stateLabel->setText("Processing (wait)");
 		else
 			_stateLabel->setText("Stopped (editing allowed)");
 		break;
@@ -1645,6 +1645,7 @@ void Controller::updatePreview(bool res)
 	if(!_videoMode)
 	{
 		setInteractive(true);
+		updateState(EState::Stopped);
 	}
 	else
 	{
@@ -1703,6 +1704,7 @@ void Controller::singleStep()
 	{
 		setInteractive(false);
 		queueProcessing(false);
+		updateState(EState::Stopped);
 	}
 	// Single step in video mode 
 	else
