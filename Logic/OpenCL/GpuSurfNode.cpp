@@ -13,7 +13,7 @@ using namespace std;
 // Use exactly the same filters sizes as H. Bay in his paper
 #define FILTER_SIZE_BAY 1
 
-static const int KEYPOINTS_MAX = 8192;
+static const int KEYPOINTS_MAX = 16384;
 // Size of a 1st box filter in 1st octave (9x9 is default)
 static const int FILTER_SIZE_BASE = 9;
 static const int FILTER_SIZE_BASE_INCREASE = 6;
