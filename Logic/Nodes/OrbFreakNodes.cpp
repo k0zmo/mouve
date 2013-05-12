@@ -85,6 +85,48 @@ public:
 class FreakFeatureExtractorNodeType : public NodeType
 {
 public:
+	FreakFeatureExtractorNodeType()
+		: _orientationNormalized(true)
+		, _scaleNormalized(true)
+		, _patternScale(22.0f)
+		, _nOctaves(4)
+	{
+	}
+
+	bool setProperty(PropertyID propId, const QVariant& newValue) override
+	{
+		switch(propId)
+		{
+		case ID_OrientationNormalized:
+			_orientationNormalized = newValue.toBool();
+			return true;
+		case ID_ScaleNormalized:
+			_scaleNormalized = newValue.toBool();
+			return true;
+		case ID_PatternScale:
+			_patternScale = newValue.toFloat();
+			return true;
+		case ID_NumOctaves:
+			_nOctaves = newValue.toInt();
+			return true;
+		}
+
+		return false;
+	}
+
+	QVariant property(PropertyID propId) const override
+	{
+		switch(propId)
+		{
+		case ID_OrientationNormalized: return _orientationNormalized;
+		case ID_ScaleNormalized: return _scaleNormalized;
+		case ID_PatternScale: return _patternScale;
+		case ID_NumOctaves: return _nOctaves;
+		}
+
+		return QVariant();
+	}
+
 	ExecutionStatus execute(NodeSocketReader& reader, NodeSocketWriter& writer) override
 	{
 		// inputs
@@ -99,7 +141,7 @@ public:
 		cv::Mat& outDescriptors = writer.acquireSocket(1).getArray();
 		outKp = kp;
 
-		cv::FREAK freak;
+		cv::FREAK freak(_orientationNormalized, _scaleNormalized, _patternScale, _nOctaves);
 		freak.compute(kp.image, outKp.kpoints, outDescriptors);
 
 		return ExecutionStatus(EStatus::Ok);
@@ -116,11 +158,33 @@ public:
 			{ ENodeFlowDataType::Array, "output", "Descriptors", "" },
 			{ ENodeFlowDataType::Invalid, "", "", "" }
 		};
+		static const PropertyConfig prop_config[] = {
+			{ EPropertyType::Boolean, "Enable orientation normalization", "" },
+			{ EPropertyType::Boolean, "Enable scale normalization", "" },
+			{ EPropertyType::Double, "Scaling of the description pattern", "min:1.0" },
+			{ EPropertyType::Integer, "Number of octaves covered by detected keypoints", "min:1" },
+			{ EPropertyType::Unknown, "", "" }
+		};
 
 		nodeConfig.description = "";
 		nodeConfig.pInputSockets = in_config;
 		nodeConfig.pOutputSockets = out_config;
+		nodeConfig.pProperties = prop_config;
 	}
+
+private:
+	enum EPropertyID
+	{
+		ID_OrientationNormalized,
+		ID_ScaleNormalized,
+		ID_PatternScale,
+		ID_NumOctaves,
+	};
+
+	bool _orientationNormalized;
+	bool _scaleNormalized;
+	float _patternScale;
+	int _nOctaves;
 };
 
 class OrbNodeType : public OrbFeatureDetectorNodeType
