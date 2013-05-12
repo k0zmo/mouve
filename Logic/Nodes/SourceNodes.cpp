@@ -118,7 +118,12 @@ public:
 			cv::cvtColor(buffer, output, CV_BGR2GRAY);
 			double stop = _clock.currentTimeInSeconds();
 			double elapsed = (stop - start) * 1e3;
-			return ExecutionStatus(EStatus::Tag, elapsed);
+
+			std::ostringstream strm;
+			strm << "Frame width: " << output.cols << std::endl;
+			strm << "Frame height: " << output.rows << std::endl;
+			strm << "Frame size in kbytes: " << output.cols * output.rows * sizeof(uchar) * output.channels() / 1024;
+			return ExecutionStatus(EStatus::Tag, elapsed, strm.str());
 		}
 		else
 		{
@@ -203,7 +208,11 @@ public:
 
 		if(output.empty())
 			return ExecutionStatus(EStatus::Error, "File not found");
-		return ExecutionStatus(EStatus::Ok);
+		std::ostringstream strm;
+		strm << "Image width: " << output.cols << std::endl;
+		strm << "Image height: " << output.rows << std::endl;
+		strm << "Image size in kbytes: " << output.cols * output.rows * sizeof(uchar) * output.channels() / 1024;
+		return ExecutionStatus(EStatus::Ok, strm.str());
 	}
 
 	void configuration(NodeConfig& nodeConfig) const override
@@ -286,7 +295,11 @@ public:
 		if(tmp.channels() > 1)
 			cvtColor(tmp, output, CV_BGR2GRAY);
 
-		return ExecutionStatus(EStatus::Tag);
+		std::ostringstream strm;
+		strm << "Frame width: " << output.cols << std::endl;
+		strm << "Frame height: " << output.rows << std::endl;
+		strm << "Frame size in kbytes: " << output.cols * output.rows * sizeof(uchar) * output.channels() / 1024;
+		return ExecutionStatus(EStatus::Tag, strm.str());
 	}
 
 	void finish() override

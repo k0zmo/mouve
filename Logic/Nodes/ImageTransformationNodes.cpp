@@ -117,7 +117,10 @@ public:
 		cv::Size dstSize(int(input.cols * _scale), int(input.rows * _scale));
 		cv::resize(input, output, dstSize, CV_INTER_AREA);
 
-		return ExecutionStatus(EStatus::Ok);
+		std::ostringstream strm;
+		strm << "Output image width: " << output.cols << std::endl;
+		strm << "Output image height: " << output.rows << std::endl;
+		return ExecutionStatus(EStatus::Ok, strm.str());
 	}
 
 	void configuration(NodeConfig& nodeConfig) const override

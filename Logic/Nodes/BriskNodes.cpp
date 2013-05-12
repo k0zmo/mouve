@@ -65,7 +65,10 @@ public:
 		_brisk->detect(src, kp.kpoints);
 		kp.image = src;
 
-		return ExecutionStatus(EStatus::Ok);
+		std::ostringstream strm;
+		strm << "Keypoints detected: " << kp.kpoints.size();
+
+		return ExecutionStatus(EStatus::Ok, strm.str());
 	}
 
 	void configuration(NodeConfig& nodeConfig) const override
@@ -174,6 +177,9 @@ public:
 		//cv::BRISK(_thresh, _nOctaves, _patternScale)
 		(*_brisk)(src, cv::noArray(), kp.kpoints, descriptors);
 		kp.image = src;
+
+		std::ostringstream strm;
+		strm << "Keypoints detected: " << kp.kpoints.size();
 
 		return ExecutionStatus(EStatus::Ok);
 	}

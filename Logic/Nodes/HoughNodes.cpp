@@ -71,7 +71,9 @@ public:
 			linesPtr += 2;
 		}
 
-		return ExecutionStatus(EStatus::Ok);
+		std::ostringstream strm;
+		strm << "Lines detected: " << linesVector.size();
+		return ExecutionStatus(EStatus::Ok, strm.str());
 	}
 
 	void configuration(NodeConfig& nodeConfig) const override
@@ -178,7 +180,9 @@ public:
 		cv::HoughCircles(src, circles, CV_HOUGH_GRADIENT, _dp, 
 			src.rows/8, _cannyThreshold, _accThreshold, _minRadius, _maxRadius);
 
-		return ExecutionStatus(EStatus::Ok);
+		std::ostringstream strm;
+		strm << "Circles detected: " << circles.cols;
+		return ExecutionStatus(EStatus::Ok, strm.str());
 	}
 
 	void configuration(NodeConfig& nodeConfig) const override
