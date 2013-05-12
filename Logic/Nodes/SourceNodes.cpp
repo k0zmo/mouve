@@ -119,11 +119,9 @@ public:
 			double stop = _clock.currentTimeInSeconds();
 			double elapsed = (stop - start) * 1e3;
 
-			std::ostringstream strm;
-			strm << "Frame width: " << output.cols << std::endl;
-			strm << "Frame height: " << output.rows << std::endl;
-			strm << "Frame size in kbytes: " << output.cols * output.rows * sizeof(uchar) * output.channels() / 1024;
-			return ExecutionStatus(EStatus::Tag, elapsed, strm.str());
+			return ExecutionStatus(EStatus::Tag, 
+				formatMessage("Frame image width: %d\nFrame image height: %d\nFrame size in kbytes: %d",
+					output.cols, output.rows, output.cols * output.rows * sizeof(uchar) * output.channels() / 1024));
 		}
 		else
 		{
@@ -208,11 +206,9 @@ public:
 
 		if(output.empty())
 			return ExecutionStatus(EStatus::Error, "File not found");
-		std::ostringstream strm;
-		strm << "Image width: " << output.cols << std::endl;
-		strm << "Image height: " << output.rows << std::endl;
-		strm << "Image size in kbytes: " << output.cols * output.rows * sizeof(uchar) * output.channels() / 1024;
-		return ExecutionStatus(EStatus::Ok, strm.str());
+		return ExecutionStatus(EStatus::Ok, 
+			formatMessage("nImage image width: %d\nImage image height: %d\nImage size in kbytes: %d",
+				output.cols, output.rows, output.cols * output.rows * sizeof(uchar) * output.channels() / 1024));
 	}
 
 	void configuration(NodeConfig& nodeConfig) const override
@@ -295,11 +291,9 @@ public:
 		if(tmp.channels() > 1)
 			cvtColor(tmp, output, CV_BGR2GRAY);
 
-		std::ostringstream strm;
-		strm << "Frame width: " << output.cols << std::endl;
-		strm << "Frame height: " << output.rows << std::endl;
-		strm << "Frame size in kbytes: " << output.cols * output.rows * sizeof(uchar) * output.channels() / 1024;
-		return ExecutionStatus(EStatus::Tag, strm.str());
+		return ExecutionStatus(EStatus::Tag, 
+			formatMessage("Frame image width: %d\nFrame image height: %d\nFrame size in kbytes: %d",
+				output.cols, output.rows, output.cols * output.rows * sizeof(uchar) * output.channels() / 1024));
 	}
 
 	void finish() override

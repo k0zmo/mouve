@@ -3,8 +3,6 @@
 #include "GpuNode.h"
 #include "NodeFactory.h"
 
-#include <sstream>
-
 /// TODO: Add parameters:
 /// - NMixtures as property
 /// - Learning param as property
@@ -30,9 +28,7 @@ public:
 
 	bool postInit() override
 	{
-		std::ostringstream strm;
-		strm << "-DNMIXTURES=" << _nmixtures;
-		std::string opts = strm.str();
+		std::string opts = formatMessage("-DNMIXTURES=%d", _nmixtures);
 
 		_kidGaussMix = _gpuComputeModule->registerKernel(
 			"mog_image_unorm", "mog.cl", opts);
@@ -53,9 +49,7 @@ public:
 			{
 				_nmixtures = newValue.toInt();
 
-				std::ostringstream strm;
-				strm << "-DNMIXTURES=" << _nmixtures;
-				std::string opts = strm.str();
+				std::string opts = formatMessage("-DNMIXTURES=%d", _nmixtures);
 
 				_kidGaussMix = _gpuComputeModule->registerKernel(
 					"mog_image_unorm", "mog.cl", opts);

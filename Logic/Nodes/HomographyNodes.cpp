@@ -104,12 +104,11 @@ public:
 			}
 		}
 
-		std::ostringstream strm;
-		strm << "Inliers found: " << outMt.queryPoints.size() << std::endl;
-		strm << "Percent of correct matches: " << (double) outMt.queryPoints.size() / mt.queryPoints.size() * 100.0 << "%" << std::endl;
-		strm << "Homography: " << H;
-
-		return ExecutionStatus(EStatus::Ok, strm.str());
+		return ExecutionStatus(EStatus::Ok, 
+			formatMessage("Inliers found: %d\nPercent of correct matches: %f%%",
+				(int) outMt.queryPoints.size(), 
+				(double) outMt.queryPoints.size() / mt.queryPoints.size() * 100.0)
+			);
 	}
 
 	void configuration(NodeConfig& nodeConfig) const override

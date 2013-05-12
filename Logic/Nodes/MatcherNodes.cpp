@@ -243,11 +243,9 @@ public:
 		mt.queryImage = queryKp.image;
 		mt.trainImage = trainKp.image;
 
-		std::ostringstream strm;
-		strm << "Initial matches found: " << knMatches.size() << std::endl;
-		strm << "NNDR Matches found: " << mt.queryPoints.size() << std::endl;
-
-		return ExecutionStatus(EStatus::Ok, strm.str());
+		return ExecutionStatus(EStatus::Ok, 
+			formatMessage("Initial matches found: %d\nNNDR Matches found: %d",
+				(int) knMatches.size(), (int) mt.queryPoints.size()));
 	}
 
 	void configuration(NodeConfig& nodeConfig) const override

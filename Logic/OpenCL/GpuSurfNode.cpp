@@ -249,10 +249,8 @@ public:
 			descriptors = cv::Mat();
 		}
 
-		std::ostringstream strm;
-		strm << "Keypoints detected: " << kp.kpoints.size();
-
-		return ExecutionStatus(EStatus::Ok, strm.str());
+		return ExecutionStatus(EStatus::Ok, 
+			formatMessage("Keypoints detected: %d", (int) kp.kpoints.size()));
 	}
 
 	void configuration(NodeConfig& nodeConfig) const override
