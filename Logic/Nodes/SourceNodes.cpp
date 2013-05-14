@@ -119,7 +119,7 @@ public:
 			double stop = _clock.currentTimeInSeconds();
 			double elapsed = (stop - start) * 1e3;
 
-			return ExecutionStatus(EStatus::Tag, 
+			return ExecutionStatus(EStatus::Tag, elapsed,
 				formatMessage("Frame image width: %d\nFrame image height: %d\nFrame size in kbytes: %d",
 					output.cols, output.rows, output.cols * output.rows * sizeof(uchar) * output.channels() / 1024));
 		}
@@ -207,7 +207,7 @@ public:
 		if(output.empty())
 			return ExecutionStatus(EStatus::Error, "File not found");
 		return ExecutionStatus(EStatus::Ok, 
-			formatMessage("nImage image width: %d\nImage image height: %d\nImage size in kbytes: %d",
+			formatMessage("Image image width: %d\nImage image height: %d\nImage size in kbytes: %d",
 				output.cols, output.rows, output.cols * output.rows * sizeof(uchar) * output.channels() / 1024));
 	}
 

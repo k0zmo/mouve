@@ -63,6 +63,8 @@ public:
 
 		// Prepare destination image and structuring element on a device
 		ensureSizeIsEnough(deviceDest, width, height);
+
+		/// TODO: Upload only if different - could use some hashing technique
 		auto selemCoords = structuringElementCoordinates(se);
 		int selemCoordsSize = (int) selemCoords.size();
 		uploadStructuringElement(selemCoords);	
@@ -113,11 +115,7 @@ public:
 		// Execute it 
 		_gpuComputeModule->queue().finish();
 
-		/// TODO: A bit cheating considering we don't calculate uploading structuring element
-		///       In the end we should only upload if that changed from previous node invocation
-		double timeElapsed = double(evt.finishTime() - evt.startTime()) * 1e-6;
-
-		return ExecutionStatus(EStatus::Ok, timeElapsed);
+		return ExecutionStatus(EStatus::Ok);
 	}
 
 	void configuration(NodeConfig& nodeConfig) const override
@@ -142,7 +140,6 @@ public:
 		nodeConfig.pInputSockets = in_config;
 		nodeConfig.pOutputSockets = out_config;
 		nodeConfig.pProperties = prop_config;
-		nodeConfig.flags = Node_OverridesTimeComputation;
 		nodeConfig.module = "opencl";
 	}
 
