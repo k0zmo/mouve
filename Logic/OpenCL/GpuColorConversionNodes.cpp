@@ -101,7 +101,7 @@ public:
 		}
 
 		if(kernelConvertBayer2Gray.isNull())
-			return  ExecutionStatus(EStatus::Error, "Bad bayer code");
+			return ExecutionStatus(EStatus::Error, "Bad bayer code");
 
 		// Ensure output image size is enough
 		if(output.isNull() || output.width() != imageWidth || output.height() != imageHeight)
@@ -125,13 +125,10 @@ public:
 		kernelConvertBayer2Gray.setArg(4, sharedWidth);
 		kernelConvertBayer2Gray.setArg(5, sharedHeight);
 
-		clw::Event evt = _gpuComputeModule->queue().asyncRunKernel(kernelConvertBayer2Gray);
-		evt.waitForFinished();
-		double elapsed = (evt.finishTime() - evt.startTime()) * 1e-6;
-
+		_gpuComputeModule->queue().asyncRunKernel(kernelConvertBayer2Gray);
 		_gpuComputeModule->queue().finish();
 
-		return ExecutionStatus(EStatus::Ok, elapsed);
+		return ExecutionStatus(EStatus::Ok);
 	}
 
 	void configuration(NodeConfig& nodeConfig) const override
@@ -157,7 +154,6 @@ public:
 		nodeConfig.pOutputSockets = out_config;
 		nodeConfig.pProperties = prop_config;
 		nodeConfig.module = "opencl";
-		nodeConfig.flags = Node_OverridesTimeComputation;
 	}
 
 private:
