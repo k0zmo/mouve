@@ -10,7 +10,25 @@ class GpuUploadImageNodeType : public GpuNodeType
 {
 public:
 	GpuUploadImageNodeType()
+		: _usePinnedMemory(true)
 	{
+	}
+
+	bool setProperty(PropertyID propId, const QVariant& newValue)
+	{
+		if(propId == 0)
+		{
+			_usePinnedMemory = newValue.toBool();
+			return true;
+		}
+		return false;
+	}
+
+	QVariant property(PropertyID propId) const
+	{
+		if(propId == 0)
+			return _usePinnedMemory;
+		return QVariant();
 	}
 
 	ExecutionStatus execute(NodeSocketReader& reader, NodeSocketWriter& writer) override
@@ -35,28 +53,30 @@ public:
 				clw::Location_AllocHostMemory, hostImage.cols * hostImage.rows * sizeof(uchar));
 		}
 
-#if 0
-		bool res = _gpuComputeModule->queue().writeImage2D(deviceImage, hostImage.data, 
-			0, 0, hostImage.cols, hostImage.rows, hostImage.step);
-		return ExecutionStatus(res ? EStatus::Ok : EStatus::Error);
-#else
-
-		void* ptr = _gpuComputeModule->queue().mapBuffer(_pinnedBuffer, clw::MapAccess_Write);
-		if(!ptr)
-			return ExecutionStatus(EStatus::Error, "Couldn't mapped pinned memory for device image transfer");
-		if((int) hostImage.step != hostImage.cols)
+		if(!_usePinnedMemory)
 		{
-			for(int row = 0; row < hostImage.rows; ++row)
-				memcpy((uchar*)ptr + row*hostImage.step, (uchar*)hostImage.data + row*hostImage.step, hostImage.step);
+			bool res = _gpuComputeModule->queue().writeImage2D(deviceImage, hostImage.data, 
+				0, 0, hostImage.cols, hostImage.rows, hostImage.step);
+			return ExecutionStatus(res ? EStatus::Ok : EStatus::Error);
 		}
 		else
 		{
-			memcpy(ptr, hostImage.data, hostImage.step * hostImage.rows);
+			void* ptr = _gpuComputeModule->queue().mapBuffer(_pinnedBuffer, clw::MapAccess_Write);
+			if(!ptr)
+				return ExecutionStatus(EStatus::Error, "Couldn't mapped pinned memory for device image transfer");
+			if((int) hostImage.step != hostImage.cols)
+			{
+				for(int row = 0; row < hostImage.rows; ++row)
+					memcpy((uchar*)ptr + row*hostImage.step, (uchar*)hostImage.data + row*hostImage.step, hostImage.step);
+			}
+			else
+			{
+				memcpy(ptr, hostImage.data, hostImage.step * hostImage.rows);
+			}
+			_gpuComputeModule->queue().asyncUnmap(_pinnedBuffer, ptr);
+			_gpuComputeModule->queue().asyncCopyBufferToImage(_pinnedBuffer, deviceImage);
+			return ExecutionStatus(EStatus::Ok);
 		}
-		_gpuComputeModule->queue().asyncUnmap(_pinnedBuffer, ptr);
-		_gpuComputeModule->queue().asyncCopyBufferToImage(_pinnedBuffer, deviceImage);
-		return ExecutionStatus(EStatus::Ok);
-#endif
 	}
 
 	void configuration(NodeConfig& nodeConfig) const override
@@ -71,14 +91,21 @@ public:
 			{ ENodeFlowDataType::Invalid, "", "", "" }
 		};
 
+		static const PropertyConfig prop_config[] = {
+			{ EPropertyType::Boolean, "Use pinned memory", "" },
+			{ EPropertyType::Unknown, "", "" }
+		};
+
 		nodeConfig.description = "Uploads given image from host to device (GPU) memory";
 		nodeConfig.pInputSockets = in_config;
 		nodeConfig.pOutputSockets = out_config;
+		nodeConfig.pProperties = prop_config;
 		nodeConfig.module = "opencl";
 	}
 
 private:
 	clw::Buffer _pinnedBuffer;
+	bool _usePinnedMemory;
 };
 
 
@@ -86,7 +113,25 @@ class GpuDownloadImageNodeType : public GpuNodeType
 {
 public:
 	GpuDownloadImageNodeType()
+		: _usePinnedMemory(true)
 	{
+	}
+
+	bool setProperty(PropertyID propId, const QVariant& newValue)
+	{
+		if(propId == 0)
+		{
+			_usePinnedMemory = newValue.toBool();
+			return true;
+		}
+		return false;
+	}
+
+	QVariant property(PropertyID propId) const
+	{
+		if(propId == 0)
+			return _usePinnedMemory;
+		return QVariant();
 	}
 
 	ExecutionStatus execute(NodeSocketReader& reader, NodeSocketWriter& writer) override
@@ -106,35 +151,38 @@ public:
 		/// TODO: For now we assume it's always 1 channel image
 		hostImage.create(height, width, CV_8UC1);
 
-#if 0
-		bool res = _gpuComputeModule->queue().readImage2D(deviceImage, hostImage.data, 
-			0, 0, hostImage.cols, hostImage.rows, hostImage.step);
-		return ExecutionStatus(res ? EStatus::Ok : EStatus::Error);
-#else
-		if(_pinnedBuffer.isNull() || (width*height*sizeof(uchar) != _pinnedBuffer.size()))
+		if(!_usePinnedMemory)
 		{
-
-			_pinnedBuffer = _gpuComputeModule->context().createBuffer(clw::Access_ReadWrite,
-				clw::Location_AllocHostMemory, hostImage.cols * hostImage.rows * sizeof(uchar));
-		}
-
-		_gpuComputeModule->queue().asyncCopyImageToBuffer(deviceImage, _pinnedBuffer);
-		void* ptr = _gpuComputeModule->queue().mapBuffer(_pinnedBuffer, clw::MapAccess_Read);
-		if(!ptr)
-			return ExecutionStatus(EStatus::Error, "Couldn't mapped pinned memory for device image transfer");
-		if((int) hostImage.step != hostImage.cols)
-		{
-			for(int row = 0; row < hostImage.rows; ++row)
-				memcpy((uchar*)hostImage.data + row*hostImage.step, (uchar*)ptr + row*hostImage.step, hostImage.step);
+			bool res = _gpuComputeModule->queue().readImage2D(deviceImage, hostImage.data, 
+				0, 0, hostImage.cols, hostImage.rows, hostImage.step);
+			return ExecutionStatus(res ? EStatus::Ok : EStatus::Error);
 		}
 		else
 		{
-			memcpy(hostImage.data, ptr, hostImage.step * hostImage.rows);
+			if(_pinnedBuffer.isNull() || (width*height*sizeof(uchar) != _pinnedBuffer.size()))
+			{
+
+				_pinnedBuffer = _gpuComputeModule->context().createBuffer(clw::Access_ReadWrite,
+					clw::Location_AllocHostMemory, hostImage.cols * hostImage.rows * sizeof(uchar));
+			}
+
+			_gpuComputeModule->queue().asyncCopyImageToBuffer(deviceImage, _pinnedBuffer);
+			void* ptr = _gpuComputeModule->queue().mapBuffer(_pinnedBuffer, clw::MapAccess_Read);
+			if(!ptr)
+				return ExecutionStatus(EStatus::Error, "Couldn't mapped pinned memory for device image transfer");
+			if((int) hostImage.step != hostImage.cols)
+			{
+				for(int row = 0; row < hostImage.rows; ++row)
+					memcpy((uchar*)hostImage.data + row*hostImage.step, (uchar*)ptr + row*hostImage.step, hostImage.step);
+			}
+			else
+			{
+				memcpy(hostImage.data, ptr, hostImage.step * hostImage.rows);
+			}
+			// Unmapping device memory when reading is practically 'no-cost'
+			_gpuComputeModule->queue().asyncUnmap(_pinnedBuffer, ptr);
+			return ExecutionStatus(EStatus::Ok);
 		}
-		// Unmapping device memory when reading is practically 'no-cost'
-		_gpuComputeModule->queue().asyncUnmap(_pinnedBuffer, ptr);
-		return ExecutionStatus(EStatus::Ok);
-#endif
 	}
 
 	void configuration(NodeConfig& nodeConfig) const override
@@ -149,14 +197,21 @@ public:
 			{ ENodeFlowDataType::Invalid, "", "", "" }
 		};
 
+		static const PropertyConfig prop_config[] = {
+			{ EPropertyType::Boolean, "Use pinned memory", "" },
+			{ EPropertyType::Unknown, "", "" }
+		};
+
 		nodeConfig.description = "Download given image device (GPU) to host memory";
 		nodeConfig.pInputSockets = in_config;
 		nodeConfig.pOutputSockets = out_config;
+		nodeConfig.pProperties = prop_config;
 		nodeConfig.module = "opencl";
 	}
 
 private:
 	clw::Buffer _pinnedBuffer;
+	bool _usePinnedMemory;
 };
 
 
