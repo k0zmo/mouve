@@ -66,7 +66,7 @@ QJsonObject NodeTree::serializeJson()
 
 				if(propValue.isValid())
 				{
-					auto& prop = nodeConfig.pProperties[propID];
+					auto&& prop = nodeConfig.pProperties[propID];
 
 					QJsonObject jsonProp;
 					jsonProp.insert(QStringLiteral("id"), propID);
@@ -183,7 +183,7 @@ bool NodeTree::deserializeJsonNodes(const QJsonArray& jsonNodes,
 	int i = 0;
 
 	// Load nodes
-	for(auto& node : nodes)
+	for(auto&& node : nodes)
 	{
 		QVariantMap mapNode = node.toMap();		
 
@@ -227,7 +227,7 @@ bool NodeTree::deserializeJsonNodes(const QJsonArray& jsonNodes,
 		{
 			QVariantList properties = varProperties.toList();
 
-			for(auto& prop : properties)
+			for(auto&& prop : properties)
 			{
 				QVariantMap propMap = prop.toMap();
 
@@ -278,7 +278,7 @@ bool NodeTree::deserializeJsonLinks(const QJsonArray& jsonLinks,
 	int i = 0;
 	QVariantList links = jsonLinks.toVariantList();
 
-	for(auto& link : links)
+	for(auto&& link : links)
 	{
 		QVariantMap mapLink = link.toMap();
 
@@ -322,7 +322,7 @@ void NodeTree::untagNode(NodeID nodeID)
 	if(!validateNode(nodeID))
 		return;
 
-	auto& node = _nodes[nodeID];
+	auto&& node = _nodes[nodeID];
 
 	if(node.flag(ENodeFlags::Tagged))
 	{
@@ -404,9 +404,9 @@ void NodeTree::cleanUpAfterExecution(const std::vector<NodeID>& selfTagging,
 
 void NodeTree::handleException(const std::string& nodeName, const std::string& nodeTypeName)
 {
+	// Exception dispatcher pattern
 	try
 	{
-		// Exception dispatcher
 		throw;
 	}
 	catch(ExecutionError&)
@@ -462,10 +462,11 @@ void NodeTree::execute(bool withInit)
 
 			ExecutionStatus ret = node.execute(reader, writer);
 			if(ret.status == EStatus::Tag)
-				selfTagging.push_back(nodeID);
-			// If node reported an error
-			else if(ret.status == EStatus::Error)
 			{
+				selfTagging.push_back(nodeID);
+			}
+			else if(ret.status == EStatus::Error)
+			{   // If node reported an error
 				selfTagging.push_back(nodeID);
 				throw ExecutionError(node.nodeName(), 
 					nodeTypeName(nodeID), ret.message);
@@ -516,12 +517,11 @@ NodeID NodeTree::createNode(NodeTypeID typeID, const std::string& name)
 	if(!nodeConfig.module.empty())
 	{
 		bool res = false;
-		auto& module = _nodeSystem->nodeModule(nodeConfig.module);
+		auto&& module = _nodeSystem->nodeModule(nodeConfig.module);
 		if(module && module->ensureInitialized())
-		{
 			res = nodeType->init(module);
-		}
-		// Module not initialized
+
+		// Module not initialized - rollback
 		if(!res)
 		{
 			deallocateNodeID(id);
@@ -545,7 +545,7 @@ bool NodeTree::removeNode(NodeID nodeID)
 		return false;
 
 	// Tag nodes that are directly connected to the removed node
-	for(auto& nodeLink : _links)
+	for(auto&& nodeLink : _links)
 	{
 		if(nodeLink.fromNode == nodeID)
 			tagNode(nodeLink.toNode);
@@ -584,7 +584,7 @@ bool NodeTree::linkNodes(SocketAddress from, SocketAddress to)
 	// Check if we are not trying to link input socket with more than one output
 	for(size_t i = 0; i < _links.size(); ++i)
 	{
-		auto& link = _links[i];
+		auto&& link = _links[i];
 
 		if(link.toNode == to.node &&
 			link.toSocket == to.socket)
@@ -633,7 +633,7 @@ void NodeTree::setNodeName(NodeID nodeID, const std::string& newNodeName)
 {
 	if(nodeID < _nodes.size())
 	{
-		auto& node = _nodes[nodeID];
+		auto&& node = _nodes[nodeID];
 		if(node.isValid() && node.nodeName() != newNodeName)
 		{
 			// Remove old mapping
@@ -653,7 +653,7 @@ const std::string& NodeTree::nodeName(NodeID nodeID) const
 
 	if(nodeID < _nodes.size())
 	{
-		auto& node = _nodes[nodeID];
+		auto&& node = _nodes[nodeID];
 		if(node.isValid())
 		{
 			return node.nodeName();
@@ -766,7 +766,7 @@ bool NodeTree::allRequiredInputSocketConnected(NodeID nodeID) const
 	if(!validateNode(nodeID))
 		return false;
 
-	auto& node = _nodes[nodeID];
+	auto&& node = _nodes[nodeID];
 
 	for(SocketID socketID = 0; socketID < node.numInputSockets(); ++socketID)
 	{
@@ -869,7 +869,7 @@ size_t NodeTree::firstOutputLink(NodeID fromNode,
 {
 	for(size_t i = start; i < _links.size(); ++i)
 	{
-		auto& link = _links[i];
+		auto&& link = _links[i];
 
 		if(link.fromNode == fromNode &&
 		   link.fromSocket == fromSocket)

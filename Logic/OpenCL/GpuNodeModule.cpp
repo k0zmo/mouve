@@ -41,11 +41,11 @@ std::string GpuNodeModule::moduleName() const
 	return "opencl";
 }
 
-//#define INTEL_DEBUGGING
+#define INTEL_DEBUGGING 0
 
 bool GpuNodeModule::createDefault()
 {
-#if defined(INTEL_DEBUGGING)
+#if INTEL_DEBUGGING == 1
 	auto devs = clw::deviceFiltered(
 		clw::Filter::PlatformVendor(clw::Vendor_Intel) 
 		&& clw::Filter::DeviceType(clw::Cpu));
@@ -56,27 +56,53 @@ bool GpuNodeModule::createDefault()
 		return false;
 #endif
 		
-	_device = _context.devices()[0];
-	_queue = _context.createCommandQueue(_device, 0);//clw::Property_ProfilingEnabled);
-	_dataQueue = _context.createCommandQueue(_device, 0);//clw::Property_ProfilingEnabled);
-
-	clw::installErrorHandler([=](cl_int error_id, const std::string& message)
-	{
-		if(error_id != CL_BUILD_PROGRAM_FAILURE)
-			throw GpuNodeException(error_id, message);
-	});
-
-	if(!_device.isNull())
-	{
-		_maxConstantMemory = _device.maximumConstantBufferSize();
-		_maxLocalMemory = _device.localMemorySize();
-	}
-
-	return !_device.isNull() && !_queue.isNull();
+	return createAfterContext();
 }
 
 bool GpuNodeModule::createInteractive()
 {
+	if(onCreateInteractive)
+	{
+		vector<GpuPlatform> gpuPlatforms;
+		auto&& platforms_cl = clw::availablePlatforms();
+		for(auto&& platform_cl : platforms_cl)
+		{
+			GpuPlatform gpuPlatform;
+			gpuPlatform.name = platform_cl.name();
+
+			auto&& devices_cl = clw::devices(clw::All, platform_cl);
+			for(auto&& device_cl : devices_cl)
+				gpuPlatform.devices.emplace_back(device_cl.name());
+			gpuPlatforms.emplace_back(gpuPlatform);
+		}
+
+		auto&& result = onCreateInteractive(gpuPlatforms);
+		if(result.type == EDeviceType::None)
+			return false;
+
+		if(result.type != EDeviceType::Specific)
+		{
+			if(!_context.create(clw::EDeviceType(result.type)) || _context.numDevices() == 0)
+				return false;
+			return createAfterContext();
+		}
+		else
+		{
+			if(result.platform < (int) gpuPlatforms.size()
+			&& result.device < (int) gpuPlatforms[result.platform].devices.size())
+			{
+				vector<clw::Device> devices0; devices0.emplace_back(
+					clw::devices(clw::All, platforms_cl[result.platform])[result.device]);
+				if(!_context.create(devices0) || _context.numDevices() == 0)
+					return false;
+				return createAfterContext();
+			}
+
+			result.device;
+			result.platform;
+		}
+	}
+
 	return false;
 }
 
@@ -108,6 +134,27 @@ vector<RegisteredProgram> GpuNodeModule::populateListOfRegisteredPrograms() cons
 void GpuNodeModule::rebuildProgram(const string& programName)
 {
 	_library.rebuildProgram(programName);
+}
+
+bool GpuNodeModule::createAfterContext()
+{
+	_device = _context.devices()[0];
+	_queue = _context.createCommandQueue(_device, 0);//clw::Property_ProfilingEnabled);
+	_dataQueue = _context.createCommandQueue(_device, 0);//clw::Property_ProfilingEnabled);
+
+	clw::installErrorHandler([=](cl_int error_id, const std::string& message)
+	{
+		if(error_id != CL_BUILD_PROGRAM_FAILURE)
+			throw GpuNodeException(error_id, message);
+	});
+
+	if(!_device.isNull())
+	{
+		_maxConstantMemory = _device.maximumConstantBufferSize();
+		_maxLocalMemory = _device.localMemorySize();
+	}
+
+	return !_device.isNull() && !_queue.isNull();
 }
 
 #pragma region Kernels Directory

@@ -10,6 +10,7 @@
 // Modules
 #if defined(HAVE_OPENCL)
 #  include "Logic/OpenCL/GpuNodeModule.h"
+#  include "ui_GpuChoice.h"
 #endif
 #if defined(HAVE_JAI)
 #  include "Logic/Jai/JaiNodeModule.h"
@@ -65,7 +66,7 @@ Controller::Controller(QWidget* parent, Qt::WindowFlags flags)
 	, _treeWorker(new TreeWorker())
 	, _progressBar(nullptr)
 #if defined(HAVE_OPENCL)
-	, _gpuModule(new GpuNodeModule(false))
+	, _gpuModule(new GpuNodeModule(true))
 #endif
 #if defined(HAVE_JAI)
 	, _jaiModule(new JaiNodeModule())
@@ -104,6 +105,29 @@ Controller::Controller(QWidget* parent, Qt::WindowFlags flags)
 
 	connect(_actionListPrograms, &QAction::triggered,
 		this, &Controller::showProgramsList);
+
+	_gpuModule->onCreateInteractive = 
+		[=](const vector<GpuPlatform>& gpuPlatforms) -> GpuInteractiveResult
+		{
+			QDialog dialog;
+			Ui::GpuChoiceDialog ui;
+			ui.setupUi(&dialog);
+			ui.deviceTypeComboBox->addItems(QStringList() << "GPU" << "CPU" << "Default" << "Specific");
+			dialog.exec();
+
+			EDeviceType type;
+			switch(ui.deviceTypeComboBox->currentIndex())
+			{
+			case 0: type = EDeviceType::Gpu; break;
+			case 1: type = EDeviceType::Cpu; break;
+			case 2: type = EDeviceType::Default; break;
+			case 3: type = EDeviceType::Specific; break;
+			default: type = EDeviceType::None; break;
+			}
+
+			GpuInteractiveResult result = { type, 0, 0 };
+			return result;
+		};
 #endif
 	
 	// JAI module
@@ -193,27 +217,7 @@ void Controller::addNode(NodeTypeID nodeTypeID, const QPointF& scenePos)
 		++num;
 	}
 
-	QProgressDialog progress;
-	progress.setLabelText("Please wait...");
-	progress.setWindowModality(Qt::ApplicationModal);
-	progress.setCancelButton(nullptr);
-	progress.setMinimumDuration(150);
-	// Quick hack
-	progress.setRange(0, 1);
-	progress.setValue(0);
-	progress.setRange(0, 0);
-
-	QEventLoop localEventLoop;
-	std::future<NodeID> future = std::async(std::launch::async, [&] {
-		NodeID nodeID = _nodeTree->createNode(nodeTypeID, nodeTitle);
-		QMetaObject::invokeMethod(&localEventLoop, "quit", Qt::QueuedConnection);
-		return nodeID;
-	});
-
-	localEventLoop.exec(QEventLoop::ExcludeUserInputEvents);
-	progress.cancel();
-
-	NodeID nodeID = future.get();
+	NodeID nodeID = _nodeTree->createNode(nodeTypeID, nodeTitle);
 	if(nodeID == InvalidNodeID)
 	{
 		showErrorMessage("[NodeTree] Couldn't create given node");

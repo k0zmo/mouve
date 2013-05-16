@@ -5,6 +5,31 @@
 #include "Logic/NodeModule.h"
 #include "GpuKernelLibrary.h"
 
+enum class EDeviceType
+{
+	None     = 0,
+	Gpu      = clw::Gpu,
+	Cpu      = clw::Cpu,
+	Default  = clw::Default,
+	Specific = clw::All
+};
+
+using std::vector;
+using std::string;
+
+struct GpuPlatform
+{
+	string name;
+	vector<string> devices;
+};
+
+struct GpuInteractiveResult
+{
+	EDeviceType type;
+	int platform;
+	int device;
+};
+
 class LOGIC_EXPORT GpuNodeModule : public NodeModule
 {
 public:
@@ -19,6 +44,9 @@ public:
 
 	bool createDefault();
 	bool createInteractive();
+
+	typedef std::function<GpuInteractiveResult(const vector<GpuPlatform>& gpuPlatforms)> OnCreateInteractive;
+	OnCreateInteractive onCreateInteractive;
 
 	KernelID registerKernel(const string& kernelName, 
 		const string& programName, const string& buildOptions = "");
@@ -42,6 +70,7 @@ public:
 
 private:
 	std::string additionalBuildOptions(const std::string& programName) const;
+	bool createAfterContext();
 
 private:
 	clw::Context _context;
