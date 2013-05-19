@@ -166,6 +166,7 @@ private:
 #if defined(HAVE_OPENCL)
 	std::shared_ptr<GpuNodeModule> _gpuModule;
 	QAction* _actionListPrograms;
+	QAction* _actionInteractiveSetup;
 
 	void showProgramsList();
 #endif

@@ -10,7 +10,7 @@
 // Modules
 #if defined(HAVE_OPENCL)
 #  include "Logic/OpenCL/GpuNodeModule.h"
-#  include "ui_GpuChoice.h"
+#  include "GpuModuleUI.h"
 #endif
 #if defined(HAVE_JAI)
 #  include "Logic/Jai/JaiNodeModule.h"
@@ -98,36 +98,55 @@ Controller::Controller(QWidget* parent, Qt::WindowFlags flags)
 	// Gpu module
 #if defined(HAVE_OPENCL)
 	_nodeSystem->registerNodeModule(_gpuModule->moduleName(), _gpuModule);
+	_gpuModule->onCreateInteractive = 
+		[=](const vector<GpuPlatform>& gpuPlatforms) -> GpuInteractiveResult
+	{
+		GpuChoiceDialog dialog(gpuPlatforms);
+		dialog.exec();
 
+		GpuInteractiveResult result = { 
+			dialog.result() == QDialog::Accepted
+			? dialog.deviceType()
+			: EDeviceType::None,
+			dialog.platformID(), dialog.deviceID() };
+		return result;
+	};
+
+	_actionInteractiveSetup = new QAction(QStringLiteral("Init module"), this);
 	_actionListPrograms = new QAction(QStringLiteral("List programs"), this);
-	auto menuGpu = menuModules->addMenu("GPU");
-	menuGpu->addAction(_actionListPrograms);
 
 	connect(_actionListPrograms, &QAction::triggered,
 		this, &Controller::showProgramsList);
-
-	_gpuModule->onCreateInteractive = 
-		[=](const vector<GpuPlatform>& gpuPlatforms) -> GpuInteractiveResult
+	connect(_actionInteractiveSetup, &QAction::triggered,
+		[=]
 		{
-			QDialog dialog;
-			Ui::GpuChoiceDialog ui;
-			ui.setupUi(&dialog);
-			ui.deviceTypeComboBox->addItems(QStringList() << "GPU" << "CPU" << "Default" << "Specific");
-			dialog.exec();
-
-			EDeviceType type;
-			switch(ui.deviceTypeComboBox->currentIndex())
+			if(_gpuModule->isInitialized())
 			{
-			case 0: type = EDeviceType::Gpu; break;
-			case 1: type = EDeviceType::Cpu; break;
-			case 2: type = EDeviceType::Default; break;
-			case 3: type = EDeviceType::Specific; break;
-			default: type = EDeviceType::None; break;
+				QMessageBox::warning(nullptr, applicationTitle,
+					"GPU Module already initialized");
+				_actionInteractiveSetup->setEnabled(false);
+				return;
 			}
 
-			GpuInteractiveResult result = { type, 0, 0 };
-			return result;
-		};
+			auto&& gpuPlatforms = _gpuModule->availablePlatforms();
+			if(gpuPlatforms.empty())
+			{
+				showErrorMessage("No OpenCL platforms found!");
+				return;
+			}
+
+			bool oldv = _gpuModule->isInteractiveInit();
+			_gpuModule->setInteractiveInit(true);
+			if(_gpuModule->initialize())
+			{
+				_actionInteractiveSetup->setEnabled(false);
+				_gpuModule->setInteractiveInit(oldv);
+			}			
+		});
+
+	auto menuGpu = menuModules->addMenu("GPU");
+	menuGpu->addAction(_actionInteractiveSetup);
+	menuGpu->addAction(_actionListPrograms);
 #endif
 	
 	// JAI module
@@ -1854,6 +1873,7 @@ void Controller::displayNodeTimeInfo(bool checked)
 }
 
 #if defined(HAVE_OPENCL)
+/// TODO: Move to separate file
 
 #include "Logic/OpenCL/GpuException.h"
 
