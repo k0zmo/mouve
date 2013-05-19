@@ -45,6 +45,8 @@ public:
 	bool createDefault();
 	bool createInteractive();
 
+	vector<GpuPlatform> availablePlatforms() const;
+
 	typedef std::function<GpuInteractiveResult(const vector<GpuPlatform>& gpuPlatforms)> OnCreateInteractive;
 	OnCreateInteractive onCreateInteractive;
 

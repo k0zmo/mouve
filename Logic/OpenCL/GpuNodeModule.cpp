@@ -65,6 +65,8 @@ bool GpuNodeModule::createInteractive()
 	{
 		vector<GpuPlatform> gpuPlatforms;
 		auto&& platforms_cl = clw::availablePlatforms();
+		if(platforms_cl.empty())
+			return false;
 		for(auto&& platform_cl : platforms_cl)
 		{
 			GpuPlatform gpuPlatform;
@@ -101,6 +103,27 @@ bool GpuNodeModule::createInteractive()
 	}
 
 	return false;
+}
+
+vector<GpuPlatform> GpuNodeModule::availablePlatforms() const
+{
+	vector<GpuPlatform> gpuPlatforms;
+	auto&& platforms_cl = clw::availablePlatforms();
+	if(platforms_cl.empty())
+		return vector<GpuPlatform>();
+
+	for(auto&& platform_cl : platforms_cl)
+	{
+		GpuPlatform gpuPlatform;
+		gpuPlatform.name = platform_cl.name();
+
+		auto&& devices_cl = clw::devices(clw::All, platform_cl);
+		for(auto&& device_cl : devices_cl)
+			gpuPlatform.devices.emplace_back(device_cl.name());
+		gpuPlatforms.emplace_back(gpuPlatform);
+	}
+
+	return gpuPlatforms;
 }
 
 KernelID GpuNodeModule::registerKernel(const string& kernelName,
