@@ -97,9 +97,6 @@ bool GpuNodeModule::createInteractive()
 					return false;
 				return createAfterContext();
 			}
-
-			result.device;
-			result.platform;
 		}
 	}
 

@@ -6,49 +6,51 @@ include(../mouve.pri)
 include(../clw.pri)
 
 HEADERS += \
-	Controller.h \
-	GLWidget.h \
-	LogView.h \
-	NodeConnectorView.h \
-	NodeEditorView.h \
-	NodeLinkView.h \
-	NodeSocketView.h \
-	NodeStyle.h \
-	NodeView.h \
-	PreviewWidget.h \
-	Prerequisites.h \
-	PropertyDelegate.h \
-	Property.h \
-	PropertyManager.h \
-	PropertyModel.h \
-	PropertyWidgets.h \
-	TreeWorker.h
+    Controller.h \
+    GLWidget.h \
+    LogView.h \
+    NodeConnectorView.h \
+    NodeEditorView.h \
+    NodeLinkView.h \
+    NodeSocketView.h \
+    NodeStyle.h \
+    NodeView.h \
+    PreviewWidget.h \
+    Prerequisites.h \
+    PropertyDelegate.h \
+    Property.h \
+    PropertyManager.h \
+    PropertyModel.h \
+    PropertyWidgets.h \
+    TreeWorker.h
 
 SOURCES += \
-	Application.cpp \
-	Controller.cpp \
-	GLWidget.cpp \
-	LogView.cpp \
-	NodeConnectorView.cpp \
-	NodeEditorView.cpp \
-	NodeLinkView.cpp \
-	NodeSocketView.cpp \
-	NodeStyle.cpp \
-	NodeView.cpp \
-	PreviewWidget.cpp \
-	Property.cpp \
-	PropertyDelegate.cpp \
-	PropertyManager.cpp \
-	PropertyModel.cpp \
-	PropertyWidgets.cpp \
-	TreeWorker.cpp
-	
+    Application.cpp \
+    Controller.cpp \
+    GLWidget.cpp \
+    LogView.cpp \
+    NodeConnectorView.cpp \
+    NodeEditorView.cpp \
+    NodeLinkView.cpp \
+    NodeSocketView.cpp \
+    NodeStyle.cpp \
+    NodeView.cpp \
+    PreviewWidget.cpp \
+    Property.cpp \
+    PropertyDelegate.cpp \
+    PropertyManager.cpp \
+    PropertyModel.cpp \
+    PropertyWidgets.cpp \
+    TreeWorker.cpp
+    
 FORMS += \
     MainWindow.ui \
-    PreviewWidget.ui
-	
+    PreviewWidget.ui \
+    # Camera.ui \
+    GpuChoice.ui 
+    
 RESOURCES += \
-	Editor.qrc
+    Editor.qrc
 
 PRECOMPILED_HEADER = Precomp.h
 

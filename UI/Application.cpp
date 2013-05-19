@@ -20,6 +20,12 @@ int main(int argc, char* argv[])
 	freopen("CON", "w", stdout);
 #endif
 
+	if (!QGLFormat::hasOpenGL())
+	{
+		qWarning("This system has no OpenGL support. Exiting.");
+		return -1;
+	}
+
 	Controller controller;
 	controller.show();
 	return a.exec();

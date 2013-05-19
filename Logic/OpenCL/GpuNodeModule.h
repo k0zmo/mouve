@@ -11,7 +11,7 @@ enum class EDeviceType
 	Gpu      = clw::Gpu,
 	Cpu      = clw::Cpu,
 	Default  = clw::Default,
-	Specific = clw::All
+	Specific = 0xFFFF,
 };
 
 using std::vector;
