@@ -12,7 +12,6 @@ using std::tuple;
 
 /// TODO: 
 /// * Support for 10-bit bayer formats
-/// * JaiDynamicFactory
 /// * White-balance RGB gain finder
 /// * (LONG) Use lower primitives (StreamThread instead of StreamCallback)
 

@@ -25,6 +25,7 @@ Node::Node(std::unique_ptr<NodeType> nodeType,
 	, _numOutputs(0)
 	, _nodeTypeID(nodeTypeID)
 	, _flags(0)
+	, _timeElapsed(0)
 {
 	NodeConfig config;
 	_nodeType->configuration(config);

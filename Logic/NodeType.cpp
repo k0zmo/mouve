@@ -68,7 +68,7 @@ NodeFlowData& NodeSocketWriter::acquireSocket(SocketID socketID)
 	if(socketID >= static_cast<int>(_outputs->size()))
 		throw BadSocketException();;
 
-	return  _outputs->at(socketID);
+	return _outputs->at(socketID);
 }
 
 std::string NodeType::formatMessage(const char* msg, ...)
