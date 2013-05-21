@@ -64,9 +64,10 @@ public:
 		// Prepare destination image and structuring element on a device
 		ensureSizeIsEnough(deviceDest, width, height);
 
-		/// TODO: Upload only if different - could use some hashing technique
 		auto selemCoords = structuringElementCoordinates(se);
-		int selemCoordsSize = (int) selemCoords.size();
+		size_t bmuSize = sizeof(cl_int2) * selemCoords.size();
+		if(bmuSize > _gpuComputeModule->device().maximumConstantBufferSize())
+			return ExecutionStatus(EStatus::Error, "Structuring element is too big to fit in constant memory");
 		uploadStructuringElement(selemCoords);	
 
 		// Prepare if necessary buffer for temporary result
@@ -88,6 +89,7 @@ public:
 		//if(_op > int(EMorphologyOperation::Close))
 		//	kernelSubtract = _gpuComputeModule->acquireKernel(_kidSubtract);
 
+		int selemCoordsSize = (int) selemCoords.size();
 		clw::Event evt;
 
 		switch(_op)
@@ -167,22 +169,22 @@ private:
 
 	void uploadStructuringElement(const std::vector<cl_int2>& selemCoords)
 	{
-		/// TODO: Check max costant memory buffer size first
 		size_t bmuSize = sizeof(cl_int2) * selemCoords.size();
 		if(_deviceStructuringElement.isNull() ||
 			_deviceStructuringElement.size() != bmuSize)
 		{
 			_deviceStructuringElement = _gpuComputeModule->context().createBuffer(
 				clw::Access_ReadOnly, clw::Location_Device, bmuSize);
+
+			_pinnedStructuringElement = _gpuComputeModule->context().createBuffer(
+				clw::Access_ReadWrite, clw::Location_AllocHostMemory, bmuSize);
 		}
 
-		/// TODO: Benchmark Pinned memory and mapping/direct access
 		cl_int2* ptr = static_cast<cl_int2*>(_gpuComputeModule->queue().mapBuffer(
-			_deviceStructuringElement, clw::MapAccess_Write));
-		const cl_int2* data = selemCoords.data();
-		memcpy(ptr, data, bmuSize);
-		_gpuComputeModule->queue().unmap(_deviceStructuringElement, ptr);	
-		//gpu->queue().writeBuffer(_deviceStructuringElement, selemCoords.data(), 0, bmuSize);	
+			_pinnedStructuringElement, clw::MapAccess_Write));
+		memcpy(ptr, selemCoords.data(), bmuSize);
+		_gpuComputeModule->queue().asyncUnmap(_pinnedStructuringElement, ptr);
+		_gpuComputeModule->queue().asyncCopyBuffer(_pinnedStructuringElement, _deviceStructuringElement);
 	}
 
 	void ensureSizeIsEnough(clw::Image2D& image, int width, int height)
@@ -224,6 +226,7 @@ private:
 
 private:
 	clw::Buffer _deviceStructuringElement;
+	clw::Buffer _pinnedStructuringElement;
 	clw::Image2D _tmpImage;
 	KernelID _kidErode;
 	KernelID _kidDilate;
