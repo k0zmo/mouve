@@ -278,10 +278,10 @@ void GLWidget::zoom(int dir, qreal scale)
 {
 	// use rather varying max zoom, depending on image size
 	// Old version: const qreal maxZoom = 0.05f;
-	const qreal maxZoom = 20.0f / qMax(_textureHeight, _textureHeight);
+	const qreal maxZoom = 20.0f / qMax(_textureWidth, _textureHeight);
 
-	qreal distx = fabsf(_right - _left);
-	qreal disty = fabsf(_top - _bottom);
+	qreal distx = qAbs(_right - _left);
+	qreal disty = qAbs(_top - _bottom);
 
 	if(_resizeBehavior == EResizeBehavior::FitWithWidget)
 	{
@@ -306,7 +306,7 @@ void GLWidget::zoom(int dir, qreal scale)
 		const qreal maxw = _rightBase - _leftBase;
 		const qreal maxh = _topBase - _bottomBase;
 
-		if(distx > maxw && disty > maxh)
+		if(distx - maxw > 1e-3 && disty - maxh > 1e-3)
 		{
 			_left = _leftBase;
 			_right = _rightBase;
@@ -323,7 +323,7 @@ void GLWidget::zoom(int dir, qreal scale)
 		qreal dx, dy;
 
 		// Check if last op. changed aspect ratio
-		if(!qFuzzyCompare(aspect, aspect1))
+		if(qAbs(aspect - aspect1) > 1e-5)
 		{
 			qreal a = distx - (dir > 0 ? maxZoom : maxw);
 			qreal b = disty - (dir > 0 ? maxZoom : maxh);

@@ -368,7 +368,6 @@ public:
 		};
 		static const PropertyConfig prop_config[] = {
 			{ EPropertyType::Enum, "Keypoints color", "item: Random, item: Red, item: Green, item: Blue" },
-			{ EPropertyType::Boolean, "Rich keypoints", "" },
 			{ EPropertyType::Unknown, "", "" }
 		};
 

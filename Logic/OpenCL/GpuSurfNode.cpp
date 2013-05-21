@@ -457,7 +457,7 @@ private:
 				auto&& layer = _scaleLayers[octave*_nScales + scale];
 
 				if(imageWidth < layer.filterSize
-				|| imageWidth < layer.filterSize)
+				|| imageHeight < layer.filterSize)
 					continue;
 
 				// Promien filtru: dla 9x9 jest to 4

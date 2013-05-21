@@ -3,9 +3,6 @@
 #include "GpuNode.h"
 #include "NodeFactory.h"
 
-/// TODO: Add property for setting pinned/pageable memory
-/// For now we got conditional compilation
-
 class GpuUploadImageNodeType : public GpuNodeType
 {
 public:
