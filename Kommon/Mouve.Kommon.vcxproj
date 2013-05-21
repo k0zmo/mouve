@@ -19,6 +19,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Hash.h" />
     <ClInclude Include="konfig.h" />
     <ClInclude Include="HighResolutionClock.h" />
     <ClInclude Include="MacroUtils.h" />
@@ -26,6 +27,7 @@
     <ClInclude Include="StlUtils.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Hash.cpp" />
     <ClCompile Include="HighResolutionClock.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">

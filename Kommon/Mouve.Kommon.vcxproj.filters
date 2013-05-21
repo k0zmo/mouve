@@ -30,9 +30,15 @@
     <ClInclude Include="konfig.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Hash.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="HighResolutionClock.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Hash.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

@@ -2,12 +2,14 @@
 
 #include "GpuNode.h"
 #include "NodeFactory.h"
+#include "Kommon/Hash.h"
 
 class GpuMorphologyNodeType : public GpuNodeType
 {
 public:
 	GpuMorphologyNodeType()
 		: _op(Erode)
+		, _sElemHash(0)
 	{
 	}
 
@@ -49,10 +51,10 @@ public:
 	ExecutionStatus execute(NodeSocketReader& reader, NodeSocketWriter& writer) override
 	{
 		const clw::Image2D& deviceSrc = reader.readSocket(0).getDeviceImage();
-		const cv::Mat& se = reader.readSocket(1).getImage();
+		const cv::Mat& sElem = reader.readSocket(1).getImage();
 		clw::Image2D& deviceDest = writer.acquireSocket(0).getDeviceImage();
 
-		if(se.cols == 0 || se.rows == 0 || deviceSrc.width() == 0 || deviceSrc.height() == 0)
+		if(sElem.cols == 0 || sElem.rows == 0 || deviceSrc.width() == 0 || deviceSrc.height() == 0)
 			return ExecutionStatus(EStatus::Ok);
 
 		// Podfunkcje ktore zwracac beda ExecutionStatus
@@ -64,20 +66,13 @@ public:
 		// Prepare destination image and structuring element on a device
 		ensureSizeIsEnough(deviceDest, width, height);
 
-		auto selemCoords = structuringElementCoordinates(se);
-		size_t bmuSize = sizeof(cl_int2) * selemCoords.size();
-		if(bmuSize > _gpuComputeModule->device().maximumConstantBufferSize())
+		int sElemCoordsSize = prepareStructuringElement(sElem);
+		if(!sElemCoordsSize)
 			return ExecutionStatus(EStatus::Error, "Structuring element is too big to fit in constant memory");
-		uploadStructuringElement(selemCoords);	
 
 		// Prepare if necessary buffer for temporary result
 		if(_op > int(EMorphologyOperation::Dilate))
 			ensureSizeIsEnough(_tmpImage, width, height);
-
-		// Calculate metrics
-		int kradx = (se.cols - 1) >> 1;
-		int krady = (se.rows - 1) >> 1;		
-		clw::Grid grid(deviceSrc.width(), deviceSrc.height());
 
 		// Acquire kernel(s)
 		clw::Kernel kernelErode, kernelDilate, kernelSubtract;
@@ -89,24 +84,28 @@ public:
 		//if(_op > int(EMorphologyOperation::Close))
 		//	kernelSubtract = _gpuComputeModule->acquireKernel(_kidSubtract);
 
-		int selemCoordsSize = (int) selemCoords.size();
 		clw::Event evt;
+
+		// Calculate metrics
+		int kradx = (sElem.cols - 1) >> 1;
+		int krady = (sElem.rows - 1) >> 1;		
+		clw::Grid grid(deviceSrc.width(), deviceSrc.height());
 
 		switch(_op)
 		{
 		case EMorphologyOperation::Erode:
-			evt = runMorphologyKernel(kernelErode, grid, deviceSrc, deviceDest, selemCoordsSize, kradx, krady);
+			evt = runMorphologyKernel(kernelErode, grid, deviceSrc, deviceDest, sElemCoordsSize, kradx, krady);
 			break;
 		case EMorphologyOperation::Dilate:
-			evt = runMorphologyKernel(kernelDilate, grid, deviceSrc, deviceDest, selemCoordsSize, kradx, krady);
+			evt = runMorphologyKernel(kernelDilate, grid, deviceSrc, deviceDest, sElemCoordsSize, kradx, krady);
 			break;
 		case EMorphologyOperation::Open:
-			evt = runMorphologyKernel(kernelErode, grid, deviceSrc, _tmpImage, selemCoordsSize, kradx, krady);
-			evt = runMorphologyKernel(kernelDilate, grid, _tmpImage, deviceDest, selemCoordsSize, kradx, krady);
+			evt = runMorphologyKernel(kernelErode, grid, deviceSrc, _tmpImage, sElemCoordsSize, kradx, krady);
+			evt = runMorphologyKernel(kernelDilate, grid, _tmpImage, deviceDest, sElemCoordsSize, kradx, krady);
 			break;
 		case EMorphologyOperation::Close:
-			evt = runMorphologyKernel(kernelDilate, grid, deviceSrc, _tmpImage, selemCoordsSize, kradx, krady);
-			evt = runMorphologyKernel(kernelErode, grid, _tmpImage, deviceDest, selemCoordsSize, kradx, krady);
+			evt = runMorphologyKernel(kernelDilate, grid, deviceSrc, _tmpImage, sElemCoordsSize, kradx, krady);
+			evt = runMorphologyKernel(kernelErode, grid, _tmpImage, deviceDest, sElemCoordsSize, kradx, krady);
 			break;
 		case EMorphologyOperation::Gradient:
 		case EMorphologyOperation::TopHat:
@@ -146,15 +145,42 @@ public:
 	}
 
 private:
-	std::vector<cl_int2> structuringElementCoordinates(const cv::Mat& selem)
+	int prepareStructuringElement(const cv::Mat& sElem) 
 	{
-		std::vector<cl_int2> coords;
-		int seRadiusX = (selem.cols - 1) / 2;
-		int seRadiusY = (selem.rows - 1) / 2;
-		for(int y = 0; y < selem.rows; ++y)
+		vector<cl_int2> sElemCoords = structuringElementCoordinates(sElem);
+		size_t bmuSize = sizeof(cl_int2) * sElemCoords.size();
+		if(bmuSize > _gpuComputeModule->device().maximumConstantBufferSize())
+			return 0;
+
+		// Check if this is the same structuring element by hashing
+		if(!_deviceStructuringElement.isNull() && _deviceStructuringElement.size() == bmuSize)
 		{
-			const uchar* krow = selem.ptr<uchar>(y);;
-			for(int x = 0; x < selem.cols; ++x)
+			uint32_t hash = calculateStructuringElemCoordsHash(sElemCoords);
+
+			if(hash != _sElemHash)
+			{
+				uploadStructuringElement(sElemCoords);	
+				_sElemHash = calculateStructuringElemCoordsHash(sElemCoords);
+			}
+		}
+		else
+		{
+			uploadStructuringElement(sElemCoords);	
+			_sElemHash = calculateStructuringElemCoordsHash(sElemCoords);
+		}
+
+		return (int) sElemCoords.size();
+	}
+
+	vector<cl_int2> structuringElementCoordinates(const cv::Mat& sElem)
+	{
+		vector<cl_int2> coords;
+		int seRadiusX = (sElem.cols - 1) / 2;
+		int seRadiusY = (sElem.rows - 1) / 2;
+		for(int y = 0; y < sElem.rows; ++y)
+		{
+			const uchar* krow = sElem.ptr<uchar>(y);;
+			for(int x = 0; x < sElem.cols; ++x)
 			{
 				if(krow[x] == 0)
 					continue;
@@ -167,9 +193,15 @@ private:
 		return coords;
 	}
 
-	void uploadStructuringElement(const std::vector<cl_int2>& selemCoords)
+	uint32_t calculateStructuringElemCoordsHash(const vector<cl_int2>& sElemCoords) 
 	{
-		size_t bmuSize = sizeof(cl_int2) * selemCoords.size();
+		return SuperFastHash(reinterpret_cast<const char*>(sElemCoords.data()), 
+			sElemCoords.size() * sizeof(cl_int2));
+	}
+
+	void uploadStructuringElement(const vector<cl_int2>& sElemCoords)
+	{
+		size_t bmuSize = sizeof(cl_int2) * sElemCoords.size();
 		if(_deviceStructuringElement.isNull() ||
 			_deviceStructuringElement.size() != bmuSize)
 		{
@@ -182,7 +214,7 @@ private:
 
 		cl_int2* ptr = static_cast<cl_int2*>(_gpuComputeModule->queue().mapBuffer(
 			_pinnedStructuringElement, clw::MapAccess_Write));
-		memcpy(ptr, selemCoords.data(), bmuSize);
+		memcpy(ptr, sElemCoords.data(), bmuSize);
 		_gpuComputeModule->queue().asyncUnmap(_pinnedStructuringElement, ptr);
 		_gpuComputeModule->queue().asyncCopyBuffer(_pinnedStructuringElement, _deviceStructuringElement);
 	}
@@ -201,7 +233,7 @@ private:
 	}
 
 	clw::Event runMorphologyKernel(clw::Kernel& kernel, const clw::Grid& grid,
-		const clw::Image2D& deviceSrc, clw::Image2D& deviceDst, int selemCoordsSize,
+		const clw::Image2D& deviceSrc, clw::Image2D& deviceDst, int sElemCoordsSize,
 		int kradx, int krady)
 	{
 		// Prepare it for execution
@@ -210,7 +242,7 @@ private:
 		kernel.setArg(0, deviceSrc);
 		kernel.setArg(1, deviceDst);
 		kernel.setArg(2, _deviceStructuringElement);
-		kernel.setArg(3, selemCoordsSize);
+		kernel.setArg(3, sElemCoordsSize);
 
 		int sharedWidth = 16 + 2 * kradx;
 		int sharedHeight = 16 + 2 * krady;
@@ -249,6 +281,7 @@ private:
 	};
 
 	EMorphologyOperation _op;
+	uint32_t _sElemHash;
 };
 
 REGISTER_NODE("OpenCL/Image/Morphology op.", GpuMorphologyNodeType)
