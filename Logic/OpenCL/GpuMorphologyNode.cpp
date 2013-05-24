@@ -149,7 +149,7 @@ private:
 	{
 		vector<cl_int2> sElemCoords = structuringElementCoordinates(sElem);
 		size_t bmuSize = sizeof(cl_int2) * sElemCoords.size();
-		if(bmuSize > _gpuComputeModule->device().maximumConstantBufferSize())
+		if(!_gpuComputeModule->isConstantMemorySufficient(bmuSize))
 			return 0;
 
 		// Check if this is the same structuring element by hashing
