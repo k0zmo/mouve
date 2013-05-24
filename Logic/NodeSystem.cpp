@@ -1,6 +1,7 @@
 #include "NodeSystem.h"
 #include "NodeType.h"
 #include "NodeTree.h"
+#include "NodeModule.h"
 
 /// TODO: Change this to some neat logging system
 #include <iostream>
@@ -142,13 +143,13 @@ NodeSystem::NodeTypeInfo& NodeSystem::NodeTypeInfo::operator=(NodeSystem::NodeTy
 	return *this;
 }
 
-bool NodeSystem::registerNodeModule(const std::string& name, const std::shared_ptr<NodeModule>& module)
+bool NodeSystem::registerNodeModule(const std::shared_ptr<NodeModule>& module)
 {
 	// Don't allow for re-registering (TODO: add deregistering??)
-	if(_registeredModules.find(name) != _registeredModules.end())
+	if(_registeredModules.find(module->moduleName()) != _registeredModules.end())
 		return false;
 
-	_registeredModules.insert(std::make_pair(name, module));
+	_registeredModules.insert(std::make_pair(module->moduleName(), module));
 	return true;
 }
 

@@ -97,7 +97,7 @@ Controller::Controller(QWidget* parent, Qt::WindowFlags flags)
 
 	// Gpu module
 #if defined(HAVE_OPENCL)
-	_nodeSystem->registerNodeModule(_gpuModule->moduleName(), _gpuModule);
+	_nodeSystem->registerNodeModule(_gpuModule);
 	_gpuModule->onCreateInteractive = 
 		[=](const vector<GpuPlatform>& gpuPlatforms) -> GpuInteractiveResult
 	{
@@ -151,7 +151,7 @@ Controller::Controller(QWidget* parent, Qt::WindowFlags flags)
 	
 	// JAI module
 #if defined(HAVE_JAI)
-	_nodeSystem->registerNodeModule(_jaiModule->moduleName(), _jaiModule);
+	_nodeSystem->registerNodeModule( _jaiModule);
 
 	_actionInitModule = new QAction(QStringLiteral("Initialize"), this);
 	_actionDevices = new QAction(QStringLiteral("Devices"), this);

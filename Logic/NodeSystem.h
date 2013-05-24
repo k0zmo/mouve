@@ -22,7 +22,7 @@ public:
 
 	std::unique_ptr<NodeTypeIterator> createNodeTypeIterator() const;
 
-	bool registerNodeModule(const std::string& name, const std::shared_ptr<NodeModule>& module);
+	bool registerNodeModule(const std::shared_ptr<NodeModule>& module);
 	const std::shared_ptr<NodeModule>& nodeModule(const std::string& name);
 
 private:
