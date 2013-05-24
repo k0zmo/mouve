@@ -35,6 +35,30 @@ struct ScaleSpaceLayer_cl
 	clw::Buffer laplacian_cl;
 };
 
+string warpSizeDefine(const std::shared_ptr<GpuNodeModule>& gpuModule)
+{
+	ostringstream strm;
+	strm << "-DWARP_SIZE=";
+	if(gpuModule->device().deviceType() != clw::Gpu)
+	{
+		strm << 1;
+	}
+	else
+	{
+		clw::EPlatformVendor vendor = gpuModule->device().platform().vendorEnum();
+
+		if(vendor == clw::Vendor_AMD)
+			strm << gpuModule->device().wavefrontWidth();
+		// How to get this for Intel HD Graphics?
+		else if(vendor == clw::Vendor_Intel)
+			strm << 1;
+		else if(vendor == clw::Vendor_NVIDIA)
+			strm << gpuModule->device().warpSize();
+	}
+
+	return strm.str();
+}
+
 class GpuSurfNodeType : public GpuNodeType
 {
 public:
@@ -52,35 +76,16 @@ public:
 
 	bool postInit() override
 	{
-		ostringstream strm;
-		strm << "-DWARP_SIZE=";
-		if(_gpuComputeModule->device().deviceType() != clw::Gpu)
-		{
-			strm << 1;
-		}
-		else
-		{
-			clw::EPlatformVendor vendor = _gpuComputeModule->device().platform().vendorEnum();
-
-			if(vendor == clw::Vendor_AMD)
-				strm << _gpuComputeModule->device().wavefrontWidth();
-			// How to get this for Intel HD Graphics?
-			else if(vendor == clw::Vendor_Intel)
-				strm << 1;
-			else if(vendor == clw::Vendor_NVIDIA)
-				strm << _gpuComputeModule->device().warpSize();
-		}
-
-		string opts = strm.str();
-
+		string opts = warpSizeDefine(_gpuComputeModule);
 		_kidFillImage = _gpuComputeModule->registerKernel("fill_image_uint", "fill.cl");
 		_kidMultiScan_horiz = _gpuComputeModule->registerKernel("multiscan_horiz_image", "integral.cl", opts);
 		_kidMultiScan_vert = _gpuComputeModule->registerKernel("multiscan_vert_image", "integral.cl", opts);
 
+		ostringstream strm;
 		if(_gpuComputeModule->device().supportsExtension("cl_ext_atomic_counters_32"))
 			strm << " -DUSE_ATOMIC_COUNTERS";
 		strm << " -DKEYPOINT_MAX=" << KEYPOINTS_MAX;
-		opts = strm.str();
+		opts += strm.str();
 
 		_kidBuildScaleSpace = _gpuComputeModule->registerKernel("buildScaleSpace", "surf.cl", opts);
 		_kidFindScaleSpaceMaxima = _gpuComputeModule->registerKernel("findScaleSpaceMaxima", "surf.cl", opts);
@@ -283,7 +288,7 @@ public:
 		nodeConfig.flags = 0;
 	}
 
-private:
+protected:
 	void uploadSurfConstants()
 	{
 		cv::Mat gauss_ = cv::getGaussianKernel(13, 2.5, CV_32F);
@@ -394,7 +399,7 @@ private:
 		}
 	}
 
-	void convertImageToIntegral(const clw::Image2D& srcImage_cl, int imageWidth, int imageHeight)
+	virtual void convertImageToIntegral(const clw::Image2D& srcImage_cl, int imageWidth, int imageHeight)
 	{
 		// Create if necessary image on a device
 		if(_tempImage_cl.isNull() || 
@@ -446,7 +451,7 @@ private:
 		}
 	}
 
-	void buildScaleSpace(int imageWidth, int imageHeight) 
+	virtual void buildScaleSpace(int imageWidth, int imageHeight) 
 	{
 		clw::Kernel kernelBuildScaleSpace = _gpuComputeModule->acquireKernel(_kidBuildScaleSpace);		
 
@@ -656,7 +661,7 @@ private:
 		return kps;
 	}
 
-private:
+protected:
 	enum EPropertyID
 	{
 		ID_HessianThreshold,
@@ -705,6 +710,156 @@ private:
 	clw::Buffer _pinnedDescriptors_cl;
 };
 
+class GpuSurfBufferNodeType : public GpuSurfNodeType
+{
+public:
+	bool postInit() override
+	{
+		bool res = GpuSurfNodeType::postInit();
+		if(res)
+		{	
+			ostringstream strm;
+			if(_gpuComputeModule->device().supportsExtension("cl_ext_atomic_counters_32"))
+				strm << " -DUSE_ATOMIC_COUNTERS";
+			strm << " -DKEYPOINT_MAX=" << KEYPOINTS_MAX;
+			string opts = warpSizeDefine(_gpuComputeModule) + strm.str();
+
+			_kidBuildScaleSpace = _gpuComputeModule->registerKernel("buildScaleSpace_buffer", "surf.cl", opts);
+			return _kidBuildScaleSpace != InvalidKernelID;
+		}
+		return res;
+	}
+
+protected:
+	void convertImageToIntegral(const clw::Image2D& srcImage_cl, int imageWidth, int imageHeight) override
+	{
+		// Create if necessary image on a device
+		if(_tempImage_cl.isNull() || 
+			_tempImage_cl.width() != imageWidth ||
+			_tempImage_cl.height() != imageHeight)
+		{
+			_tempImage_cl = _gpuComputeModule->context().createImage2D(
+				clw::Access_ReadWrite, clw::Location_Device,
+				clw::ImageFormat(clw::Order_R, clw::Type_Unnormalized_UInt32),
+				imageWidth, imageHeight);
+
+			_imageIntegral_cl = _gpuComputeModule->context().createImage2D(
+				clw::Access_ReadWrite, clw::Location_Device,
+				clw::ImageFormat(clw::Order_R, clw::Type_Unnormalized_UInt32),
+				imageWidth+1, imageHeight+1);
+
+			_integralBufferPitch = imageWidth+1;
+			_imageIntegralBuffer_cl = _gpuComputeModule->context().createBuffer(
+				clw::Access_ReadOnly, clw::Location_Device,
+				sizeof(cl_uint) * _integralBufferPitch * (imageHeight+1));
+
+			clw::Kernel kernelFillImage = _gpuComputeModule->acquireKernel(_kidFillImage);
+
+			kernelFillImage.setLocalWorkSize(16,16);
+			kernelFillImage.setRoundedGlobalWorkSize(imageWidth+1,imageHeight+1);
+			kernelFillImage.setArg(0, _imageIntegral_cl);
+			kernelFillImage.setArg(1, 0);
+			_gpuComputeModule->queue().asyncRunKernel(kernelFillImage);
+		}
+
+		if(_gpuComputeModule->device().deviceType() != clw::Cpu)
+		{
+			clw::Kernel kernelMultiScan_horiz = _gpuComputeModule->acquireKernel(_kidMultiScan_horiz);
+			clw::Kernel kernelMultiScan_vert = _gpuComputeModule->acquireKernel(_kidMultiScan_vert);
+
+			kernelMultiScan_horiz.setLocalWorkSize(256,1);
+			kernelMultiScan_horiz.setRoundedGlobalWorkSize(256,imageHeight);
+			kernelMultiScan_horiz.setArg(0, srcImage_cl);
+			kernelMultiScan_horiz.setArg(1, _tempImage_cl);
+			_gpuComputeModule->queue().asyncRunKernel(kernelMultiScan_horiz);
+
+			kernelMultiScan_vert.setLocalWorkSize(256,1);
+			kernelMultiScan_vert.setRoundedGlobalWorkSize(256,imageWidth);
+			kernelMultiScan_vert.setArg(0, _tempImage_cl);
+			kernelMultiScan_vert.setArg(1, _imageIntegral_cl);
+			_gpuComputeModule->queue().asyncRunKernel(kernelMultiScan_vert);
+			_gpuComputeModule->queue().asyncCopyImageToBuffer(_imageIntegral_cl, _imageIntegralBuffer_cl);
+		}
+		else
+		{
+			cv::Mat srcHost(imageHeight, imageWidth, CV_8UC1), integralHost;
+			_gpuComputeModule->queue().readImage2D(srcImage_cl, srcHost.data, srcHost.step);
+			cv::integral(srcHost, integralHost);
+			_gpuComputeModule->queue().writeImage2D(_imageIntegral_cl, integralHost.data, integralHost.step);
+			_gpuComputeModule->queue().asyncCopyImageToBuffer(_imageIntegral_cl, _imageIntegralBuffer_cl);
+		}
+	}
+
+	void buildScaleSpace(int imageWidth, int imageHeight) override
+	{
+		clw::Kernel kernelBuildScaleSpace = _gpuComputeModule->acquireKernel(_kidBuildScaleSpace);		
+
+		for(int octave = 0; octave < _nOctaves; ++octave)
+		{
+			for(int scale = 0; scale < _nScales; ++scale)
+			{
+				auto&& layer = _scaleLayers[octave*_nScales + scale];
+
+				if(imageWidth < layer.filterSize
+					|| imageHeight < layer.filterSize)
+					continue;
+
+				// Promien filtru: dla 9x9 jest to 4
+				int fw = (layer.filterSize - 1) / 2;
+				// wielkosc 'garbu' (1/3 wielkosci filtru)
+				int lobe = layer.filterSize / 3;
+				// Promien poziomy (dla Lxx) garbu
+				int lw = (lobe - 1) / 2;
+				// Promien pionowy (dla Lxx) garbu
+				int lh = lobe - 1;
+				// Przesuniecie od 0,0 do centra garbu dla Lxy
+				int xyOffset = lw + 1;
+
+				// Odwrotnosc pola filtru - do normalizacji
+				float invNorm = 1.0f / (layer.filterSize*layer.filterSize);
+
+				// Wielkosc ramki dla ktorej nie bedzie liczone det(H) oraz tr(H)
+				int layerMargin = layer.filterSize / (2 * layer.sampleStep);
+
+				// Moze zdarzyc sie tak (od drugiej oktawy jest tak zawsze) ze przez sub-sampling
+				// zaczniemy filtrowac od zbyt malego marginesu - ta wartosc (zwykle 1) pozwala tego uniknac
+				int stepOffset = fw - (layerMargin * layer.sampleStep);
+
+				// Ilosc probek w poziomie i pionie dla danej oktawy i skali
+				int samples_x = 1 + (imageWidth - layer.filterSize) / layer.sampleStep;
+				int samples_y = 1 + (imageHeight - layer.filterSize) / layer.sampleStep;
+
+				/// TODO: Experiment with this value
+				/// TODO: Experiment with PIX_PER_THREAD
+				kernelBuildScaleSpace.setLocalWorkSize(16, 16);
+				kernelBuildScaleSpace.setGlobalWorkOffset(layerMargin, layerMargin);
+				kernelBuildScaleSpace.setRoundedGlobalWorkSize(samples_x, samples_y);
+				kernelBuildScaleSpace.setArg( 0, _imageIntegralBuffer_cl);
+				kernelBuildScaleSpace.setArg( 1, _integralBufferPitch);
+				kernelBuildScaleSpace.setArg( 2, samples_x);
+				kernelBuildScaleSpace.setArg( 3, samples_y);
+				kernelBuildScaleSpace.setArg( 4, layer.hessian_cl);
+				kernelBuildScaleSpace.setArg( 5, layer.laplacian_cl);
+				kernelBuildScaleSpace.setArg( 6, layer.width);
+				kernelBuildScaleSpace.setArg( 7, fw);
+				kernelBuildScaleSpace.setArg( 8, lw);
+				kernelBuildScaleSpace.setArg( 9, lh);
+				kernelBuildScaleSpace.setArg(10, xyOffset);
+				kernelBuildScaleSpace.setArg(11, invNorm);
+				kernelBuildScaleSpace.setArg(12, layer.sampleStep);
+				kernelBuildScaleSpace.setArg(13, stepOffset);
+
+				_gpuComputeModule->queue().asyncRunKernel(kernelBuildScaleSpace);
+			}
+		}
+	}
+
+private:
+	clw::Buffer  _imageIntegralBuffer_cl;
+	int _integralBufferPitch;
+};
+
+REGISTER_NODE("OpenCL/Features/SURF Buffer", GpuSurfBufferNodeType)
 REGISTER_NODE("OpenCL/Features/SURF", GpuSurfNodeType)
 
 #endif

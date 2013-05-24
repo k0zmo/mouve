@@ -95,6 +95,64 @@ __kernel void buildScaleSpace(__read_only image2d_t integral,
     laplacian[mad24(gy, pitch, gx)] = trace;
 }
 
+// Tu podaje sie srodek i promienie filtru
+int boxFilterIntegral_buffer(__global uint* integral, int integral_pitch, int x, int y, int w, int h)
+{
+    uint A = integral[mad24(y-h,   integral_pitch, x-w  )];
+    uint B = integral[mad24(y-h,   integral_pitch, x+w+1)];
+    uint C = integral[mad24(y+h+1, integral_pitch, x-w  )];
+    uint D = integral[mad24(y+h+1, integral_pitch, x+w+1)];
+
+    return A + D - B - C;
+}
+
+__kernel void buildScaleSpace_buffer(__global uint* integral, int integral_pitch,
+                                     int samples_x, int samples_y,
+                                     __global float* hessian,
+                                     __global float* laplacian,
+                                     int pitch,
+                                     int fw, int lw, int lh, 
+                                     int xyOffset, float invNorm,
+                                     int sampleStep, int stepOffset)
+{
+    int gx = get_global_id(0);
+    int gy = get_global_id(1);
+
+    int x = gx * sampleStep + stepOffset;
+    int y = gy * sampleStep + stepOffset;
+
+    if(   gx >= samples_x + get_global_offset(0)
+       || gy >= samples_y + get_global_offset(1))
+    {
+        return;
+    }
+
+    float Lxx = (float)(
+        + boxFilterIntegral_buffer(integral, integral_pitch, x, y, fw, lh) 
+        - boxFilterIntegral_buffer(integral, integral_pitch, x, y, lw, lh) * 3);
+    Lxx *= invNorm;
+    
+    float Lyy = (float)(
+        + boxFilterIntegral_buffer(integral, integral_pitch, x, y, lh, fw)
+        - boxFilterIntegral_buffer(integral, integral_pitch, x, y, lh, lw) * 3);
+    Lyy *= invNorm;
+    
+    float Lxy = (float)(
+        + boxFilterIntegral_buffer(integral, integral_pitch, x - xyOffset, y - xyOffset, lw, lw)
+        - boxFilterIntegral_buffer(integral, integral_pitch, x + xyOffset, y - xyOffset, lw, lw)
+        - boxFilterIntegral_buffer(integral, integral_pitch, x - xyOffset, y + xyOffset, lw, lw)
+        + boxFilterIntegral_buffer(integral, integral_pitch, x + xyOffset, y + xyOffset, lw, lw));
+    Lxy *= invNorm;     
+
+    // Hessian is given as Lxx*Lyy - theta*(Lxy*Lxy) (matrix det)
+    float det = Lxx * Lyy - 0.81f * Lxy * Lxy;;
+    // Laplacian is given as Lxx + Lyy (matrix trace)
+    float trace = Lxx + Lyy;
+
+    hessian[mad24(gy, pitch, gx)] = det;
+    laplacian[mad24(gy, pitch, gx)] = trace;
+}
+
 __attribute__((always_inline))
 void readNeighbours(__global float* hessian, int x, int y, int pitch, float N9[9])
 {
