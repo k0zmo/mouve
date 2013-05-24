@@ -15,7 +15,7 @@ struct GpuNodeException : public std::exception
 		formatMessage();
 	}
 
-	virtual const char* what() const noexcept
+	virtual const char* what() const throw()
 	{
 		return formatted.c_str();
 	}
@@ -41,7 +41,7 @@ struct GpuBuildException : public std::exception
 		formatMessage();
 	}
 
-	virtual const char* what() const noexcept
+	virtual const char* what() const throw()
 	{
 		return formatted.c_str();
 	}

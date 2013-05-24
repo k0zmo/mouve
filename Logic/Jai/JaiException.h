@@ -10,7 +10,7 @@ struct JaiException : public std::exception
 	JaiException(int error, const char* message = nullptr)
 		: error(error), message(message) {}
 
-	virtual const char* what() noexcept
+	virtual const char* what() throw()
 	{
 		return "JaiException";
 	}

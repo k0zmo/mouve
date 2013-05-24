@@ -4,7 +4,7 @@
 
 struct BadSocketException : std::exception
 {
-	virtual const char* what() const noexcept
+	virtual const char* what() const throw()
 	{
 		return "BadSocketException: "
 			"bad socketID provided";
@@ -13,7 +13,7 @@ struct BadSocketException : std::exception
 
 struct BadNodeException : std::exception
 {
-	virtual const char* what() const noexcept
+	virtual const char* what() const throw()
 	{
 		return "BadNodeException: "
 			"validation failed for given nodeID";
@@ -31,7 +31,7 @@ struct ExecutionError : std::exception
 	{
 	}
 
-	virtual const char* what() const noexcept
+	virtual const char* what() const throw()
 	{
 		return "ExecutionError: "
 			"bad thing happened during one of node execution";

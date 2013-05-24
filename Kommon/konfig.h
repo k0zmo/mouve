@@ -79,7 +79,6 @@
 	classname(const classname&); \
 	classname& operator=(const classname&);
 #  define snprintf _snprintf
-#  define noexcept throw()
 #endif
 
 
