@@ -1,6 +1,8 @@
 #include "NodeType.h"
 #include "NodeFactory.h"
 
+#include <opencv2/imgproc/imgproc.hpp>
+
 class SimpleMosaicNodeType : public NodeType
 {
 public:

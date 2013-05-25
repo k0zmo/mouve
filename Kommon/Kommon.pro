@@ -9,7 +9,9 @@ HEADERS += \
     StlUtils.h \
     konfig.h \
     MacroUtils.h \  
-    Singleton.h
+    Singleton.h \
+    Hash.h
            
 SOURCES += \
-    HighResolutionClock.cpp
+    HighResolutionClock.cpp \
+    Hash.cpp

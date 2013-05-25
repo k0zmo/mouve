@@ -1,4 +1,5 @@
 #include <QApplication>
+#include <QGLFormat>
 #include "Controller.h"
 
 #if defined(QT_DEBUG) && defined(HAVE_VLD)

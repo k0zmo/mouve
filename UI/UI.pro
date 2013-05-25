@@ -22,7 +22,8 @@ HEADERS += \
     PropertyManager.h \
     PropertyModel.h \
     PropertyWidgets.h \
-    TreeWorker.h
+    TreeWorker.h \
+    GpuModuleUI.h
 
 SOURCES += \
     Application.cpp \
@@ -41,7 +42,8 @@ SOURCES += \
     PropertyManager.cpp \
     PropertyModel.cpp \
     PropertyWidgets.cpp \
-    TreeWorker.cpp
+    TreeWorker.cpp \
+    GpuModuleUI.cpp
     
 FORMS += \
     MainWindow.ui \

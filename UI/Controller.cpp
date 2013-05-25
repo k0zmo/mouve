@@ -536,12 +536,13 @@ void Controller::setupUi()
 
 	tabifyDockWidget(_ui->propertiesDockWidget, _ui->nodesDockWidget);
 
+#if QT_VERSION == 0x050001 || QT_VERSION == 0x050000
 	/// TODO: Bug in Qt 5.0.1 : Dock widget loses its frame and bar after undocked
 	_ui->nodesDockWidget->setFeatures(QDockWidget::DockWidgetClosable|QDockWidget::DockWidgetMovable);
 	_ui->propertiesDockWidget->setFeatures(QDockWidget::DockWidgetClosable|QDockWidget::DockWidgetMovable);
 	_ui->previewDockWidget->setFeatures(QDockWidget::DockWidgetClosable|QDockWidget::DockWidgetMovable);
 	_ui->logDockWidget->setFeatures(QDockWidget::DockWidgetClosable|QDockWidget::DockWidgetMovable);
-
+#endif
 	// Init menu bar and its 'view' menu
 	_ui->menuView->addAction(actionNodes);
 	_ui->menuView->addAction(actionProperties);
