@@ -1,6 +1,7 @@
 #include "Prerequisites.h"
 #include "NodeType.h"
 #include "NodeFactory.h"
+#include "Kommon/Utils.h"
 
 #include <opencv2/features2d/features2d.hpp>
 
@@ -76,7 +77,7 @@ public:
 		cv::BFMatcher matcher(normType, _crossCheck);
 		vector<cv::DMatch> matches;
 		
-		if(qFuzzyCompare(0.0, _threshold))
+		if(fcmp(0.0, _threshold))
 		{
 			matcher.match(queryDesc, trainDesc, matches);
 
@@ -117,7 +118,7 @@ public:
 
 		std::ostringstream strm;
 		strm << "Initial matches found: " << matches.size() << std::endl;
-		if(!qFuzzyCompare(0.0, _threshold))
+		if(!fcmp(0.0, _threshold))
 			strm << "Matches after thresholding found: " << mt.queryPoints.size() << std::endl;
 
 		return ExecutionStatus(EStatus::Ok, strm.str());

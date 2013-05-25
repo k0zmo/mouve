@@ -1,5 +1,6 @@
 #include "NodeType.h"
 #include "NodeFactory.h"
+#include "Kommon/Utils.h"
 
 #include <opencv2/core/core.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
@@ -128,9 +129,9 @@ public:
 		
 		cv::cvtColor(input, output, cvu::bayerCodeRgb(_BayerCode));
 
-		if(!qFuzzyCompare(_redGain, 1.0)
-			|| !qFuzzyCompare(_greenGain, 1.0) 
-			|| !qFuzzyCompare(_blueGain, 1.0))
+		if(!fcmp(_redGain, 1.0)
+		|| !fcmp(_greenGain, 1.0) 
+		|| !fcmp(_blueGain, 1.0))
 		{
 			cvu::parallel_for(cv::Range(0, output.rows), [&](const cv::Range& range) 
 			{
@@ -233,7 +234,7 @@ public:
 		if(input.rows == 0 || input.cols == 0)
 			return ExecutionStatus(EStatus::Ok);
 
-		if(!qFuzzyCompare(_gain, 1.0) || _bias != 0)
+		if(!fcmp(_gain, 1.0) || _bias != 0)
 		{
 			output.create(input.size(), CV_8UC1);
 
@@ -306,7 +307,7 @@ public:
 		if(input.rows == 0 || input.cols == 0)
 			return ExecutionStatus(EStatus::Ok);
 
-		if(!qFuzzyCompare(_gain, 1.0) || _bias != 0)
+		if(!fcmp(_gain, 1.0) || _bias != 0)
 		{
 			output.create(input.size(), CV_8UC3);
 

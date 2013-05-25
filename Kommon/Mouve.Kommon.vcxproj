@@ -25,6 +25,7 @@
     <ClInclude Include="MacroUtils.h" />
     <ClInclude Include="Singleton.h" />
     <ClInclude Include="StlUtils.h" />
+    <ClInclude Include="Utils.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Hash.cpp" />
