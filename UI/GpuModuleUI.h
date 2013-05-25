@@ -1,15 +1,14 @@
 #pragma once
 
-#if defined(HAVE_OPENCL)
-
 #include "ui_GpuChoice.h"
-#include "Logic/OpenCL/GpuNodeModule.h"
+#include "Logic/OpenCL/IGpuNodeModule.h"
 
 class GpuChoiceDialog : public QDialog, private Ui::GpuChoiceDialog
 {
 	Q_OBJECT
 public:
-	explicit GpuChoiceDialog(const vector<GpuPlatform>& gpuPlatforms, 
+	explicit GpuChoiceDialog(
+		const std::vector<GpuPlatform>& gpuPlatforms, 
 		QWidget* parent = nullptr);
 
 	EDeviceType deviceType() const;
@@ -25,5 +24,3 @@ private slots:
 private:
 	int extractUserData(int index) const;
 };
-
-#endif

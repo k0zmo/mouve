@@ -12,7 +12,7 @@ using std::unordered_multimap;
 
 typedef uint32_t KernelID;
 static const KernelID InvalidKernelID = KernelID(0);
-struct RegisteredProgram;
+struct GpuRegisteredProgram;
 
 class KernelLibrary
 {
@@ -40,7 +40,7 @@ public:
 	KernelID updateKernel(KernelID kernelId, const string& buildOptions);
 	void rebuildProgram(const string& programName);
 
-	vector<RegisteredProgram> populateListOfRegisteredPrograms() const;
+	vector<GpuRegisteredProgram> populateListOfRegisteredPrograms() const;
 
 private:
 	struct KernelEntry
@@ -82,26 +82,6 @@ private:
 	ProgramEntry* findProgramEntry(const string& programName, const string& buildOptions);
 	void updateKernelEntry(const clw::Program& program, KernelEntry& entry,
 		const string& buildOptions);
-};
-
-struct RegisteredProgram
-{
-	struct Build
-	{
-		Build() {}
-		Build(const vector<string>& kernels, const string& options, bool built)
-			: kernels(kernels)
-			, options(options)
-			, built(built)
-		{}
-
-		vector<string> kernels;
-		string options;
-		bool built;
-	};
-
-	string programName;
-	vector<Build> builds;
 };
 
 #endif

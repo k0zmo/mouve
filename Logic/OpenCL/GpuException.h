@@ -1,7 +1,5 @@
 #pragma once
 
-#if defined(HAVE_OPENCL)
-
 #include "Prerequisites.h"
 
 #include <exception>
@@ -64,5 +62,3 @@ private:
 		formatted = strm.str();
 	}
 };
-
-#endif

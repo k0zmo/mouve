@@ -17,10 +17,7 @@ class QProgressBar;
 class QTreeWidgetItem;
 
 class IJaiNodeModule;
-
-#if defined(HAVE_OPENCL)
-class GpuNodeModule;
-#endif
+class IGpuNodeModule;
 
 enum class EState
 {
@@ -160,14 +157,15 @@ private:
 	TreeWorker* _treeWorker;
 	QProgressBar* _progressBar;
 
+	//
 	// OpenCL Module
-#if defined(HAVE_OPENCL)
-	std::shared_ptr<GpuNodeModule> _gpuModule;
+	//
+	std::shared_ptr<IGpuNodeModule> _gpuModule;
 	QAction* _actionListPrograms;
 	QAction* _actionInteractiveSetup;
 
 	void showProgramsList();
-#endif
+	void initGpuModule(QMenu* menuModules);
 
 	//
 	// JAI Module

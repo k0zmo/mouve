@@ -2,61 +2,36 @@
 
 #if defined(HAVE_OPENCL)
 
-#include "Logic/NodeModule.h"
+#include "IGpuNodeModule.h"
 #include "GpuKernelLibrary.h"
-
-enum class EDeviceType
-{
-	None     = 0,
-	Gpu      = clw::Gpu,
-	Cpu      = clw::Cpu,
-	Default  = clw::Default,
-	Specific = 0xFFFF,
-};
 
 using std::vector;
 using std::string;
 
-struct GpuPlatform
-{
-	string name;
-	vector<string> devices;
-};
-
-struct GpuInteractiveResult
-{
-	EDeviceType type;
-	int platform;
-	int device;
-};
-
-class LOGIC_EXPORT GpuNodeModule : public NodeModule
+class LOGIC_EXPORT GpuNodeModule : public IGpuNodeModule
 {
 public:
 	explicit GpuNodeModule(bool interactiveInit);
 
-	void setInteractiveInit(bool interactiveInit);
-	bool isInteractiveInit() const;
+	void setInteractiveInit(bool interactiveInit) override;
+	bool isInteractiveInit() const override;
 
 	bool initialize() override;
 	bool isInitialized() override;
 	std::string moduleName() const override;
 
-	bool createDefault();
-	bool createInteractive();
+	bool createDefault() override;
+	bool createInteractive() override;
 
-	vector<GpuPlatform> availablePlatforms() const;
-
-	typedef std::function<GpuInteractiveResult(const vector<GpuPlatform>& gpuPlatforms)> OnCreateInteractive;
-	OnCreateInteractive onCreateInteractive;
+	vector<GpuPlatform> availablePlatforms() const override;
 
 	KernelID registerKernel(const string& kernelName, 
 		const string& programName, const string& buildOptions = "");
 	clw::Kernel acquireKernel(KernelID kernelId);
 	KernelID updateKernel(KernelID kernelId, const string& buildOptions);
 
-	vector<RegisteredProgram> populateListOfRegisteredPrograms() const;
-	void rebuildProgram(const string& programName);
+	vector<GpuRegisteredProgram> populateListOfRegisteredPrograms() const override;
+	void rebuildProgram(const string& programName) override;
 
 	bool isConstantMemorySufficient(uint64_t memSize) const;
 	bool isLocalMemorySufficient(uint64_t memSize) const;

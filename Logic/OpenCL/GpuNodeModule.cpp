@@ -146,7 +146,7 @@ KernelID GpuNodeModule::updateKernel(KernelID kernelId,
 	return _library.updateKernel(kernelId, buildOptions);
 }
 
-vector<RegisteredProgram> GpuNodeModule::populateListOfRegisteredPrograms() const
+vector<GpuRegisteredProgram> GpuNodeModule::populateListOfRegisteredPrograms() const
 {
 	return _library.populateListOfRegisteredPrograms();
 }
@@ -248,6 +248,18 @@ string GpuNodeModule::additionalBuildOptions(const std::string& programName) con
 	Q_UNUSED(programName)
 #endif
 	return opts;
+}
+
+std::unique_ptr<IGpuNodeModule> createGpuModule()
+{
+	return std::unique_ptr<IGpuNodeModule>(new GpuNodeModule(true));
+}
+
+#else
+
+std::unique_ptr<IGpuNodeModule> createGpuModule()
+{
+	return nullptr;
 }
 
 #endif

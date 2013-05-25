@@ -316,6 +316,7 @@
     <ClInclude Include="OpenCL\GpuKernelLibrary.h" />
     <ClInclude Include="OpenCL\GpuNode.h" />
     <ClInclude Include="OpenCL\GpuNodeModule.h" />
+    <ClInclude Include="OpenCL\IGpuNodeModule.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="OpenCL\kernels\bayer.cl" />

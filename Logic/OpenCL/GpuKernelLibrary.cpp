@@ -1,5 +1,6 @@
 #if defined(HAVE_OPENCL)
 
+#include "IGpuNodeModule.h"
 #include "GpuKernelLibrary.h"
 #include "GpuException.h"
 
@@ -175,14 +176,14 @@ void KernelLibrary::rebuildProgram(const string& programName)
 	}
 }
 
-vector<RegisteredProgram> KernelLibrary::populateListOfRegisteredPrograms() const
+vector<GpuRegisteredProgram> KernelLibrary::populateListOfRegisteredPrograms() const
 {
-	vector<RegisteredProgram> list;
+	vector<GpuRegisteredProgram> list;
 
 	// Iterate over every program name
 	for(auto iter = _programs.begin(), end = _programs.end(); iter != end; )
 	{
-		RegisteredProgram entry;
+		GpuRegisteredProgram entry;
 		entry.programName = iter->first;
 
 		// Iterate over every build options of current program name

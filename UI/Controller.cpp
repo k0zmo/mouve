@@ -8,11 +8,9 @@
 #include "Logic/Node.h"
 
 // Modules
-#if defined(HAVE_OPENCL)
-#  include "Logic/OpenCL/GpuNodeModule.h"
-#  include "Logic/OpenCL/GpuException.h"
-#  include "GpuModuleUI.h"
-#endif
+#include "Logic/OpenCL/IGpuNodeModule.h"
+#include "Logic/OpenCL/GpuException.h"
+#include "GpuModuleUI.h"
 #include "Logic/Jai/IJaiNodeModule.h"
 
 // Views
@@ -64,9 +62,7 @@ Controller::Controller(QWidget* parent, Qt::WindowFlags flags)
 	//, _workerThread(QThread())
 	, _treeWorker(new TreeWorker())
 	, _progressBar(nullptr)
-#if defined(HAVE_OPENCL)
-	, _gpuModule(new GpuNodeModule(true))
-#endif
+	, _gpuModule(createGpuModule())
 	, _jaiModule(createJaiModule())
 	, _ui(new Ui::MainWindow())
 	, _previewWidget(nullptr)
@@ -92,60 +88,7 @@ Controller::Controller(QWidget* parent, Qt::WindowFlags flags)
 
 	auto menuModules = _ui->menuBar->addMenu("Modules");
 
-	// Gpu module
-#if defined(HAVE_OPENCL)
-	_nodeSystem->registerNodeModule(_gpuModule);
-	_gpuModule->onCreateInteractive = 
-		[=](const vector<GpuPlatform>& gpuPlatforms) -> GpuInteractiveResult
-	{
-		GpuChoiceDialog dialog(gpuPlatforms);
-		dialog.exec();
-
-		GpuInteractiveResult result = { 
-			dialog.result() == QDialog::Accepted
-			? dialog.deviceType()
-			: EDeviceType::None,
-			dialog.platformID(), dialog.deviceID() };
-		return result;
-	};
-
-	_actionInteractiveSetup = new QAction(QStringLiteral("Init module"), this);
-	_actionListPrograms = new QAction(QStringLiteral("List programs"), this);
-
-	connect(_actionListPrograms, &QAction::triggered,
-		this, &Controller::showProgramsList);
-	connect(_actionInteractiveSetup, &QAction::triggered,
-		[=]
-		{
-			if(_gpuModule->isInitialized())
-			{
-				QMessageBox::warning(nullptr, applicationTitle,
-					"GPU Module already initialized");
-				_actionInteractiveSetup->setEnabled(false);
-				return;
-			}
-
-			auto&& gpuPlatforms = _gpuModule->availablePlatforms();
-			if(gpuPlatforms.empty())
-			{
-				showErrorMessage("No OpenCL platforms found!");
-				return;
-			}
-
-			bool oldv = _gpuModule->isInteractiveInit();
-			_gpuModule->setInteractiveInit(true);
-			if(_gpuModule->initialize())
-			{
-				_actionInteractiveSetup->setEnabled(false);
-				_gpuModule->setInteractiveInit(oldv);
-			}			
-		});
-
-	auto menuGpu = menuModules->addMenu("GPU");
-	menuGpu->addAction(_actionInteractiveSetup);
-	menuGpu->addAction(_actionListPrograms);
-#endif
-	
+	initGpuModule(menuModules);	
 	initJaiModule(menuModules);
 
 	if(menuModules->actions().isEmpty())
@@ -1857,8 +1800,64 @@ void Controller::displayNodeTimeInfo(bool checked)
 		iter.value()->setTimeInfoVisible(checked);
 }
 
-#if defined(HAVE_OPENCL)
 /// TODO: Move to separate file
+
+void Controller::initGpuModule(QMenu* menuModules)
+{
+	if(!_gpuModule)
+		return;
+
+	_nodeSystem->registerNodeModule(_gpuModule);
+	_gpuModule->onCreateInteractive = 
+		[=](const vector<GpuPlatform>& gpuPlatforms) -> GpuInteractiveResult
+	{
+		GpuChoiceDialog dialog(gpuPlatforms);
+		dialog.exec();
+
+		GpuInteractiveResult result = { 
+			dialog.result() == QDialog::Accepted
+			? dialog.deviceType()
+			: EDeviceType::None,
+			dialog.platformID(), dialog.deviceID() };
+		return result;
+	};
+
+	_actionInteractiveSetup = new QAction(QStringLiteral("Init module"), this);
+	_actionListPrograms = new QAction(QStringLiteral("List programs"), this);
+
+	connect(_actionListPrograms, &QAction::triggered,
+		this, &Controller::showProgramsList);
+	connect(_actionInteractiveSetup, &QAction::triggered,
+		[=]
+	{
+		if(_gpuModule->isInitialized())
+		{
+			QMessageBox::warning(nullptr, applicationTitle,
+				"GPU Module already initialized");
+			_actionInteractiveSetup->setEnabled(false);
+			return;
+		}
+
+		auto&& gpuPlatforms = _gpuModule->availablePlatforms();
+		if(gpuPlatforms.empty())
+		{
+			showErrorMessage("No OpenCL platforms found!");
+			return;
+		}
+
+		bool oldv = _gpuModule->isInteractiveInit();
+		_gpuModule->setInteractiveInit(true);
+		if(_gpuModule->initialize())
+		{
+			_actionInteractiveSetup->setEnabled(false);
+			_gpuModule->setInteractiveInit(oldv);
+		}			
+	});
+
+	auto menuGpu = menuModules->addMenu("GPU");
+	menuGpu->addAction(_actionInteractiveSetup);
+	menuGpu->addAction(_actionListPrograms);
+}
 
 void Controller::showProgramsList()
 {
@@ -1971,8 +1970,6 @@ void Controller::showProgramsList()
 
 	dialog.exec();
 }
-
-#endif
 
 /// TODO: Move to separate file
 #include "ui_Camera.h"

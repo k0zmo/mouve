@@ -1,11 +1,9 @@
-#if defined(HAVE_OPENCL)
-
 #include "GpuModuleUI.h"
 #include <QMessageBox>
 
 static const int SPECIFIC_INDEX = 3;
 
-GpuChoiceDialog::GpuChoiceDialog(const vector<GpuPlatform>& gpuPlatforms, 
+GpuChoiceDialog::GpuChoiceDialog(const std::vector<GpuPlatform>& gpuPlatforms, 
 								 QWidget* parent)
 	: QDialog(parent)
 {
@@ -125,5 +123,3 @@ int GpuChoiceDialog::extractUserData(int index) const
 	}
 	return 0;
 }
-
-#endif

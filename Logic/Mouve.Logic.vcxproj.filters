@@ -200,6 +200,9 @@
     <ClInclude Include="Jai\IJaiNodeModule.h">
       <Filter>JAI</Filter>
     </ClInclude>
+    <ClInclude Include="OpenCL\IGpuNodeModule.h">
+      <Filter>OpenCL</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="OpenCL\kernels\hough.cl">
