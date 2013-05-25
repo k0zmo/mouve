@@ -303,6 +303,7 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Jai\IJaiNodeModule.h" />
     <ClInclude Include="Jai\JaiException.h" />
     <ClInclude Include="Jai\JaiNodeModule.h" />
     <ClInclude Include="NodeException.h" />

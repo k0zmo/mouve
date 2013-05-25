@@ -1,7 +1,5 @@
 #pragma once
 
-#if defined(HAVE_JAI)
-
 #include "Prerequisites.h"
 
 /// TODO: Querying error message
@@ -18,5 +16,3 @@ struct JaiException : public std::exception
 	int error;
 	const char* message;
 };
-
-#endif

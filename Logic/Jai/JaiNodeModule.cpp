@@ -358,4 +358,16 @@ vector<tuple<int64_t, string>> queryNodeEnumValue(CAM_HANDLE hCamera, const char
 	return enumValues;
 }
 
+std::unique_ptr<IJaiNodeModule> createJaiModule()
+{
+	return std::unique_ptr<IJaiNodeModule>(new JaiNodeModule());
+}
+
+#else
+
+std::unique_ptr<IJaiNodeModule> createJaiModule();
+{
+	return nullptr;
+}
+
 #endif

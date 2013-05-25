@@ -16,12 +16,10 @@ class TreeWorker;
 class QProgressBar;
 class QTreeWidgetItem;
 
+class IJaiNodeModule;
+
 #if defined(HAVE_OPENCL)
 class GpuNodeModule;
-#endif
-
-#if defined(HAVE_JAI)
-class JaiNodeModule;
 #endif
 
 enum class EState
@@ -171,20 +169,19 @@ private:
 	void showProgramsList();
 #endif
 
+	//
 	// JAI Module
-#if defined(HAVE_JAI)
-	std::shared_ptr<JaiNodeModule> _jaiModule;
+	//
+	std::shared_ptr<IJaiNodeModule> _jaiModule;
 	QAction* _actionInitModule;
 	QAction* _actionDevices;
-	// QAction* _actionWhiteBalance;
 
 	void showDeviceSettings();
-#endif
+	void initJaiModule(QMenu* menuModules);
 
 	//
 	// UI part
 	//
-
 	Ui::MainWindow* _ui;
 	PreviewWidget* _previewWidget;
 	QMenu* _contextMenuAddNodes;

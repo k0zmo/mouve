@@ -10,11 +10,10 @@
 // Modules
 #if defined(HAVE_OPENCL)
 #  include "Logic/OpenCL/GpuNodeModule.h"
+#  include "Logic/OpenCL/GpuException.h"
 #  include "GpuModuleUI.h"
 #endif
-#if defined(HAVE_JAI)
-#  include "Logic/Jai/JaiNodeModule.h"
-#endif
+#include "Logic/Jai/IJaiNodeModule.h"
 
 // Views
 #include "NodeView.h"
@@ -68,9 +67,7 @@ Controller::Controller(QWidget* parent, Qt::WindowFlags flags)
 #if defined(HAVE_OPENCL)
 	, _gpuModule(new GpuNodeModule(true))
 #endif
-#if defined(HAVE_JAI)
-	, _jaiModule(new JaiNodeModule())
-#endif
+	, _jaiModule(createJaiModule())
 	, _ui(new Ui::MainWindow())
 	, _previewWidget(nullptr)
 	, _contextMenuAddNodes(nullptr)
@@ -149,20 +146,7 @@ Controller::Controller(QWidget* parent, Qt::WindowFlags flags)
 	menuGpu->addAction(_actionListPrograms);
 #endif
 	
-	// JAI module
-#if defined(HAVE_JAI)
-	_nodeSystem->registerNodeModule( _jaiModule);
-
-	_actionInitModule = new QAction(QStringLiteral("Initialize"), this);
-	_actionDevices = new QAction(QStringLiteral("Devices"), this);
-
-	auto menuJai = menuModules->addMenu("JAI");
-	//menuJai->addAction(_actionInitModule);
-	menuJai->addAction(_actionDevices);
-
-	connect(_actionDevices, &QAction::triggered, 
-		this, &Controller::showDeviceSettings);
-#endif
+	initJaiModule(menuModules);
 
 	if(menuModules->actions().isEmpty())
 		menuModules->setEnabled(false);
@@ -1876,8 +1860,6 @@ void Controller::displayNodeTimeInfo(bool checked)
 #if defined(HAVE_OPENCL)
 /// TODO: Move to separate file
 
-#include "Logic/OpenCL/GpuException.h"
-
 void Controller::showProgramsList()
 {
 	auto list = _gpuModule->populateListOfRegisteredPrograms();
@@ -1992,11 +1974,41 @@ void Controller::showProgramsList()
 
 #endif
 
-#if defined(HAVE_JAI)
-
+/// TODO: Move to separate file
 #include "ui_Camera.h"
 
-void queryAndFillParameters(const std::shared_ptr<JaiNodeModule>& jaiModule,
+void Controller::initJaiModule(QMenu* menuModules)
+{
+	if(!_jaiModule)
+		return;
+
+	_nodeSystem->registerNodeModule(_jaiModule);
+
+	_actionInitModule = new QAction(QStringLiteral("Initialize"), this);
+	_actionDevices = new QAction(QStringLiteral("Devices"), this);
+
+	auto menuJai = menuModules->addMenu("JAI");
+	menuJai->addAction(_actionDevices);
+
+	connect(_actionDevices, &QAction::triggered, 
+		this, &Controller::showDeviceSettings);
+}
+
+void populateWidget(QLineEdit* lineEdit, const RangedValue<int64_t>& rv)
+{
+	lineEdit->setText(QString::number(rv.value));
+	lineEdit->setValidator(new QIntValidator(rv.minValue, rv.maxValue, lineEdit));
+	lineEdit->setToolTip(QString("[%1..%2]")
+		.arg(rv.minValue)
+		.arg(rv.maxValue));
+}
+
+void modifyLabels(QLabel* label, const RangedValue<int64_t>& rv)
+{
+	label->setText(label->text() + QString(" [%1..%2]").arg(rv.minValue).arg(rv.maxValue));
+}
+
+void queryAndFillParameters(const std::shared_ptr<IJaiNodeModule>& jaiModule,
 							Ui::CameraDialog& ui, 
 							const CameraInfo& info, 
 							int index)
@@ -2008,20 +2020,6 @@ void queryAndFillParameters(const std::shared_ptr<JaiNodeModule>& jaiModule,
 	ui.macAddressLineEdit->setText(QString::fromStdString(info.macAddress));
 
 	CameraSettings settings = jaiModule->cameraSettings(index);
-
-	auto populateWidget = [&](QLineEdit* lineEdit, const RangedValue<int64_t>& rv)
-	{
-		lineEdit->setText(QString::number(rv.value));
-		lineEdit->setValidator(new QIntValidator(rv.minValue, rv.maxValue, lineEdit));
-		lineEdit->setToolTip(QString("[%1..%2]")
-			.arg(rv.minValue)
-			.arg(rv.maxValue));
-	};
-
-	auto modifyLabels = [&](QLabel* label, const RangedValue<int64_t>& rv)
-	{
-		label->setText(label->text() + QString(" [%1..%2]").arg(rv.minValue).arg(rv.maxValue));
-	};
 
 	populateWidget(ui.offsetXLineEdit, settings.offsetX);
 	populateWidget(ui.offsetYLineEdit, settings.offsetY);
@@ -2123,8 +2121,5 @@ void Controller::showDeviceSettings()
 			dialog.accept();
 	});
 
-	
 	dialog.exec();
 }
-
-#endif
