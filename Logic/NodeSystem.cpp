@@ -11,7 +11,7 @@ NodeSystem::NodeSystem()
 {
 	// Register InvalidNodeTypeID
 	NodeTypeID invalidNodeTypeID = registerNodeType(InvalidType, nullptr);
-	Q_ASSERT(invalidNodeTypeID == InvalidNodeTypeID);
+	assert(invalidNodeTypeID == InvalidNodeTypeID);
 	registerAutoTypes();
 }
 
@@ -55,7 +55,7 @@ NodeTypeID NodeSystem::registerNodeType(const std::string& nodeTypeName,
 std::unique_ptr<NodeType> NodeSystem::createNode(NodeTypeID nodeTypeID) const
 {
 	// Check if the type exists
-	Q_ASSERT(nodeTypeID < _registeredNodeTypes.size());
+	assert(nodeTypeID < _registeredNodeTypes.size());
 	if(nodeTypeID >= _registeredNodeTypes.size())
 		return nullptr;
 
@@ -78,7 +78,7 @@ std::unique_ptr<NodeTree> NodeSystem::createNodeTree()
 
 const std::string& NodeSystem::nodeTypeName(NodeTypeID nodeTypeID) const
 {
-	Q_ASSERT(nodeTypeID < _registeredNodeTypes.size());
+	assert(nodeTypeID < _registeredNodeTypes.size());
 	if(nodeTypeID >= _registeredNodeTypes.size())
 		return InvalidType;
 	return _registeredNodeTypes[nodeTypeID].nodeTypeName;

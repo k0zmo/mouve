@@ -267,7 +267,6 @@
     <ClCompile Include="NodeFactory.cpp" />
     <ClCompile Include="NodeFlowData.cpp" />
     <ClCompile Include="NodeLink.cpp" />
-    <ClCompile Include="NodeModule.cpp" />
     <ClCompile Include="NodeSystem.cpp" />
     <ClCompile Include="Nodes\BriskNodes.cpp" />
     <ClCompile Include="Nodes\BasicNodes.cpp" />

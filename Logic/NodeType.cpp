@@ -5,16 +5,16 @@
 
 void NodeSocketReader::setNode(NodeID nodeID, SocketID numInputSockets)
 {
-	Q_ASSERT(nodeID != InvalidNodeID);
+	assert(nodeID != InvalidNodeID);
 	_nodeID = nodeID;
 	_numInputSockets = numInputSockets;
 }
 
 const NodeFlowData& NodeSocketReader::readSocket(SocketID socketID) const
 {
-	Q_ASSERT(_nodeTree != nullptr);
-	Q_ASSERT(_numInputSockets > 0);
-	Q_ASSERT(_nodeID != InvalidNodeID);
+	assert(_nodeTree != nullptr);
+	assert(_numInputSockets > 0);
+	assert(_nodeID != InvalidNodeID);
 
 	if(socketID < _numInputSockets)
 	{
@@ -51,8 +51,8 @@ void NodeSocketWriter::setOutputSockets(std::vector<NodeFlowData>& outputs)
 
 void NodeSocketWriter::writeSocket(SocketID socketID, NodeFlowData&& image)
 {
-	Q_ASSERT(_outputs != nullptr);
-	Q_ASSERT(socketID < static_cast<int>(_outputs->size()));
+	assert(_outputs != nullptr);
+	assert(socketID < static_cast<int>(_outputs->size()));
 
 	if(socketID >= static_cast<int>(_outputs->size()))
 		throw BadSocketException();;
@@ -62,8 +62,8 @@ void NodeSocketWriter::writeSocket(SocketID socketID, NodeFlowData&& image)
 
 NodeFlowData& NodeSocketWriter::acquireSocket(SocketID socketID)
 {
-	Q_ASSERT(_outputs != nullptr);
-	Q_ASSERT(socketID < static_cast<int>(_outputs->size()));
+	assert(_outputs != nullptr);
+	assert(socketID < static_cast<int>(_outputs->size()));
 
 	if(socketID >= static_cast<int>(_outputs->size()))
 		throw BadSocketException();;

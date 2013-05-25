@@ -23,9 +23,6 @@
 #include <functional>
 #include <algorithm>
 
-// Property system
-#include <QVariant>
-
 // Id of a socket - unique in each node
 typedef std::uint8_t SocketID;
 // Id of a node - unique in each tree

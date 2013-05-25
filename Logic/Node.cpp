@@ -84,7 +84,7 @@ Node& Node::operator=(Node&& rhs)
 
 NodeFlowData& Node::outputSocket(SocketID socketID)
 {
-	Q_ASSERT(socketID < numOutputSockets());
+	assert(socketID < numOutputSockets());
 	if(!validateSocket(socketID, true))
 		throw BadSocketException();
 
@@ -93,7 +93,7 @@ NodeFlowData& Node::outputSocket(SocketID socketID)
 
 const NodeFlowData& Node::outputSocket(SocketID socketID) const
 {
-	Q_ASSERT(socketID < numOutputSockets());
+	assert(socketID < numOutputSockets());
 	if(!validateSocket(socketID, true))
 		throw BadSocketException();
 

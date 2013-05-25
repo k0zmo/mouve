@@ -3,6 +3,8 @@
 #include "Prerequisites.h"
 #include "Kommon/HighResolutionClock.h"
 
+class QVariant;
+
 enum class ENodeFlags : int
 {
 	Tagged             = K_BIT(1),
@@ -66,7 +68,7 @@ private:
 	SocketID _numInputs;
 	SocketID _numOutputs;
 	NodeTypeID _nodeTypeID;
-	uint _flags;
+	uint32_t _flags;
 	double _timeElapsed;
 	std::string _message;
 
@@ -109,10 +111,10 @@ inline double Node::timeElapsed() const
 { return _timeElapsed; }
 
 inline bool Node::flag(ENodeFlags flag) const
-{ return _flags & uint(flag); }
+{ return (_flags & uint32_t(flag)) != 0; }
 
 inline void Node::setFlag(ENodeFlags flag)
-{ _flags |= uint(flag); }
+{ _flags |= uint32_t(flag); }
 
 inline void Node::unsetFlag(ENodeFlags flag)
-{ _flags &= ~uint(flag); }
+{ _flags &= ~uint32_t(flag); }

@@ -3,6 +3,8 @@
 #include "Prerequisites.h"
 #include "NodeFlowData.h"
 
+#include <QVariant>
+
 class LOGIC_EXPORT NodeSocketReader
 {
 	K_DISABLE_COPY(NodeSocketReader);
@@ -75,6 +77,7 @@ struct Matrix3x3
 		v[6] = m31; v[7] = m32; v[8] = m33;
 	}
 };
+Q_DECLARE_METATYPE(Matrix3x3)
 
 enum class EPropertyType : int
 {
@@ -87,8 +90,6 @@ enum class EPropertyType : int
 	Filepath,
 	String
 }; 
-
-Q_DECLARE_METATYPE(Matrix3x3)
 
 struct InputSocketConfig
 {

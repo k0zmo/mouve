@@ -12,19 +12,6 @@ struct SocketAddress
 		, socket(socket)
 		, isOutput(isOutput)
 	{}
-//
-//	inline bool operator==(const SocketAddress& rhs) const
-//	{
-//		return node == rhs.node &&
-//			   socket == rhs.socket &&
-//			   isOutput == rhs.isOutput;
-//	}
-//
-//	inline bool operator!=(const SocketAddress& rhs) const
-//	{
-//		return !operator==(rhs);
-//	}
-//
 
 	inline bool isValid() const
 	{ return node != InvalidNodeID && socket != InvalidSocketID; }
