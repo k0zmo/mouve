@@ -477,6 +477,131 @@ __kernel void findKeypointOrientation(__read_only image2d_t integralImage,
     }
 }
 
+#define ORIENTATION_SMEM_SIZE 128
+
+// This kernel uses common local memory area which results in lesser LDS usage (from 2kB to 1.5kB)
+// Consequently this kernel achieves better occupancy but it doesn't mean you get faster processing (something can be botleneck)
+__attribute__((reqd_work_group_size(ORIENTATION_WINDOW_NUM,1,1)))
+__kernel void findKeypointOrientation2(__read_only image2d_t integralImage,
+                                       __global float* keypoints,
+                                       __constant int2* samplesCoords,
+                                       __constant float* gaussianWeights)
+{
+    // One work group computes orientation for one feature
+    int bid = get_group_id(0);
+    int tid = get_local_id(0);
+
+    // Load in keypoint parameters
+    // Tried loading using shared memory but in the end this is faster (at least on AMD)
+    float featureX = keypoints[KEYPOINT_MAX*KEYPOINT_X + bid];
+    float featureY = keypoints[KEYPOINT_MAX*KEYPOINT_Y + bid];
+    float featureScale = keypoints[KEYPOINT_MAX*KEYPOINT_SCALE + bid];
+
+    __local float smem[3*ORIENTATION_SMEM_SIZE];
+
+    __local float* smem_dx    = smem + ORIENTATION_SMEM_SIZE*0;
+    __local float* smem_dy    = smem + ORIENTATION_SMEM_SIZE*1;
+    __local float* smem_angle = smem + ORIENTATION_SMEM_SIZE*2;
+
+    #pragma unroll 
+    for(int ii = 0; ii < ORIENTATION_SAMPLES_PER_THREAD; ++ii)
+    {
+        int i = ii*ORIENTATION_WINDOW_NUM+tid;
+        if(i < ORIENTATION_SAMPLES)
+        {
+            int x = convert_int(round(featureX + samplesCoords[i].x*featureScale));
+            int y = convert_int(round(featureY + samplesCoords[i].y*featureScale));
+            int grad_radius = convert_int(round(2*featureScale));
+
+            // If there's no full neighbourhood for this gradient - set it to 0 response
+            if(haarInBounds(integralImage, x, y, grad_radius))
+            {
+                float2 dxdy = calcHaarResponses(integralImage, x, y, grad_radius);
+                smem_dx[i] = dxdy.x * gaussianWeights[i];
+                smem_dy[i] = dxdy.y * gaussianWeights[i];
+                smem_angle[i] = getAngle(dxdy.x, dxdy.y);            
+            }
+            else
+            {
+                // this should stop this dx, dy from adding to any window
+                smem_angle[i] = 999.0f;
+            }
+        }
+    }
+    barrier(CLK_LOCAL_MEM_FENCE);
+
+    // Each thread computes one sliding window (64 in total)
+    // This way we got fast window calculation with broadcasting
+    float windowBegin = ORIENTATION_WINDOW_STEP*tid;
+    float sumX = 0.0f, sumY = 0.0f;
+
+    #pragma unroll 16
+    for(int i = 0; i < ORIENTATION_SAMPLES; ++i)
+    {
+        float d = smem_angle[i] - windowBegin;
+        if(d > 0 && d < ORIENTATION_WINDOW_SIZE)
+        {
+            sumX += smem_dx[i];
+            sumY += smem_dy[i];
+        }
+    }
+
+    // Let the threads share their hackwork
+    volatile __local float* smem_sum  = smem + ORIENTATION_WINDOW_NUM*0;
+    volatile __local float* smem_sumX = smem + ORIENTATION_WINDOW_NUM*1;
+    volatile __local float* smem_sumY = smem + ORIENTATION_WINDOW_NUM*2;
+    
+    smem_sum[tid] = sumX*sumX + sumY*sumY;
+    smem_sumX[tid] = sumX;
+    smem_sumY[tid] = sumY;    
+
+    barrier(CLK_LOCAL_MEM_FENCE);
+
+    // No need for barrier thanks to proper work group size - group of 32 threads in first reduction phase
+    // (half of workgroup is idle) are working - conveniently it's one warp (one half of wavefront) in total.
+    // They are executed in lock-steps which makes barrier redundant. Only if we would use work group of 
+    // more than 64 (or 128 for AMD) we would need to add barrier() after every reduction step (like in CPU case)
+#define REDUCE(num) \
+    { \
+        float v = smem_sum[tid + num]; \
+        if(smem_sum[tid] < v) \
+        { \
+            smem_sumX[tid] = smem_sumX[tid + num]; \
+            smem_sumY[tid] = smem_sumY[tid + num]; \
+            smem_sum[tid] = v; \
+        } \
+    }
+#if WARP_SIZE == 32 || WARP_SIZE == 64
+    if(tid < 32)
+    {
+        if(ORIENTATION_WINDOW_NUM >= 64) { REDUCE(32); }
+        if(ORIENTATION_WINDOW_NUM >= 32) { REDUCE(16); }
+        if(ORIENTATION_WINDOW_NUM >= 16) { REDUCE( 8); }
+        if(ORIENTATION_WINDOW_NUM >=  8) { REDUCE( 4); }
+        if(ORIENTATION_WINDOW_NUM >=  4) { REDUCE( 2); }
+        if(ORIENTATION_WINDOW_NUM >=  2) { REDUCE( 1); }
+    }    
+#else
+    // For CPUs this should be used (we can't exploit wavefront/warp size)
+    // In fact - on AMD if there's a kernel attribute reqd_work_group_size equal to 64
+    // work items all barrier calls are removed from resulting ISA code. 
+    #pragma unroll 6
+    for(int s = ORIENTATION_WINDOW_NUM/2; s > 0; s >>= 1)
+    {
+        if(tid < s)
+            REDUCE(s);
+        barrier(CLK_LOCAL_MEM_FENCE);
+    }
+#endif
+
+    // First thread writes computed orientation
+    if(tid == 0)
+    {
+        float angle = getAngle(smem_sumX[0], smem_sumY[0]);
+        keypoints[KEYPOINT_MAX*KEYPOINT_ORIENTATION + bid] = angle;
+    }
+}
+
 __attribute__((always_inline))
 float Gaussian(int x, int y, float sigma)
 {
