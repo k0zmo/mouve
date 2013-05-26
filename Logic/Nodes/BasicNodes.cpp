@@ -1133,6 +1133,90 @@ public:
 	}
 };
 
+
+class ClaheNodeType : public NodeType
+{
+public:
+	ClaheNodeType()
+		: _clipLimit(2.0)
+		, _tilesGridSize(8)
+	{
+	}
+
+
+	bool setProperty(PropertyID propId, const QVariant& newValue) override
+	{
+		switch(propId)
+		{
+		case ID_ClipLimit:
+			_clipLimit = newValue.toDouble();
+			return true;
+		case ID_TilesGridSize:
+			_tilesGridSize = newValue.toUInt();
+			return true;
+		}
+
+		return false;
+	}
+
+	QVariant property(PropertyID propId) const override
+	{
+		switch(propId)
+		{
+		case ID_ClipLimit: return _clipLimit;
+		case ID_TilesGridSize: return _tilesGridSize;
+		}
+
+		return QVariant();
+	}
+
+	ExecutionStatus execute(NodeSocketReader& reader, NodeSocketWriter& writer) override
+	{
+		const cv::Mat& src = reader.readSocket(0).getImage();
+		cv::Mat& dst = writer.acquireSocket(0).getImage();
+
+		cv::Ptr<cv::CLAHE> clahe = cv::createCLAHE();
+		clahe->setClipLimit(_clipLimit);
+		clahe->setTilesGridSize(cv::Size(_tilesGridSize, _tilesGridSize));
+
+		clahe->apply(src, dst);
+
+		return ExecutionStatus(EStatus::Ok);
+	}
+
+	void configuration(NodeConfig& nodeConfig) const override
+	{
+		static const InputSocketConfig in_config[] = {
+			{ ENodeFlowDataType::Image, "source", "Source", "" },
+			{ ENodeFlowDataType::Invalid, "", "", "" }
+		};
+		static const OutputSocketConfig out_config[] = {
+			{ ENodeFlowDataType::Image, "output", "Output", "" },
+			{ ENodeFlowDataType::Invalid, "", "", "" }
+		};
+		static const PropertyConfig prop_config[] = {
+			{ EPropertyType::Double, "Clip limit", "min:0.0" },
+			{ EPropertyType::Integer, "Tiles size", "min:1" },
+			{ EPropertyType::Unknown, "", "" }
+		};
+
+		nodeConfig.description = "Performs CLAHE (Contrast Limited Adaptive Histogram Equalization)";
+		nodeConfig.pInputSockets = in_config;
+		nodeConfig.pOutputSockets = out_config;
+		nodeConfig.pProperties = prop_config;
+	}
+
+private:
+	enum EPropertyID
+	{
+		ID_ClipLimit,
+		ID_TilesGridSize
+	};
+
+	double _clipLimit;
+	int _tilesGridSize;
+};
+
 class DrawHistogramNodeType : public NodeType
 {
 public:
@@ -1413,6 +1497,7 @@ REGISTER_NODE("Edge/Laplacian", LaplacianFilterNodeType)
 
 REGISTER_NODE("Image/Upsample", UpsampleNodeType)
 REGISTER_NODE("Image/Downsample", DownsampleNodeType)
+REGISTER_NODE("Image/CLAHE", ClaheNodeType)
 REGISTER_NODE("Image/Equalize histogram", EqualizeHistogramNodeType)
 REGISTER_NODE("Image/Draw histogram", DrawHistogramNodeType)
 REGISTER_NODE("Image/Convolution", CustomConvolutionNodeType)
