@@ -484,7 +484,7 @@ if %errorlevel% leq 1 exit 0 else exit %errorlevel%</Command>
       <SubSystem>Windows</SubSystem>
       <AdditionalLibraryDirectories>$(QTDIR)\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <GenerateDebugInformation>false</GenerateDebugInformation>
-      <AdditionalDependencies>Qt5Core.lib;opencv_features2d$(OPENCV_VERSION).lib;opencv_nonfree$(OPENCV_VERSION).lib;opencv_flann$(OPENCV_VERSION).lib;opencv_calib3d$(OPENCV_VERSION).lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>Qt5Core.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <ImageHasSafeExceptionHandlers>false</ImageHasSafeExceptionHandlers>
     </Link>
     <PostBuildEvent>
