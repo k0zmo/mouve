@@ -219,7 +219,7 @@ string kernelsDirectory()
 namespace {
 string kernelsDirectory()
 {
-	return QStringLiteral("./kernels").toStdString();
+	return "./kernels";
 }
 }
 
@@ -245,7 +245,7 @@ string GpuNodeModule::additionalBuildOptions(const std::string& programName) con
 		}
 	}
 #else
-	Q_UNUSED(programName)
+	(void) programName;
 #endif
 	return opts;
 }

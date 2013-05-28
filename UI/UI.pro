@@ -48,7 +48,7 @@ SOURCES += \
 FORMS += \
     MainWindow.ui \
     PreviewWidget.ui \
-    # Camera.ui \
+    Camera.ui \
     GpuChoice.ui 
     
 RESOURCES += \

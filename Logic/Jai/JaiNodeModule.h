@@ -1,8 +1,9 @@
 #pragma once
 
+#include "IJaiNodeModule.h"
+
 #if defined(HAVE_JAI)
 
-#include "IJaiNodeModule.h"
 #include "Logic/NodeModule.h"
 
 #include <Jai_Factory.h>

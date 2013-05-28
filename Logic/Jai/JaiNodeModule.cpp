@@ -365,7 +365,7 @@ std::unique_ptr<IJaiNodeModule> createJaiModule()
 
 #else
 
-std::unique_ptr<IJaiNodeModule> createJaiModule();
+std::unique_ptr<IJaiNodeModule> createJaiModule()
 {
 	return nullptr;
 }

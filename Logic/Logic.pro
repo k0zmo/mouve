@@ -31,7 +31,6 @@ SOURCES += \
     NodeFactory.cpp \
     NodeFlowData.cpp \
     NodeLink.cpp \
-    NodeModule.cpp \
     NodeSystem.cpp \
     NodeTree.cpp \
     NodeType.cpp \
