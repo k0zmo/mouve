@@ -227,7 +227,7 @@ public:
 		if(hostArray.empty())
 			return ExecutionStatus(EStatus::Ok);
 
-		deviceArray.create(_gpuComputeModule->context(), clw::Access_ReadWrite,
+		deviceArray = DeviceArray::create(_gpuComputeModule->context(), clw::Access_ReadWrite,
 			clw::Location_Device, hostArray.cols, hostArray.rows,
 			DeviceArray::matToDeviceType(hostArray.type()));
 		clw::Event evt = deviceArray.upload(_gpuComputeModule->queue(), hostArray.data);
@@ -265,13 +265,13 @@ public:
 
 	ExecutionStatus execute(NodeSocketReader& reader, NodeSocketWriter& writer) override
 	{
-		const DeviceArray& deviceImage = reader.readSocket(0).getDeviceArray();
+		const DeviceArray& deviceArray = reader.readSocket(0).getDeviceArray();
 		cv::Mat& hostArray = writer.acquireSocket(0).getArray();
 
-		if(deviceImage.isNull() || deviceImage.size() == 0)
+		if(deviceArray.isNull() || deviceArray.size() == 0)
 			return ExecutionStatus(EStatus::Ok);
 
-		clw::Event evt = deviceImage.download(_gpuComputeModule->queue(), hostArray);
+		clw::Event evt = deviceArray.download(_gpuComputeModule->queue(), hostArray);
 		evt.waitForFinished();
 
 		return ExecutionStatus(EStatus::Ok);

@@ -4,8 +4,6 @@
 
 #include "ksurf.h"
 
-#include <sstream>
-
 class kSurfNodeType : public NodeType
 {
 public:
