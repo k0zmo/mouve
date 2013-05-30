@@ -825,6 +825,14 @@ const std::string& NodeTree::nodeExecuteInformation(NodeID nodeID) const
 	return _nodes[nodeID].executeInformation();
 }
 
+double NodeTree::nodeTimeElapsed(NodeID nodeID) const
+{
+	if(!validateNode(nodeID))
+		return 0.0;
+
+	return _nodes[nodeID].timeElapsed();
+}
+
 NodeID NodeTree::allocateNodeID()
 {
 	NodeID id = InvalidNodeID;

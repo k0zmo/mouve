@@ -1578,24 +1578,26 @@ void Controller::updatePreview(bool res)
 		return;
 	}
 
+	auto execList = _nodeTree->executeList();
+
 	// Update preview window if necessary
-	if(shouldUpdatePreview(_nodeTree->executeList()))
+	if(shouldUpdatePreview(execList))
 		updatePreviewImpl();
 
 	// Job is done - enable editing
 	_processing = false;
 
 	// Update time info on nodes
-	auto iter = _nodeTree->createNodeIterator();
-	NodeID nodeID;
 	double totalTimeElapsed = 0.0;
-	while(auto node = iter->next(nodeID))
+	for(auto&& nodeID : execList)
 	{
-		totalTimeElapsed += node->timeElapsed();
-		QString text = QString::number(node->timeElapsed(), 'f', 3);
+		double elapsed = _nodeTree->nodeTimeElapsed(nodeID);
+		totalTimeElapsed += elapsed;
+		QString text = QString::number(elapsed, 'f', 3);
 		text += QStringLiteral(" ms");
 		_nodeViews[nodeID]->setTimeInfo(text);
 	}
+
 	_totalTimeLabel->setText(QString("Total time: %1 ms |")
 		.arg(QString().setNum(totalTimeElapsed, 'f', 3)));
 
