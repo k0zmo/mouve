@@ -133,6 +133,9 @@
     <ClCompile Include="Nodes\MosaicingNodes.cpp">
       <Filter>Nodes</Filter>
     </ClCompile>
+    <ClCompile Include="OpenCL\GpuBruteForceMacherNode.cpp">
+      <Filter>OpenCL</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="Node.h">
@@ -224,6 +227,9 @@
       <Filter>OpenCL\Kernels</Filter>
     </None>
     <None Include="OpenCL\kernels\bayer.cl">
+      <Filter>OpenCL\Kernels</Filter>
+    </None>
+    <None Include="OpenCL\kernels\bfmatcher.cl">
       <Filter>OpenCL\Kernels</Filter>
     </None>
   </ItemGroup>

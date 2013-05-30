@@ -288,6 +288,7 @@
     <ClCompile Include="NodeType.cpp" />
     <ClCompile Include="OpenCL\DeviceArray.cpp" />
     <ClCompile Include="OpenCL\GpuBasicNodes.cpp" />
+    <ClCompile Include="OpenCL\GpuBruteForceMacherNode.cpp" />
     <ClCompile Include="OpenCL\GpuColorConversionNodes.cpp" />
     <ClCompile Include="OpenCL\GpuHoughLinesNode.cpp" />
     <ClCompile Include="OpenCL\GpuKernelLibrary.cpp" />
@@ -320,6 +321,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="OpenCL\kernels\bayer.cl" />
+    <None Include="OpenCL\kernels\bfmatcher.cl" />
     <None Include="OpenCL\kernels\fill.cl" />
     <None Include="OpenCL\kernels\hough.cl" />
     <None Include="OpenCL\kernels\integral.cl" />
