@@ -31,6 +31,25 @@ DeviceArray DeviceArray::create(clw::Context& context,
 	return deviceArray;
 }
 
+DeviceArray DeviceArray::createFromBuffer(clw::Buffer& buffer,
+										  int width, 
+										  int height, 
+										  EDataType dataType)
+{
+	DeviceArray deviceArray;
+
+	if(!buffer.isNull())
+	{
+		deviceArray._buffer = buffer;
+		deviceArray._width = width;
+		deviceArray._height = height;
+		deviceArray._dataType = dataType;
+		deviceArray._size = width * height * dataSize(dataType);;
+	}
+
+	return deviceArray;
+}
+
 void DeviceArray::truncate(int height)
 {
 	if(_height > height)

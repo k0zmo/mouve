@@ -71,6 +71,7 @@ public:
 		, _upright(false)
 		, _nTotalLayers(0)
 		, _constantsUploaded(false)
+		, _downloadDescriptors(true)
 	{
 	}
 
@@ -129,6 +130,9 @@ public:
 		case ID_Upright:
 			_upright = newValue.toBool();
 			return true;
+		case ID_DownloadDescriptors:
+			_downloadDescriptors = newValue.toBool();
+			return true;
 		}
 
 		return false;
@@ -144,6 +148,7 @@ public:
 		case ID_InitSampling: return _initSampling;
 		case ID_MSurfDescriptor: return _msurf;
 		case ID_Upright: return _upright;
+		case ID_DownloadDescriptors: return _downloadDescriptors;
 		}
 
 		return QVariant();
@@ -154,6 +159,7 @@ public:
 		const clw::Image2D& deviceImage = reader.readSocket(0).getDeviceImage();
 		KeyPoints& kp = writer.acquireSocket(0).getKeypoints();
 		cv::Mat& descriptors = writer.acquireSocket(1).getArray();
+		DeviceArray& descriptors_dev = writer.acquireSocket(2).getDeviceArray();
 
 		int imageWidth = deviceImage.width();
 		int imageHeight = deviceImage.height();
@@ -225,33 +231,43 @@ public:
 			calculateDescriptors(keypointsCount);
 
 			// Start copying descriptors to pinned buffer
-			_gpuComputeModule->queue().asyncCopyBuffer(_descriptors_cl, _pinnedDescriptors_cl);
+			if(_downloadDescriptors)
+				_gpuComputeModule->queue().asyncCopyBuffer(_descriptors_cl, _pinnedDescriptors_cl);
 
 			vector<KeyPoint> kps = downloadKeypoints(keypointsCount);
 			kp.kpoints = transformKeyPoint(kps);
 
-			descriptors.create(keypointsCount, 64, CV_32F);
-			float* floatPtr = (float*) _gpuComputeModule->queue().mapBuffer(_pinnedDescriptors_cl, clw::MapAccess_Read);
-			if(!floatPtr)
-				return ExecutionStatus(EStatus::Error, "Couldn't mapped descriptors buffer to host address space");
-			if(descriptors.step == 64*sizeof(float))
+			descriptors_dev = DeviceArray::createFromBuffer(_descriptors_cl, 64, keypointsCount, EDataType::Float);
+
+			if(_downloadDescriptors)
 			{
-				//copy(floatPtr, floatPtr + 64*keypointsCount, descriptors.ptr<float>());
-				memcpy(descriptors.ptr<float>(), floatPtr, sizeof(float)*64 * keypointsCount);
+				descriptors.create(keypointsCount, 64, CV_32F);
+				float* floatPtr = (float*) _gpuComputeModule->queue().mapBuffer(_pinnedDescriptors_cl, clw::MapAccess_Read);
+				if(!floatPtr)
+					return ExecutionStatus(EStatus::Error, "Couldn't mapped descriptors buffer to host address space");
+				if(descriptors.step == 64*sizeof(float))
+				{
+					//copy(floatPtr, floatPtr + 64*keypointsCount, descriptors.ptr<float>());
+					memcpy(descriptors.ptr<float>(), floatPtr, sizeof(float)*64 * keypointsCount);
+				}
+				else
+				{
+					for(int row = 0; row < keypointsCount; ++row)
+						//copy(floatPtr + 64*row, floatPtr + 64*row + 64, descriptors.ptr<float>(row));
+						memcpy(descriptors.ptr<float>(row), floatPtr + 64*row, sizeof(float)*64);
+				}
+
+				_gpuComputeModule->queue().asyncUnmap(_pinnedDescriptors_cl, floatPtr);
 			}
-			else
-			{
-				for(int row = 0; row < keypointsCount; ++row)
-					//copy(floatPtr + 64*row, floatPtr + 64*row + 64, descriptors.ptr<float>(row));
-					memcpy(descriptors.ptr<float>(row), floatPtr + 64*row, sizeof(float)*64);
-			}
-			_gpuComputeModule->queue().asyncUnmap(_pinnedDescriptors_cl, floatPtr);
+
+			// Finish downloading input image
 			_gpuComputeModule->dataQueue().finish();
 		}
 		else
 		{
 			kp = KeyPoints();
 			descriptors = cv::Mat();
+			descriptors_dev = DeviceArray();
 		}
 
 		return ExecutionStatus(EStatus::Ok, 
@@ -268,6 +284,7 @@ public:
 			/// TODO: Just for now
 			{ ENodeFlowDataType::Keypoints, "keypoints", "Keypoints", "" },
 			{ ENodeFlowDataType::Array, "output", "Descriptors", "" },
+			{ ENodeFlowDataType::DeviceArray, "output", "Device descriptors", "" },
 			{ ENodeFlowDataType::Invalid, "", "", "" }
 		};
 		static const PropertyConfig prop_config[] = {
@@ -277,6 +294,7 @@ public:
 			{ EPropertyType::Integer, "Initial sampling rate", "min:1" },
 			{ EPropertyType::Boolean, "MSURF descriptor", "" },
 			{ EPropertyType::Boolean, "Upright", "" },
+			{ EPropertyType::Boolean, "Download descriptors", "" },
 			{ EPropertyType::Unknown, "", "" }
 		};
 
@@ -669,7 +687,8 @@ protected:
 		ID_NumScales,
 		ID_InitSampling,
 		ID_MSurfDescriptor,
-		ID_Upright
+		ID_Upright,
+		ID_DownloadDescriptors
 	};
 
 	double _hessianThreshold;
@@ -678,6 +697,7 @@ protected:
 	int _initSampling;
 	bool _msurf;
 	bool _upright;
+	bool _downloadDescriptors;
 
 	KernelID _kidFillImage;
 	KernelID _kidMultiScan_horiz;
@@ -710,6 +730,7 @@ protected:
 	clw::Buffer _pinnedDescriptors_cl;
 };
 
+// Temporary solution for too much VGPR usage on GCN hardware when image2d_t is used
 class GpuSurfBufferNodeType : public GpuSurfNodeType
 {
 public:

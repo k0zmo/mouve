@@ -29,6 +29,9 @@ public:
 		clw::EAccess access, clw::EMemoryLocation location,
 		int width, int height, EDataType dataType);
 
+	static DeviceArray createFromBuffer(clw::Buffer& buffer, 
+		int width, int height, EDataType dataType);
+
 	void truncate(int height);
 	//void resize(int width, int height);
 
