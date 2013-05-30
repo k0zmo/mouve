@@ -69,9 +69,9 @@ public:
 		, _initSampling(1)
 		, _msurf(true)
 		, _upright(false)
+		, _downloadDescriptors(true)
 		, _nTotalLayers(0)
 		, _constantsUploaded(false)
-		, _downloadDescriptors(true)
 	{
 	}
 

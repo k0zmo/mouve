@@ -55,6 +55,7 @@ SOURCES += \
     OpenCL/DeviceArray.cpp \
     OpenCL/GpuBasicNodes.cpp \
     OpenCL/GpuColorConversionNodes.cpp \
+    OpenCL/GpuBruteForceMacherNode.cpp \
     OpenCL/GpuHoughLinesNode.cpp \
     OpenCL/GpuKernelLibrary.cpp \
     OpenCL/GpuMixtureOfGaussians.cpp \
