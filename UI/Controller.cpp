@@ -429,6 +429,8 @@ void Controller::setupUi()
 		showMaximized();
 	}
 
+	prepareRecentFileList();
+
 	// Menu bar actions
 	_ui->actionQuit->setShortcuts(QKeySequence::Quit);
 	connect(_ui->actionQuit, &QAction::triggered, this, &QMainWindow::close);
@@ -733,6 +735,38 @@ void Controller::populateAddNodeContextMenu()
 	}
 }
 
+void Controller::prepareRecentFileList()
+{
+	_ui->menuFile->removeAction(_ui->actionQuit);
+
+	for(int i = 0; i < MaxRecentFiles; ++i)
+	{
+		_actionRecentFiles[i] = new QAction(this);
+		_actionRecentFiles[i]->setVisible(false);
+		connect(_actionRecentFiles[i], &QAction::triggered, [=]
+		{
+			if(canQuit())
+				openTreeFromFile(_actionRecentFiles[i]->data().toString());
+		});
+
+		_ui->menuFile->addAction(_actionRecentFiles[i]);
+	}
+
+	_actionClearRecentFiles = new QAction("Clear recent file list", this);
+	connect(_actionClearRecentFiles, &QAction::triggered, [=]
+	{
+		QSettings settings;
+		settings.setValue("recentFileList", QStringList());
+		updateRecentFileActions("");
+	});
+	_ui->menuFile->addAction(_actionClearRecentFiles);
+
+	_actionSeparatorRecentFiles = _ui->menuFile->addSeparator();
+	_ui->menuFile->addAction(_ui->actionQuit);
+
+	updateRecentFileActions("");
+}
+
 void Controller::showErrorMessage(const QString& message)
 {
 	QMessageBox::critical(nullptr, applicationTitle, message);
@@ -1012,7 +1046,10 @@ bool Controller::saveTreeToFile(const QString& filePath)
 	{
 		_nodeTreeFilePath = filePath;
 		_nodeTreeDirty = false;
+
+		updateRecentFileActions(filePath);
 		updateTitleBar();
+
 		qDebug() << "Tree successfully saved to file:" << filePath;
 
 		return true;
@@ -1053,6 +1090,29 @@ bool Controller::saveTreeToFileImpl(const QString& filePath)
 		return false;
 	file.write(textJson);
 	return true;
+}
+
+void Controller::openTreeFromFile(const QString& filePath)
+{
+	_ui->actionAutoRefresh->setChecked(false);
+	createNewTree();
+
+	if(openTreeFromFileImpl(filePath))
+	{
+		_nodeTreeFilePath = filePath;
+		_nodeTreeDirty = false;
+
+		updateRecentFileActions(filePath);
+		updateTitleBar();
+		fitToView();
+
+		qDebug() << "Tree successfully opened from file:" << filePath;
+	}
+	else
+	{
+		showErrorMessage("Error occured during opening file! Check logs for more details.");
+		qCritical() << "Couldn't open node tree from file:" << filePath;
+	}
 }
 
 bool Controller::openTreeFromFileImpl(const QString& filePath)
@@ -1161,6 +1221,39 @@ bool Controller::openTreeFromFileImpl(const QString& filePath)
 		switchToVideoMode();
 
 	return true;
+}
+
+void Controller::updateRecentFileActions(const QString& filePath)
+{
+	QSettings settings;
+	QStringList recentFiles = settings.value("recentFileList").toStringList();
+
+	// if filePath is not null string we also update recent file list
+	if(!filePath.isEmpty())
+	{
+		recentFiles.removeAll(filePath);
+		recentFiles.prepend(filePath);
+		while(recentFiles.size() > MaxRecentFiles)
+			recentFiles.removeLast();
+		settings.setValue("recentFileList", recentFiles);
+	}
+
+	int numRecentFiles = qMin(recentFiles.size(), (int) MaxRecentFiles);
+
+	for(int i = 0; i < numRecentFiles; ++i)
+	{
+		QString text = QString("&%1 %2")
+			.arg(i+1)
+			.arg(QFileInfo(recentFiles[i]).fileName().replace("&", "&&"));
+		_actionRecentFiles[i]->setText(text);
+		_actionRecentFiles[i]->setData(recentFiles[i]);
+		_actionRecentFiles[i]->setVisible(true);
+	}
+	for(int i = numRecentFiles; i < MaxRecentFiles; ++i)
+		_actionRecentFiles[i]->setVisible(false);
+
+	_actionSeparatorRecentFiles->setVisible(numRecentFiles > 0);
+	_actionClearRecentFiles->setVisible(numRecentFiles > 0);
 }
 
 void Controller::contextMenu(const QPoint& globalPos,
@@ -1348,23 +1441,7 @@ void Controller::keyPress(QKeyEvent* event)
 		if(!canQuit())
 			return;
 
-		QString filePath = "test.tree";
-
-		_ui->actionAutoRefresh->setChecked(false);
-		createNewTree();
-
-		if(openTreeFromFileImpl(filePath))
-		{
-			_nodeTreeFilePath = filePath;
-			_nodeTreeDirty = false;
-			updateTitleBar();
-			qDebug() << "Tree successfully opened from file:" << filePath;
-		}
-		else
-		{
-			showErrorMessage("Error occured during opening file! Check logs for more details.");
-			qCritical() << "Couldn't open node tree from file:" << filePath;
-		}
+		openTreeFromFile("test.tree");
 	}
 #endif
 }
@@ -1526,22 +1603,7 @@ void Controller::openTree()
 	if(filePath.isEmpty())
 		return;
 
-	_ui->actionAutoRefresh->setChecked(false);
-	createNewTree();
-
-	if(openTreeFromFileImpl(filePath))
-	{
-		_nodeTreeFilePath = filePath;
-		_nodeTreeDirty = false;
-		updateTitleBar();
-		fitToView();
-		qDebug() << "Tree successfully opened from file:" << filePath;
-	}
-	else
-	{
-		showErrorMessage("Error occured during opening file! Check logs for more details.");
-		qCritical() << "Couldn't open node tree from file:" << filePath;
-	}
+	openTreeFromFile(filePath);
 }
 
 bool Controller::saveTree()

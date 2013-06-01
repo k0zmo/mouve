@@ -54,6 +54,9 @@ private:
 	void deleteNode(NodeView* nodeView);
 
 	void setupUi();
+
+	void prepareRecentFileList();
+
 	void setupUiAbout();
 	void setupNodeTypesUi();
 	void addNodeTypeTreeItem(NodeTypeID typeId,
@@ -97,7 +100,10 @@ private:
 	bool saveTreeToFileImpl(const QString& filePath);
 
 	// Opening node tree from a given file (json deserialization)
+	void openTreeFromFile(const QString& filePath);
 	bool openTreeFromFileImpl(const QString& filePath);
+
+	void updateRecentFileActions(const QString& filePath);
 
 private slots:
 	void showErrorMessage(const QString& message);
@@ -156,6 +162,12 @@ private:
 	QThread _workerThread;
 	TreeWorker* _treeWorker;
 	QProgressBar* _progressBar;
+
+	// Recent files part
+	enum { MaxRecentFiles = 5 };
+	QAction* _actionRecentFiles[MaxRecentFiles];
+	QAction* _actionSeparatorRecentFiles;
+	QAction* _actionClearRecentFiles;
 
 	//
 	// OpenCL Module
