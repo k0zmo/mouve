@@ -11,6 +11,14 @@ typedef struct mogParams
     float minVar; // lowest possible variance value
 } mogParams_t;
 
+__attribute__((always_inline))
+void swap(float v1, float v2)
+{
+    float temp = v1;
+    v1 = v2;
+    v2 = temp;
+}
+
 __kernel void mog_image_unorm(__read_only image2d_t frame,
                               __write_only image2d_t dst,
                               __global float* mixtureData,
@@ -59,7 +67,7 @@ __kernel void mog_image_unorm(__read_only image2d_t frame,
                 pdfMatched = mx;
         }
     }
-    
+   
     if(pdfMatched < 0)
     {
         // No matching mixture found - replace the weakest one
@@ -78,12 +86,18 @@ __kernel void mog_image_unorm(__read_only image2d_t frame,
             {
                 float diff = pix - mean[mx];
 
+#if ACCURATE_CALCUALTIONS != 1
+                weight[mx] = weight[mx] + alpha * (1 - weight[mx]);
+                mean[mx] = mean[mx] + alpha * diff;
+                var[mx] = max(params->minVar, var[mx] + alpha * (diff*diff - var[mx]));
+#else
                 #define PI_MULT_2 6.28318530717958647692f
                 float rho = alpha / native_sqrt(PI_MULT_2 * var[mx]) * native_exp(-0.5f * diff*diff / var[mx]);
-
+                
                 weight[mx] = weight[mx] + alpha * (1 - weight[mx]);
                 mean[mx] = mean[mx] + rho * diff;
                 var[mx] = max(params->minVar, var[mx] + rho * (diff*diff - var[mx]));
+#endif
             }
             else
             {
@@ -119,21 +133,13 @@ __kernel void mog_image_unorm(__read_only image2d_t frame,
     {
         if(sortKey[pdfMatched] > sortKey[mx])
         {
-            float weightTemp = weight[pdfMatched];
-            float meanTemp = mean[pdfMatched];
-            float varTemp = var[pdfMatched];
-
-            weight[pdfMatched] = weight[mx];
-            mean[pdfMatched] = mean[mx];
-            var[pdfMatched] = var[mx];
-
-            weight[mx] = weightTemp;
-            mean[mx] = meanTemp;
-            var[mx] = varTemp;
+            swap(weight[pdfMatched], weight[mx]);
+            swap(mean[pdfMatched], mean[mx]);
+            swap(var[pdfMatched], var[mx]);
             break;
         }
     }
-
+    
     #pragma unroll NMIXTURES
     for(int mx = 0; mx < NMIXTURES; ++mx)
     {
