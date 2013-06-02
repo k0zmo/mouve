@@ -3,7 +3,8 @@
 #include "GpuNode.h"
 #include "NodeFactory.h"
 
-#define ACCURATE_CALCUALTIONS 0
+// Define as 1 to use more accurate calcuations
+#define ACCURATE_CALCULATIONS 0
 
 class GpuMixtureOfGaussiansNodeType : public GpuNodeType
 {
@@ -16,13 +17,12 @@ public:
 		, _varianceThreshold(6.25f)
 		, _backgroundRatio(0.7f)
 		, _initialWeight(0.05f)
-#if ACCURATE_CALCUALTIONS != 1
+#if ACCURATE_CALCULATIONS != 1
 		, _initialVariance(15*15*4)
 		, _minVariance(15*15)
 #else
-		// They need some tweaking (visibly worse result)
 		, _initialVariance(500)
-		, _minVariance(0.4)
+		, _minVariance(0.4f)
 #endif
 		, _showBackground(false)
 	{
@@ -30,8 +30,8 @@ public:
 
 	bool postInit() override
 	{
-		std::string opts = formatMessage("-DNMIXTURES=%d -DACCURATE_CALCUALTIONS=%d",
-			_nmixtures, ACCURATE_CALCUALTIONS);
+		std::string opts = formatMessage("-DNMIXTURES=%d -DACCURATE_CALCULATIONS=%d",
+			_nmixtures, ACCURATE_CALCULATIONS);
 
 		_kidGaussMix = _gpuComputeModule->registerKernel(
 			"mog_image_unorm", "mog.cl", opts);
@@ -52,8 +52,8 @@ public:
 			{
 				_nmixtures = newValue.toInt();
 
-				std::string opts = formatMessage("-DNMIXTURES=%d -DACCURATE_CALCUALTIONS=%d",
-					_nmixtures, ACCURATE_CALCUALTIONS);
+				std::string opts = formatMessage("-DNMIXTURES=%d -DACCURATE_CALCULATIONS=%d",
+					_nmixtures, ACCURATE_CALCULATIONS);
 
 				_kidGaussMix = _gpuComputeModule->registerKernel(
 					"mog_image_unorm", "mog.cl", opts);

@@ -469,7 +469,7 @@ protected:
 		}
 	}
 
-	virtual void buildScaleSpace(int imageWidth, int imageHeight) 
+	virtual void buildScaleSpace(int imageWidth, int imageHeight)
 	{
 		clw::Kernel kernelBuildScaleSpace = _gpuComputeModule->acquireKernel(_kidBuildScaleSpace);		
 
@@ -508,8 +508,6 @@ protected:
 				int samples_x = 1 + (imageWidth - layer.filterSize) / layer.sampleStep;
 				int samples_y = 1 + (imageHeight - layer.filterSize) / layer.sampleStep;
 
-				/// TODO: Experiment with this value
-				/// TODO: Experiment with PIX_PER_THREAD
 				kernelBuildScaleSpace.setLocalWorkSize(16, 16);
 				kernelBuildScaleSpace.setGlobalWorkOffset(layerMargin, layerMargin);
 				kernelBuildScaleSpace.setRoundedGlobalWorkSize(samples_x, samples_y);
