@@ -232,5 +232,8 @@
     <None Include="OpenCL\kernels\bfmatcher.cl">
       <Filter>OpenCL\Kernels</Filter>
     </None>
+    <None Include="OpenCL\kernels\bfmatcher_macros.cl">
+      <Filter>OpenCL\Kernels</Filter>
+    </None>
   </ItemGroup>
 </Project>
