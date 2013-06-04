@@ -1079,6 +1079,7 @@ bool Controller::saveTreeToFileImpl(const QString& filePath)
 		jsonScene.append(jsonSceneElem);
 	}
 
+	_nodeTree->setRootDirectory(QFileInfo(filePath).absolutePath().toStdString());
 	QJsonObject jsonTree = _nodeTree->serializeJson();
 	jsonTree.insert(QStringLiteral("scene"), jsonScene);
 
@@ -1144,6 +1145,7 @@ bool Controller::openTreeFromFileImpl(const QString& filePath)
 
 	// Method used in loading nodes makes them lose their original NodeID
 	std::map<NodeID, NodeID> mapping;
+	_nodeTree->setRootDirectory(QFileInfo(filePath).absolutePath().toStdString());
 	if(!_nodeTree->deserializeJson(jsonTree, &mapping))
 		return false;
 

@@ -16,6 +16,7 @@ public:
 
 	void clear();
 
+	void setRootDirectory(const std::string& rootDir);
 	QJsonObject serializeJson();
 	bool deserializeJson(const QJsonObject& jsonTree, 
 		std::map<NodeID, NodeID>* oldToNewNodeID = nullptr);
@@ -99,6 +100,7 @@ private:
 	std::vector<NodeLink> _links;
 	std::vector<NodeID> _executeList;
 	std::unordered_map<std::string, NodeID> _nodeNameToNodeID;
+	std::string _rootDirectory;
 	NodeSystem* _nodeSystem;
 	bool _executeListDirty;
 

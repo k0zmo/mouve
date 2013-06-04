@@ -11,6 +11,7 @@
 #include <QJsonDocument>
 #include <QJsonArray>
 #include <QJsonObject>
+#include <QDir>
 /// TODO: Add logger
 #include <QDebug>
 
@@ -33,6 +34,11 @@ void NodeTree::clear()
 	_executeList.clear();
 	_nodeNameToNodeID.clear();
 	_executeListDirty = false;
+}
+
+void NodeTree::setRootDirectory(const std::string& rootDir)
+{
+	_rootDirectory = rootDir;
 }
 
 QJsonObject NodeTree::serializeJson()
@@ -101,8 +107,15 @@ QJsonObject NodeTree::serializeJson()
 							break;
 						}
 					case EPropertyType::Filepath:
-						jsonProp.insert(QStringLiteral("value"), propValue.toString());
-						jsonProp.insert(QStringLiteral("type"), QStringLiteral("filepath"));
+						{
+							QString rootDirStr = QString::fromStdString(_rootDirectory);
+							QDir rootDir(rootDirStr);
+							if(rootDir.exists())
+								jsonProp.insert(QStringLiteral("value"), rootDir.relativeFilePath(propValue.toString()));
+							else
+								jsonProp.insert(QStringLiteral("value"), propValue.toString());
+							jsonProp.insert(QStringLiteral("type"), QStringLiteral("filepath"));
+						}
 						break;
 					case EPropertyType::String:
 						jsonProp.insert(QStringLiteral("value"), propValue.toString());
@@ -257,6 +270,14 @@ bool NodeTree::deserializeJsonNodes(const QJsonArray& jsonNodes,
 						matrix.v[i] = matrixList[i].toDouble();
 					
 					value = QVariant::fromValue<Matrix3x3>(matrix);
+				}
+
+				if(propType == "filepath")
+				{
+					QString rootDirStr = QString::fromStdString(_rootDirectory);
+					QDir rootDir(rootDirStr);
+					if(rootDir.exists())
+						value = rootDir.absoluteFilePath(value.toString());
 				}
 
 				if(!nodeSetProperty(_nodeId, propId, value))
