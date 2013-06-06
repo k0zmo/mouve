@@ -137,7 +137,7 @@ public:
 			{ ENodeFlowDataType::Invalid, "", "", "" }
 		};
 		static const PropertyConfig prop_config[] = {
-			{ EPropertyType::Filepath, "Video path", "filter:Video files (*.mkv *.mp4 *.avi)" },
+			{ EPropertyType::Filepath, "Video path", "filter:Video files (*.mkv *.mp4 *.avi *.flv)" },
 			{ EPropertyType::Integer, "Start frame", "min:0" },
 			{ EPropertyType::Boolean, "Ignore FPS", "" },
 			{ EPropertyType::Unknown, "", "" }
