@@ -100,10 +100,10 @@ private:
 	bool saveTreeToFileImpl(const QString& filePath);
 
 	// Opening node tree from a given file (json deserialization)
-	void openTreeFromFile(const QString& filePath);
+	bool openTreeFromFile(const QString& filePath);
 	bool openTreeFromFileImpl(const QString& filePath);
 
-	void updateRecentFileActions(const QString& filePath);
+	void updateRecentFileActions(const QString& filePath = QString());
 
 private slots:
 	void showErrorMessage(const QString& message);

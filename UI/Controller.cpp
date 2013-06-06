@@ -745,8 +745,27 @@ void Controller::prepareRecentFileList()
 		_actionRecentFiles[i]->setVisible(false);
 		connect(_actionRecentFiles[i], &QAction::triggered, [=]
 		{
-			if(canQuit())
-				openTreeFromFile(_actionRecentFiles[i]->data().toString());
+			if(!canQuit())
+				return;
+
+			QString filePath = _actionRecentFiles[i]->data().toString();
+
+			if(!openTreeFromFile(filePath))
+			{
+				int fb = QMessageBox::question(this, applicationTitle, 
+					tr("\"%1\" could not be opened. Do you want to remove the reference to it from the Recent file list?")
+						.arg(filePath), QMessageBox::Yes, QMessageBox::No);
+				if(fb == QMessageBox::Yes)
+				{
+					// Load recent file list from the settings and remove reference to non-existant or invalid node tree
+					QSettings settings;
+					QStringList recentFiles = settings.value("recentFileList").toStringList();
+					recentFiles.removeAll(filePath);
+					settings.setValue("recentFileList", recentFiles);
+
+					updateRecentFileActions();
+				}
+			}
 		});
 
 		_ui->menuFile->addAction(_actionRecentFiles[i]);
@@ -757,14 +776,14 @@ void Controller::prepareRecentFileList()
 	{
 		QSettings settings;
 		settings.setValue("recentFileList", QStringList());
-		updateRecentFileActions("");
+		updateRecentFileActions();
 	});
 	_ui->menuFile->addAction(_actionClearRecentFiles);
 
 	_actionSeparatorRecentFiles = _ui->menuFile->addSeparator();
 	_ui->menuFile->addAction(_ui->actionQuit);
 
-	updateRecentFileActions("");
+	updateRecentFileActions();
 }
 
 void Controller::showErrorMessage(const QString& message)
@@ -1093,12 +1112,13 @@ bool Controller::saveTreeToFileImpl(const QString& filePath)
 	return true;
 }
 
-void Controller::openTreeFromFile(const QString& filePath)
+bool Controller::openTreeFromFile(const QString& filePath)
 {
 	_ui->actionAutoRefresh->setChecked(false);
 	createNewTree();
 
-	if(openTreeFromFileImpl(filePath))
+	bool res;
+	if((res = openTreeFromFileImpl(filePath)))
 	{
 		_nodeTreeFilePath = filePath;
 		_nodeTreeDirty = false;
@@ -1109,11 +1129,8 @@ void Controller::openTreeFromFile(const QString& filePath)
 
 		qDebug() << "Tree successfully opened from file:" << filePath;
 	}
-	else
-	{
-		showErrorMessage("Error occured during opening file! Check logs for more details.");
-		qCritical() << "Couldn't open node tree from file:" << filePath;
-	}
+
+	return res;
 }
 
 bool Controller::openTreeFromFileImpl(const QString& filePath)
@@ -1605,7 +1622,11 @@ void Controller::openTree()
 	if(filePath.isEmpty())
 		return;
 
-	openTreeFromFile(filePath);
+	if(!openTreeFromFile(filePath))
+	{
+		showErrorMessage("Error occured during opening file! Check logs for more details.");
+		qCritical() << "Couldn't open node tree from file:" << filePath;
+	}
 }
 
 bool Controller::saveTree()
