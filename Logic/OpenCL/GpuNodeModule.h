@@ -49,6 +49,8 @@ public:
 	clw::CommandQueue& dataQueue();
 	const clw::CommandQueue& dataQueue() const;
 
+	bool performanceMarkersInitialized() const;
+
 private:
 	std::string additionalBuildOptions(const std::string& programName) const;
 	bool createAfterContext();
@@ -66,6 +68,20 @@ private:
 
 	bool _interactiveInit;
 	bool _perfMarkersInitialized;
+};
+
+// RAII styled perfMarker
+class GpuPerformanceMarker
+{
+public:
+	GpuPerformanceMarker(
+		bool perfMarkersInitialized,
+		const char* markerName,
+		const char* groupName = nullptr);
+
+	~GpuPerformanceMarker();
+private:
+	bool _ok;
 };
 
 inline void GpuNodeModule::setInteractiveInit(bool interactiveInit)
@@ -92,5 +108,7 @@ inline clw::CommandQueue& GpuNodeModule::dataQueue()
 { return _dataQueue; }
 inline const clw::CommandQueue& GpuNodeModule::dataQueue() const
 { return _dataQueue; }
+inline bool GpuNodeModule::performanceMarkersInitialized() const
+{ return _perfMarkersInitialized; }
 
 #endif
