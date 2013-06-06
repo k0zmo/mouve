@@ -369,6 +369,7 @@
     <Import Project="..\JAI.props" />
     <Import Project="..\tbb.Debug.props" />
     <Import Project="..\clw.Debug.props" />
+    <Import Project="..\clPerfMarkerAMD.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
@@ -378,6 +379,7 @@
     <Import Project="..\JAI.x64.props" />
     <Import Project="..\tbb.Debug.x64.props" />
     <Import Project="..\clw.Debug.x64.props" />
+    <Import Project="..\clPerfMarkerAMD.x64.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
@@ -387,6 +389,7 @@
     <Import Project="..\JAI.props" />
     <Import Project="..\tbb.Release.props" />
     <Import Project="..\clw.Release.props" />
+    <Import Project="..\clPerfMarkerAMD.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
@@ -396,6 +399,7 @@
     <Import Project="..\JAI.x64.props" />
     <Import Project="..\tbb.Release.x64.props" />
     <Import Project="..\clw.Release.x64.props" />
+    <Import Project="..\clPerfMarkerAMD.x64.props" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup>

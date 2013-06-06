@@ -12,6 +12,7 @@ class LOGIC_EXPORT GpuNodeModule : public IGpuNodeModule
 {
 public:
 	explicit GpuNodeModule(bool interactiveInit);
+	~GpuNodeModule() override;
 
 	void setInteractiveInit(bool interactiveInit) override;
 	bool isInteractiveInit() const override;
@@ -36,6 +37,9 @@ public:
 	bool isConstantMemorySufficient(uint64_t memSize) const;
 	bool isLocalMemorySufficient(uint64_t memSize) const;
 
+	void beginPerfMarker(const char* markerName, const char* groupName = nullptr);
+	void endPerfMarker();
+
 	clw::Context& context();
 	const clw::Context& context() const;
 	clw::Device& device();
@@ -58,9 +62,10 @@ private:
 	uint64_t _maxConstantMemory;
 	uint64_t _maxLocalMemory;
 
-	bool _interactiveInit;
-
 	KernelLibrary _library;
+
+	bool _interactiveInit;
+	bool _perfMarkersInitialized;
 };
 
 inline void GpuNodeModule::setInteractiveInit(bool interactiveInit)

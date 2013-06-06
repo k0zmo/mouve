@@ -3,6 +3,10 @@
 #include "GpuNodeModule.h"
 #include "GpuException.h"
 
+#if defined(HAVE_CLPERFMARKER_AMD)
+#  include <CLPerfMarker.h>
+#endif
+
 namespace {
 string kernelsDirectory();
 }
@@ -11,15 +15,26 @@ GpuNodeModule::GpuNodeModule(bool interactiveInit)
 	: _maxConstantMemory(0)
 	, _maxLocalMemory(0)
 	, _interactiveInit(interactiveInit)
+	, _perfMarkersInitialized(0)
 {
+}
+
+GpuNodeModule::~GpuNodeModule()
+{
+#if defined(HAVE_CLPERFMARKER_AMD)
+	if(_perfMarkersInitialized)
+		clFinalizePerfMarkerAMD();
+#endif
 }
 
 bool GpuNodeModule::initialize()
 {
 	bool res;
+#if !defined(K_DEBUG)
 	if(_interactiveInit)
 		res = createInteractive();
 	else
+#endif
 		res = createDefault();
 
 	if(res)
@@ -174,6 +189,11 @@ bool GpuNodeModule::createAfterContext()
 		_maxLocalMemory = _device.localMemorySize();
 	}
 
+#if defined(HAVE_CLPERFMARKER_AMD)
+	if(clInitializePerfMarkerAMD() == AP_SUCCESS)
+		_perfMarkersInitialized = true;
+#endif
+
 	return !_device.isNull() && !_queue.isNull();
 }
 
@@ -248,6 +268,24 @@ string GpuNodeModule::additionalBuildOptions(const std::string& programName) con
 	(void) programName;
 #endif
 	return opts;
+}
+
+void GpuNodeModule::beginPerfMarker(const char* markerName,
+									const char* groupName)
+{
+	assert(markerName);
+#if defined(HAVE_CLPERFMARKER_AMD)
+	if(_perfMarkersInitialized)
+		clBeginPerfMarkerAMD(markerName, groupName);
+#endif
+}
+
+void GpuNodeModule::endPerfMarker()
+{
+#if defined(HAVE_CLPERFMARKER_AMD)
+	if(_perfMarkersInitialized)
+		clEndPerfMarkerAMD();
+#endif
 }
 
 std::unique_ptr<IGpuNodeModule> createGpuModule()
