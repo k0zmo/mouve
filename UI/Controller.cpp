@@ -1437,13 +1437,13 @@ void Controller::keyPress(QKeyEvent* event)
 		while(iter->next(nodeID))
 			_nodeTree->tagNode(nodeID);
 	}
-	else if(event->key() == Qt::Key_G
-		&& event->modifiers() & Qt::ControlModifier)
+	else if(event->key() == Qt::Key_1)
 	{
 		if(!canQuit())
 			return;
 
-		openTreeFromFile("test.tree");
+		if(_actionRecentFiles[0]->isVisible())
+			_actionRecentFiles[0]->trigger();
 	}
 #endif
 }
