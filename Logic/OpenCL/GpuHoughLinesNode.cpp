@@ -54,7 +54,7 @@ public:
 		if(_gpuComputeModule->device().supportsExtension("cl_ext_atomic_counters_32"))
 			opts = "-DUSE_ATOMIC_COUNTERS";
 
-		_kidBuildPointsList = _gpuComputeModule->registerKernel("buildPointsList", "hough.cl", opts);
+		_kidBuildPointsList = _gpuComputeModule->registerKernel("buildPointsList_basic", "hough.cl", opts);
 		_kidAccumLines = _gpuComputeModule->registerKernel("accumLines", "hough.cl", opts);
 		_kidAccumLinesShared = _gpuComputeModule->registerKernel("accumLines_shared", "hough.cl", opts);
 		_kidGetLines = _gpuComputeModule->registerKernel("getLines", "hough.cl", opts);
@@ -96,9 +96,17 @@ public:
 		_gpuComputeModule->queue().asyncUnmap(_deviceCounterPoints, uintPtrPoints);
 		_gpuComputeModule->queue().asyncUnmap(_deviceCounterLines, uintPtrLines);
 
-		int pointsCount = buildPointList(deviceImage, srcWidth, srcHeight);
-		if(pointsCount == 0)
-			return ExecutionStatus(EStatus::Ok);
+		clw::Event kernelEvent = buildPointList(deviceImage, srcWidth, srcHeight);
+
+		// Get number of non-zero pixels
+		cl_uint* ptr;
+		cl_uint pointsCount = 0;
+		clw::Event event = _gpuComputeModule->dataQueue().asyncMapBuffer(
+			_deviceCounterPoints, (void**) &ptr, clw::MapAccess_Read, kernelEvent);
+		event.setCallback(clw::Status_Complete, [=, &pointsCount](clw::EEventStatus) {
+			pointsCount = ptr[0];
+			_gpuComputeModule->dataQueue().asyncUnmap(_deviceCounterPoints, ptr);
+		});
 
 		// W akumulatorze plotowac bedziemy krzywe z rodziny
 		// rho(theta) = x0*cos(theta) + y0*sin(theta)
@@ -116,8 +124,8 @@ public:
 
 		constructHoughSpace(numRho, numAngle);
 
-		// Srednio 5 pikseli na linie - i tak raczej pesymistyczne zalozenie (srednio ~10%)
-		cl_int maxLines = pointsCount / 5;
+		// Srednio 20% bialych pikseli (obrazu po detekcji krawedzi) i minimum 2 na linie
+		cl_int maxLines = (cl_int) (srcWidth * srcHeight * 0.2 * 0.5);
 
 		int linesCount = extractLines(deviceLines, maxLines, numRho, numAngle);
 
@@ -126,9 +134,11 @@ public:
 		else if(!deviceAccumImage.isNull())
 			deviceAccumImage = clw::Image2D();
 
+		event.waitForFinished();
+
 		return ExecutionStatus(EStatus::Ok, 
-			formatMessage("Detected lines: %d\nPercent of white pixels: %f%%\n", 
-			linesCount, (double) pointsCount / (srcWidth * srcHeight) * 100.0));
+			formatMessage("Detected lines: %d (max: %d)\nPercent of white pixels: %f%%\n", 
+			linesCount, maxLines, (double) pointsCount / (srcWidth * srcHeight) * 100.0));
 	}
 
 	void configuration(NodeConfig& nodeConfig) const override
@@ -159,7 +169,7 @@ public:
 	}
 
 private:
-	int buildPointList(const clw::Image2D& deviceImage, int width, int height) 
+	clw::Event buildPointList(const clw::Image2D& deviceImage, int width, int height) 
 	{
 		clw::Kernel kernelBuildPointsList = _gpuComputeModule->acquireKernel(_kidBuildPointsList);
 
@@ -171,14 +181,7 @@ private:
 		kernelBuildPointsList.setArg(0, deviceImage);
 		kernelBuildPointsList.setArg(1, _devicePointsList);
 		kernelBuildPointsList.setArg(2, _deviceCounterPoints);
-		 _gpuComputeModule->queue().asyncRunKernel(kernelBuildPointsList);
-
-		// Get number of non-zero pixels
-		cl_uint* ptr = (cl_uint*) _gpuComputeModule->queue().mapBuffer(_deviceCounterPoints, clw::MapAccess_Read);
-		cl_uint pointsCount = *ptr;
-		_gpuComputeModule->queue().asyncUnmap(_deviceCounterPoints, ptr);
-
-		return pointsCount;
+		return _gpuComputeModule->queue().asyncRunKernel(kernelBuildPointsList);
 	}
 
 	void constructHoughSpace(int numRho, int numAngle) 
@@ -233,10 +236,7 @@ private:
 		clw::Kernel kernelGetLines = _gpuComputeModule->acquireKernel(_kidGetLines);
 
 		if(deviceLines.isNull()
-			// buffer is too small
-			|| deviceLines.size() <  maxLines * sizeof(cl_float2)
-			// buffer is too big (four times)
-			|| deviceLines.size() >  4 * maxLines * sizeof(cl_float2))
+		|| deviceLines.size() !=  maxLines * sizeof(cl_float2))
 		{
 			deviceLines = DeviceArray::create(_gpuComputeModule->context(), clw::Access_WriteOnly,
 				clw::Location_Device, 2, maxLines, EDataType::Float);
