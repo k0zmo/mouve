@@ -102,7 +102,7 @@ public:
 			// Wyzerowanie
 			void* ptr = _gpuComputeModule->queue().mapBuffer(_mixtureDataBuffer, clw::MapAccess_Write);
 			memset(ptr, 0, _mixtureDataBuffer.size());
-			_gpuComputeModule->queue().unmap(_mixtureDataBuffer, ptr);
+			_gpuComputeModule->queue().asyncUnmap(_mixtureDataBuffer, ptr);
 		}
 
 		// Parametry stale dla kernela
@@ -129,7 +129,7 @@ public:
 		ptr->w0 = _initialWeight;
 		ptr->var0 = _initialVariance;
 		ptr->minVar = _minVariance;
-		_gpuComputeModule->queue().unmap(_mixtureParamsBuffer, ptr);
+		_gpuComputeModule->queue().asyncUnmap(_mixtureParamsBuffer, ptr);
 
 		return true;
 	}

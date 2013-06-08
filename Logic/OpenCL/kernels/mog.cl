@@ -44,13 +44,15 @@ __kernel void mog_image_unorm(__read_only image2d_t frame,
         mean[mx]   = mixtureData[gid1 + size1 * (mx + 1 * NMIXTURES)];
         var[mx]    = mixtureData[gid1 + size1 * (mx + 2 * NMIXTURES)];
 
+        // Because mixtures are already sorted (from previous frame)
+        // we only need to check this until first match is found
         if(pdfMatched < 0)
         {
             float diff = pix - mean[mx];
             float d2 = diff*diff;
             float threshold = params->varThreshold * var[mx];
         
-            // To samo co:
+            // Same as:
             // if (diff > -2.5f * var && 
             //     diff < +2.5f * var)
 
