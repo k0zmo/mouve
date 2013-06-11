@@ -214,6 +214,8 @@ public:
 		_gpuComputeModule->dataQueue().asyncReadImage2D(deviceImage, kp.image.data, (int) kp.image.step);
 		_gpuComputeModule->dataQueue().flush();
 
+		_gpuComputeModule->beginPerfMarker("SURF [Read number of keypoints]");
+
 		// Read keypoints counter (use pinned memory)
 		_gpuComputeModule->queue().asyncCopyBuffer(_keypointsCount_cl, _pinnedKeypointsCount_cl);
 		intPtr = (int*) _gpuComputeModule->queue().mapBuffer(_pinnedKeypointsCount_cl, clw::MapAccess_Read);
@@ -222,6 +224,8 @@ public:
 		int keypointsCount = min(intPtr[0], KEYPOINTS_MAX);
 		_gpuComputeModule->queue().asyncUnmap(_pinnedKeypointsCount_cl, intPtr);
 
+		_gpuComputeModule->endPerfMarker();
+
 		if(keypointsCount > 0)
 		{
 			if(!_upright)
@@ -229,6 +233,8 @@ public:
 			else
 				uprightKeypointOrientation(keypointsCount);
 			calculateDescriptors(keypointsCount);
+
+			GpuPerformanceMarker marker(_gpuComputeModule->performanceMarkersInitialized(), "SURF [Read results]");
 
 			// Start copying descriptors to pinned buffer
 			if(_downloadDescriptors)
@@ -309,6 +315,8 @@ public:
 protected:
 	void uploadSurfConstants()
 	{
+		GpuPerformanceMarker marker(_gpuComputeModule->performanceMarkersInitialized(), "SURF [Upload constants]");
+
 		cv::Mat gauss_ = cv::getGaussianKernel(13, 2.5, CV_32F);
 		const int nOriSamples = 109;
 
@@ -347,6 +355,8 @@ protected:
 
 	bool prepareScaleSpaceLayers(int imageWidth, int imageHeight)
 	{
+		GpuPerformanceMarker marker(_gpuComputeModule->performanceMarkersInitialized(), "SURF [Prepare layers]");
+
 		const int nTotalLayers = _nOctaves * _nScales;
 		if(!nTotalLayers)
 			return false;
@@ -419,6 +429,8 @@ protected:
 
 	virtual void convertImageToIntegral(const clw::Image2D& srcImage_cl, int imageWidth, int imageHeight)
 	{
+		GpuPerformanceMarker marker(_gpuComputeModule->performanceMarkersInitialized(), "SURF [Integral image]");
+
 		// Create if necessary image on a device
 		if(_tempImage_cl.isNull() || 
 			_tempImage_cl.width() != imageWidth ||
@@ -471,6 +483,8 @@ protected:
 
 	virtual void buildScaleSpace(int imageWidth, int imageHeight)
 	{
+		GpuPerformanceMarker marker(_gpuComputeModule->performanceMarkersInitialized(), "SURF [Build scale space]");
+
 		clw::Kernel kernelBuildScaleSpace = _gpuComputeModule->acquireKernel(_kidBuildScaleSpace);		
 
 		for(int octave = 0; octave < _nOctaves; ++octave)
@@ -532,6 +546,8 @@ protected:
 
 	void findScaleSpaceMaxima() 
 	{
+		GpuPerformanceMarker marker(_gpuComputeModule->performanceMarkersInitialized(), "SURF [Nonmaxima supression]");
+
 		clw::Kernel kernelFindScaleSpaceMaxima = _gpuComputeModule->acquireKernel(_kidFindScaleSpaceMaxima);
 
 		for(int octave = 0; octave < _nOctaves; ++octave)
@@ -577,6 +593,8 @@ protected:
 
 	void findKeypointOrientation(int keypointsCount) 
 	{
+		GpuPerformanceMarker marker(_gpuComputeModule->performanceMarkersInitialized(), "SURF [Orientation]");
+
 		clw::Kernel kernelFindKeypointOrientation = _gpuComputeModule->acquireKernel(_kidFindKeypointOrientation);
 
 		kernelFindKeypointOrientation.setLocalWorkSize(64);
@@ -590,6 +608,8 @@ protected:
 
 	void uprightKeypointOrientation(int keypointsCount)
 	{
+		GpuPerformanceMarker marker(_gpuComputeModule->performanceMarkersInitialized(), "SURF [Orientation]");
+
 		clw::Kernel kernelUprightKeypointOrientation = _gpuComputeModule->acquireKernel(_kidUprightKeypointOrientation);
 
 		kernelUprightKeypointOrientation.setLocalWorkSize(64);
@@ -601,6 +621,8 @@ protected:
 
 	void calculateDescriptors(int keypointsCount) 
 	{
+		GpuPerformanceMarker marker(_gpuComputeModule->performanceMarkersInitialized(), "SURF [Descriptors]");
+
 		if(_descriptors_cl.isNull() || 
 			// Allocate only if buffer is too small
 			_descriptors_cl.size() < sizeof(float)*64*keypointsCount)
