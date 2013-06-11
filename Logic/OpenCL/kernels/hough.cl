@@ -363,7 +363,7 @@ __kernel void getLines(__global int* accum,
 }
 
 __kernel void accumToImage(__global int* accum,
-                           int accumPitch,
+                           int accumPitch, float scale,
                            __write_only image2d_t accumImage)
 {
     int x = get_global_id(0);
@@ -372,7 +372,7 @@ __kernel void accumToImage(__global int* accum,
         return;
 
     int v = accum[mad24(y, accumPitch, x)];
-    float fv = /*1.0f - */min(1.0f, (float)v / 255.0f);
+    float fv = /*1.0f - */min(1.0f, (float)v / scale);
     int2 coords = (int2)(y, x);
 
     write_imagef(accumImage, coords, (float4)(fv));

@@ -11,6 +11,7 @@ public:
 		, _showHoughSpace(false)
 		, _rhoResolution(1.0f)
 		, _thetaResolution(1.0f)
+		, _houghSpaceScale(100.0f)
 	{
 	}
 
@@ -30,6 +31,9 @@ public:
 		case ID_ThetaResolution:
 			_thetaResolution = newValue.toFloat();
 			return true;
+		case ID_HoughSpaceScale:
+			_houghSpaceScale = newValue.toFloat();
+			return true;
 		}
 
 		return false;
@@ -43,6 +47,7 @@ public:
 		case ID_ShowHoughSpace: return _showHoughSpace;
 		case ID_RhoResolution: return _rhoResolution;
 		case ID_ThetaResolution: return _thetaResolution;
+		case ID_HoughSpaceScale: return _houghSpaceScale;
 		}
 
 		return QVariant();
@@ -139,6 +144,7 @@ public:
 			{ EPropertyType::Boolean, "Show Hough space", "" },
 			{ EPropertyType::Double, "Rho resolution", "" },
 			{ EPropertyType::Double, "Theta resolution", "" },
+			{ EPropertyType::Double, "Hough space scale", "min:1.0" },
 			{ EPropertyType::Unknown, "", "" }
 		};
 
@@ -184,7 +190,7 @@ private:
 			kernelFillAccumSpace.setArg(0, _deviceAccum);
 			kernelFillAccumSpace.setArg(1, 0);
 			kernelFillAccumSpace.setArg(2, numAngle * numRho);
-			_gpuComputeModule->queue().asyncRunKernel(kernelFillAccumSpace);		
+			_gpuComputeModule->queue().asyncRunKernel(kernelFillAccumSpace);
 
 			kernelAccumLines.setLocalWorkSize(clw::Grid(256));
 			kernelAccumLines.setRoundedGlobalWorkSize(clw::Grid(256 * numAngle));
@@ -259,7 +265,8 @@ private:
 		kernelAccumToImage.setRoundedGlobalWorkSize(numRho, numAngle);
 		kernelAccumToImage.setArg(0, _deviceAccum);
 		kernelAccumToImage.setArg(1, numRho);
-		kernelAccumToImage.setArg(2, deviceAccumImage);
+		kernelAccumToImage.setArg(2, std::max(_houghSpaceScale, 1.0f));
+		kernelAccumToImage.setArg(3, deviceAccumImage);
 		_gpuComputeModule->queue().runKernel(kernelAccumToImage);
 	}
 
@@ -293,12 +300,14 @@ private:
 		ID_ShowHoughSpace,
 		ID_RhoResolution,
 		ID_ThetaResolution,
+		ID_HoughSpaceScale
 	};
 
 	int _threshold;
 	bool _showHoughSpace;
 	float _rhoResolution;
 	float _thetaResolution;
+	float _houghSpaceScale;
 
 private:
 	clw::Buffer _deviceCounterPoints;
