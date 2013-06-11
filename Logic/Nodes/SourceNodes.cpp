@@ -236,8 +236,39 @@ public:
 		nodeConfig.pProperties = prop_config;
 	}
 
-private:
+protected:
 	std::string _filePath;
+};
+
+class ImageFromFileStreamNodeType : public ImageFromFileNodeType
+{
+public: 
+	bool restart() override
+	{ 
+		_img = cv::imread(_filePath, CV_LOAD_IMAGE_GRAYSCALE);
+
+		return !_img.empty();
+	}
+
+	ExecutionStatus execute(NodeSocketReader&, NodeSocketWriter& writer) override
+	{
+		cv::Mat& output = writer.acquireSocket(0).getImage();
+
+		output = _img;
+
+		return ExecutionStatus(EStatus::Tag, 
+			formatMessage("Image image width: %d\nImage image height: %d\nImage size in kbytes: %d",
+			output.cols, output.rows, output.cols * output.rows * sizeof(uchar) * output.channels() / 1024));
+	}
+
+	void configuration(NodeConfig& nodeConfig) const override
+	{
+		ImageFromFileNodeType::configuration(nodeConfig);
+		nodeConfig.flags = Node_AutoTag | Node_HasState;
+	}
+
+private:
+	cv::Mat _img;
 };
 
 class CameraCaptureNodeType : public NodeType
@@ -329,6 +360,7 @@ private:
 	cv::VideoCapture _capture;
 };
 
+REGISTER_NODE("Source/Image from file stream", ImageFromFileStreamNodeType)
 REGISTER_NODE("Source/Camera capture", CameraCaptureNodeType)
 REGISTER_NODE("Source/Video from file", VideoFromFileNodeType)
 REGISTER_NODE("Source/Image from file", ImageFromFileNodeType)
