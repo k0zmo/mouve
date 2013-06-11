@@ -270,6 +270,8 @@ string GpuNodeModule::additionalBuildOptions(const std::string& programName) con
 	return opts;
 }
 
+#if defined(HAVE_CLPERFMARKER_AMD)
+
 std::string clPerfMarkerErrorString(int error)
 {
 	switch(error)
@@ -285,6 +287,8 @@ std::string clPerfMarkerErrorString(int error)
 	default: return "Unknown error";
 	}
 }
+
+#endif
 
 void GpuNodeModule::beginPerfMarker(const char* markerName,
 									const char* groupName)
