@@ -87,14 +87,9 @@ public:
 		ensureSizeIsEnough(_deviceCounterLines, sizeof(cl_uint));
 
 		// Zero global counters
-		cl_uint* uintPtrPoints;
-		// Map both buffers at once
-		_gpuComputeModule->queue().asyncMapBuffer(_deviceCounterPoints, (void**) &uintPtrPoints, clw::MapAccess_Write);
-		cl_uint* uintPtrLines = (cl_uint*) _gpuComputeModule->queue().mapBuffer(_deviceCounterLines, clw::MapAccess_Write);
-		*uintPtrPoints = 0;
-		*uintPtrLines = 0;
-		_gpuComputeModule->queue().asyncUnmap(_deviceCounterPoints, uintPtrPoints);
-		_gpuComputeModule->queue().asyncUnmap(_deviceCounterLines, uintPtrLines);
+		cl_uint zero = 0;
+		_gpuComputeModule->queue().asyncWriteBuffer(_deviceCounterPoints, &zero);
+		_gpuComputeModule->queue().asyncWriteBuffer(_deviceCounterLines, &zero);
 
 		clw::Event kernelEvent = buildPointList(deviceImage, srcWidth, srcHeight);
 
