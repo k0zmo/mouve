@@ -53,7 +53,7 @@ public:
 		if(!_usePinnedMemory)
 		{
 			bool res = _gpuComputeModule->queue().writeImage2D(deviceImage, hostImage.data, 
-				0, 0, hostImage.cols, hostImage.rows, hostImage.step);
+				clw::Rect(0, 0, hostImage.cols, hostImage.rows), hostImage.step);
 			return ExecutionStatus(res ? EStatus::Ok : EStatus::Error);
 		}
 		else
@@ -151,7 +151,7 @@ public:
 		if(!_usePinnedMemory)
 		{
 			bool res = _gpuComputeModule->queue().readImage2D(deviceImage, hostImage.data, 
-				0, 0, hostImage.cols, hostImage.rows, hostImage.step);
+				clw::Rect(0, 0, hostImage.cols, hostImage.rows), hostImage.step);
 			return ExecutionStatus(res ? EStatus::Ok : EStatus::Error);
 		}
 		else
