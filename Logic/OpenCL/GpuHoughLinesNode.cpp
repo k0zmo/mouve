@@ -91,17 +91,7 @@ public:
 		_gpuComputeModule->queue().asyncWriteBuffer(_deviceCounterPoints, &zero);
 		_gpuComputeModule->queue().asyncWriteBuffer(_deviceCounterLines, &zero);
 
-		clw::Event kernelEvent = buildPointList(deviceImage, srcWidth, srcHeight);
-
-		// Get number of non-zero pixels
-		cl_uint* ptr;
-		cl_uint pointsCount = 0;
-		clw::Event event = _gpuComputeModule->dataQueue().asyncMapBuffer(
-			_deviceCounterPoints, (void**) &ptr, clw::MapAccess_Read, kernelEvent);
-		event.setCallback(clw::Status_Complete, [=, &pointsCount](clw::EEventStatus) {
-			pointsCount = ptr[0];
-			_gpuComputeModule->dataQueue().asyncUnmap(_deviceCounterPoints, ptr);
-		});
+		buildPointList(deviceImage, srcWidth, srcHeight);
 
 		// W akumulatorze plotowac bedziemy krzywe z rodziny
 		// rho(theta) = x0*cos(theta) + y0*sin(theta)
@@ -129,11 +119,8 @@ public:
 		else if(!deviceAccumImage.isNull())
 			deviceAccumImage = clw::Image2D();
 
-		event.waitForFinished();
-
 		return ExecutionStatus(EStatus::Ok, 
-			formatMessage("Detected lines: %d (max: %d)\nPercent of white pixels: %f%%\n", 
-			linesCount, maxLines, (double) pointsCount / (srcWidth * srcHeight) * 100.0));
+			formatMessage("Detected lines: %d (max: %d)", linesCount, maxLines));
 	}
 
 	void configuration(NodeConfig& nodeConfig) const override
