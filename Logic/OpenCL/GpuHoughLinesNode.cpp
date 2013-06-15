@@ -55,15 +55,11 @@ public:
 
 	bool postInit() override
 	{
-		string opts;
-		if(_gpuComputeModule->device().supportsExtension("cl_ext_atomic_counters_32"))
-			opts = "-DUSE_ATOMIC_COUNTERS";
-
-		_kidBuildPointsList = _gpuComputeModule->registerKernel("buildPointsList_basic", "hough.cl", opts);
-		_kidAccumLines = _gpuComputeModule->registerKernel("accumLines", "hough.cl", opts);
-		_kidAccumLinesShared = _gpuComputeModule->registerKernel("accumLines_shared", "hough.cl", opts);
-		_kidGetLines = _gpuComputeModule->registerKernel("getLines", "hough.cl", opts);
-		_kidAccumToImage = _gpuComputeModule->registerKernel("accumToImage", "hough.cl", opts);
+		_kidBuildPointsList = _gpuComputeModule->registerKernel("buildPointsList_basic", "hough.cl");
+		_kidAccumLines = _gpuComputeModule->registerKernel("accumLines", "hough.cl");
+		_kidAccumLinesShared = _gpuComputeModule->registerKernel("accumLines_shared", "hough.cl");
+		_kidGetLines = _gpuComputeModule->registerKernel("getLines", "hough.cl");
+		_kidAccumToImage = _gpuComputeModule->registerKernel("accumToImage", "hough.cl");
 		_kidFillAccumSpace = _gpuComputeModule->registerKernel("fill_buffer_int", "fill.cl");
 
 		return _kidBuildPointsList != InvalidKernelID

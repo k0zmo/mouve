@@ -1,6 +1,6 @@
 #define NBINS 4
 
-#if defined(USE_ATOMIC_COUNTERS)
+#if defined(cl_ext_atomic_counters_32)
 #  pragma OPENCL EXTENSION cl_ext_atomic_counters_32 : enable
 #  define counter_type counter32_t
 #else

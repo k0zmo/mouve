@@ -224,8 +224,8 @@ class DrawKeypointsNodeType : public NodeType
 {
 public:
 	DrawKeypointsNodeType()
-		: _richKeypoints(false)
-		, _color(cv::Scalar::all(-1))
+		: _color(cv::Scalar::all(-1))
+		, _richKeypoints(false)
 	{
 	}
 
@@ -303,8 +303,8 @@ private:
 		ID_RichKeypoints
 	};
 
-	bool _richKeypoints;
 	cv::Scalar _color;
+	bool _richKeypoints;
 };
 
 class DrawMatchesNodeType : public NodeType

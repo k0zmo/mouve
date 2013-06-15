@@ -83,8 +83,6 @@ public:
 		_kidMultiScan_vert = _gpuComputeModule->registerKernel("multiscan_vert_image", "integral.cl", opts);
 
 		ostringstream strm;
-		if(_gpuComputeModule->device().supportsExtension("cl_ext_atomic_counters_32"))
-			strm << " -DUSE_ATOMIC_COUNTERS";
 		strm << " -DKEYPOINT_MAX=" << KEYPOINTS_MAX;
 		opts += strm.str();
 
