@@ -122,18 +122,17 @@ __kernel void mog_image_unorm(__read_only image2d_t frame,
     // Sort mixtures (buble sort).
     // Every mixtures but the one with "completely new" weight and variance
     // are already sorted thus we need to reorder only that single mixture.
-    for(int mx = 0; mx < pdfMatched; ++mx)
+    for(int mx = pdfMatched-1; mx >= 0; --mx)
     {
-        if(sortKey[pdfMatched] > sortKey[mx])
-        {
-            float tmp;
-#define SWAP(x, y) tmp = x; x = y; y = tmp;
-            SWAP(weight[pdfMatched], weight[mx]);
-            SWAP(mean[pdfMatched], mean[mx]);
-            SWAP(var[pdfMatched], var[mx]);
-#undef SWAP
+        if(sortKey[mx] >= sortKey[mx+1])
             break;
-        }
+
+        float tmp;
+#define SWAP(x, y) tmp = x; x = y; y = tmp;
+        SWAP(weight[mx], weight[mx+1]);
+        SWAP(mean[mx], mean[mx+1]);
+        SWAP(var[mx], var[mx+1]);
+#undef SWAP
     }
 
     #pragma unroll NMIXTURES
