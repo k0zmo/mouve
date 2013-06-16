@@ -289,7 +289,10 @@
     <string>Play</string>
    </property>
    <property name="toolTip">
-    <string>Play</string>
+    <string>Play (F5)</string>
+   </property>
+   <property name="shortcut">
+    <string>F5</string>
    </property>
   </action>
   <action name="actionQuit">
@@ -310,7 +313,10 @@
     <string>Single step</string>
    </property>
    <property name="toolTip">
-    <string>Step</string>
+    <string>Step (Space)</string>
+   </property>
+   <property name="shortcut">
+    <string>Space</string>
    </property>
   </action>
   <action name="actionPause">
@@ -322,7 +328,10 @@
     <string>Pause</string>
    </property>
    <property name="toolTip">
-    <string>Pause</string>
+    <string>Pause (F6)</string>
+   </property>
+   <property name="shortcut">
+    <string>F6</string>
    </property>
   </action>
   <action name="actionStop">
@@ -334,7 +343,10 @@
     <string>Stop</string>
    </property>
    <property name="toolTip">
-    <string>Stop</string>
+    <string>Stop (F7)</string>
+   </property>
+   <property name="shortcut">
+    <string>F7</string>
    </property>
   </action>
   <action name="actionAutoRefresh">

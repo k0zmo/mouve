@@ -483,6 +483,7 @@ void Controller::setupUi()
 	_ui->actionNewTree->setShortcut(QKeySequence(QKeySequence::New));
 	_ui->actionOpenTree->setShortcut(QKeySequence(QKeySequence::Open));
 	_ui->actionSaveTree->setShortcut(QKeySequence(QKeySequence::Save));
+	_ui->actionSaveTreeAs->setShortcut(QKeySequence(QKeySequence::SaveAs));
 
 	// Connect actions from a toolbar
 	connect(_ui->actionNewTree, &QAction::triggered, this, &Controller::newTree);
