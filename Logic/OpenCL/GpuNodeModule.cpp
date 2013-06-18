@@ -3,6 +3,8 @@
 #include "GpuNodeModule.h"
 #include "GpuException.h"
 
+#include <cassert>
+
 #if defined(HAVE_CLPERFMARKER_AMD)
 #  include <CLPerfMarker.h>
 #endif

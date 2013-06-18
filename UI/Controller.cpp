@@ -463,8 +463,8 @@ void Controller::setupUi()
 	setCorner(Qt::TopRightCorner, Qt::RightDockWidgetArea);
 	setCorner(Qt::TopLeftCorner, Qt::LeftDockWidgetArea);
 
-	if(!varGeometry.isValid() || !varState.isValid())
-		tabifyDockWidget(_ui->propertiesDockWidget, _ui->nodesDockWidget);
+	//if(!varGeometry.isValid() || !varState.isValid())
+	//	tabifyDockWidget(_ui->propertiesDockWidget, _ui->nodesDockWidget);
 
 #if QT_VERSION == 0x050001 || QT_VERSION == 0x050000
 	/// TODO: Bug in Qt 5.0.1 : Dock widget loses its frame and bar after undocked
