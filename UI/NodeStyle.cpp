@@ -7,7 +7,7 @@ static QString FontName = "DejaVu Sans";
 #endif
 
 // Scene NodeStyle
-QColor NodeStyle::SceneBackground = QColor(64, 64, 64);
+QColor NodeStyle::SceneBackground = QColor(104, 104, 104);
 QColor NodeStyle::SceneBlockedBackground = QColor(34, 34, 34);
 
 // Link NodeStyle
