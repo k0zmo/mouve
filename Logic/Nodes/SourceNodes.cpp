@@ -18,6 +18,7 @@ public:
 		: _videoPath("")
 #endif
 		, _startFrame(0)
+		, _endFrame(0)
 		, _frameInterval(0)
 		, _ignoreFps(false)
 	{
@@ -33,6 +34,9 @@ public:
 		case ID_StartFrame:
 			_startFrame = newValue.toUInt();
 			return true;
+		case ID_EndFrame:
+			_endFrame = newValue.toUInt();
+			return true;
 		case ID_IgnoreFps:
 			_ignoreFps = newValue.toBool();
 			return true;
@@ -47,6 +51,7 @@ public:
 		{
 		case ID_VideoPath: return QString::fromStdString(_videoPath);
 		case ID_StartFrame: return _startFrame;
+		case ID_EndFrame: return _endFrame;
 		case ID_IgnoreFps: return _ignoreFps;
 		}
 
@@ -73,6 +78,8 @@ public:
 			? unsigned(ceil(1000.0 / fps))
 			: 0;
 		_timeStamp = std::chrono::high_resolution_clock::time_point();
+		_maxFrames = _capture.get(CV_CAP_PROP_FRAME_COUNT);
+		_currentFrame = 0;
 
 		return true;
 	}
@@ -86,6 +93,14 @@ public:
 
 		// We need this so we won't replace previous good frame with current bad (for instance - end of video)
 		cv::Mat buffer; 
+		++_currentFrame;
+
+		if(_endFrame > 0 && _currentFrame >= _endFrame)
+		{
+			// No more data (for us)
+			return ExecutionStatus(EStatus::Ok, formatMessage("Frame image width: %d\nFrame image height: %d\nFrame size in kbytes: %d\nFrame: %d/%d",
+				buffer.cols, buffer.rows, buffer.cols * buffer.rows * sizeof(uchar) * buffer.channels() / 1024, _currentFrame - 1, _maxFrames));
+		}
 
 		if(_frameInterval == 0)
 		{
@@ -120,8 +135,8 @@ public:
 			double elapsed = (stop - start) * 1e3;
 
 			return ExecutionStatus(EStatus::Tag, elapsed,
-				formatMessage("Frame image width: %d\nFrame image height: %d\nFrame size in kbytes: %d",
-					output.cols, output.rows, output.cols * output.rows * sizeof(uchar) * output.channels() / 1024));
+				formatMessage("Frame image width: %d\nFrame image height: %d\nFrame size in kbytes: %d\nFrame: %d/%d",
+					output.cols, output.rows, output.cols * output.rows * sizeof(uchar) * output.channels() / 1024, _currentFrame, _maxFrames));
 		}
 		else
 		{
@@ -139,6 +154,7 @@ public:
 		static const PropertyConfig prop_config[] = {
 			{ EPropertyType::Filepath, "Video path", "filter:Video files (*.mkv *.mp4 *.avi *.flv)" },
 			{ EPropertyType::Integer, "Start frame", "min:0" },
+			{ EPropertyType::Integer, "End frame", "min:0" },
 			{ EPropertyType::Boolean, "Ignore FPS", "" },
 			{ EPropertyType::Unknown, "", "" }
 		};
@@ -154,13 +170,17 @@ private:
 	{
 		ID_VideoPath,
 		ID_StartFrame,
-		ID_IgnoreFps
+		ID_EndFrame,
+		ID_IgnoreFps,
 	};
 
 	std::string _videoPath;
 	cv::VideoCapture _capture;
 	unsigned _startFrame;
+	unsigned _endFrame;
 	unsigned _frameInterval;
+	unsigned _currentFrame;
+	unsigned _maxFrames;
 	std::chrono::high_resolution_clock::time_point _timeStamp;
 	static HighResolutionClock _clock;
 	bool _ignoreFps;
