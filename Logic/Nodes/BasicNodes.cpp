@@ -641,6 +641,30 @@ public:
 	}
 };
 
+class CountNonZeroNodeType : public NodeType
+{
+public:
+	ExecutionStatus execute(NodeSocketReader& reader, NodeSocketWriter&) override
+	{
+		const cv::Mat& src = reader.readSocket(0).getImage();
+
+		int n = cv::countNonZero(src);
+
+		return ExecutionStatus(EStatus::Ok, formatMessage("Non-zero elements: %d\n", n));
+	}
+
+	void configuration(NodeConfig& nodeConfig) const override
+	{
+		static const InputSocketConfig in_config[] = {
+			{ ENodeFlowDataType::Image, "source", "Source", "" },
+			{ ENodeFlowDataType::Invalid, "", "", "" }
+		};
+
+		nodeConfig.description = "Count non-zero elements in given image";
+		nodeConfig.pInputSockets = in_config;
+	}
+};
+
 class BinarizationNodeType : public NodeType
 {
 public:
@@ -1508,10 +1532,11 @@ REGISTER_NODE("Image/Gaussian blur", GaussianBlurNodeType)
 REGISTER_NODE("Segmentation/Otsu's thresholding", OtsuThresholdingNodeType)
 REGISTER_NODE("Segmentation/Binarization", BinarizationNodeType)
 
+REGISTER_NODE("Arithmetic/Count non-zero", CountNonZeroNodeType)
 REGISTER_NODE("Arithmetic/Negate", NegateNodeType)
 REGISTER_NODE("Arithmetic/Absolute diff.", AbsoluteDifferenceNodeType)
-//REGISTER_NODE("Subtract", SubtractNodeType)
-//REGISTER_NODE("Absolute", AbsoluteNodeType)
+REGISTER_NODE("Arithmetic/Subtract", SubtractNodeType)
+REGISTER_NODE("Arithmetic/Absolute", AbsoluteNodeType)
 REGISTER_NODE("Arithmetic/Add", AddNodeType)
 
 REGISTER_NODE("Source/Structuring element", StructuringElementNodeType)
