@@ -130,9 +130,17 @@ void FileRequester::blockLineEditSignals(bool block)
 
 void FileRequester::openFileDialog()
 {
+	QFileInfo fileInfo(text());
+	QString dir;
+	if(fileInfo.isDir())
+		// doesnt work:
+		// fileInfo.absoluteDir().absolutePath();
+		dir = QDir(text()).absolutePath(); 
+	else
+		dir = fileInfo.absolutePath();
+
 	/// TODO: filemod - existing, existings, read, write, etc...
-	QString path = QFileDialog::getOpenFileName(this, "Choose a file",
-		QFileInfo(text()).absolutePath(), _filter);
+	QString path = QFileDialog::getOpenFileName(this, "Choose a file", dir, _filter);
 
 	if(!path.isEmpty())
 	{
