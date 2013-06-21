@@ -164,7 +164,7 @@ private:
 	QProgressBar* _progressBar;
 
 	// Recent files part
-	enum { MaxRecentFiles = 5 };
+	enum { MaxRecentFiles = 15 };
 	QAction* _actionRecentFiles[MaxRecentFiles];
 	QAction* _actionSeparatorRecentFiles;
 	QAction* _actionClearRecentFiles;
