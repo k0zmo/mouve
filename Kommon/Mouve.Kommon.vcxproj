@@ -23,6 +23,7 @@
     <ClInclude Include="konfig.h" />
     <ClInclude Include="HighResolutionClock.h" />
     <ClInclude Include="MacroUtils.h" />
+    <ClInclude Include="SharedLibrary.h" />
     <ClInclude Include="Singleton.h" />
     <ClInclude Include="StlUtils.h" />
     <ClInclude Include="Utils.h" />
@@ -30,6 +31,7 @@
   <ItemGroup>
     <ClCompile Include="Hash.cpp" />
     <ClCompile Include="HighResolutionClock.cpp" />
+    <ClCompile Include="SharedLibrary.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{201C0F8F-4B5D-4CA2-A267-1EBED6CD8460}</ProjectGuid>
