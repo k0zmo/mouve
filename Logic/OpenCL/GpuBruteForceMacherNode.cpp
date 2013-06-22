@@ -156,7 +156,7 @@ public:
 			{ ENodeFlowDataType::Invalid, "", "", "" }
 		};
 		static const PropertyConfig prop_config[] = {
-			{ EPropertyType::Double, "ID_DistanceRatio", "min:0.0, max:1.0, step:0.1" },
+			{ EPropertyType::Double, "ID_DistanceRatio", "min:0.0, max:1.0, step:0.1, decimals:2" },
 			{ EPropertyType::Unknown, "", "" }
 		};
 

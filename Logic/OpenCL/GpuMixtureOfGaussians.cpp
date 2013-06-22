@@ -221,7 +221,7 @@ public:
 			{ EPropertyType::Integer, "History frames", "min:1, max:500" },
 			{ EPropertyType::Integer, "Number of mixtures",  "min:1, max:9" },
 			{ EPropertyType::Double, "Background ratio", "min:0.01, max:0.99, step:0.01" },
-			{ EPropertyType::Double, "Learning rate", "min:-1, max:1, step:0.01" },
+			{ EPropertyType::Double, "Learning rate", "min:-1, max:1, step:0.01, decimals:3" },
 			{ EPropertyType::Boolean, "Show background", "" },
 			{ EPropertyType::Unknown, "", "" }
 		};
