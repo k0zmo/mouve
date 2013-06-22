@@ -2,6 +2,7 @@
 #include "NodeType.h"
 #include "NodeTree.h"
 #include "NodeModule.h"
+#include "NodePlugin.h"
 
 /// TODO: Change this to some neat logging system
 #include <iostream>
@@ -18,6 +19,10 @@ NodeSystem::NodeSystem()
 
 NodeSystem::~NodeSystem()
 {
+	_registeredNodeTypes.clear();
+	_typeNameToTypeID.clear();
+	_registeredModules.clear();
+	_plugins.clear();
 }
 
 NodeTypeID NodeSystem::registerNodeType(const std::string& nodeTypeName,
@@ -156,6 +161,17 @@ bool NodeSystem::registerNodeModule(const std::shared_ptr<NodeModule>& module)
 const std::shared_ptr<NodeModule>& NodeSystem::nodeModule(const std::string& name)
 {
 	return _registeredModules[name];
+}
+
+void NodeSystem::loadPlugin(const std::string& pluginName)
+{
+	if(_plugins.find(pluginName) == _plugins.end())
+	{
+		auto plugin = std::unique_ptr<NodePlugin>(new NodePlugin(pluginName));
+		/// TODO: Check if logic version == logic version of a plugin
+		plugin->registerPlugin(this);
+		_plugins.emplace(pluginName, std::move(plugin));
+	}
 }
 
 // -----------------------------------------------------------------------------

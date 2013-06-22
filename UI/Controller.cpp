@@ -80,6 +80,10 @@ Controller::Controller(QWidget* parent, Qt::WindowFlags flags)
 	QCoreApplication::setOrganizationName(applicationTitle);
 
 	setupUi();
+
+	// Lookup for plugins in ./plugins directory
+	pluginLookUp();
+
 	setupNodeTypesUi();
 	populateAddNodeContextMenu();
 	updateState(EState::Stopped);
@@ -119,6 +123,9 @@ Controller::~Controller()
 
 	_workerThread.quit();
 	_workerThread.wait();
+
+	_nodeTree = nullptr;
+	_nodeSystem = nullptr;
 
 	delete _ui;
 }
@@ -2209,3 +2216,67 @@ void Controller::showDeviceSettings()
 
 	dialog.exec();
 }
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+
+namespace {
+
+#if K_SYSTEM == K_SYSTEM_WINDOWS
+
+HMODULE moduleHandle()
+{
+	static int s_somevar = 0;
+	MEMORY_BASIC_INFORMATION mbi;
+	if(!::VirtualQuery(&s_somevar, &mbi, sizeof(mbi)))
+	{
+		return NULL;
+	}
+	return static_cast<HMODULE>(mbi.AllocationBase);
+}
+
+QString pluginDirectory()
+{
+	HMODULE hModule = moduleHandle();
+	char buffer[MAX_PATH];
+	/*DWORD dwSize = */GetModuleFileNameA(hModule, buffer, MAX_PATH);
+	//dwSize = GetModuleFileNameA(nullptr, buffer, MAX_PATH);
+	QFileInfo fi(QString::fromLatin1(buffer));
+	QDir dllDir = fi.absoluteDir();
+	if(!dllDir.cd("plugins"))
+		// fallback to dll directory
+		return dllDir.absolutePath();
+	return dllDir.absolutePath();
+}
+
+}
+
+#elif K_SYSTEM == K_SYSTEM_LINUX
+
+string kernelsDirectory()
+{
+	return "./plugins";
+}
+}
+
+#endif
+
+void Controller::pluginLookUp()
+{
+	QDir pluginDir(pluginDirectory());
+	auto w = pluginDir.absolutePath();
+	auto list = pluginDir.entryInfoList(QStringList("*.dll"), QDir::Files);
+	for(auto&& pluginName : list)
+	{
+		try
+		{
+			_nodeSystem->loadPlugin(pluginName.absoluteFilePath().toStdString());
+		}
+		catch (std::exception&)
+		{
+			qCritical() << "Couldn't load plugin " << pluginName.completeBaseName();
+		}
+	}
+}
+
+
+

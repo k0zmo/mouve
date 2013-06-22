@@ -105,6 +105,8 @@ private:
 
 	void updateRecentFileActions(const QString& filePath = QString());
 
+	void pluginLookUp();
+
 private slots:
 	void showErrorMessage(const QString& message);
 

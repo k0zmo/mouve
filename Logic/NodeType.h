@@ -199,7 +199,7 @@ public:
 
 	virtual bool init(const std::shared_ptr<NodeModule>& module);
 
-	static std::string formatMessage(const char* msg, ...);
+	LOGIC_EXPORT static std::string formatMessage(const char* msg, ...);
 };
 
 inline bool NodeType::setProperty(PropertyID, const QVariant&)

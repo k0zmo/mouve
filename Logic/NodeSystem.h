@@ -25,6 +25,8 @@ public:
 	bool registerNodeModule(const std::shared_ptr<NodeModule>& module);
 	const std::shared_ptr<NodeModule>& nodeModule(const std::string& name);
 
+	void loadPlugin(const std::string& pluginName);
+
 private:
 	// That is all that NodeSystem needs for handling registered node types
 	class NodeTypeInfo
@@ -52,6 +54,7 @@ private:
 	std::vector<NodeTypeInfo> _registeredNodeTypes;
 	std::unordered_map<std::string, NodeTypeID> _typeNameToTypeID;
 	std::unordered_map<std::string, std::shared_ptr<NodeModule>> _registeredModules;
+	std::unordered_map<std::string, std::unique_ptr<NodePlugin>> _plugins;
 
 private:
 	class NodeTypeIteratorImpl;

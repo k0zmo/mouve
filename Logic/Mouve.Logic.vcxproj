@@ -267,6 +267,7 @@
     <ClCompile Include="NodeFactory.cpp" />
     <ClCompile Include="NodeFlowData.cpp" />
     <ClCompile Include="NodeLink.cpp" />
+    <ClCompile Include="NodePlugin.cpp" />
     <ClCompile Include="NodeSystem.cpp" />
     <ClCompile Include="Nodes\BriskNodes.cpp" />
     <ClCompile Include="Nodes\BasicNodes.cpp" />
@@ -310,6 +311,7 @@
     <ClInclude Include="NodeException.h" />
     <ClInclude Include="NodeFlowData.h" />
     <ClInclude Include="NodeModule.h" />
+    <ClInclude Include="NodePlugin.h" />
     <ClInclude Include="Nodes\CV.h" />
     <ClInclude Include="Nodes\ksurf.h" />
     <ClInclude Include="OpenCL\DeviceArray.h" />

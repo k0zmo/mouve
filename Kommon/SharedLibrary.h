@@ -21,7 +21,7 @@ LibraryHandle loadLibrary(const char* path);
 void unloadLibrary(LibraryHandle sharedLibraryHandle);
 
 template<class Signature>
-	Signature* GetFunctionAddress(LibraryHandle sharedLibraryHandle, 
+	Signature* getFunctionAddress(LibraryHandle sharedLibraryHandle, 
 		const char* functionName)
 	{
 #if K_SYSTEM == K_SYSTEM_WINDOWS
