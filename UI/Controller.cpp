@@ -2270,10 +2270,11 @@ void Controller::pluginLookUp()
 		try
 		{
 			_nodeSystem->loadPlugin(pluginName.absoluteFilePath().toStdString());
+			qDebug() << "Plugin" << pluginName.completeBaseName() << "loaded successfully";
 		}
 		catch (std::exception&)
 		{
-			qCritical() << "Couldn't load plugin " << pluginName.completeBaseName();
+			qCritical() << "Couldn't load plugin" << pluginName.completeBaseName();
 		}
 	}
 }
