@@ -160,10 +160,10 @@ private:
 	double _threshold;
 };
 
-class NearestNeighborDistanceRatioMatcherNodeType : public NodeType
+class NearestNeighborDistanceRatioFlannMatcherNodeType : public NodeType
 {
 public:
-	NearestNeighborDistanceRatioMatcherNodeType()
+	NearestNeighborDistanceRatioFlannMatcherNodeType()
 		: _distanceRatio(0.8)
 	{
 	}
@@ -282,5 +282,201 @@ private:
 	double _distanceRatio;
 };
 
-REGISTER_NODE("Features/BForce Matcher", BruteForceMatcherNodeType);
+class NearestNeighborDistanceRatioMatcherNodeType : public NodeType
+{
+public:
+	NearestNeighborDistanceRatioMatcherNodeType()
+		: _distanceRatio(0.8)
+	{
+	}
+
+	bool setProperty(PropertyID propId, const QVariant& newValue) override
+	{
+		switch(propId)
+		{
+		case ID_DistanceRatio:
+			_distanceRatio = newValue.toDouble();
+			return true;
+		}
+
+		return false;
+	}
+
+	QVariant property(PropertyID propId) const override
+	{
+		switch(propId)
+		{
+		case ID_DistanceRatio: return _distanceRatio;
+		}
+
+		return QVariant();
+	}
+
+	ExecutionStatus execute(NodeSocketReader& reader, NodeSocketWriter& writer) override
+	{
+		// inputs
+		const KeyPoints& queryKp = reader.readSocket(0).getKeypoints();
+		const cv::Mat& query = reader.readSocket(1).getArray();
+		const KeyPoints& trainKp = reader.readSocket(2).getKeypoints();
+		const cv::Mat& train = reader.readSocket(3).getArray();
+		// outputs
+		Matches& mt = writer.acquireSocket(0).getMatches();
+
+		if(query.empty() || train.empty())
+			return ExecutionStatus(EStatus::Ok);
+
+		if(query.cols != train.cols
+		|| query.type() != train.type())
+			return ExecutionStatus(EStatus::Error, "Query and train descriptors are different types");
+
+		vector<vector<cv::DMatch>> knMatches;
+
+		if(query.type() == CV_32F)
+		{
+			// for each descriptors in query array
+			for(int queryIdx = 0; queryIdx < query.rows; ++queryIdx)
+			{
+				const float* query_row = query.ptr<float>(queryIdx);
+
+				float bestDistance1 = std::numeric_limits<float>::max();
+				float bestDistance2 = std::numeric_limits<float>::max();
+				int bestTrainIdx1 = -1;
+				int bestTrainIdx2 = -1;
+
+				// for each descriptors in train array
+				for(int trainIdx = 0; trainIdx < train.rows; ++trainIdx)
+				{
+					const float* train_row = train.ptr<float>(trainIdx);
+
+					cv::L2<float> op;
+					cv::L2<float>::ResultType dist = op(train_row, query_row, train.cols);
+
+					if(dist < bestDistance1)
+					{
+						bestDistance2 = bestDistance1;
+						bestTrainIdx2 = bestTrainIdx1;
+						bestDistance1 = dist;
+						bestTrainIdx1 = trainIdx;
+					}
+					else if(dist < bestDistance2)
+					{
+						bestDistance2 = dist;
+						bestTrainIdx2 = trainIdx;
+					}
+				}
+
+				vector<cv::DMatch> knMatch;
+				knMatch.emplace_back(cv::DMatch(queryIdx, bestTrainIdx1, bestDistance1));
+				knMatch.emplace_back(cv::DMatch(queryIdx, bestTrainIdx2, bestDistance2));
+				knMatches.emplace_back(knMatch);
+			}
+		}
+		else if(query.type() == CV_8U)
+		{
+			// for each descriptors in query array
+			for(int queryIdx = 0; queryIdx < query.rows; ++queryIdx)
+			{
+				const uchar* query_row = query.ptr<uchar>(queryIdx);
+
+				int bestDistance1 = std::numeric_limits<int>::max();
+				int bestDistance2 = std::numeric_limits<int>::max();
+				int bestTrainIdx1 = -1;
+				int bestTrainIdx2 = -1;
+
+				// for each descriptors in train array
+				for(int trainIdx = 0; trainIdx < train.rows; ++trainIdx)
+				{
+					const uchar* train_row = train.ptr<uchar>(trainIdx);
+
+					cv::Hamming op;
+					cv::Hamming::ResultType dist = op(train_row, query_row, train.cols);
+
+					if(dist < bestDistance1)
+					{
+						bestDistance2 = bestDistance1;
+						bestTrainIdx2 = bestTrainIdx1;
+						bestDistance1 = dist;
+						bestTrainIdx1 = trainIdx;
+					}
+					else if(dist < bestDistance2)
+					{
+						bestDistance2 = dist;
+						bestTrainIdx2 = trainIdx;
+					}
+				}
+
+				vector<cv::DMatch> knMatch;
+				knMatch.emplace_back(cv::DMatch(queryIdx, bestTrainIdx1, bestDistance1));
+				knMatch.emplace_back(cv::DMatch(queryIdx, bestTrainIdx2, bestDistance2));
+				knMatches.emplace_back(knMatch);
+			}
+		}
+		else
+		{
+			return ExecutionStatus(EStatus::Error, 
+				"Unsupported descriptor data type "
+				"(must be float for L2 norm or Uint8 for Hamming norm");
+		}
+
+		mt.queryPoints.clear();
+		mt.trainPoints.clear();
+
+		for(auto&& knMatch : knMatches)
+		{
+			if(knMatch.size() != 2)
+				continue;
+
+			auto&& best = knMatch[0];
+			auto&& good = knMatch[1];
+
+			if(best.distance <= _distanceRatio * good.distance)
+			{
+				mt.queryPoints.emplace_back(queryKp.kpoints[best.queryIdx].pt);
+				mt.trainPoints.emplace_back(trainKp.kpoints[best.trainIdx].pt);
+			}
+		}
+
+		mt.queryImage = queryKp.image;
+		mt.trainImage = trainKp.image;
+
+		return ExecutionStatus(EStatus::Ok, 
+			formatMessage("Initial matches found: %d\nNNDR Matches found: %d",
+			(int) knMatches.size(), (int) mt.queryPoints.size()));
+	}
+
+	void configuration(NodeConfig& nodeConfig) const override
+	{
+		static const InputSocketConfig in_config[] = {
+			{ ENodeFlowDataType::Keypoints, "keypoints1", "Query keypoints", "" },
+			{ ENodeFlowDataType::Array, "descriptors1", "Query descriptors", "" },
+			{ ENodeFlowDataType::Keypoints, "keypoints2", "Train keypoints", "" },
+			{ ENodeFlowDataType::Array, "descriptors2", "Train descriptors", "" },
+			{ ENodeFlowDataType::Invalid, "", "", "" }
+		};
+		static const OutputSocketConfig out_config[] = {
+			{ ENodeFlowDataType::Matches, "matches", "Matches", "" },
+			{ ENodeFlowDataType::Invalid, "", "", "" }
+		};
+		static const PropertyConfig prop_config[] = {
+			{ EPropertyType::Double, "ID_DistanceRatio", "min:0.0, max:1.0, step:0.1, decimals:2" },
+			{ EPropertyType::Unknown, "", "" }
+		};
+
+		nodeConfig.description = "";
+		nodeConfig.pInputSockets = in_config;
+		nodeConfig.pOutputSockets = out_config;
+		nodeConfig.pProperties = prop_config;
+	}
+
+private:
+	enum EPropertyID
+	{
+		ID_DistanceRatio
+	};
+
+	double _distanceRatio;
+};
+
 REGISTER_NODE("Features/NNDR Matcher", NearestNeighborDistanceRatioMatcherNodeType)
+REGISTER_NODE("Features/BForce Matcher", BruteForceMatcherNodeType);
+REGISTER_NODE("Features/NNDR ANN Matcher", NearestNeighborDistanceRatioFlannMatcherNodeType)
