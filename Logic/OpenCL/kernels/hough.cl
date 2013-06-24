@@ -263,9 +263,9 @@ __kernel void getLines(__global int* accum,
     int v = FETCH(gid.x, gid.y);
     if(v > threshold 
         && v > FETCH(gid.x - 1, gid.y)
-        && v > FETCH(gid.x + 1, gid.y)
+        && v >= FETCH(gid.x + 1, gid.y)
         && v > FETCH(gid.x, gid.y - 1)
-        && v > FETCH(gid.x, gid.y + 1))
+        && v >= FETCH(gid.x, gid.y + 1))
     {
         int idx = atomic_inc(pointsCount);
         if(idx < maxLines)
@@ -278,7 +278,7 @@ __kernel void getLines(__global int* accum,
 #undef FETCH
 }
 */
-/*
+
 __kernel void getLines(__global int* accum,
                        __global float2* lines,
                        counter_type pointsCount,
@@ -300,16 +300,16 @@ __kernel void getLines(__global int* accum,
     if(v > threshold 
         && v > FETCH(gid.x - 2, gid.y)
         && v > FETCH(gid.x - 1, gid.y)
-        && v > FETCH(gid.x + 1, gid.y)
-        && v > FETCH(gid.x + 2, gid.y)
+        && v >= FETCH(gid.x + 1, gid.y)
+        && v >= FETCH(gid.x + 2, gid.y)
         && v > FETCH(gid.x - 1, gid.y - 1)
         && v > FETCH(gid.x, gid.y - 1)
         && v > FETCH(gid.x + 1, gid.y - 1)
         && v > FETCH(gid.x, gid.y - 2)
         && v > FETCH(gid.x - 1, gid.y + 1)
-        && v > FETCH(gid.x, gid.y + 1)
-        && v > FETCH(gid.x + 1, gid.y + 1)
-        && v > FETCH(gid.x, gid.y + 2))
+        && v >= FETCH(gid.x, gid.y + 1)
+        && v >= FETCH(gid.x + 1, gid.y + 1)
+        && v >= FETCH(gid.x, gid.y + 2))
     {
         int idx = atomic_inc(pointsCount);
         if(idx < maxLines)
@@ -321,8 +321,8 @@ __kernel void getLines(__global int* accum,
     }
 #undef FETCH
 }
-*/
 
+/*
 __kernel void getLines(__global int* accum,
                        __global float2* lines,
                        counter_type pointsCount,
@@ -361,7 +361,7 @@ __kernel void getLines(__global int* accum,
     }
 #undef FETCH
 }
-
+*/
 __kernel void accumToImage(__global int* accum,
                            int accumPitch, float scale,
                            __write_only image2d_t accumImage)
