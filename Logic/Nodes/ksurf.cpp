@@ -561,7 +561,7 @@ vector<KeyPoint> fastHessianDetector(const cv::Mat& intImage,
     CV_Assert(intImage.channels() == 1);
     CV_Assert(numOctaves > 0);
     CV_Assert(numScales > 2);
-    CV_Assert(hessianThreshold > 0.0f);
+    CV_Assert(hessianThreshold >= 0.0f);
 
     const int nTotalLayers = numOctaves * numScales;
 
@@ -780,11 +780,9 @@ void msurfDescriptors_kpoint(const KeyPoint& kpoint,
 
                 for(int x = 0; x < DESC_SUBREGION_SAMPLES; ++x)
                 {
-                    // Scalling sigma by keypoint scale doesn't give any visible boost
-                    // That gives us an opportunity to use precomputed Gauss table
-                    //float gauss = (float) Gaussian(x-(DESC_SUBREGION_SAMPLES/2), 
-                    //    y-(DESC_SUBREGION_SAMPLES/2), DESC_SUBREGION_SIGMA);
-                    float gauss = gaussWeights[x]*gaussWeights[y];
+                    float gauss = (float) Gaussian(x-(DESC_SUBREGION_SAMPLES/2), 
+                        y-(DESC_SUBREGION_SAMPLES/2), DESC_SUBREGION_SIGMA);
+                    //float gauss = gaussWeights[x]*gaussWeights[y];
 
                     float dx = gauss*gradsX[index];
                     float dy = gauss*gradsY[index];
@@ -987,12 +985,13 @@ void kSURF::operator()(cv::InputArray _img, cv::InputArray _mask,
     vector<KeyPoint> kpoints;
 
     if(useProvidedKeypoints)
-    {
         kpoints = transformKeyPoint(keypoints);
-    }
     else
-    {
         kpoints = fastHessianDetector(sum, _hessianThreshold, _nOctaves, _nScales, _initSampling);
+
+    int N = (int) kpoints.size();
+    if(N > 0)
+    {
         if(!_upright)
         {
             surfOrientation(kpoints, sum);
@@ -1012,11 +1011,7 @@ void kSURF::operator()(cv::InputArray _img, cv::InputArray _mask,
             });
 #endif
         }
-    }
 
-    int N = (int) kpoints.size();
-    if(N > 0)
-    {
         if(doDescriptors)
         {
             cv::Mat& descriptors = _descriptors.getMatRef();
