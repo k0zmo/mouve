@@ -158,7 +158,7 @@ public:
 		{
 			// Obraz (w zasadzie maska) pierwszego planu
 			deviceDest = _gpuComputeModule->context().createImage2D(
-				clw::Access_WriteOnly, clw::Location_Device,
+				clw::Access_ReadWrite, clw::Location_Device,
 				clw::ImageFormat(clw::Order_R, clw::Type_Normalized_UInt8),
 				srcWidth, srcHeight);
 		}
@@ -187,7 +187,7 @@ public:
 			{
 				// Obraz (w zasadzie maska) pierwszego planu
 				deviceDestBackground = _gpuComputeModule->context().createImage2D(
-					clw::Access_WriteOnly, clw::Location_Device,
+					clw::Access_ReadWrite, clw::Location_Device,
 					clw::ImageFormat(clw::Order_R, clw::Type_Normalized_UInt8),
 					srcWidth, srcHeight);
 			}

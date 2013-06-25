@@ -222,7 +222,7 @@ private:
 		if(deviceLines.isNull()
 		|| deviceLines.size() !=  maxLines * sizeof(cl_float2))
 		{
-			deviceLines = DeviceArray::create(_gpuComputeModule->context(), clw::Access_WriteOnly,
+			deviceLines = DeviceArray::create(_gpuComputeModule->context(), clw::Access_ReadWrite,
 				clw::Location_Device, 2, maxLines, EDataType::Float);
 		}
 
@@ -283,7 +283,7 @@ private:
 			|| image.height() != height)
 		{
 			image = _gpuComputeModule->context().createImage2D(
-				clw::Access_WriteOnly, clw::Location_Device,
+				clw::Access_ReadWrite, clw::Location_Device,
 				clw::ImageFormat(clw::Order_R, clw::Type_Normalized_UInt8),
 				width, height);
 		}
