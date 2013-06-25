@@ -1627,7 +1627,9 @@ void Controller::openTree()
 		return;
 
 	QString filePath = QFileDialog::getOpenFileName(
-		this, tr("Open file"), QString(), "Node tree files (*.tree)");
+		this, tr("Open file"),
+		QFileInfo(_nodeTreeFilePath).absolutePath(),
+		"Node tree files (*.tree)");
 	if(filePath.isEmpty())
 		return;
 
@@ -1652,7 +1654,9 @@ bool Controller::saveTree()
 bool Controller::saveTreeAs()
 {
 	QString filePath = QFileDialog::getSaveFileName(
-		this, tr("Save file as..."),QString(), "Node tree files (*.tree)"); 
+		this, tr("Save file as..."),
+		QFileInfo(_nodeTreeFilePath).absolutePath(),
+		"Node tree files (*.tree)"); 
 	if(filePath.isEmpty())
 		return false;
 
