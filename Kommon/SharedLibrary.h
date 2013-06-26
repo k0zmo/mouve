@@ -34,7 +34,7 @@ template<class Signature>
 
 		void* functionAddress = ::dlsym(sharedLibraryHandle, functionName);
 		const char* error = ::dlerror(); // check for error
-		if(!error)
+		if(error)
 			throw std::runtime_error("Could not find exported function");
 		return reinterpret_cast<Signature*>(functionAddress);
 #endif

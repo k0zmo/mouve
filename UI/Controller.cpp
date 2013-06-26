@@ -2256,7 +2256,7 @@ QString pluginDirectory()
 
 #elif K_SYSTEM == K_SYSTEM_LINUX
 
-string kernelsDirectory()
+QString pluginDirectory()
 {
 	return "./plugins";
 }
@@ -2267,8 +2267,13 @@ string kernelsDirectory()
 void Controller::pluginLookUp()
 {
 	QDir pluginDir(pluginDirectory());
-	auto w = pluginDir.absolutePath();
+
+#if K_SYSTEM == K_SYSTEM_WINDOWS
 	auto list = pluginDir.entryInfoList(QStringList("*.dll"), QDir::Files);
+#elif K_SYSTEM == K_SYSTEM_LINUX
+	auto list = pluginDir.entryInfoList(QStringList("*.so"), QDir::Files);
+#endif
+
 	for(auto&& pluginName : list)
 	{
 		try

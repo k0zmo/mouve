@@ -3,6 +3,7 @@ CONFIG += ordered
 SUBDIRS += \
 	Kommon \
 	Logic \
-	UI
+	UI \
+    ShiTomasi.Plugin
 
 UI.depends = Logic

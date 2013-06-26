@@ -10,8 +10,10 @@ HEADERS += \
     konfig.h \
     MacroUtils.h \  
     Singleton.h \
-    Hash.h
+    Hash.h \
+    SharedLibrary.h
            
 SOURCES += \
     HighResolutionClock.cpp \
-    Hash.cpp
+    Hash.cpp \
+    SharedLibrary.cpp
