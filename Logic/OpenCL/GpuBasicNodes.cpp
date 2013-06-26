@@ -7,7 +7,7 @@ class GpuUploadImageNodeType : public GpuNodeType
 {
 public:
 	GpuUploadImageNodeType()
-		: _usePinnedMemory(true)
+		: _usePinnedMemory(false)
 	{
 	}
 
@@ -110,7 +110,7 @@ class GpuDownloadImageNodeType : public GpuNodeType
 {
 public:
 	GpuDownloadImageNodeType()
-		: _usePinnedMemory(true)
+		: _usePinnedMemory(false)
 	{
 	}
 
