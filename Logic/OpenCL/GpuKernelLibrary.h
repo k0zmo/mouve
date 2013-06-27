@@ -2,7 +2,7 @@
 
 #if defined(HAVE_OPENCL)
 
-#include "Prerequisites.h"
+#include "../Prerequisites.h"
 
 #include <clw/clw.h>
 

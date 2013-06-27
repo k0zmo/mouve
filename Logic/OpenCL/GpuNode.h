@@ -2,8 +2,8 @@
 
 #if defined(HAVE_OPENCL)
 
-#include "Prerequisites.h"
-#include "NodeType.h"
+#include "../Prerequisites.h"
+#include "../NodeType.h"
 #include "GpuNodeModule.h"
 
 class GpuNodeType : public NodeType
