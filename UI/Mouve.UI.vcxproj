@@ -714,7 +714,6 @@
     <Import Project="..\Mouve.Logic.props" />
     <Import Project="..\Mouve.Kommon.props" />
     <Import Project="..\OpenCV.Debug.props" />
-    <Import Project="..\VisualLeakDetector.props" />
     <Import Project="..\Boost.props" />
     <Import Project="..\clw.Debug.props" />
   </ImportGroup>
@@ -738,7 +737,6 @@
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
     <Import Project="..\Mouve.Kommon.props" />
     <Import Project="..\Mouve.Logic.props" />
-    <Import Project="..\VisualLeakDetector.x64.props" />
     <Import Project="..\OpenCV.Release.x64.props" />
     <Import Project="..\Boost.props" />
     <Import Project="..\clw.Release.x64.props" />
