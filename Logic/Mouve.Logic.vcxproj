@@ -286,6 +286,7 @@
     <ClCompile Include="Nodes\SourceNodes.cpp" />
     <ClCompile Include="Nodes\SurfNodes.cpp" />
     <ClCompile Include="NodeTree.cpp" />
+    <ClCompile Include="NodeTreeSerializer.cpp" />
     <ClCompile Include="NodeType.cpp" />
     <ClCompile Include="OpenCL\DeviceArray.cpp" />
     <ClCompile Include="OpenCL\GpuBasicNodes.cpp" />
@@ -314,6 +315,7 @@
     <ClInclude Include="NodePlugin.h" />
     <ClInclude Include="Nodes\CV.h" />
     <ClInclude Include="Nodes\ksurf.h" />
+    <ClInclude Include="NodeTreeSerializer.h" />
     <ClInclude Include="OpenCL\DeviceArray.h" />
     <ClInclude Include="OpenCL\GpuException.h" />
     <ClInclude Include="OpenCL\GpuKernelLibrary.h" />

@@ -4,9 +4,6 @@
 #include "Node.h"
 #include "NodeLink.h"
 
-class QJsonObject;
-class QJsonArray;
-
 class LOGIC_EXPORT NodeTree
 {
 	K_DISABLE_COPY(NodeTree)
@@ -15,12 +12,8 @@ public:
 	~NodeTree();
 
 	void clear();
-
-	void setRootDirectory(const std::string& rootDir);
-	QJsonObject serializeJson();
-	bool deserializeJson(const QJsonObject& jsonTree, 
-		std::map<NodeID, NodeID>* oldToNewNodeID = nullptr);
 	size_t nodesCount() const;
+	const NodeSystem* nodeSystem() const;
 
 	void tagNode(NodeID nodeID);
 	void untagNode(NodeID nodeID);
@@ -76,11 +69,6 @@ public:
 	std::unique_ptr<NodeLinkIterator> createNodeLinkIterator();	
 
 private:
-	bool deserializeJsonNodes(const QJsonArray& jsonNodes,
-		std::map<NodeID, NodeID>& mapping);
-	bool deserializeJsonLinks(const QJsonArray& jsonLinks,
-		std::map<NodeID, NodeID>& mapping);
-
 	NodeID allocateNodeID();
 	void deallocateNodeID(NodeID id);
 
@@ -100,7 +88,6 @@ private:
 	std::vector<NodeLink> _links;
 	std::vector<NodeID> _executeList;
 	std::unordered_map<std::string, NodeID> _nodeNameToNodeID;
-	std::string _rootDirectory;
 	NodeSystem* _nodeSystem;
 	bool _executeListDirty;
 

@@ -6,6 +6,7 @@
 #include "Logic/NodeType.h"
 #include "Logic/NodeLink.h"
 #include "Logic/Node.h"
+#include "Logic/NodeTreeSerializer.h"
 
 // Modules
 #include "Logic/OpenCL/IGpuNodeModule.h"
@@ -1107,8 +1108,8 @@ bool Controller::saveTreeToFileImpl(const QString& filePath)
 		jsonScene.append(jsonSceneElem);
 	}
 
-	_nodeTree->setRootDirectory(QFileInfo(filePath).absolutePath().toStdString());
-	QJsonObject jsonTree = _nodeTree->serializeJson();
+	NodeTreeSerializer nodeTreeSerializer(QFileInfo(filePath).absolutePath().toStdString());
+	QJsonObject jsonTree = nodeTreeSerializer.serializeJson(_nodeTree);
 	jsonTree.insert(QStringLiteral("scene"), jsonScene);
 
 	QJsonDocument doc(jsonTree);
@@ -1171,8 +1172,8 @@ bool Controller::openTreeFromFileImpl(const QString& filePath)
 
 	// Method used in loading nodes makes them lose their original NodeID
 	std::map<NodeID, NodeID> mapping;
-	_nodeTree->setRootDirectory(QFileInfo(filePath).absolutePath().toStdString());
-	if(!_nodeTree->deserializeJson(jsonTree, &mapping))
+	NodeTreeSerializer nodeTreeSerializer(QFileInfo(filePath).absolutePath().toStdString());
+	if(!nodeTreeSerializer.deserializeJson(_nodeTree, jsonTree, &mapping))
 		return false;
 
 	// Deserialize view part

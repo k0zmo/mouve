@@ -56,6 +56,7 @@ class NodeFactory;
 class NodeSystem;
 class NodeModule;
 class NodePlugin;
+class NodeTreeSerializer;
 
 struct NodeLink;
 struct SocketAddress;

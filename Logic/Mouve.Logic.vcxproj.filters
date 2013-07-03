@@ -139,6 +139,9 @@
     <ClCompile Include="NodePlugin.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="NodeTreeSerializer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="Node.h">
@@ -210,6 +213,9 @@
       <Filter>OpenCL</Filter>
     </ClInclude>
     <ClInclude Include="NodePlugin.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="NodeTreeSerializer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
