@@ -3,11 +3,54 @@
 #include "GpuNode.h"
 #include "NodeFactory.h"
 
-class GpuNearestNeighborDistanceRatioMatcherNodeType : public GpuNodeType
+static vector<cv::DMatch> distanceRatioTest(const vector<vector<cv::DMatch>>& knMatches, 
+											float distanceRatioThreshold)
+{
+	vector<cv::DMatch> positiveMatches;
+	positiveMatches.reserve(knMatches.size());
+
+	for(auto&& knMatch : knMatches)
+	{
+		if(knMatch.size() != 2)
+			continue;
+
+		auto&& best = knMatch[0];
+		auto&& good = knMatch[1];
+
+		if(best.distance <= distanceRatioThreshold * good.distance)
+			positiveMatches.push_back(best);
+	}
+
+	return positiveMatches;
+}
+
+static vector<cv::DMatch> symmetryTest(const vector<cv::DMatch>& matches1to2,
+									   const vector<cv::DMatch>& matches2to1)
+{
+	vector<cv::DMatch> bothMatches;
+
+	for(auto&& match1to2 : matches1to2)
+	{
+		for(auto&& match2to1 : matches2to1)
+		{
+			if(match1to2.queryIdx == match2to1.trainIdx
+			&& match2to1.queryIdx == match1to2.trainIdx)
+			{
+				bothMatches.push_back(match1to2);
+				break;
+			}
+		}
+	}
+
+	return bothMatches;
+}
+
+class GpuBruteForceMatcherNodeType : public GpuNodeType
 {
 public:
-	GpuNearestNeighborDistanceRatioMatcherNodeType()
+	GpuBruteForceMatcherNodeType()
 		: _distanceRatio(0.8)
+		, _symmetryTest(false)
 	{
 	}
 
@@ -17,6 +60,9 @@ public:
 		{
 		case ID_DistanceRatio:
 			_distanceRatio = newValue.toDouble();
+			return true;
+		case ID_SymmetryTest:
+			_symmetryTest = newValue.toBool();
 			return true;
 		}
 
@@ -28,6 +74,7 @@ public:
 		switch(propId)
 		{
 		case ID_DistanceRatio: return _distanceRatio;
+		case ID_SymmetryTest: return _symmetryTest;
 		}
 
 		return QVariant();
@@ -85,61 +132,53 @@ public:
 		|| query_dev.dataType() != train_dev.dataType())
 			return ExecutionStatus(EStatus::Error, "Query and train descriptors are different types");
 
-		vector<vector<cv::DMatch>> knMatches;
+		vector<cv::DMatch> matches;
+		size_t initialMatches = 0;
 
-		if(query_dev.dataType() == EDataType::Float)
+		if(_symmetryTest)
 		{
-			if(query_dev.width() == 64)
-				knMatches = knnMatch<16, 64>(query_dev, train_dev, _kidBruteForceMatch_2nnMatch_SURF);
-			else if(query_dev.width() == 128)
-				knMatches = knnMatch<16, 128>(query_dev, train_dev, _kidBruteForceMatch_2nnMatch_SIFT);
-			else 
-				return ExecutionStatus(EStatus::Error, 
-					"Unsupported descriptor data size "
-					"(must be 64 or 128 elements width");
-		}
-		else if(query_dev.dataType() == EDataType::Uchar)
-		{
-			if(query_dev.width() == 32)
-				knMatches = knnMatch<16, 32>(query_dev, train_dev, _kidBruteForceMatch_2nnMatch_ORB);
-			else if(query_dev.width() == 64)
-				knMatches = knnMatch<16, 64>(query_dev, train_dev, _kidBruteForceMatch_2nnMatch_FREAK);
-			else 
-				return ExecutionStatus(EStatus::Error, 
-					"Unsupported descriptor data size "
-					"(must be 32 or 64 elements width");
+			vector<vector<cv::DMatch>> knMatches1to2, knMatches2to1;
+
+			auto status = knnMatch_caller(query_dev, train_dev, knMatches1to2);
+			if(status.status != EStatus::Ok)
+				return status;
+
+			status = knnMatch_caller(train_dev, query_dev, knMatches2to1);
+			if(status.status != EStatus::Ok)
+				return status;
+
+			initialMatches = knMatches1to2.size();
+			auto& matches1to2 = distanceRatioTest(knMatches1to2, _distanceRatio);
+			auto& matches2to1 = distanceRatioTest(knMatches2to1, _distanceRatio);
+			matches = symmetryTest(matches1to2, matches2to1);
 		}
 		else
 		{
-			return ExecutionStatus(EStatus::Error, 
-				"Unsupported descriptor data type "
-				"(must be float for L2 norm or Uint8 for Hamming norm");
+			vector<vector<cv::DMatch>> knMatches;
+			auto status = knnMatch_caller(query_dev, train_dev, knMatches);
+			if(status.status != EStatus::Ok)
+				return status;
+			initialMatches = knMatches.size();
+
+			matches = distanceRatioTest(knMatches, _distanceRatio);
 		}
 
+		// Convert to 'Matches' data type
 		mt.queryPoints.clear();
 		mt.trainPoints.clear();
 
-		for(auto&& knMatch : knMatches)
+		for(auto&& match : matches)
 		{
-			if(knMatch.size() != 2)
-				continue;
-
-			auto&& best = knMatch[0];
-			auto&& good = knMatch[1];
-
-			if(best.distance <= _distanceRatio * good.distance)
-			{
-				mt.queryPoints.emplace_back(queryKp.kpoints[best.queryIdx].pt);
-				mt.trainPoints.emplace_back(trainKp.kpoints[best.trainIdx].pt);
-			}
+			mt.queryPoints.push_back(queryKp.kpoints[match.queryIdx].pt);
+			mt.trainPoints.push_back(trainKp.kpoints[match.trainIdx].pt);
 		}
 
 		mt.queryImage = queryKp.image;
 		mt.trainImage = trainKp.image;
 
 		return ExecutionStatus(EStatus::Ok, 
-			formatMessage("Initial matches found: %d\nNNDR Matches found: %d",
-			(int) knMatches.size(), (int) mt.queryPoints.size()));
+			formatMessage("Initial matches found: %d\nFinal matches found: %d",
+			(int) initialMatches, (int) mt.queryPoints.size()));
 	}
 
 	void configuration(NodeConfig& nodeConfig) const override
@@ -156,7 +195,8 @@ public:
 			{ ENodeFlowDataType::Invalid, "", "", "" }
 		};
 		static const PropertyConfig prop_config[] = {
-			{ EPropertyType::Double, "ID_DistanceRatio", "min:0.0, max:1.0, step:0.1, decimals:2" },
+			{ EPropertyType::Double, "Distance ratio", "min:0.0, max:1.0, step:0.1, decimals:2" },
+			{ EPropertyType::Boolean, "Symmetry test", "" },
 			{ EPropertyType::Unknown, "", "" }
 		};
 
@@ -168,6 +208,43 @@ public:
 	}
 
 private:
+
+	ExecutionStatus knnMatch_caller(const DeviceArray& query_dev,
+									const DeviceArray& train_dev,
+									vector<vector<cv::DMatch>>& knMatches)
+	{
+		if(query_dev.dataType() == EDataType::Float)
+		{
+			if(query_dev.width() == 64)
+				knMatches = knnMatch<16, 64>(query_dev, train_dev, _kidBruteForceMatch_2nnMatch_SURF);
+			else if(query_dev.width() == 128)
+				knMatches = knnMatch<16, 128>(query_dev, train_dev, _kidBruteForceMatch_2nnMatch_SIFT);
+			else 
+				return ExecutionStatus(EStatus::Error, 
+				"Unsupported descriptor data size "
+				"(must be 64 or 128 elements width");
+		}
+		else if(query_dev.dataType() == EDataType::Uchar)
+		{
+			if(query_dev.width() == 32)
+				knMatches = knnMatch<16, 32>(query_dev, train_dev, _kidBruteForceMatch_2nnMatch_ORB);
+			else if(query_dev.width() == 64)
+				knMatches = knnMatch<16, 64>(query_dev, train_dev, _kidBruteForceMatch_2nnMatch_FREAK);
+			else 
+				return ExecutionStatus(EStatus::Error, 
+				"Unsupported descriptor data size "
+				"(must be 32 or 64 elements width");
+		}
+		else
+		{
+			return ExecutionStatus(EStatus::Error, 
+				"Unsupported descriptor data type "
+				"(must be float for L2 norm or Uint8 for Hamming norm");
+		}
+
+		return ExecutionStatus(EStatus::Ok);
+	}
+
 	template<int BLOCK_SIZE, int DESCRIPTOR_LEN>
 	vector<vector<cv::DMatch>> knnMatch(const DeviceArray& query_dev,
 										const DeviceArray& train_dev,
@@ -207,6 +284,9 @@ private:
 			0, sizeof(cl_float2) * query_dev.height());
 		_gpuComputeModule->queue().finish();
 
+		// TODO: (nearest neighbour) distance ratio test on GPU
+		// TOOD: symmetry test on GPU (killer of performance)
+
 		return convertToMatches(trainIdx, distance);
 	}
 
@@ -239,10 +319,12 @@ private:
 private:
 	enum EPropertyID
 	{
-		ID_DistanceRatio
+		ID_DistanceRatio,
+		ID_SymmetryTest
 	};
 
 	double _distanceRatio;
+	bool _symmetryTest;
 
 private:
 	KernelID _kidBruteForceMatch_2nnMatch_SURF;
@@ -255,6 +337,6 @@ private:
 	clw::Buffer _distance_cl;
 };
 
-REGISTER_NODE("OpenCL/Features/NNDR Matcher", GpuNearestNeighborDistanceRatioMatcherNodeType)
+REGISTER_NODE("OpenCL/Features/BForce Matcher", GpuBruteForceMatcherNodeType)
 
 #endif
