@@ -16,6 +16,7 @@ HEADERS += \
     NodeTree.h \
     NodeType.h \
     NodePlugin.h \
+    NodeTreeSerializer.h \
     Prerequisites.h \
     Jai/JaiException.h \
     Jai/JaiNodeModule.h \
@@ -36,6 +37,7 @@ SOURCES += \
     NodeTree.cpp \
     NodeType.cpp \
     NodePlugin.cpp \
+    NodeTreeSerializer.cpp \
     Jai/JaiCameraNodes.cpp \
     Jai/JaiNodeModule.cpp \
     Nodes/BasicNodes.cpp \

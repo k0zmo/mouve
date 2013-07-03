@@ -148,8 +148,8 @@ public:
 				return status;
 
 			initialMatches = knMatches1to2.size();
-			auto& matches1to2 = distanceRatioTest(knMatches1to2, _distanceRatio);
-			auto& matches2to1 = distanceRatioTest(knMatches2to1, _distanceRatio);
+			auto matches1to2 = distanceRatioTest(knMatches1to2, _distanceRatio);
+			auto matches2to1 = distanceRatioTest(knMatches2to1, _distanceRatio);
 			matches = symmetryTest(matches1to2, matches2to1);
 		}
 		else

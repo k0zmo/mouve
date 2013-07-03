@@ -157,8 +157,8 @@ public:
 			vector<vector<cv::DMatch>> knMatches2to1 = knnMatch(train, query);
 			initialMatches = knMatches1to2.size();
 
-			auto& matches1to2 = distanceRatioTest(knMatches1to2, _distanceRatio);
-			auto& matches2to1 = distanceRatioTest(knMatches2to1, _distanceRatio);
+			auto matches1to2 = distanceRatioTest(knMatches1to2, _distanceRatio);
+			auto matches2to1 = distanceRatioTest(knMatches2to1, _distanceRatio);
 			matches = symmetryTest(matches1to2, matches2to1);
 		}
 		else
@@ -321,8 +321,8 @@ public:
 			matcher.knnMatch(trainDesc, queryDesc, knMatches2to1, 2);
 			initialMatches = knMatches1to2.size();
 
-			auto& matches1to2 = distanceRatioTest(knMatches1to2, _distanceRatio);
-			auto& matches2to1 = distanceRatioTest(knMatches2to1, _distanceRatio);
+			auto matches1to2 = distanceRatioTest(knMatches1to2, _distanceRatio);
+			auto matches2to1 = distanceRatioTest(knMatches2to1, _distanceRatio);
 			matches = symmetryTest(matches1to2, matches2to1);
 		}
 		else
