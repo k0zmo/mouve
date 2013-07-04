@@ -18,9 +18,22 @@ cv::Scalar getColor(EColor color)
 	{
 	// Order is BGR
 	case Color_AllRandom: return cv::Scalar::all(-1);
-	case Color_Red: return cv::Scalar(0, 0, 255);
-	case Color_Green: return cv::Scalar(0, 255, 0);
-	case Color_Blue: return cv::Scalar(255, 0, 0);
+	case Color_Red: return cv::Scalar(36, 28, 237);
+	case Color_Green: return cv::Scalar(76, 177, 34);
+	case Color_Blue: return cv::Scalar(244, 63, 72);
+	}
+	return cv::Scalar::all(-1);
+}
+
+cv::Scalar getAltColor(EColor color)
+{
+	switch(color)
+	{
+		// Order is BGR
+	case Color_AllRandom: return cv::Scalar::all(-1);
+	case Color_Red: return cv::Scalar(76, 177, 34);
+	case Color_Green: return cv::Scalar(36, 28, 237);
+	case Color_Blue: return cv::Scalar(0, 255, 242);
 	}
 	return cv::Scalar::all(-1);
 }
@@ -29,11 +42,11 @@ EColor getColor(const cv::Scalar& scalar)
 {
 	if(scalar == cv::Scalar::all(-1))
 		return Color_AllRandom;
-	else if(scalar == cv::Scalar(0, 0, 255))
+	else if(scalar == cv::Scalar(36, 28, 237))
 		return Color_Red;
-	else if(scalar == cv::Scalar(0, 255, 0))
+	else if(scalar == cv::Scalar(76, 177, 34))
 		return Color_Green;
-	else if(scalar == cv::Scalar(255, 0, 0))
+	else if(scalar == cv::Scalar(244, 63, 72))
 		return Color_Blue;
 	else
 		return Color_AllRandom;
@@ -312,6 +325,7 @@ class DrawMatchesNodeType : public NodeType
 public:
 	DrawMatchesNodeType()
 		: _color(cv::Scalar::all(-1))
+		, _kpColor(cv::Scalar::all(-1))
 	{
 	}
 
@@ -321,6 +335,7 @@ public:
 		{
 		case ID_Color:
 			_color = getColor(EColor(newValue.toUInt()));
+			_kpColor = getAltColor(EColor(newValue.toUInt()));
 			return true;
 		}
 
@@ -404,6 +419,7 @@ private:
 			auto&& kp2 = mt.trainPoints[i];
 
 			cv::Scalar color = isRandColor ? cv::Scalar(rng(256), rng(256), rng(256)) : _color;
+			cv::Scalar kpColor = isRandColor ? color : _kpColor;
 			
 			auto drawKeypoint = [](cv::Mat& matDraw, const cv::Point2f& pt, 
 				const cv::Scalar& color)
@@ -415,8 +431,8 @@ private:
 				cv::circle(matDraw, cv::Point(x, y), s, color, 1, CV_AA);
 			};
 
-			drawKeypoint(matDraw1, kp1, color);
-			drawKeypoint(matDraw2, kp2, color);
+			drawKeypoint(matDraw1, kp1, kpColor);
+			drawKeypoint(matDraw2, kp2, kpColor);
 
 			int x1 = cvRound(kp1.x) + roi1.tl().x;
 			int y1 = cvRound(kp1.y) + roi1.tl().y;
@@ -435,6 +451,7 @@ private:
 	};
 
 	cv::Scalar _color;
+	cv::Scalar _kpColor;
 };
 
 class DrawHomographyNodeType : public NodeType
