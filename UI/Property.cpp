@@ -429,7 +429,8 @@ QVariant FilePathProperty::value(int role) const
 	else
 	{
 		// For display role - returns just a file name
-		return _fileInfo.fileName();
+		QString ret = _fileInfo.fileName();
+		return ret.isEmpty() ? _value : ret;
 	}
 }
 
@@ -445,6 +446,14 @@ bool FilePathProperty::setValue(const QVariant& value, int role)
 			{
 				_fileInfo = tmpInfo;
 				_value = _fileInfo.filePath();
+				return true;
+			}
+
+			QRegExp re("^(https?|ftp|file|rtsp)://.+$");
+			if(re.exactMatch(value.toString()))
+			{
+				_fileInfo = QFileInfo();
+				_value = value.toString();
 				return true;
 			}
 		}
