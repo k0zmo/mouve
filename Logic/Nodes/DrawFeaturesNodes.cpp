@@ -509,6 +509,108 @@ public:
 	}
 };
 
+class PaintMaskNodeType : public NodeType
+{
+public:
+	PaintMaskNodeType()
+		: _color(getColor(Color_Green))
+	{
+	}
+
+	bool setProperty(PropertyID propId, const QVariant& newValue) override
+	{
+		switch(propId)
+		{
+		case ID_Color:
+			_color = getColor(EColor(newValue.toUInt()));
+			return true;
+		}
+
+		return false;
+	}
+
+	QVariant property(PropertyID propId) const override
+	{
+		switch(propId)
+		{
+		case ID_Color: return getColor(_color);
+		}
+
+		return QVariant();
+	}
+
+	ExecutionStatus execute(NodeSocketReader& reader, NodeSocketWriter& writer) override
+	{
+		// inputs
+		const cv::Mat& mask = reader.readSocket(0).getImage();
+		const cv::Mat& source = reader.readSocket(1).getImage();
+		// outputs
+		cv::Mat& imagePainted = writer.acquireSocket(0).getImageRgb();
+
+		// validate inputs
+		if(mask.empty() || source.empty())
+			return ExecutionStatus(EStatus::Ok);
+
+		if(mask.size() != source.size())
+			return ExecutionStatus(EStatus::Error, 
+			"Mask must be the same size as source image");
+
+		cv::Vec3b tmp(_color[0], _color[1], _color[2]);
+		cv::RNG& rng = cv::theRNG();
+		cv::Vec3b color = (_color == cv::Scalar::all(-1)) 
+			? cv::Vec3b(rng(256), rng(256), rng(256))
+			: tmp;
+
+		cv::cvtColor(source, imagePainted, CV_GRAY2BGR);
+
+		for(int y = 0; y < source.rows; ++y)
+		{
+			const uchar* mask_ptr = mask.ptr<uchar>(y);
+			const uchar* source_ptr = source.ptr<uchar>(y);
+			cv::Vec3b* dst_ptr = imagePainted.ptr<cv::Vec3b>(y);
+
+			for(int x = 0; x < source.cols; ++x)
+			{
+				if(mask_ptr[x] != 0)
+					dst_ptr[x] = color;
+			}
+		}
+		
+		return ExecutionStatus(EStatus::Ok);
+	}
+
+	void configuration(NodeConfig& nodeConfig) const override
+	{
+		static const InputSocketConfig in_config[] = {
+			{ ENodeFlowDataType::Image, "mask", "Mask", "" },
+			{ ENodeFlowDataType::Image, "image", "Source", "" },
+			{ ENodeFlowDataType::Invalid, "", "", "" }
+		};
+		static const OutputSocketConfig out_config[] = {
+			{ ENodeFlowDataType::ImageRgb, "output", "Image", "" },
+			{ ENodeFlowDataType::Invalid, "", "", "" }
+		};
+		static const PropertyConfig prop_config[] = {
+			{ EPropertyType::Enum, "Keypoints color", "item: Random, item: Red, item: Green, item: Blue" },
+			{ EPropertyType::Unknown, "", "" }
+		};
+
+		nodeConfig.description = "";
+		nodeConfig.pInputSockets = in_config;
+		nodeConfig.pOutputSockets = out_config;
+		nodeConfig.pProperties = prop_config;
+	}
+private:
+	enum EPropertyID
+	{
+		ID_Color
+	};
+
+	cv::Scalar _color;
+};
+
+
+REGISTER_NODE("Draw features/Paint mask", PaintMaskNodeType)
 REGISTER_NODE("Draw features/Draw homography", DrawHomographyNodeType)
 REGISTER_NODE("Draw features/Draw matches", DrawMatchesNodeType)
 REGISTER_NODE("Draw features/Draw keypoints", DrawKeypointsNodeType)
