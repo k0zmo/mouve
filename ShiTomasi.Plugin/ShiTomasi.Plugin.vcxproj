@@ -179,7 +179,7 @@
   </ImportGroup>
   <ProjectExtensions>
     <VisualStudio>
-      <UserProperties Qt5Version_x0020_Win32="5.0.1" Qt5Version_x0020_x64="5.0.1 x64" />
+      <UserProperties Qt5Version_x0020_Win32="5.1" Qt5Version_x0020_x64="5.1 x64" />
     </VisualStudio>
   </ProjectExtensions>
 </Project>
