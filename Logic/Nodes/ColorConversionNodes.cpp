@@ -6,6 +6,72 @@
 #include <opencv2/imgproc/imgproc.hpp>
 #include "CV.h"
 
+class GrayToRgbNodeType : public NodeType
+{
+public:
+	ExecutionStatus execute(NodeSocketReader& reader, NodeSocketWriter& writer) override
+	{
+		const cv::Mat& input = reader.readSocket(0).getImage();
+		cv::Mat& output = writer.acquireSocket(0).getImageRgb();
+
+		if(input.empty())
+			return ExecutionStatus(EStatus::Ok);
+
+		cv::cvtColor(input, output, CV_GRAY2BGR);
+
+		return ExecutionStatus(EStatus::Ok);
+	}
+
+	void configuration(NodeConfig& nodeConfig) const override
+	{
+		static const InputSocketConfig in_config[] = {
+			{ ENodeFlowDataType::Image, "input", "Gray", "" },
+			{ ENodeFlowDataType::Invalid, "", "", "" }
+		};
+		static const OutputSocketConfig out_config[] = {
+			{ ENodeFlowDataType::ImageRgb, "output", "Color", "" },
+			{ ENodeFlowDataType::Invalid, "", "", "" }
+		};
+
+		nodeConfig.description = "Converts gray 1-channel image to 3-channel image";
+		nodeConfig.pInputSockets = in_config;
+		nodeConfig.pOutputSockets = out_config;
+	}
+};
+
+class RgbToGrayNodeType : public NodeType
+{
+public:
+	ExecutionStatus execute(NodeSocketReader& reader, NodeSocketWriter& writer) override
+	{
+		const cv::Mat& input = reader.readSocket(0).getImageRgb();
+		cv::Mat& output = writer.acquireSocket(0).getImage();
+
+		if(input.empty())
+			return ExecutionStatus(EStatus::Ok);
+
+		cv::cvtColor(input, output, CV_BGR2GRAY);
+
+		return ExecutionStatus(EStatus::Ok);
+	}
+
+	void configuration(NodeConfig& nodeConfig) const override
+	{
+		static const InputSocketConfig in_config[] = {
+			{ ENodeFlowDataType::ImageRgb, "input", "Color", "" },
+			{ ENodeFlowDataType::Invalid, "", "", "" }
+		};
+		static const OutputSocketConfig out_config[] = {
+			{ ENodeFlowDataType::Image, "output", "Gray", "" },
+			{ ENodeFlowDataType::Invalid, "", "", "" }
+		};
+
+		nodeConfig.description = "Converts color 3-channel image to 1-channel gray image";
+		nodeConfig.pInputSockets = in_config;
+		nodeConfig.pOutputSockets = out_config;
+	}
+};
+
 class BayerToGrayNodeType : public NodeType
 {
 public:
@@ -357,3 +423,5 @@ REGISTER_NODE("Conversion/Contrast & brightness RGB", ContrastAndBrightnessRgbNo
 REGISTER_NODE("Conversion/Contrast & brightness", ContrastAndBrightnessNodeType)
 REGISTER_NODE("Conversion/Gray de-bayer", BayerToGrayNodeType)
 REGISTER_NODE("Conversion/RGB de-bayer", BayerToRgbNodeType)
+REGISTER_NODE("Conversion/RGB to gray", RgbToGrayNodeType)
+REGISTER_NODE("Conversion/Gray to RGB", GrayToRgbNodeType)
