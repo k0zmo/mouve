@@ -82,6 +82,7 @@ class ScaleImageNodeType : public NodeType
 public:
 	ScaleImageNodeType()
 		: _scale(1.0)
+		, _inter(eimArea)
 	{
 	}
 
@@ -92,6 +93,9 @@ public:
 		case ID_Scale: 
 			_scale = newValue.toDouble();
 			return true;
+		case ID_IntepolationMethod:
+			_inter = (EInterpolationMethod) newValue.toInt();
+			return true;
 		}
 		return false;
 	}
@@ -101,6 +105,7 @@ public:
 		switch(propId)
 		{
 		case ID_Scale: return _scale;
+		case ID_IntepolationMethod: return _inter;
 		}
 
 		return QVariant();
@@ -115,7 +120,7 @@ public:
 			return ExecutionStatus(EStatus::Ok);
 
 		cv::Size dstSize(int(input.cols * _scale), int(input.rows * _scale));
-		cv::resize(input, output, dstSize, CV_INTER_AREA);
+		cv::resize(input, output, dstSize, 0, 0, _inter);
 
 		return ExecutionStatus(EStatus::Ok, 
 			formatMessage("Output image width: %d\nOutput image height: %d",
@@ -135,6 +140,8 @@ public:
 
 		static const PropertyConfig prop_config[] = {
 			{ EPropertyType::Double, "Scale", "min:0" },
+			{ EPropertyType::Enum, "Interpolation method", 
+			"item: Nearest neighbour, item: Linear, item: Cubic, item: Area, item: Lanczos" },
 			{ EPropertyType::Unknown, "", "" }
 		};
 
@@ -147,9 +154,21 @@ public:
 private:
 	enum EPropertyID
 	{
-		ID_Scale
+		ID_Scale,
+		ID_IntepolationMethod
 	};
+
+	enum EInterpolationMethod
+	{
+		eimNearestNeighbour = cv::INTER_NEAREST,
+		eimLinear           = cv::INTER_LINEAR,
+		eimCubic            = cv::INTER_CUBIC,
+		eimArea             = cv::INTER_AREA,
+		eimLanczos          = cv::INTER_LANCZOS4
+	};
+
 	double _scale;
+	EInterpolationMethod _inter;
 };
 
 REGISTER_NODE("Image/Rotate", RotateImageNodeType)
