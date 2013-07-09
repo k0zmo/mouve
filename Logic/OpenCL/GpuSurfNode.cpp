@@ -296,7 +296,7 @@ public:
 		static const PropertyConfig prop_config[] = {
 			{ EPropertyType::Double, "Hessian threshold", "" },
 			{ EPropertyType::Integer, "Number of octaves", "min:1" },
-			{ EPropertyType::Integer, "Number of scales", "min:1" },
+			{ EPropertyType::Integer, "Number of scale levels", "min:1" },
 			{ EPropertyType::Integer, "Initial sampling rate", "min:1" },
 			{ EPropertyType::Boolean, "MSURF descriptor", "" },
 			{ EPropertyType::Boolean, "Upright", "" },
