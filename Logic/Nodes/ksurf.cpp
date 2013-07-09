@@ -1024,6 +1024,15 @@ void kSURF::operator()(cv::InputArray _img, cv::InputArray _mask,
 
         keypoints = transformKeyPoint(kpoints);
     }
+    else
+    {
+        keypoints = std::vector<cv::KeyPoint>();
+        if(doDescriptors)
+        {
+            cv::Mat& descriptors = _descriptors.getMatRef();
+            descriptors = cv::Mat();
+        }
+    }
 }
 
 void kSURF::detectImpl(const cv::Mat& image, vector<cv::KeyPoint>& keypoints, const cv::Mat& mask) const
