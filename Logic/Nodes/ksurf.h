@@ -7,8 +7,8 @@ struct KeyPoint
     float x, y;
     float scale;
     float response;
-    int laplacian;
     float orientation;
+    int laplacian;
 };
 
 std::vector<KeyPoint> fastHessianDetector(const cv::Mat& intImage, 

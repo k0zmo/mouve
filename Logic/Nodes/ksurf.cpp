@@ -101,8 +101,8 @@ vector<cv::KeyPoint> transformKeyPoint(const vector<KeyPoint>& keypoints)
 
     tbb::parallel_for(0, (int) keypoints.size(), [&](int idx) {
         auto&& kp = keypoints[idx];
-        ret[idx] = cv::KeyPoint(kp.x, kp.y, kp.scale * SCALE_TO_BOXSIZE_COEFF,
-            RAD2DEG(kp.orientation), kp.response, 0, kp.laplacian);
+        ret[idx] = cv::KeyPoint(kp.x, kp.y, kp.scale,
+            RAD2DEG(kp.orientation), kp.response, 0 /*octave*/, kp.laplacian);
     });
 
     return ret;
@@ -112,8 +112,8 @@ vector<cv::KeyPoint> transformKeyPoint(const vector<KeyPoint>& keypoints)
     transform(begin(keypoints), end(keypoints), 
         back_inserter(ret), [](const KeyPoint& kp) -> cv::KeyPoint
     {
-        return cv::KeyPoint(kp.x, kp.y, kp.scale * SCALE_TO_BOXSIZE_COEFF,
-            RAD2DEG(kp.orientation), kp.response, 0, kp.laplacian);
+        return cv::KeyPoint(kp.x, kp.y, kp.scale,
+            RAD2DEG(kp.orientation), kp.response, 0 /*octave*/, kp.laplacian);
     });
 
     return ret;
@@ -129,10 +129,10 @@ vector<KeyPoint> transformKeyPoint(const vector<cv::KeyPoint>& keypoints)
         auto&& kp = keypoints[idx];
         KeyPoint kpoint = {
             kp.pt.x,  kp.pt.y, 
-            kp.size * BOXSIZE_TO_SCALE_COEFF,
+            kp.size,
             kp.response,
-            kp.class_id,
-            DEG2RAD(kp.angle)
+            DEG2RAD(kp.angle),
+            kp.class_id
         };
         ret[idx] = kpoint;
     });
@@ -145,10 +145,10 @@ vector<KeyPoint> transformKeyPoint(const vector<cv::KeyPoint>& keypoints)
     {
         KeyPoint kpoint = {
             kp.pt.x,  kp.pt.y, 
-            kp.size * BOXSIZE_TO_SCALE_COEFF,
+            kp.size,
             kp.response,
-            kp.class_id,
-            DEG2RAD(kp.angle)
+            DEG2RAD(kp.angle),
+            kp.class_id
         };
         return kpoint;
     });
@@ -158,7 +158,7 @@ vector<KeyPoint> transformKeyPoint(const vector<cv::KeyPoint>& keypoints)
 }
 
 // Tu podaje sie srodek i promienie filtru
-inline int BoxFilterIntegral(const cv::Mat& integral, int x, int y, int w, int h)
+static inline int boxFilterIntegral(const cv::Mat& integral, int x, int y, int w, int h)
 {
     int A = integral.at<int>(y - h    , x - w    );
     int B = integral.at<int>(y - h    , x + w + 1);
@@ -169,7 +169,7 @@ inline int BoxFilterIntegral(const cv::Mat& integral, int x, int y, int w, int h
 }
 
 // Tu podaje sie top-left obszaru oraz jego rozmiar
-inline int BoxFilterIntegral_(const cv::Mat& integral, int x, int y, int w, int h)
+static inline int boxFilterIntegral_(const cv::Mat& integral, int x, int y, int w, int h)
 {
     int A = integral.at<int>(y    , x    );
     int B = integral.at<int>(y    , x + w);
@@ -180,7 +180,7 @@ inline int BoxFilterIntegral_(const cv::Mat& integral, int x, int y, int w, int 
 }
 
 template<int N/*=9*/, int M/*=3*/>
-inline bool isLocalMaximum(float v, float N9[M][N])
+static inline bool isLocalMaximum(float v, float N9[M][N])
 {
     for(int m = 0; m < M; ++m)
         for(int n = 0; n < N; ++n)
@@ -189,7 +189,7 @@ inline bool isLocalMaximum(float v, float N9[M][N])
     return true;
 }
 
-cv::Vec3f solve3x3(const cv::Matx33f& A, const cv::Vec3f& b)
+static cv::Vec3f solve3x3(const cv::Matx33f& A, const cv::Vec3f& b)
 {
     // Cramer rule
     float det = A(0,0)*A(1,1)*A(2,2) + A(0,1)*A(1,2)*A(2,0) + A(0,2)*A(1,0)*A(2,1)
@@ -208,7 +208,7 @@ cv::Vec3f solve3x3(const cv::Matx33f& A, const cv::Vec3f& b)
     return cv::Vec3f(detA * invDet, detB * invDet, detC * invDet);
 }
 
-inline float polyPeak(float lower, float middle, float upper)
+static inline float polyPeak(float lower, float middle, float upper)
 {
     float a = 0.5f*lower - middle + 0.5f*upper;
     float b = 0.5f*upper - 0.5f*lower;
@@ -216,18 +216,18 @@ inline float polyPeak(float lower, float middle, float upper)
     return -b/(2.0f*a);
 }
 
-inline float2 calcHaarResponses(const cv::Mat& intImage, int x, int y, int radius)
+static inline float2 calcHaarResponses(const cv::Mat& intImage, int x, int y, int radius)
 {
 #if SYMETRIC_HAAR != 0
     int side = 2*radius+1;
     float invarea = 1.0f/(side*radius);
     float2 dxdy;
     dxdy.x = 
-        + BoxFilterIntegral_(intImage, x + 1     , y - radius, radius, side) * invarea 
-        - BoxFilterIntegral_(intImage, x - radius, y - radius, radius, side) * invarea;
+        + boxFilterIntegral_(intImage, x + 1     , y - radius, radius, side) * invarea 
+        - boxFilterIntegral_(intImage, x - radius, y - radius, radius, side) * invarea;
     dxdy.y = 
-        + BoxFilterIntegral_(intImage, x - radius, y + 1     , side, radius) * invarea
-        - BoxFilterIntegral_(intImage, x - radius, y - radius, side, radius) * invarea;
+        + boxFilterIntegral_(intImage, x - radius, y + 1     , side, radius) * invarea
+        - boxFilterIntegral_(intImage, x - radius, y - radius, side, radius) * invarea;
     return dxdy;
 #else
     // Optimised version - uses shared samples in Haar (6 sampels instead of 8 in direct approach)
@@ -248,7 +248,7 @@ inline float2 calcHaarResponses(const cv::Mat& intImage, int x, int y, int radiu
 #endif
 }
 
-inline bool haarInBounds(int x, int y, int grad_radius, const cv::Mat& intImage)
+static inline bool haarInBounds(int x, int y, int grad_radius, const cv::Mat& intImage)
 {
 #if SYMETRIC_HAAR != 0
     if(x - grad_radius >= 0 && x + grad_radius+1 < intImage.cols
@@ -267,7 +267,7 @@ inline bool haarInBounds(int x, int y, int grad_radius, const cv::Mat& intImage)
 #endif
 }
 
-float getAngle(float x, float y)
+static inline float getAngle(float x, float y)
 {
     float angle = atan2f(y, x);
     if(angle < 0)
@@ -275,30 +275,67 @@ float getAngle(float x, float y)
     return angle;
 }
 
-inline float getAngle(float2 xy)
+static inline float getAngle(float2 xy)
 {
     return getAngle(xy.x, xy.y);
 }
 
-inline double Gaussian(int x, double sig)
+static inline double Gaussian(int x, double sig)
 {
     double sig2 = 2.0*sig*sig;
     return (1.0/(M_PI*sig2)) * exp(-(x*x)/(sig2));
 }
 
-inline double Gaussian(int x, int y, double sig)
+static inline double Gaussian(int x, int y, double sig)
 {
     double sig2 = 2.0*sig*sig;
     return (1.0/(M_PI*sig2)) * exp(-(x*x+y*y)/(sig2));
 }
 
-inline double Gaussian(double x, double y, double sig)
+static inline double Gaussian(double x, double y, double sig)
 {
     double sig2 = 2.0*sig*sig;
     return (1.0/(M_PI*sig2)) * exp(-(x*x+y*y)/(sig2));
 }
 
-void buildScaleSpace_layer(ScaleSpaceLayer& scaleLayer, const cv::Mat &intImage) 
+static inline void buildScaleSpaceLayer_pix(ScaleSpaceLayer& scaleLayer, 
+                                            const cv::Mat &intImage, 
+                                            int lx, int ly, 
+                                            int stepOffset, 
+                                            int fw, int lw, int lh, 
+                                            int xyOffset, 
+                                            float invNorm)
+{
+    int x = lx * scaleLayer.sampleStep + stepOffset;
+    int y = ly * scaleLayer.sampleStep + stepOffset;
+
+    float Lxx = float(
+        + boxFilterIntegral(intImage, x, y, fw, lh)
+        - boxFilterIntegral(intImage, x, y, lw, lh) * 3);
+    float Lyy = float(
+        + boxFilterIntegral(intImage, x, y, lh, fw)
+        - boxFilterIntegral(intImage, x, y, lh, lw) * 3);
+    float Lxy = float(
+        + boxFilterIntegral(intImage, x - xyOffset, y - xyOffset, lw, lw)
+        - boxFilterIntegral(intImage, x + xyOffset, y - xyOffset, lw, lw)
+        - boxFilterIntegral(intImage, x - xyOffset, y + xyOffset, lw, lw)
+        + boxFilterIntegral(intImage, x + xyOffset, y + xyOffset, lw, lw));
+
+    Lxx *= invNorm;
+    Lyy *= invNorm;
+    Lxy *= invNorm;
+
+    // Hessian is given as Lxx*Lyy - theta*(Lxy*Lxy) (matrix det)
+    float det = Lxx * Lyy - 0.81f * Lxy * Lxy;;
+    // Laplacian is given as Lxx + Lyy (matrix trace)
+    float trace = Lxx + Lyy;
+
+    scaleLayer.writeHessian(lx, ly, det);
+    scaleLayer.writeLaplacian(lx, ly, trace);
+}
+
+static void buildScaleSpaceLayer(ScaleSpaceLayer& scaleLayer,
+                                 const cv::Mat &intImage) 
 {
     if((intImage.cols - 1) < scaleLayer.filterSize
     || (intImage.rows - 1) < scaleLayer.filterSize)
@@ -329,225 +366,193 @@ void buildScaleSpace_layer(ScaleSpaceLayer& scaleLayer, const cv::Mat &intImage)
     int samples_x = 1 + ((intImage.cols - 1) - scaleLayer.filterSize) / scaleLayer.sampleStep;
     int samples_y = 1 + ((intImage.rows - 1) - scaleLayer.filterSize) / scaleLayer.sampleStep;
 
-    for(int ly = layerMargin; ly < layerMargin + samples_y; ++ly)
-    {
-        for(int lx = layerMargin; lx < layerMargin + samples_x; ++lx)
-        {
-            int x = lx * scaleLayer.sampleStep + stepOffset;
-            int y = ly * scaleLayer.sampleStep + stepOffset;
+    int ystart = layerMargin;
+    int yend = layerMargin + samples_y;
+    int xstart = layerMargin;
+    int xend = layerMargin + samples_x;
 
-            float Lxx = float(
-                + BoxFilterIntegral(intImage, x, y, fw, lh)
-                - BoxFilterIntegral(intImage, x, y, lw, lh) * 3);
-            float Lyy = float(
-                + BoxFilterIntegral(intImage, x, y, lh, fw)
-                - BoxFilterIntegral(intImage, x, y, lh, lw) * 3);
-            float Lxy = float(
-                + BoxFilterIntegral(intImage, x - xyOffset, y - xyOffset, lw, lw)
-                - BoxFilterIntegral(intImage, x + xyOffset, y - xyOffset, lw, lw)
-                - BoxFilterIntegral(intImage, x - xyOffset, y + xyOffset, lw, lw)
-                + BoxFilterIntegral(intImage, x + xyOffset, y + xyOffset, lw, lw));
-
-            Lxx *= invNorm;
-            Lyy *= invNorm;
-            Lxy *= invNorm;
-
-            // Hessian is given as Lxx*Lyy - theta*(Lxy*Lxy) (matrix det)
-            float det = Lxx * Lyy - 0.81f * Lxy * Lxy;;
-            // Laplacian is given as Lxx + Lyy (matrix trace)
-            float trace = Lxx + Lyy;
-
-            scaleLayer.writeHessian(lx, ly, det);
-            scaleLayer.writeLaplacian(lx, ly, trace);
-        }
-    }
-}
-
-void buildScaleSpace(const cv::Mat& intImage,
-                     vector<ScaleSpaceLayer>& scaleLayers,
-                     int numOctaves, int numScales)
-{
 #if defined(HAVE_TBB)
-    tbb::parallel_for(tbb::blocked_range2d<int>(0, numOctaves, 0, numScales), 
-        [&](const tbb::blocked_range2d<int>& range){
-            for(int octave = range.rows().begin(); octave < range.rows().end(); ++octave)
+    tbb::parallel_for(tbb::blocked_range2d<int>(ystart, yend, xstart, xend),
+        [&](const tbb::blocked_range2d<int>& range)	{
+            for(int ly = range.rows().begin(); ly < range.rows().end(); ++ly)
             {
-                for(int scale = range.cols().begin(); scale < range.cols().end(); ++scale)
+                for(int lx = range.cols().begin(); lx < range.cols().end(); ++lx)
                 {
-                    int index = octave * numScales + scale;
-                    auto&& layer = scaleLayers[index];
-
-                    buildScaleSpace_layer(layer, intImage);
+                    buildScaleSpaceLayer_pix(scaleLayer, intImage, lx, ly, 
+                        stepOffset, fw, lw, lh, xyOffset, invNorm);
                 }
             }
     });
 #else
-    for(int octave = 0; octave < numOctaves; ++octave)
+    for(int ly = ystart; ly < yend; ++ly)
     {
-        for(int scale = 0; scale < numScales; ++scale)
+        for(int lx = xstart; lx < xend; ++lx)
         {
-            int index = octave * numScales + scale;
-            auto&& layer = scaleLayers[index];
-
-            buildScaleSpace_layer(layer, intImage);
+            buildScaleSpaceLayer_pix(scaleLayer, intImage, lx, ly, 
+                stepOffset, fw, lw, lh, xyOffset, invNorm);
         }
     }
 #endif
 }
 
-void findScaleSpaceMaxima_layer(double hessianThreshold,
-                                ScaleSpaceLayer& layerBottom,
-                                ScaleSpaceLayer& layerMiddle,
-                                ScaleSpaceLayer& layerTop,
+static inline void findScaleSpaceMaxima_pix(double hessianThreshold, int lx, int ly,
+                                            ScaleSpaceLayer& layerBottom,
+                                            ScaleSpaceLayer& layerMiddle,
+                                            ScaleSpaceLayer& layerTop,
 #if defined(HAVE_TBB)
-                                tbb::concurrent_vector<KeyPoint>& kpoints)
+                                            tbb::concurrent_vector<KeyPoint>& kpoints)
 #else
-                                vector<KeyPoint>& kpoints)
+                                            vector<KeyPoint>& kpoints)
 #endif
+{
+    // Check current pixel against given hessian threshold
+    float center = layerMiddle.readHessian(lx, ly);
+    if(center < hessianThreshold)
+        return;
+
+    // Get 3x3x3 neighbour of current pixel
+    float N9[3][9];
+
+    layerBottom.readNeighbour(lx, ly, N9[0]);
+    layerMiddle.readNeighbour(lx, ly, N9[1]);
+    layerTop.readNeighbour(lx, ly, N9[2]);
+
+    bool localMax = 
+        center > N9[0][0] && center > N9[0][1] && center > N9[0][2] && 
+        center > N9[0][3] && center > N9[0][4] && center > N9[0][5] && 
+        center > N9[0][6] && center > N9[0][7] && center > N9[0][8] && 
+
+        center > N9[1][0] && center > N9[1][1] && center > N9[1][2] && 
+        center > N9[1][3] &&                      center > N9[1][5] && 
+        center > N9[1][6] && center > N9[1][7] && center > N9[1][8] && 
+
+        center > N9[2][0] && center > N9[2][1] && center > N9[2][2] && 
+        center > N9[2][3] && center > N9[2][4] && center > N9[2][5] && 
+        center > N9[2][6] && center > N9[2][7] && center > N9[2][8];
+
+    // And check current pixel against its local maxima
+    //if(isLocalMaximum<9, 3>(center, N9))
+    if(localMax)
+    {
+        int scaleDiff = layerMiddle.filterSize - layerBottom.filterSize;
+
+#if INTERPOLATE_HESSIAN != 0
+        // derivative of Hessian(x,y,s) (which is determinant) - Antigradient of dx, dy and ds:
+        float Hx = -(N9[1][5] - N9[1][3]) * 0.5f;
+        float Hy = -(N9[1][7] - N9[1][1]) * 0.5f;
+        float Hs = -(N9[2][4] - N9[0][4]) * 0.5f;
+        cv::Vec3f b(Hx, Hy, Hs);
+
+        // Equations for calculating finite differences of second order function with N variables:
+        // http://en.wikipedia.org/wiki/Finite_difference
+
+        // second derivative of H(x,y,s) - Hessian (I know - silly)
+        float Hxx = N9[1][5] - 2 * N9[1][4] + N9[1][3];
+        float Hxy = (N9[1][8] - N9[1][2] - N9[1][6] + N9[1][0]) * 0.25f;
+        float Hxs = (N9[2][5] - N9[0][5] - N9[2][3] + N9[0][3]) * 0.25f;
+        float Hyy = N9[1][7] - 2 * N9[1][4] + N9[1][1];
+        float Hys = (N9[2][7] - N9[0][7] - N9[2][1] + N9[0][1]) * 0.25f;
+        float Hss = N9[2][4] - 2 * N9[1][4] + N9[0][4];
+        cv::Matx33f A(Hxx, Hxy, Hxs,
+            Hxy, Hyy, Hys,
+            Hxs, Hys, Hss);
+
+        // For small linear system finding a solution is much faster using cramer's rule
+        cv::Vec3f x = solve3x3(A,b);
+        //cv::Vec3f x = A.solve(b, cv::DECOMP_LU);
+
+        if (fabsf(x[0]) <= 0.5f && fabsf(x[1]) <= 0.5f && fabsf(x[2]) <= 0.5f)
+        {
+            KeyPoint kpoint;
+            kpoint.x = (lx + x[0]) * layerMiddle.sampleStep;
+            kpoint.y = (ly + x[1]) * layerMiddle.sampleStep;
+            kpoint.scale = BOXSIZE_TO_SCALE_COEFF * (layerMiddle.filterSize + x[2] * scaleDiff);
+            kpoint.response = center;
+            kpoint.laplacian = (layerMiddle.readLaplacian(lx, ly) >= 0 ? 1 : -1);
+            kpoints.push_back(kpoint); // <-- concurrent_vector<>
+        }
+#else
+        float peakX = polyPeak(N9[1][3], center, N9[1][5]);
+        float peakY = polyPeak(N9[1][1], center, N9[1][7]);
+        float peakS = polyPeak(N9[0][4], center, N9[2][4]);
+
+        float interpX = (lx + peakX) * layerMiddle.sampleStep;
+        float interpY = (ly + peakY) * layerMiddle.sampleStep;
+        float interpS = layerMiddle.filterSize + peakS*scaleDiff;
+
+        KeyPoint kpoint;
+        kpoint.x = interpX;
+        kpoint.y = interpY;
+        kpoint.scale = BOXSIZE_TO_SCALE_COEFF * interpS;
+        kpoint.response = center;
+        kpoint.laplacian = (layerMiddle.readLaplacian(lx, ly) >= 0 ? 1 : -1);
+        kpoints.push_back(kpoint);
+#endif
+    }
+}
+
+static void findScaleSpaceMaxima(double hessianThreshold,
+                                 ScaleSpaceLayer& layerBottom,
+                                 ScaleSpaceLayer& layerMiddle,
+                                 ScaleSpaceLayer& layerTop,
+                                 vector<KeyPoint>& kpoints)
 {
     // Margin is one pixel bigger than during hessian
     // calculating because we need valid 3x3x3 whole neighbourhood 
     int layerMargin = (layerTop.filterSize) / (2 * layerTop.sampleStep) + 1;
-    int scaleDiff = layerMiddle.filterSize - layerBottom.filterSize;
 
-    for(int ly = layerMargin; ly < layerMiddle.height - layerMargin; ++ly)
-    {
-        for(int lx = layerMargin; lx < layerMiddle.width - layerMargin; ++lx)
-        {
-            // Check current pixel against given hessian threshold
-            float center = layerMiddle.readHessian(lx, ly);
-            if(center < hessianThreshold)
-                continue;
-
-            // Get 3x3x3 neighbour of current pixel
-            float N9[3][9];
-
-            layerBottom.readNeighbour(lx, ly, N9[0]);
-            layerMiddle.readNeighbour(lx, ly, N9[1]);
-            layerTop.readNeighbour(lx, ly, N9[2]);
-
-            bool localMax = 
-                center > N9[0][0] && center > N9[0][1] && center > N9[0][2] && 
-                center > N9[0][3] && center > N9[0][4] && center > N9[0][5] && 
-                center > N9[0][6] && center > N9[0][7] && center > N9[0][8] && 
-
-                center > N9[1][0] && center > N9[1][1] && center > N9[1][2] && 
-                center > N9[1][3] &&                      center > N9[1][5] && 
-                center > N9[1][6] && center > N9[1][7] && center > N9[1][8] && 
-
-                center > N9[2][0] && center > N9[2][1] && center > N9[2][2] && 
-                center > N9[2][3] && center > N9[2][4] && center > N9[2][5] && 
-                center > N9[2][6] && center > N9[2][7] && center > N9[2][8];
-
-            // And check current pixel against its local maxima
-            //if(isLocalMaximum<9, 3>(center, N9))
-            if(localMax)
-            {
-#if INTERPOLATE_HESSIAN != 0
-                // derivative of Hessian(x,y,s) (which is determinant) - Antigradient of dx, dy and ds:
-                float Hx = -(N9[1][5] - N9[1][3]) * 0.5f;
-                float Hy = -(N9[1][7] - N9[1][1]) * 0.5f;
-                float Hs = -(N9[2][4] - N9[0][4]) * 0.5f;
-                cv::Vec3f b(Hx, Hy, Hs);
-
-                // Equations for calculating finite differences of second order function with N variables:
-                // http://en.wikipedia.org/wiki/Finite_difference
-
-                // second derivative of H(x,y,s) - Hessian (I know - silly)
-                float Hxx = N9[1][5] - 2 * N9[1][4] + N9[1][3];
-                float Hxy = (N9[1][8] - N9[1][2] - N9[1][6] + N9[1][0]) * 0.25f;
-                float Hxs = (N9[2][5] - N9[0][5] - N9[2][3] + N9[0][3]) * 0.25f;
-                float Hyy = N9[1][7] - 2 * N9[1][4] + N9[1][1];
-                float Hys = (N9[2][7] - N9[0][7] - N9[2][1] + N9[0][1]) * 0.25f;
-                float Hss = N9[2][4] - 2 * N9[1][4] + N9[0][4];
-                cv::Matx33f A(Hxx, Hxy, Hxs,
-                    Hxy, Hyy, Hys,
-                    Hxs, Hys, Hss);
-
-                // For small linear system finding a solution is much faster using cramer's rule
-                cv::Vec3f x = solve3x3(A,b);
-                //cv::Vec3f x = A.solve(b, cv::DECOMP_LU);
-
-                if (fabsf(x[0]) <= 0.5f && fabsf(x[1]) <= 0.5f && fabsf(x[2]) <= 0.5f)
-                {
-                    KeyPoint kpoint;
-                    kpoint.x = (lx + x[0]) * layerMiddle.sampleStep;
-                    kpoint.y = (ly + x[1]) * layerMiddle.sampleStep;
-                    kpoint.scale = BOXSIZE_TO_SCALE_COEFF * (layerMiddle.filterSize + x[2] * scaleDiff);
-                    kpoint.response = center;
-                    kpoint.laplacian = (layerMiddle.readLaplacian(lx, ly) >= 0 ? 1 : -1);
-                    kpoints.push_back(kpoint); // <-- concurrent_vector<>
-                }
-#else
-                float peakX = polyPeak(N9[1][3], center, N9[1][5]);
-                float peakY = polyPeak(N9[1][1], center, N9[1][7]);
-                float peakS = polyPeak(N9[0][4], center, N9[2][4]);
-
-                float interpX = (lx + peakX) * layerMiddle.sampleStep;
-                float interpY = (ly + peakY) * layerMiddle.sampleStep;
-                float interpS = layerMiddle.filterSize + peakS*scaleDiff;
-
-                KeyPoint kpoint;
-                kpoint.x = interpX;
-                kpoint.y = interpY;
-                kpoint.scale = BOXSIZE_TO_SCALE_COEFF * interpS;
-                kpoint.response = center;
-                kpoint.laplacian = (layerMiddle.readLaplacian(lx, ly) >= 0 ? 1 : -1);
-                kpoints.push_back(kpoint);
-#endif
-            }
-        }
-    }
-}
-
-vector<KeyPoint> findScaleSpaceMaxima(double hessianThreshold, 
-                                      vector<ScaleSpaceLayer>& scaleLayers,
-                                      int numOctaves, int numScales)
-{
-    CV_Assert(!scaleLayers.empty());
+    int ystart = layerMargin;
+    int yend = layerMiddle.height - layerMargin;
+    int xstart = layerMargin;
+    int xend = layerMiddle.width - layerMargin;
 
 #if defined(HAVE_TBB)
-    tbb::concurrent_vector<KeyPoint> kpoints;
+    tbb::concurrent_vector<KeyPoint> curr_kpoints;
 
-    tbb::parallel_for(tbb::blocked_range2d<int>(0, numOctaves, 1, numScales-1), 
-        [&](const tbb::blocked_range2d<int>& range){
-            for(int octave = range.rows().begin(); octave < range.rows().end(); ++octave)
+    tbb::parallel_for(tbb::blocked_range2d<int>(ystart, yend, xstart, xend),
+        [&](const tbb::blocked_range2d<int>& range) {
+            for(int ly = range.rows().begin(); ly < range.rows().end(); ++ly) 
             {
-                for(int scale = range.cols().begin(); scale < range.cols().end(); ++scale)
+                for(int lx = range.cols().begin(); lx < range.cols().end(); ++lx)
                 {
-                    int indexMiddle = octave * numScales + scale;
-                    auto&& layerBottom = scaleLayers[indexMiddle - 1];
-                    auto&& layerMiddle = scaleLayers[indexMiddle];
-                    auto&& layerTop = scaleLayers[indexMiddle + 1];
-
-                    findScaleSpaceMaxima_layer(hessianThreshold, layerBottom, 
-                        layerMiddle, layerTop, kpoints);
+                    findScaleSpaceMaxima_pix(hessianThreshold, lx, ly, 
+                        layerBottom, layerMiddle, layerTop, curr_kpoints);
                 }
             }
     });
 
-    vector<KeyPoint> ret;
-    copy(begin(kpoints), end(kpoints), back_inserter(ret));
-    return ret;
+    copy(begin(curr_kpoints), end(curr_kpoints), back_inserter(kpoints));
 #else
-    vector<KeyPoint> kpoints;
-
-    for(int octave = 0; octave < numOctaves; ++octave)
+    for(int ly = ystart; ly < yend; ++ly) 
     {
-        for(int scale = 1; scale < numScales-1; ++scale)
+        for(int lx = xstart; lx < xend; ++lx)
         {
-            int indexMiddle = octave * numScales + scale;
-            auto&& layerBottom = scaleLayers[indexMiddle - 1];
-            auto&& layerMiddle = scaleLayers[indexMiddle];
-            auto&& layerTop = scaleLayers[indexMiddle + 1];
-
-            findScaleSpaceMaxima_layer(hessianThreshold, layerBottom, 
-                layerMiddle, layerTop, kpoints);
+            findScaleSpaceMaxima_pix(hessianThreshold, lx, ly, 
+                layerBottom, layerMiddle, layerTop, kpoints);
         }
     }
-
-    return kpoints;
 #endif
+}
+
+static inline void retainBestFeatures(int nFeatures, 
+                                      vector<KeyPoint>& kpoints)
+{
+    if(nFeatures > 0)
+    {
+#if defined(HAVE_TBB)
+        tbb::parallel_sort(begin(kpoints), end(kpoints),
+            [](const KeyPoint& left, const KeyPoint& right) { 
+                return left.response < right.response;
+        });
+#else
+        sort(begin(kpoints), end(kpoints),
+            [](const KeyPoint& left, const KeyPoint& right) { 
+                return left.response < right.response;
+        });
+#endif
+        if(nFeatures <= (int) kpoints.size())
+            kpoints.resize(nFeatures);
+    }
 }
 
 vector<KeyPoint> fastHessianDetector(const cv::Mat& intImage, 
@@ -563,19 +568,16 @@ vector<KeyPoint> fastHessianDetector(const cv::Mat& intImage,
     CV_Assert(numScales > 2);
     CV_Assert(hessianThreshold >= 0.0f);
 
-    const int nTotalLayers = numOctaves * numScales;
-
-    vector<ScaleSpaceLayer> scaleLayers(nTotalLayers);
-
     int scaleBaseFilterSize = FILTER_SIZE_BASE;
+    vector<KeyPoint> kpoints;
 
-    // Initialize scale space layers with their properties
     for(int octave = 0; octave < numOctaves; ++octave)
     {
+        vector<ScaleSpaceLayer> scaleLayers(numScales);
+
         for(int scale = 0; scale < numScales; ++scale)
         {
-            int index = octave * numScales + scale;
-            auto& layer = scaleLayers[index];
+            auto& layer = scaleLayers[scale];
 
             layer.width = (intImage.cols-1) >> octave;
             layer.height = (intImage.rows-1) >> octave;
@@ -589,30 +591,28 @@ vector<KeyPoint> fastHessianDetector(const cv::Mat& intImage,
             // Allocate required memory for scale layers
             layer.hessian.resize(layer.width * layer.height);
             layer.laplacian.resize(layer.width * layer.height);
+
+            buildScaleSpaceLayer(layer, intImage);
+        }
+
+        for(int scale = 1; scale < numScales - 1; ++scale)
+        {
+            auto&& layerBottom = scaleLayers[scale - 1];
+            auto&& layerMiddle = scaleLayers[scale];
+            auto&& layerTop = scaleLayers[scale + 1];
+
+            findScaleSpaceMaxima(hessianThreshold, layerBottom, 
+                layerMiddle, layerTop, kpoints);
         }
 
         scaleBaseFilterSize += FILTER_SIZE_BASE_INCREASE << octave;
     }
 
-    buildScaleSpace(intImage, scaleLayers, numOctaves, numScales);
-    vector<KeyPoint> kpoints = findScaleSpaceMaxima(hessianThreshold, scaleLayers, numOctaves, numScales);
+    // Sort and trim weakest features 
+    retainBestFeatures(nFeatures, kpoints);
 
-
-#if defined(HAVE_TBB)
-    tbb::parallel_sort(begin(kpoints), end(kpoints),
-        [](const KeyPoint& left, const KeyPoint& right) { 
-            return left.response < right.response;
-    });
-#else
-    sort(begin(kpoints), end(kpoints),
-        [](const KeyPoint& left, const KeyPoint& right) { 
-            return left.response < right.response;
-    });
-#endif
-
-    if(nFeatures > 0 && nFeatures <= (int) kpoints.size())
-        kpoints.resize(nFeatures);
     return kpoints;
+    
 }
 
 void surfOrientation(vector<KeyPoint>& kpoints,
@@ -709,7 +709,7 @@ void surfOrientation(vector<KeyPoint>& kpoints,
 }
 
 template<size_t N>
-void normalizeDescriptor(float desc[N])
+static inline void normalizeDescriptor(float desc[N])
 {
     float len = 0.0f;
     for(int i = 0; i < N; ++i)
@@ -724,9 +724,9 @@ void normalizeDescriptor(float desc[N])
     }
 }
 
-void msurfDescriptors_kpoint(const KeyPoint& kpoint, 
-                            const cv::Mat& intImage, 
-                            float desc[], float gaussWeights[])
+static void msurfDescriptors_kpoint(const KeyPoint& kpoint, 
+                                    const cv::Mat& intImage, 
+                                    float desc[], float gaussWeights[])
 {
     float scale = kpoint.scale;
     float c = cosf(kpoint.orientation);
@@ -813,9 +813,9 @@ void msurfDescriptors_kpoint(const KeyPoint& kpoint,
     normalizeDescriptor<64>(desc);
 }
 
-void surfDescriptors_kpoint(const KeyPoint& kpoint, 
-                            const cv::Mat& intImage, 
-                            float desc[])
+static void surfDescriptors_kpoint(const KeyPoint& kpoint, 
+                                   const cv::Mat& intImage, 
+                                   float desc[])
 {
     float scale = kpoint.scale;
     float c = cosf(kpoint.orientation);
@@ -873,9 +873,9 @@ void surfDescriptors_kpoint(const KeyPoint& kpoint,
     normalizeDescriptor<64>(desc);
 }
 
-void msurfDescriptors(const vector<KeyPoint>& kpoints,
-                     const cv::Mat& intImage,
-                     cv::Mat& descriptors)
+static void msurfDescriptors(const vector<KeyPoint>& kpoints,
+                             const cv::Mat& intImage,
+                             cv::Mat& descriptors)
 {
     if(descriptors.empty())
         descriptors.create((int) kpoints.size(), 64, CV_32F);
@@ -1026,7 +1026,7 @@ void kSURF::operator()(cv::InputArray _img, cv::InputArray _mask,
     }
     else
     {
-        keypoints = std::vector<cv::KeyPoint>();
+        keypoints = vector<cv::KeyPoint>();
         if(doDescriptors)
         {
             cv::Mat& descriptors = _descriptors.getMatRef();
