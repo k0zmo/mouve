@@ -612,7 +612,6 @@ vector<KeyPoint> fastHessianDetector(const cv::Mat& intImage,
     retainBestFeatures(nFeatures, kpoints);
 
     return kpoints;
-    
 }
 
 void surfOrientation(vector<KeyPoint>& kpoints,

@@ -115,7 +115,7 @@ void NodeConnectorView::mousePressEvent(QGraphicsSceneMouseEvent* event)
 	if(event->button() == Qt::LeftButton
 		&& !mTemporaryLink) // protects from double click
 	{
-		mTemporaryLink = new NodeLinkView(centerPos(), event->scenePos(), this, !mIsOutput);
+		mTemporaryLink = new NodeLinkView(centerPos(), event->scenePos(), this);
 	}
 }
 
