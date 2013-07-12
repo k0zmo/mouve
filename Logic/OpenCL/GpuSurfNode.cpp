@@ -206,6 +206,7 @@ public:
 		_gpuComputeModule->queue().asyncCopyBuffer(_pinnedKeypointsCount_cl, _keypointsCount_cl);
 
 		convertImageToIntegral(deviceImage, imageWidth, imageHeight);
+
 		prepareScaleSpaceLayers(imageWidth, imageHeight);
 		buildScaleSpace(imageWidth, imageHeight);
 		findScaleSpaceMaxima();
@@ -353,48 +354,6 @@ protected:
 		_gpuComputeModule->queue().asyncUnmap(_samplesCoords_cl, samplesPtr);
 	}
 
-	bool prepareScaleSpaceLayers(int imageWidth, int imageHeight)
-	{
-		GpuPerformanceMarker marker(_gpuComputeModule->performanceMarkersInitialized(), "Prepare layers", "SURF");
-
-		const int nTotalLayers = _nOctaves * _nScales;
-		if(!nTotalLayers)
-			return false;
-
-		if(nTotalLayers != _nTotalLayers)
-		{
-			_scaleLayers.clear();
-			_scaleLayers.resize(nTotalLayers);
-		}
-
-		int scaleBaseFilterSize = FILTER_SIZE_BASE;
-
-		// Initialize scale space layers with their properties
-		for(int octave = 0; octave < _nOctaves; ++octave)
-		{
-			for(int scale = 0; scale < _nScales; ++scale)
-			{
-				auto&& layer = _scaleLayers[octave*_nScales + scale];
-
-				layer.width = imageWidth >> octave;
-				layer.height = imageHeight >> octave;
-				layer.sampleStep = _initSampling << octave;
-#if FILTER_SIZE_BAY == 1
-				layer.filterSize = scaleBaseFilterSize + (scale * FILTER_SIZE_BASE_INCREASE << octave);
-#else
-				layer.filterSize = (FILTER_SIZE_BASE + FILTER_SIZE_BASE_INCREASE*scale) << octave;
-#endif
-				// Allocate required memory for scale layers
-				ensureHessianAndLaplacianBufferIsEnough(layer);
-			}
-
-			scaleBaseFilterSize += FILTER_SIZE_BASE_INCREASE << octave;
-		}
-
-		_nTotalLayers = nTotalLayers;
-		return true;
-	}
-
 	void ensureKeypointsBufferIsEnough()
 	{
 		if(_keypoints_cl.isNull() || _keypoints_cl.size() != KEYPOINTS_MAX*sizeof(KeyPoint))
@@ -411,19 +370,6 @@ protected:
 				clw::Access_ReadWrite, clw::Location_Device, sizeof(int));
 			_pinnedKeypointsCount_cl = _gpuComputeModule->context().createBuffer(
 				clw::Access_ReadWrite, clw::Location_AllocHostMemory, sizeof(int));
-		}
-	}
-
-	void ensureHessianAndLaplacianBufferIsEnough(ScaleSpaceLayer_cl& layer)
-	{
-		const size_t layerSizeBytes = layer.width * layer.height * sizeof(float);
-
-		if(layer.hessian_cl.isNull() || layer.hessian_cl.size() != layerSizeBytes)
-		{
-			layer.hessian_cl = _gpuComputeModule->context().createBuffer(clw::Access_ReadWrite, 
-				clw::Location_Device, layerSizeBytes);
-			layer.laplacian_cl = _gpuComputeModule->context().createBuffer(clw::Access_ReadWrite, 
-				clw::Location_Device, layerSizeBytes);
 		}
 	}
 
@@ -478,6 +424,61 @@ protected:
 			_gpuComputeModule->queue().readImage2D(srcImage_cl, srcHost.data, srcHost.step);
 			cv::integral(srcHost, integralHost);
 			_gpuComputeModule->queue().writeImage2D(_imageIntegral_cl, integralHost.data, integralHost.step);
+		}
+	}
+
+	bool prepareScaleSpaceLayers(int imageWidth, int imageHeight)
+	{
+		GpuPerformanceMarker marker(_gpuComputeModule->performanceMarkersInitialized(), "Prepare layers", "SURF");
+
+		const int nTotalLayers = _nOctaves * _nScales;
+		if(!nTotalLayers)
+			return false;
+
+		if(nTotalLayers != _nTotalLayers)
+		{
+			_scaleLayers.clear();
+			_scaleLayers.resize(nTotalLayers);
+		}
+
+		int scaleBaseFilterSize = FILTER_SIZE_BASE;
+
+		// Initialize scale space layers with their properties
+		for(int octave = 0; octave < _nOctaves; ++octave)
+		{
+			for(int scale = 0; scale < _nScales; ++scale)
+			{
+				auto&& layer = _scaleLayers[octave*_nScales + scale];
+
+				layer.width = imageWidth >> octave;
+				layer.height = imageHeight >> octave;
+				layer.sampleStep = _initSampling << octave;
+#if FILTER_SIZE_BAY == 1
+				layer.filterSize = scaleBaseFilterSize + (scale * FILTER_SIZE_BASE_INCREASE << octave);
+#else
+				layer.filterSize = (FILTER_SIZE_BASE + FILTER_SIZE_BASE_INCREASE*scale) << octave;
+#endif
+				// Allocate required memory for scale layers
+				ensureHessianAndLaplacianBufferIsEnough(layer);
+			}
+
+			scaleBaseFilterSize += FILTER_SIZE_BASE_INCREASE << octave;
+		}
+
+		_nTotalLayers = nTotalLayers;
+		return true;
+	}
+
+	void ensureHessianAndLaplacianBufferIsEnough(ScaleSpaceLayer_cl& layer)
+	{
+		const size_t layerSizeBytes = layer.width * layer.height * sizeof(float);
+
+		if(layer.hessian_cl.isNull() || layer.hessian_cl.size() != layerSizeBytes)
+		{
+			layer.hessian_cl = _gpuComputeModule->context().createBuffer(clw::Access_ReadWrite, 
+				clw::Location_Device, layerSizeBytes);
+			layer.laplacian_cl = _gpuComputeModule->context().createBuffer(clw::Access_ReadWrite, 
+				clw::Location_Device, layerSizeBytes);
 		}
 	}
 

@@ -1,18 +1,16 @@
-#include "Prerequisites.h"
 #include "NodeType.h"
 #include "NodeFactory.h"
 
-#include <opencv2/nonfree/features2d.hpp>
+#include <opencv2/features2d/features2d.hpp>
 
-class SiftFeatureDetectorNodeType : public NodeType
+class OrbFeatureDetectorNodeType : public NodeType
 {
 public:
-	SiftFeatureDetectorNodeType()
-		: _nFeatures(0)
-		, _nOctaveLayers(3)
-		, _contrastThreshold(0.04)
-		, _edgeThreshold(10)
-		, _sigma(1.6)
+	OrbFeatureDetectorNodeType()
+		: _nfeatures(1000)
+		, _scaleFactor(1.2f)
+		, _nlevels(8)
+		, _edgeThreshold(31)
 	{
 	}
 
@@ -20,22 +18,20 @@ public:
 	{
 		switch(propId)
 		{
-		case ID_NumFeatures: 
-			_nFeatures = newValue.toInt();
+		case ID_NumFeatures:
+			_nfeatures = newValue.toInt();
 			return true;
-		case ID_NumOctaveLayers:  
-			_nOctaveLayers = newValue.toInt();
+		case ID_ScaleFactor:
+			_scaleFactor = newValue.toFloat();
 			return true;
-		case ID_ContrastThreshold:
-			_contrastThreshold = newValue.toDouble();
+		case ID_NumLevels:
+			_nlevels = newValue.toInt();
 			return true;
 		case ID_EdgeThreshold:
-			_edgeThreshold = newValue.toDouble();
-			return true;
-		case ID_Sigma:
-			_sigma = newValue.toDouble();
+			_edgeThreshold = newValue.toInt();
 			return true;
 		}
+
 		return false;
 	}
 
@@ -43,11 +39,10 @@ public:
 	{
 		switch(propId)
 		{
-		case ID_NumFeatures: return _nFeatures;
-		case ID_NumOctaveLayers: return _nOctaveLayers;
-		case ID_ContrastThreshold: return _contrastThreshold;
+		case ID_NumFeatures: return _nfeatures;
+		case ID_ScaleFactor: return _scaleFactor;
+		case ID_NumLevels: return _nlevels;
 		case ID_EdgeThreshold: return _edgeThreshold;
-		case ID_Sigma: return _sigma;
 		}
 
 		return QVariant();
@@ -64,13 +59,11 @@ public:
 		if(src.empty())
 			return ExecutionStatus(EStatus::Ok);
 
-		cv::SiftFeatureDetector detector(_nFeatures, _nOctaveLayers,
-			_contrastThreshold, _edgeThreshold, _sigma);
-		detector.detect(src, kp.kpoints);
+		cv::OrbFeatureDetector orb(_nfeatures, _scaleFactor, _nlevels, _edgeThreshold);
+		orb.detect(src, kp.kpoints);
 		kp.image = src;
 
-		return ExecutionStatus(EStatus::Ok, 
-			formatMessage("Keypoints detected: %d", (int) kp.kpoints.size()));
+		return ExecutionStatus(EStatus::Ok);
 	}
 
 	void configuration(NodeConfig& nodeConfig) const override
@@ -84,11 +77,10 @@ public:
 			{ ENodeFlowDataType::Invalid, "", "", "" }
 		};
 		static const PropertyConfig prop_config[] = {
-			{ EPropertyType::Integer, "Number of best features to retain", "min:0" },
-			{ EPropertyType::Integer, "Number of layers in each octave", "min:2" },
-			{ EPropertyType::Double, "Contrast threshold", "" },
-			{ EPropertyType::Double, "Edge threshold", "" },
-			{ EPropertyType::Double, "Input image sigma", "" },
+			{ EPropertyType::Integer, "Number of features to retain", "min:1" },
+			{ EPropertyType::Double, "Pyramid decimation ratio", "min:1.0" },
+			{ EPropertyType::Integer, "The number of pyramid levels", "min:1" },
+			{ EPropertyType::Integer, "Border margin", "min:1" },
 			{ EPropertyType::Unknown, "", "" }
 		};
 
@@ -102,20 +94,18 @@ protected:
 	enum EPropertyID
 	{
 		ID_NumFeatures,
-		ID_NumOctaveLayers,
-		ID_ContrastThreshold,
-		ID_EdgeThreshold,
-		ID_Sigma
+		ID_ScaleFactor,
+		ID_NumLevels,
+		ID_EdgeThreshold
 	};
 
-	int _nFeatures;
-	int _nOctaveLayers;
-	double _contrastThreshold;
-	double _edgeThreshold;
-	double _sigma;
+	int _nfeatures;
+	float _scaleFactor;
+	int _nlevels;
+	int _edgeThreshold;
 };
 
-class SiftDescriptorExtractorNodeType : public NodeType
+class OrbDescriptorExtractorNodeType : public NodeType
 {
 public:
 	ExecutionStatus execute(NodeSocketReader& reader, NodeSocketWriter& writer) override
@@ -132,8 +122,8 @@ public:
 		cv::Mat& outDescriptors = writer.acquireSocket(1).getArray();
 		outKp = kp;
 
-		cv::SiftDescriptorExtractor extractor;
-		extractor.compute(kp.image, outKp.kpoints, outDescriptors);
+		cv::OrbDescriptorExtractor orb;
+		orb.compute(kp.image, outKp.kpoints, outDescriptors);
 
 		return ExecutionStatus(EStatus::Ok);
 	}
@@ -156,14 +146,15 @@ public:
 	}
 };
 
-class SiftNodeType : public SiftFeatureDetectorNodeType
+class OrbNodeType : public OrbFeatureDetectorNodeType
 {
 public:
+
 	ExecutionStatus execute(NodeSocketReader& reader, NodeSocketWriter& writer) override
 	{
 		// inputs
 		const cv::Mat& src = reader.readSocket(0).getImage();
-		// outputs
+		// ouputs
 		KeyPoints& kp = writer.acquireSocket(0).getKeypoints();
 		cv::Mat& descriptors = writer.acquireSocket(1).getArray();
 
@@ -171,20 +162,17 @@ public:
 		if(src.empty())
 			return ExecutionStatus(EStatus::Ok);
 
-		cv::SIFT sift(_nFeatures, _nOctaveLayers,
-			_contrastThreshold, _edgeThreshold, _sigma);
-		sift(src, cv::noArray(), kp.kpoints, descriptors);
+		cv::ORB orb(_nfeatures, _scaleFactor, _nlevels, _edgeThreshold);
+		orb(src, cv::noArray(), kp.kpoints, descriptors);
 		kp.image = src;
 
-		return ExecutionStatus(EStatus::Ok, 
-			formatMessage("Keypoints detected: %d", (int) kp.kpoints.size()));
+		return ExecutionStatus(EStatus::Ok);
 	}
 
 	void configuration(NodeConfig& nodeConfig) const override
 	{
-		SiftFeatureDetectorNodeType::configuration(nodeConfig);
+		OrbFeatureDetectorNodeType::configuration(nodeConfig);
 
-		// Just add one more output socket
 		static const OutputSocketConfig out_config[] = {
 			{ ENodeFlowDataType::Keypoints, "keypoints", "Keypoints", "" },
 			{ ENodeFlowDataType::Array, "output", "Descriptors", "" },
@@ -196,6 +184,6 @@ public:
 	}
 };
 
-REGISTER_NODE("Features/Descriptors/SIFT", SiftDescriptorExtractorNodeType)
-REGISTER_NODE("Features/Detectors/SIFT", SiftFeatureDetectorNodeType)
-REGISTER_NODE("Features/SIFT", SiftNodeType)
+REGISTER_NODE("Features/Descriptors/ORB", OrbDescriptorExtractorNodeType)
+REGISTER_NODE("Features/Detectors/ORB", OrbFeatureDetectorNodeType)
+REGISTER_NODE("Features/ORB", OrbNodeType)

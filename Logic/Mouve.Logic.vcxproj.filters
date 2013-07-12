@@ -127,9 +127,6 @@
     <ClCompile Include="OpenCL\GpuColorConversionNodes.cpp">
       <Filter>OpenCL</Filter>
     </ClCompile>
-    <ClCompile Include="Nodes\OrbFreakNodes.cpp">
-      <Filter>Nodes</Filter>
-    </ClCompile>
     <ClCompile Include="Nodes\MosaicingNodes.cpp">
       <Filter>Nodes</Filter>
     </ClCompile>
@@ -143,6 +140,12 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Nodes\FeaturesNodes.cpp">
+      <Filter>Nodes</Filter>
+    </ClCompile>
+    <ClCompile Include="Nodes\FreakNodes.cpp">
+      <Filter>Nodes</Filter>
+    </ClCompile>
+    <ClCompile Include="Nodes\OrbNodes.cpp">
       <Filter>Nodes</Filter>
     </ClCompile>
   </ItemGroup>

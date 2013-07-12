@@ -275,6 +275,7 @@
     <ClCompile Include="Nodes\CV.cpp" />
     <ClCompile Include="Nodes\DrawFeaturesNodes.cpp" />
     <ClCompile Include="Nodes\FeaturesNodes.cpp" />
+    <ClCompile Include="Nodes\FreakNodes.cpp" />
     <ClCompile Include="Nodes\HomographyNodes.cpp" />
     <ClCompile Include="Nodes\HoughNodes.cpp" />
     <ClCompile Include="Nodes\ImageTransformationNodes.cpp" />
@@ -282,7 +283,7 @@
     <ClCompile Include="Nodes\kSurfNodes.cpp" />
     <ClCompile Include="Nodes\MatcherNodes.cpp" />
     <ClCompile Include="Nodes\MosaicingNodes.cpp" />
-    <ClCompile Include="Nodes\OrbFreakNodes.cpp" />
+    <ClCompile Include="Nodes\OrbNodes.cpp" />
     <ClCompile Include="Nodes\SiftNodes.cpp" />
     <ClCompile Include="Nodes\SourceNodes.cpp" />
     <ClCompile Include="Nodes\SurfNodes.cpp" />

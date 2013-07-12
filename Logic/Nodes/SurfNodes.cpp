@@ -11,8 +11,6 @@ public:
 		: _hessianThreshold(400.0)
 		, _nOctaves(4)
 		, _nOctaveLayers(2)
-		, _extended(false)
-		, _upright(false)
 	{
 	}
 
@@ -29,12 +27,6 @@ public:
 		case ID_NumOctaveLayers:
 			_nOctaveLayers = newValue.toInt();
 			return true;
-		case ID_Extended:
-			_extended = newValue.toBool();
-			return true;
-		case ID_Upright:
-			_upright = newValue.toBool();
-			return true;
 		}
 
 		return false;
@@ -47,8 +39,6 @@ public:
 		case ID_HessianThreshold: return _hessianThreshold;
 		case ID_NumOctaves: return _nOctaves;
 		case ID_NumOctaveLayers: return _nOctaveLayers;
-		case ID_Extended: return _extended;
-		case ID_Upright: return _upright;
 		}
 
 		return QVariant();
@@ -65,8 +55,7 @@ public:
 		if(src.empty())
 			return ExecutionStatus(EStatus::Ok);
 
-		cv::SurfFeatureDetector detector(_hessianThreshold, _nOctaves,
-			_nOctaveLayers, _extended, _upright);
+		cv::SurfFeatureDetector detector(_hessianThreshold, _nOctaves, _nOctaveLayers);
 		detector.detect(src, kp.kpoints);
 		kp.image = src;
 
@@ -88,8 +77,6 @@ public:
 			{ EPropertyType::Double, "Hessian threshold", "" },
 			{ EPropertyType::Integer, "Number of octaves", "min:1" },
 			{ EPropertyType::Integer, "Number of octave layers", "min:1" },
-			{ EPropertyType::Boolean, "Extended", "" },
-			{ EPropertyType::Boolean, "Upright", "" },
 			{ EPropertyType::Unknown, "", "" }
 		};
 
@@ -99,26 +86,54 @@ public:
 		nodeConfig.pProperties = prop_config;
 	}
 
-protected:
+private:
 	enum EPropertyID
 	{
 		ID_HessianThreshold,
 		ID_NumOctaves,
-		ID_NumOctaveLayers,
-		ID_Extended,
-		ID_Upright
+		ID_NumOctaveLayers
 	};
 
 	double _hessianThreshold;
 	int _nOctaves;
 	int _nOctaveLayers;
-	bool _extended;
-	bool _upright;
 };
 
-class SurfFeatureExtractorNodeType : public NodeType
+class SurfDescriptorExtractorNodeType : public NodeType
 {
 public:
+	SurfDescriptorExtractorNodeType()
+		: _extended(false)
+		, _upright(false)
+	{
+	}
+
+	bool setProperty(PropertyID propId, const QVariant& newValue) override
+	{
+		switch(propId)
+		{
+		case ID_Extended:
+			_extended = newValue.toBool();
+			return true;
+		case ID_Upright:
+			_upright = newValue.toBool();
+			return true;
+		}
+
+		return false;
+	}
+
+	QVariant property(PropertyID propId) const override
+	{
+		switch(propId)
+		{
+		case ID_Extended: return _extended;
+		case ID_Upright: return _upright;
+		}
+
+		return QVariant();
+	}
+
 	ExecutionStatus execute(NodeSocketReader& reader, NodeSocketWriter& writer) override
 	{
 		// inputs
@@ -150,63 +165,33 @@ public:
 			{ ENodeFlowDataType::Array, "output", "Descriptors", "" },
 			{ ENodeFlowDataType::Invalid, "", "", "" }
 		};
+		static const PropertyConfig prop_config[] = {
+			{ EPropertyType::Boolean, "Extended", "" },
+			{ EPropertyType::Boolean, "Upright", "" },
+			{ EPropertyType::Unknown, "", "" }
+		};
 
 		nodeConfig.description = "";
 		nodeConfig.pInputSockets = in_config;
 		nodeConfig.pOutputSockets = out_config;
+		nodeConfig.pProperties = prop_config;
 	}
+
+private:
+	enum EPropertyID
+	{
+		ID_Extended,
+		ID_Upright
+	};
+
+	bool _extended;
+	bool _upright;
 };
 
-class SurfNodeType : public SurfFeatureDetectorNodeType
+class SurfNodeType : public NodeType
 {
 public:
-	ExecutionStatus execute(NodeSocketReader& reader, NodeSocketWriter& writer) override
-	{
-		// inputs
-		const cv::Mat& src = reader.readSocket(0).getImage();
-		// outputs
-		KeyPoints& kp = writer.acquireSocket(0).getKeypoints();
-		cv::Mat& descriptors = writer.acquireSocket(1).getArray();
-
-		// validate inputs
-		if(src.empty())
-			return ExecutionStatus(EStatus::Ok);
-
-		cv::SURF surf(_hessianThreshold, _nOctaves,
-			_nOctaveLayers, _extended, _upright);
-		surf(src, cv::noArray(), kp.kpoints, descriptors);
-		kp.image = src;
-
-		return ExecutionStatus(EStatus::Ok, 
-			formatMessage("Keypoints detected: %d", (int) kp.kpoints.size()));
-	}
-
-	void configuration(NodeConfig& nodeConfig) const override
-	{
-		SurfFeatureDetectorNodeType::configuration(nodeConfig);
-
-		// Just add one more output socket
-		static const OutputSocketConfig out_config[] = {
-			{ ENodeFlowDataType::Keypoints, "keypoints", "Keypoints", "" },
-			{ ENodeFlowDataType::Array, "output", "Descriptors", "" },
-			{ ENodeFlowDataType::Invalid, "", "", "" }
-		};
-
-		nodeConfig.description = "";
-		nodeConfig.pOutputSockets = out_config;
-	}
-};
-
-#include <opencv2/opencv_modules.hpp>
-#ifdef HAVE_OPENCV_GPU
-
-#include <opencv2/gpu/gpu.hpp>
-#include <opencv2/nonfree/gpu.hpp>
-
-class SurfGpuNodeType : public NodeType
-{
-public:
-	SurfGpuNodeType()
+	SurfNodeType()
 		: _hessianThreshold(400.0)
 		, _nOctaves(4)
 		, _nOctaveLayers(2)
@@ -265,17 +250,9 @@ public:
 		if(src.empty())
 			return ExecutionStatus(EStatus::Ok);
 
-		cv::gpu::GpuMat img;
-		img.upload(src);
-
-		cv::gpu::SURF_GPU surf;
-		cv::gpu::GpuMat keypointsGPU;
-		cv::gpu::GpuMat descriptorsGPU;
-
-		surf(img, cv::gpu::GpuMat(), keypointsGPU, descriptorsGPU);
-
-		surf.downloadKeypoints(keypointsGPU, kp.kpoints);
-		descriptorsGPU.download(descriptors);
+		cv::SURF surf(_hessianThreshold, _nOctaves,
+			_nOctaveLayers, _extended, _upright);
+		surf(src, cv::noArray(), kp.kpoints, descriptors);
 		kp.image = src;
 
 		return ExecutionStatus(EStatus::Ok, 
@@ -308,7 +285,7 @@ public:
 		nodeConfig.pProperties = prop_config;
 	}
 
-protected:
+private:
 	enum EPropertyID
 	{
 		ID_HessianThreshold,
@@ -325,9 +302,6 @@ protected:
 	bool _upright;
 };
 
-REGISTER_NODE("Features/CUDA SURF", SurfGpuNodeType)
-#endif
-
-REGISTER_NODE("Features/SURF Extractor", SurfFeatureExtractorNodeType)
-REGISTER_NODE("Features/SURF Detector", SurfFeatureDetectorNodeType)
+REGISTER_NODE("Features/Descriptors/SURF", SurfDescriptorExtractorNodeType)
+REGISTER_NODE("Features/Detectors/SURF", SurfFeatureDetectorNodeType)
 REGISTER_NODE("Features/SURF", SurfNodeType)

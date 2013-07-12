@@ -107,10 +107,10 @@ protected:
 	unique_ptr<cv::BRISK> _brisk;
 };
 
-class BriskFeatureExtractorNodeType : public NodeType
+class BriskDescriptorExtractorNodeType : public NodeType
 {
 public:
-	BriskFeatureExtractorNodeType()
+	BriskDescriptorExtractorNodeType()
 		: _brisk(new cv::BRISK())
 	{
 	}
@@ -172,7 +172,6 @@ public:
 		if(src.empty())
 			return ExecutionStatus(EStatus::Ok);
 
-		//cv::BRISK(_thresh, _nOctaves, _patternScale)
 		(*_brisk)(src, cv::noArray(), kp.kpoints, descriptors);
 		kp.image = src;
 
@@ -195,6 +194,6 @@ public:
 	}
 };
 
-REGISTER_NODE("Features/Binary/BRISK Extractor", BriskFeatureExtractorNodeType)
-REGISTER_NODE("Features/Binary/BRISK Detector", BriskFeatureDetectorNodeType)
-REGISTER_NODE("Features/Binary/BRISK", BriskNodeType)
+REGISTER_NODE("Features/Descriptors/BRISK", BriskDescriptorExtractorNodeType)
+REGISTER_NODE("Features/Detectors/BRISK", BriskFeatureDetectorNodeType)
+REGISTER_NODE("Features/BRISK", BriskNodeType)
