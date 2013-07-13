@@ -12,7 +12,8 @@ public:
 		NodeSocketView* toSocketView, QGraphicsItem* parent = nullptr);
 	// Contruction for temporary link 
 	explicit NodeLinkView(const QPointF& startPosition,
-		const QPointF& endPosition, QGraphicsItem* parent = nullptr);
+		const QPointF& endPosition, QGraphicsItem* parent = nullptr,
+		bool invertStartPos = false);
 	virtual ~NodeLinkView();
 
 	virtual void paint(QPainter *painter, 
@@ -48,7 +49,9 @@ private:
 	NodeSocketView* mFromSocketView;
 	NodeSocketView* mToSocketView;
 	QPainterPath mPath;
+	mutable QPointF mc1, mc2;
 	bool mDrawDebug;
+	bool mInvertStartPos;
 
 private:
 	// Buduje i zwraca QPainterPath 

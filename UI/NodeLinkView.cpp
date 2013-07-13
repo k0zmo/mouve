@@ -11,6 +11,7 @@ NodeLinkView::NodeLinkView(NodeSocketView* fromSocketView,
 	, mFromSocketView(fromSocketView)
 	, mToSocketView(toSocketView)
 	, mDrawDebug(false)
+	, mInvertStartPos(false)
 {
 	setFlag(QGraphicsItem::ItemIsSelectable);
 	setFlag(QGraphicsItem::ItemIsFocusable);
@@ -19,13 +20,15 @@ NodeLinkView::NodeLinkView(NodeSocketView* fromSocketView,
 }
 
 NodeLinkView::NodeLinkView(const QPointF& startPosition,
-	const QPointF& endPosition, QGraphicsItem* parent)
+	const QPointF& endPosition, QGraphicsItem* parent,
+	bool invertStartPos)
 	: QGraphicsItem(parent)
 	, mPen(NodeStyle::TemporaryLinkPen)
 	, mEndPosition(mapFromScene(endPosition))
 	, mFromSocketView(nullptr)
 	, mToSocketView(nullptr)
 	, mDrawDebug(false)
+	, mInvertStartPos(invertStartPos)
 {
 	setPos(startPosition);
 	setZValue(NodeStyle::ZValueTemporaryLink);
@@ -57,6 +60,11 @@ void NodeLinkView::paint(QPainter *painter,
 		painter->setBrush(QColor(255,0,0,50));
 		painter->setPen(Qt::red);
 		painter->drawRect(boundingRect());
+
+		// Draw control points
+		painter->setPen(QPen(Qt::yellow, 5));
+		QPointF p[] = { mc1, mc2 };
+		painter->drawPoints(p, 2);
 	}
 }
 
@@ -138,23 +146,41 @@ QPainterPath NodeLinkView::shape() const
 
 QPainterPath NodeLinkView::shapeImpl() const
 {
-	if(mEndPosition.x() < 0)
+	// Calculations are done in world space ("scene" space)
+	QPointF start = mapToScene(QPointF(0,0));
+	QPointF end = mapToScene(mEndPosition);
+
+	if(mInvertStartPos)
+		qSwap(start, end);
+
+	if(end.x() > start.x())
 	{
-		qreal w = qAbs(mEndPosition.x()) * 1.25 + 20.0;
-		QPointF c1(w, mEndPosition.y() / 5.0);
-		QPointF c2(mEndPosition.x() - w, 4.0 * mEndPosition.y() / 5.0);
+		qreal midpoint = (start.x() + end.x()) / 2.0;
+		QPointF c1(midpoint, start.y());
+		QPointF c2(midpoint, end.y());
+
+		mc1 = mapFromScene(c1);
+		mc2 = mapFromScene(c2);
 
 		QPainterPath painterPath;
-		painterPath.cubicTo(c1, c2, mEndPosition);
+		painterPath.moveTo(mapFromScene(start));
+		painterPath.cubicTo(mc1, mc2, mapFromScene(end));
 		return painterPath;
 	}
 	else
 	{
-		QPointF c1(mEndPosition.x() / 2.0, 0.0);
-		QPointF c2(mEndPosition.x() / 2.0, mEndPosition.y());
+		qreal w = qAbs(end.x() - start.x()) * 1.25 + 20.0;
+		qreal z = qAbs(end.y() - start.y()) * 0.2;
+		z *= start.y() > end.y() ? -1 : 1;
+		QPointF c1(start.x() + w, start.y() + z);
+		QPointF c2(end.x() - w,   end.y() - z);
+
+		mc1 = mapFromScene(c1);
+		mc2 = mapFromScene(c2);
 
 		QPainterPath painterPath;
-		painterPath.cubicTo(c1, c2, mEndPosition);
+		painterPath.moveTo(mapFromScene(start));
+		painterPath.cubicTo(mc1, mc2, mapFromScene(end));
 		return painterPath;
 	}
 }
