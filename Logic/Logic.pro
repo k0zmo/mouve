@@ -42,7 +42,9 @@ SOURCES += \
     Jai/JaiNodeModule.cpp \
     Nodes/BasicNodes.cpp \
     Nodes/BriskNodes.cpp \
-    Nodes/OrbFreakNodes.cpp \
+    Nodes/OrbNodes.cpp \
+    Nodes/FreakNodes.cpp \
+    Nodes/FeaturesNodes.cpp \
     Nodes/ColorConversionNodes.cpp \
     Nodes/CV.cpp \
     Nodes/DrawFeaturesNodes.cpp \
@@ -74,6 +76,10 @@ unix {
     QMAKE_LFLAGS += -Wl,--rpath=.
     LIBS += -lopencv_core -lopencv_imgproc -lopencv_highgui -lopencv_video
     LIBS += -lopencv_flann -lopencv_calib3d -lopencv_features2d -lopencv_nonfree
+
+    # Intel TBB
+    DEFINES += HAVE_TBB
+    LIBS += -ltbb
 }
 
 # TODO: Haven't been used for awhile now

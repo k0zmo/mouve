@@ -566,7 +566,6 @@ public:
 		for(int y = 0; y < source.rows; ++y)
 		{
 			const uchar* mask_ptr = mask.ptr<uchar>(y);
-			const uchar* source_ptr = source.ptr<uchar>(y);
 			cv::Vec3b* dst_ptr = imagePainted.ptr<cv::Vec3b>(y);
 
 			for(int x = 0; x < source.cols; ++x)
