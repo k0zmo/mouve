@@ -149,29 +149,24 @@ public:
 		}
 
 		vector<cv::DMatch> matches;
-		size_t initialMatches = 0;
 
 		if(_symmetryTest)
 		{
-			vector<vector<cv::DMatch>> knMatches1to2 = knnMatch(query, train);
-			vector<vector<cv::DMatch>> knMatches2to1 = knnMatch(train, query);
-			initialMatches = knMatches1to2.size();
-
-			auto matches1to2 = distanceRatioTest(knMatches1to2, _distanceRatio);
-			auto matches2to1 = distanceRatioTest(knMatches2to1, _distanceRatio);
+			vector<cv::DMatch> matches1to2 = nndrMatch(query, train);
+			vector<cv::DMatch> matches2to1 = nndrMatch(train, query);
 			matches = symmetryTest(matches1to2, matches2to1);
 		}
 		else
 		{
-			vector<vector<cv::DMatch>> knMatches = knnMatch(query, train);
-			initialMatches = knMatches.size();
-
-			matches = distanceRatioTest(knMatches, _distanceRatio);
+			matches = nndrMatch(query, train);
 		}
 
 		// Convert to 'Matches' data type
 		mt.queryPoints.clear();
 		mt.trainPoints.clear();
+
+		mt.queryImage = queryKp.image;
+		mt.trainImage = trainKp.image;
 
 		for(auto&& match : matches)
 		{
@@ -179,18 +174,14 @@ public:
 			mt.trainPoints.push_back(trainKp.kpoints[match.trainIdx].pt);
 		}
 
-		mt.queryImage = queryKp.image;
-		mt.trainImage = trainKp.image;
-
 		return ExecutionStatus(EStatus::Ok, 
-			formatMessage("Initial matches found: %d\nFinal matches found: %d",
-			(int) initialMatches, (int) mt.queryPoints.size()));
+			formatMessage("Matches found: %d", (int) mt.queryPoints.size()));
 	}
 
 private:
-	vector<vector<cv::DMatch>> knnMatch(const cv::Mat& query, const cv::Mat& train)
+	vector<cv::DMatch> nndrMatch(const cv::Mat& query, const cv::Mat& train)
 	{
-		vector<vector<cv::DMatch>> knMatches;
+		vector<cv::DMatch> nndrMatches;
 
 		if(query.type() == CV_32F)
 		{
@@ -202,7 +193,6 @@ private:
 				float bestDistance1 = std::numeric_limits<float>::max();
 				float bestDistance2 = std::numeric_limits<float>::max();
 				int bestTrainIdx1 = -1;
-				int bestTrainIdx2 = -1;
 
 				// for each descriptors in train array
 				for(int trainIdx = 0; trainIdx < train.rows; ++trainIdx)
@@ -215,21 +205,19 @@ private:
 					if(dist < bestDistance1)
 					{
 						bestDistance2 = bestDistance1;
-						bestTrainIdx2 = bestTrainIdx1;
 						bestDistance1 = dist;
 						bestTrainIdx1 = trainIdx;
 					}
 					else if(dist < bestDistance2)
 					{
 						bestDistance2 = dist;
-						bestTrainIdx2 = trainIdx;
 					}
 				}
 
-				vector<cv::DMatch> knMatch;
-				knMatch.emplace_back(cv::DMatch(queryIdx, bestTrainIdx1, bestDistance1));
-				knMatch.emplace_back(cv::DMatch(queryIdx, bestTrainIdx2, bestDistance2));
-				knMatches.emplace_back(knMatch);
+				if(bestDistance1 <= _distanceRatio * bestDistance2)
+				{
+					nndrMatches.push_back(cv::DMatch(queryIdx, bestTrainIdx1, bestDistance1));
+				}
 			}
 		}
 		else if(query.type() == CV_8U)
@@ -242,7 +230,6 @@ private:
 				int bestDistance1 = std::numeric_limits<int>::max();
 				int bestDistance2 = std::numeric_limits<int>::max();
 				int bestTrainIdx1 = -1;
-				int bestTrainIdx2 = -1;
 
 				// for each descriptors in train array
 				for(int trainIdx = 0; trainIdx < train.rows; ++trainIdx)
@@ -255,25 +242,23 @@ private:
 					if(dist < bestDistance1)
 					{
 						bestDistance2 = bestDistance1;
-						bestTrainIdx2 = bestTrainIdx1;
 						bestDistance1 = dist;
 						bestTrainIdx1 = trainIdx;
 					}
 					else if(dist < bestDistance2)
 					{
 						bestDistance2 = dist;
-						bestTrainIdx2 = trainIdx;
 					}
 				}
 
-				vector<cv::DMatch> knMatch;
-				knMatch.emplace_back(cv::DMatch(queryIdx, bestTrainIdx1, bestDistance1));
-				knMatch.emplace_back(cv::DMatch(queryIdx, bestTrainIdx2, bestDistance2));
-				knMatches.emplace_back(knMatch);
+				if(bestDistance1 <= _distanceRatio * bestDistance2)
+				{
+					nndrMatches.emplace_back(cv::DMatch(queryIdx, bestTrainIdx1, bestDistance1));
+				}
 			}
 		}
 
-		return knMatches;
+		return nndrMatches;
 	}
 };
 
@@ -311,7 +296,6 @@ public:
 
 		cv::FlannBasedMatcher matcher(indexParams, searchParams);
 		vector<cv::DMatch> matches;
-		size_t initialMatches = 0;
 
 		if(_symmetryTest)
 		{
@@ -319,7 +303,6 @@ public:
 
 			matcher.knnMatch(queryDesc, trainDesc, knMatches1to2, 2);
 			matcher.knnMatch(trainDesc, queryDesc, knMatches2to1, 2);
-			initialMatches = knMatches1to2.size();
 
 			auto matches1to2 = distanceRatioTest(knMatches1to2, _distanceRatio);
 			auto matches2to1 = distanceRatioTest(knMatches2to1, _distanceRatio);
@@ -329,7 +312,6 @@ public:
 		{
 			vector<vector<cv::DMatch>> knMatches;
 			matcher.knnMatch(queryDesc, trainDesc, knMatches, 2);
-			initialMatches = knMatches.size();
 
 			matches = distanceRatioTest(knMatches, _distanceRatio);
 		}
@@ -348,8 +330,7 @@ public:
 		mt.trainImage = trainKp.image;
 
 		return ExecutionStatus(EStatus::Ok, 
-			formatMessage("Initial matches found: %d\nFinal Matches found: %d",
-			(int) initialMatches, (int) mt.queryPoints.size()));
+			formatMessage("Matches found: %d", (int) mt.queryPoints.size()));
 	}
 };
 

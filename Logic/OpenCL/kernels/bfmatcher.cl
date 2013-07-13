@@ -42,6 +42,13 @@
 
 #if __OPENCL_VERSION__ >= CL_VERSION_1_2 && CL_LANGUAGE_CPP == 1
 
+#if defined(cl_ext_atomic_counters_32)
+#  pragma OPENCL EXTENSION cl_ext_atomic_counters_32 : enable
+#  define counter_type counter32_t
+#else
+#  define counter_type volatile __global int*
+#endif
+
 struct L2Dist
 {
     typedef float value_type;
@@ -81,7 +88,7 @@ struct HammingDist
 
 template<int BLOCK_SIZE>
 void findBestMatch(float& bestDistance1, float& bestDistance2,
-                   int& bestTrainIdx1, int& bestTrainIdx2, 
+                   int& bestTrainIdx1,
                    __local float* s_distance,
                    __local int* s_trainIdx,
                    int lx, int ly)
@@ -89,7 +96,6 @@ void findBestMatch(float& bestDistance1, float& bestDistance2,
     float myBestDistance1 = MAXFLOAT;
     float myBestDistance2 = MAXFLOAT;
     int myBestTrainIdx1 = -1;
-    int myBestTrainIdx2 = -1;
 
     s_distance += ly*BLOCK_SIZE;
     s_trainIdx += ly*BLOCK_SIZE;
@@ -109,7 +115,6 @@ void findBestMatch(float& bestDistance1, float& bestDistance2,
             if(val < myBestDistance1)
             {
                 myBestDistance2 = myBestDistance1;
-                myBestTrainIdx2 = myBestTrainIdx1;
 
                 myBestDistance1 = val;
                 myBestTrainIdx1 = s_trainIdx[i];
@@ -117,7 +122,6 @@ void findBestMatch(float& bestDistance1, float& bestDistance2,
             else if(val < myBestDistance2)
             {
                 myBestDistance2 = val;
-                myBestTrainIdx2 = s_trainIdx[i];
             }
         }
     }
@@ -125,7 +129,6 @@ void findBestMatch(float& bestDistance1, float& bestDistance2,
     barrier(CLK_LOCAL_MEM_FENCE);
 
     s_distance[lx] = bestDistance2;
-    s_trainIdx[lx] = bestTrainIdx2;
 
     barrier(CLK_LOCAL_MEM_FENCE);
 
@@ -139,26 +142,31 @@ void findBestMatch(float& bestDistance1, float& bestDistance2,
             if(val < myBestDistance2)
             {
                 myBestDistance2 = val;
-                myBestTrainIdx2 = s_trainIdx[i];
             }
         }
     }
 
     bestDistance1 = myBestDistance1;
     bestDistance2 = myBestDistance2;
-
     bestTrainIdx1 = myBestTrainIdx1;
-    bestTrainIdx2 = myBestTrainIdx2;
 }
 
+typedef struct DMatch
+{
+    int queryIdx;
+    int trainIdx;
+    float dist;
+} DMatch_t;
+
 template<class T, class Dist, int BLOCK_SIZE, int DESC_LEN>
-__kernel void bruteForceMatch_2nnMatch(__global T* query,
-                                       __global T* train,
-                                       __global int2* bestTrainIdx,
-                                       __global float2* bestDistance,
-                                       __local int* smem,
-                                       int queryRows,
-                                       int trainRows)
+__kernel void bruteForceMatch_nndrMatch(__global T* query,
+                                        __global T* train,
+                                        __global DMatch_t* matches,
+                                        counter_type matchesCount,
+                                        __local int* smem,
+                                        int queryRows,
+                                        int trainRows,
+                                        float distanceRatio)
 {
     const int lx = get_local_id(0);
     const int ly = get_local_id(1);
@@ -180,7 +188,6 @@ __kernel void bruteForceMatch_2nnMatch(__global T* query,
     float myBestDistance1 = MAXFLOAT;
     float myBestDistance2 = MAXFLOAT;
     int myBestTrainIdx1 = -1;
-    int myBestTrainIdx2 = -1;
 
     for(int t = 0, endt = (trainRows + BLOCK_SIZE - 1) / BLOCK_SIZE; t < endt; ++t)
     {
@@ -215,14 +222,12 @@ __kernel void bruteForceMatch_2nnMatch(__global T* query,
             if(dist < myBestDistance1)
             {
                 myBestDistance2 = myBestDistance1;
-                myBestTrainIdx2 = myBestTrainIdx1;
                 myBestDistance1 = dist;
                 myBestTrainIdx1 = trainIdx;
             }
             else if(dist < myBestDistance2)
             {
                 myBestDistance2 = dist;
-                myBestTrainIdx2 = trainIdx;
             }
         }
     }
@@ -230,52 +235,62 @@ __kernel void bruteForceMatch_2nnMatch(__global T* query,
     __local float* s_distance = (__local float*) smem;
     __local int* s_trainIdx = (__local int*) smem + BLOCK_SIZE*BLOCK_SIZE;
 
-    findBestMatch<BLOCK_SIZE>(myBestDistance1, myBestDistance2, myBestTrainIdx1, myBestTrainIdx2, s_distance, s_trainIdx, lx, ly);
+    findBestMatch<BLOCK_SIZE>(myBestDistance1, myBestDistance2, myBestTrainIdx1, s_distance, s_trainIdx, lx, ly);
 
     if(queryIdx < queryRows && lx == 0)
     {
-        bestTrainIdx[queryIdx] = (int2)(myBestTrainIdx1, myBestTrainIdx2);
-        bestDistance[queryIdx] = (float2)(myBestDistance1, myBestDistance2);
+        if(myBestDistance1 <= distanceRatio * myBestDistance2)
+        {
+            int idx = atomic_inc(matchesCount);
+            // NOTE: We know for sure matches can't be more than queryRows
+            matches[idx].queryIdx = queryIdx;
+            matches[idx].trainIdx = myBestTrainIdx1;
+            matches[idx].dist = myBestDistance1;
+        }
     }
 }
 
-template __attribute__((mangled_name(bruteForceMatch_2nnMatch_SURF)))
+template __attribute__((mangled_name(bruteForceMatch_nndrMatch_SURF)))
 __kernel void
-bruteForceMatch_2nnMatch<float,L2Dist,16,64>(__global float* query,
-                                             __global float* train,
-                                             __global int2* bestTrainIdx,
-                                             __global float2* bestDistance,
-                                             __local int* smem,
-                                             int queryRows,
-                                             int trainRows);
-
-template __attribute__((mangled_name(bruteForceMatch_2nnMatch_SIFT)))
-__kernel void
-bruteForceMatch_2nnMatch<float,L2Dist,16,128>(__global float* query,
+bruteForceMatch_nndrMatch<float,L2Dist,16,64>(__global float* query,
                                               __global float* train,
-                                              __global int2* bestTrainIdx,
-                                              __global float2* bestDistance,
+                                              __global DMatch_t* matches,
+                                              counter_type matchesCount,
                                               __local int* smem,
                                               int queryRows,
-                                              int trainRows);
+                                              int trainRows,
+                                              float distanceRatio);
 
-template __attribute__((mangled_name(bruteForceMatch_2nnMatch_FREAK)))
+template __attribute__((mangled_name(bruteForceMatch_nndrMatch_SIFT)))
 __kernel void
-bruteForceMatch_2nnMatch<uchar,HammingDist,16,64>(__global uchar* query,
-                                                  __global uchar* train,
-                                                  __global int2* bestTrainIdx,
-                                                  __global float2* bestDistance,
-                                                  __local int* smem,
-                                                  int queryRows,
-                                                  int trainRows);
+bruteForceMatch_nndrMatch<float,L2Dist,16,128>(__global float* query,
+                                               __global float* train,
+                                               __global DMatch_t* matches,
+                                               counter_type matchesCount,
+                                               __local int* smem,
+                                               int queryRows,
+                                               int trainRows,
+                                               float distanceRatio);
 
-template __attribute__((mangled_name(bruteForceMatch_2nnMatch_ORB)))
+template __attribute__((mangled_name(bruteForceMatch_nndrMatch_FREAK)))
 __kernel void
-bruteForceMatch_2nnMatch<uchar,HammingDist,16,32>(__global uchar* query,
-                                                  __global uchar* train,
-                                                  __global int2* bestTrainIdx,
-                                                  __global float2* bestDistance,
-                                                  __local int* smem,
-                                                  int queryRows,
-                                                  int trainRows);
+bruteForceMatch_nndrMatch<uchar,HammingDist,16,64>(__global uchar* query,
+                                                   __global uchar* train,
+                                                   __global DMatch_t* matches,
+                                                   counter_type matchesCount,
+                                                   __local int* smem,
+                                                   int queryRows,
+                                                   int trainRows,
+                                                   float distanceRatio);
+
+template __attribute__((mangled_name(bruteForceMatch_nndrMatch_ORB)))
+__kernel void
+bruteForceMatch_nndrMatch<uchar,HammingDist,16,32>(__global uchar* query,
+                                                   __global uchar* train,
+                                                   __global DMatch_t* matches,
+                                                   counter_type matchesCount,
+                                                   __local int* smem,
+                                                   int queryRows,
+                                                   int trainRows,
+                                                   float distanceRatio);
 #endif
