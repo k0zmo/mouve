@@ -56,6 +56,8 @@ struct L2Dist
 
     __attribute__((always_inline)) operator float() const { return _sum; }
 
+    __attribute__((always_inline)) void finish() { _sum = native_sqrt(_sum); }
+
     float _sum;
 };
 
@@ -71,6 +73,8 @@ struct HammingDist
     }
 
     __attribute__((always_inline)) operator int() const { return _sum; }
+
+    __attribute__((always_inline)) void finish() { ; }
 
     int _sum;
 };  
@@ -201,6 +205,8 @@ __kernel void bruteForceMatch_2nnMatch(__global T* query,
 
             barrier(CLK_LOCAL_MEM_FENCE);
         }
+
+        dist.finish();
 
         const int trainIdx = t*BLOCK_SIZE + lx;
 

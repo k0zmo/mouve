@@ -47,6 +47,7 @@
 // QUERY_TYPE (i.e. float)
 // DIST_TYPE (i.e. float)
 // DIST_FUNCTION (i.e. l2DistIter)
+// DIST_FINISH (i.e l2DistFinish)
 
 #if __OPENCL_VERSION__ < CL_VERSION_1_2
 
@@ -60,7 +61,9 @@ int popcount(int i)
 #endif
 
 __attribute__((always_inline)) float hammingDistIter(int x1, int x2) { return (float) popcount(x1 ^ x2); }
+__attribute__((always_inline)) float hammingDistFinish(float dist) { return dist; }
 __attribute__((always_inline)) float l2DistIter(float x1, float x2) { float q = x1 - x2; return q * q; }
+__attribute__((always_inline)) float l2DistFinish(float dist) { return native_sqrt(dist); }
 
 __kernel void
 KERNEL_NAME(__global QUERY_TYPE* query,
@@ -114,6 +117,7 @@ KERNEL_NAME(__global QUERY_TYPE* query,
             barrier(CLK_LOCAL_MEM_FENCE);
         }
 
+        dist = DIST_FINISH(dist);
         const int trainIdx = t*BLOCK_SIZE + lx;
 
         if(queryIdx < queryRows && trainIdx < trainRows)
