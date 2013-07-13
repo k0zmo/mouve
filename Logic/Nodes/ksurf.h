@@ -20,6 +20,7 @@ std::vector<KeyPoint> fastHessianDetector(const cv::Mat& intImage,
 
 void surfOrientation(std::vector<KeyPoint>& kpoints, const cv::Mat& intImage);
 void surfDescriptors(const std::vector<KeyPoint>& kpoints, const cv::Mat& intImage, cv::Mat& descriptors);
+void msurfDescriptors(const std::vector<KeyPoint>& kpoints, const cv::Mat& intImage, cv::Mat& descriptors);
 
 std::vector<cv::KeyPoint> transformKeyPoint(const std::vector<KeyPoint>& keypoints);
 std::vector<KeyPoint> transformKeyPoint(const std::vector<cv::KeyPoint>& keypoints);

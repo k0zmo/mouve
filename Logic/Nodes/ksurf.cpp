@@ -872,9 +872,9 @@ static void surfDescriptors_kpoint(const KeyPoint& kpoint,
     normalizeDescriptor<64>(desc);
 }
 
-static void msurfDescriptors(const vector<KeyPoint>& kpoints,
-                             const cv::Mat& intImage,
-                             cv::Mat& descriptors)
+void msurfDescriptors(const vector<KeyPoint>& kpoints,
+                      const cv::Mat& intImage,
+                      cv::Mat& descriptors)
 {
     if(descriptors.empty())
         descriptors.create((int) kpoints.size(), 64, CV_32F);
