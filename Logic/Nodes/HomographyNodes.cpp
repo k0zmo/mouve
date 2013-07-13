@@ -1,6 +1,7 @@
 #include "NodeType.h"
 #include "NodeFactory.h"
 
+#include <fstream>
 #include <opencv2/calib3d/calib3d.hpp>
 
 class EstimateHomographyNodeType : public NodeType
@@ -105,8 +106,9 @@ public:
 		}
 
 		return ExecutionStatus(EStatus::Ok, 
-			formatMessage("Inliers found: %d\nPercent of correct matches: %f%%",
+			formatMessage("Inliers: %d\nOutliers: %d\nPercent of correct matches: %f%%",
 				(int) outMt.queryPoints.size(), 
+				(int) (mt.queryPoints.size() - outMt.queryPoints.size()), 
 				(double) outMt.queryPoints.size() / mt.queryPoints.size() * 100.0)
 			);
 	}
@@ -142,4 +144,146 @@ private:
 	double _reprojThreshold;
 };
 
+class KnownHomographyInliersNodeType : public NodeType
+{
+public:
+	KnownHomographyInliersNodeType()
+		: _homographyPath()
+		, _reprojThreshold(3.0)
+	{
+	}
+
+	bool setProperty(PropertyID propId, const QVariant& newValue) override
+	{
+		switch(propId)
+		{
+		case ID_HomographyPath:
+			_homographyPath = newValue.toString().toStdString();
+			return true;
+		case ID_ReprojThreshold:
+			_reprojThreshold = newValue.toDouble();
+			return true;
+		}
+
+		return false;
+	}
+
+	QVariant property(PropertyID propId) const override
+	{
+		switch(propId)
+		{
+		case ID_HomographyPath: return QString::fromStdString(_homographyPath);
+		case ID_ReprojThreshold: return _reprojThreshold;
+		}
+
+		return QVariant();
+	}
+
+	ExecutionStatus execute(NodeSocketReader& reader, NodeSocketWriter& writer) override
+	{
+		// inputs
+		const Matches& mt = reader.readSocket(0).getMatches();
+		// outputs
+		cv::Mat& H = writer.acquireSocket(0).getArray();
+		Matches& outMt = writer.acquireSocket(1).getMatches();
+
+		// validate inputs
+		if(mt.queryPoints.empty() || mt.trainPoints.empty()
+		|| mt.queryImage.empty() || mt.trainImage.empty())
+			return ExecutionStatus(EStatus::Ok);
+
+		if(mt.queryPoints.size() != mt.trainPoints.size())
+			return ExecutionStatus(EStatus::Error, 
+			"Points from one images doesn't correspond to key points in another one");
+
+		// Load real homography 
+		std::ifstream homographyFile(_homographyPath, std::ios::in);
+		if(!homographyFile.is_open())
+			return ExecutionStatus(EStatus::Error, formatMessage("Can't load %s\n", _homographyPath.c_str()));
+
+		cv::Mat homography(3, 3, CV_32F);
+		homographyFile >> homography.at<float>(0, 0) >> homography.at<float>(0, 1) >> homography.at<float>(0, 2);
+		homographyFile >> homography.at<float>(1, 0) >> homography.at<float>(1, 1) >> homography.at<float>(1, 2);
+		homographyFile >> homography.at<float>(2, 0) >> homography.at<float>(2, 1) >> homography.at<float>(2, 2);
+
+		// Normalize if h[2][2] isnt close to 1.0 and 0.0
+		float h22 = homography.at<float>(2,2);
+		if(std::fabs(h22) > 1e-5 && std::fabs(h22 - 1.0) > 1e-5)
+		{
+			h22 = 1.0f / h22;
+			homography.at<float>(0,0) *= h22; homography.at<float>(0,1) *= h22; homography.at<float>(0,2) *= h22;
+			homography.at<float>(1,0) *= h22; homography.at<float>(1,1) *= h22; homography.at<float>(1,2) *= h22;
+			homography.at<float>(2,0) *= h22; homography.at<float>(2,1) *= h22; homography.at<float>(2,2) *= h22;
+		}
+
+		outMt.queryImage = mt.queryImage;
+		outMt.trainImage = mt.trainImage;
+		outMt.queryPoints.clear();
+		outMt.trainPoints.clear();
+
+		for(size_t i = 0; i < mt.queryPoints.size(); ++i)
+		{
+			const auto& pt1 = mt.queryPoints[i];
+			const auto& pt2 = mt.trainPoints[i];
+
+			float invW = 1.0 / (homography.at<float>(2,0)*pt1.x + homography.at<float>(2,1)*pt1.y + homography.at<float>(2,2));
+			float xt = (homography.at<float>(0,0)*pt1.x + homography.at<float>(0,1)*pt1.y + homography.at<float>(0,2)) * invW;
+			float yt = (homography.at<float>(1,0)*pt1.x + homography.at<float>(1,1)*pt1.y + homography.at<float>(1,2)) * invW;
+			
+			float xdist = xt - pt2.x;
+			float ydist = yt - pt2.y;
+			float dist = std::sqrt(xdist*xdist + ydist*ydist);
+
+			if(dist <= _reprojThreshold)
+			{
+				outMt.queryPoints.push_back(pt1);
+				outMt.trainPoints.push_back(pt2);
+			}
+		}
+
+		H = homography;
+
+		return ExecutionStatus(EStatus::Ok, 
+			formatMessage("Inliers: %d\nOutliers: %d\nPercent of correct matches: %f%%",
+				(int) outMt.queryPoints.size(), 
+				(int) (mt.queryPoints.size() - outMt.queryPoints.size()), 
+				(double) outMt.queryPoints.size() / mt.queryPoints.size() * 100.0)
+			);
+	}
+
+	void configuration(NodeConfig& nodeConfig) const override
+	{
+		static const InputSocketConfig in_config[] = {
+			{ ENodeFlowDataType::Matches, "matches", "Matches", "" },
+			{ ENodeFlowDataType::Invalid, "", "", "" }
+		};
+		static const OutputSocketConfig out_config[] = {
+			{ ENodeFlowDataType::Array, "output", "Homography", "" },
+			{ ENodeFlowDataType::Matches, "inliers", "Inliers", "" },
+			{ ENodeFlowDataType::Invalid, "", "", "" }
+		};
+		static const PropertyConfig prop_config[] = {
+			{ EPropertyType::Filepath, "Homography path", "" },
+			{ EPropertyType::Integer, "Reprojection error threshold", "min:1.0, max:50.0" },
+			{ EPropertyType::Unknown, "", "" }
+		};
+
+		nodeConfig.description = "";
+		nodeConfig.pInputSockets = in_config;
+		nodeConfig.pOutputSockets = out_config;
+		nodeConfig.pProperties = prop_config;
+	}
+
+private:
+	enum EPropertyID
+	{
+		ID_HomographyPath,
+		ID_ReprojThreshold
+	};
+
+	std::string _homographyPath;
+	double _reprojThreshold;
+};
+
+REGISTER_NODE("Features/Known homography inliers", KnownHomographyInliersNodeType)
 REGISTER_NODE("Features/Estimate homography", EstimateHomographyNodeType)
