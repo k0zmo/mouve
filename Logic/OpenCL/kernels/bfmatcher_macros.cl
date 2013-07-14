@@ -60,19 +60,34 @@ int popcount(int i)
 
 #endif
 
+#if defined(cl_ext_atomic_counters_32)
+#  pragma OPENCL EXTENSION cl_ext_atomic_counters_32 : enable
+#  define counter_type counter32_t
+#else
+#  define counter_type volatile __global int*
+#endif
+
 __attribute__((always_inline)) float hammingDistIter(int x1, int x2) { return (float) popcount(x1 ^ x2); }
 __attribute__((always_inline)) float hammingDistFinish(float dist) { return dist; }
 __attribute__((always_inline)) float l2DistIter(float x1, float x2) { float q = x1 - x2; return q * q; }
 __attribute__((always_inline)) float l2DistFinish(float dist) { return native_sqrt(dist); }
 
+typedef struct DMatch
+{
+    int queryIdx;
+    int trainIdx;
+    float dist;
+} DMatch_t;
+
 __kernel void
 KERNEL_NAME(__global QUERY_TYPE* query,
             __global QUERY_TYPE* train,
-            __global int2* bestTrainIdx,
-            __global float2* bestDistance,
+            __global DMatch_t* matches,
+            counter_type matchesCount,
             __local int* smem,
             int queryRows,
-            int trainRows) 
+            int trainRows,
+            float distanceRatio)
 {
     const int lx = get_local_id(0);
     const int ly = get_local_id(1);
@@ -94,7 +109,6 @@ KERNEL_NAME(__global QUERY_TYPE* query,
     float myBestDistance1 = MAXFLOAT;
     float myBestDistance2 = MAXFLOAT;
     int myBestTrainIdx1 = -1;
-    int myBestTrainIdx2 = -1;
 
     for(int t = 0, endt = (trainRows + BLOCK_SIZE - 1) / BLOCK_SIZE; t < endt; ++t)
     {
@@ -125,14 +139,12 @@ KERNEL_NAME(__global QUERY_TYPE* query,
             if(dist < myBestDistance1)
             {
                 myBestDistance2 = myBestDistance1;
-                myBestTrainIdx2 = myBestTrainIdx1;
                 myBestDistance1 = dist;
                 myBestTrainIdx1 = trainIdx;
             }
             else if(dist < myBestDistance2)
             {
                 myBestDistance2 = dist;
-                myBestTrainIdx2 = trainIdx;
             }
         }
     }
@@ -143,7 +155,6 @@ KERNEL_NAME(__global QUERY_TYPE* query,
     float _myBestDistance1 = MAXFLOAT;
     float _myBestDistance2 = MAXFLOAT;
     int _myBestTrainIdx1 = -1;
-    int _myBestTrainIdx2 = -1;
 
     s_distance += ly*BLOCK_SIZE;
     s_trainIdx += ly*BLOCK_SIZE;
@@ -163,7 +174,6 @@ KERNEL_NAME(__global QUERY_TYPE* query,
             if(val < _myBestDistance1)
             {
                 _myBestDistance2 = _myBestDistance1;
-                _myBestTrainIdx2 = _myBestTrainIdx1;
 
                 _myBestDistance1 = val;
                 _myBestTrainIdx1 = s_trainIdx[i];
@@ -171,7 +181,6 @@ KERNEL_NAME(__global QUERY_TYPE* query,
             else if(val < _myBestDistance2)
             {
                 _myBestDistance2 = val;
-                _myBestTrainIdx2 = s_trainIdx[i];
             }
         }
     }
@@ -179,7 +188,6 @@ KERNEL_NAME(__global QUERY_TYPE* query,
     barrier(CLK_LOCAL_MEM_FENCE);
 
     s_distance[lx] = myBestDistance2;
-    s_trainIdx[lx] = myBestTrainIdx2;
 
     barrier(CLK_LOCAL_MEM_FENCE);
 
@@ -193,14 +201,19 @@ KERNEL_NAME(__global QUERY_TYPE* query,
             if(val < _myBestDistance2)
             {
                 _myBestDistance2 = val;
-                _myBestTrainIdx2 = s_trainIdx[i];
             }
         }
     }
 
     if(queryIdx < queryRows && lx == 0)
     {
-        bestTrainIdx[queryIdx] = (int2)(_myBestTrainIdx1, _myBestTrainIdx2);
-        bestDistance[queryIdx] = (float2)(_myBestDistance1, _myBestDistance2);
+        if(_myBestDistance1 <= distanceRatio * _myBestDistance2)
+        {
+            int idx = atomic_inc(matchesCount);
+            // NOTE: We know for sure matches can't be more than queryRows
+            matches[idx].queryIdx = queryIdx;
+            matches[idx].trainIdx = _myBestTrainIdx1;
+            matches[idx].dist = _myBestDistance1;
+        }
     }
 }

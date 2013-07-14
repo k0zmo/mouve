@@ -72,7 +72,7 @@ public:
 		string opts;
 
 		if(_gpuComputeModule->device().platform().vendorEnum() == clw::Vendor_AMD
-			&& _gpuComputeModule->device().platform().version() >= clw::Version_1_2)
+		&& _gpuComputeModule->device().platform().version() >= clw::Version_1_2)
 		{
 			opts = "-x clc++ -DCL_LANGUAGE_CPP=1";
 			_kidBruteForceMatch_nndrMatch_SURF = _gpuComputeModule->registerKernel("bruteForceMatch_nndrMatch_SURF", "bfmatcher.cl", opts);
@@ -82,17 +82,17 @@ public:
 		}
 		else
 		{
-			opts = "-DBLOCK_SIZE=16 -DDESC_LEN=64 -DKERNEL_NAME=bruteForceMatch_2nnMatch_SURF -DQUERY_TYPE=float -DDIST_TYPE=float -DDIST_FUNCTION=l2DistIter -DDIST_FINISH=l2DistFinish";
-			_kidBruteForceMatch_nndrMatch_SURF = _gpuComputeModule->registerKernel("bruteForceMatch_2nnMatch_SURF", "bfmatcher_macros.cl", opts);
+			opts = "-DBLOCK_SIZE=16 -DDESC_LEN=64 -DKERNEL_NAME=bruteForceMatch_nndrMatch_SURF -DQUERY_TYPE=float -DDIST_TYPE=float -DDIST_FUNCTION=l2DistIter -DDIST_FINISH=l2DistFinish";
+			_kidBruteForceMatch_nndrMatch_SURF = _gpuComputeModule->registerKernel("bruteForceMatch_nndrMatch_SURF", "bfmatcher_macros.cl", opts);
 
-			opts = "-DBLOCK_SIZE=16 -DDESC_LEN=128 -DKERNEL_NAME=bruteForceMatch_2nnMatch_SIFT -DQUERY_TYPE=float -DDIST_TYPE=float -DDIST_FUNCTION=l2DistIter -DDIST_FINISH=l2DistFinish";
-			_kidBruteForceMatch_nndrMatch_SIFT = _gpuComputeModule->registerKernel("bruteForceMatch_2nnMatch_SIFT", "bfmatcher_macros.cl", opts);
+			opts = "-DBLOCK_SIZE=16 -DDESC_LEN=128 -DKERNEL_NAME=bruteForceMatch_nndrMatch_SIFT -DQUERY_TYPE=float -DDIST_TYPE=float -DDIST_FUNCTION=l2DistIter -DDIST_FINISH=l2DistFinish";
+			_kidBruteForceMatch_nndrMatch_SIFT = _gpuComputeModule->registerKernel("bruteForceMatch_nndrMatch_SIFT", "bfmatcher_macros.cl", opts);
 
-			opts = "-DBLOCK_SIZE=16 -DDESC_LEN=64 -DKERNEL_NAME=bruteForceMatch_2nnMatch_FREAK -DQUERY_TYPE=uchar -DDIST_TYPE=int -DDIST_FUNCTION=hammingDistIter -DDIST_FINISH=hammingDistFinish";
-			_kidBruteForceMatch_nndrMatch_FREAK = _gpuComputeModule->registerKernel("bruteForceMatch_2nnMatch_FREAK", "bfmatcher_macros.cl", opts);
+			opts = "-DBLOCK_SIZE=16 -DDESC_LEN=64 -DKERNEL_NAME=bruteForceMatch_nndrMatch_FREAK -DQUERY_TYPE=uchar -DDIST_TYPE=int -DDIST_FUNCTION=hammingDistIter -DDIST_FINISH=hammingDistFinish";
+			_kidBruteForceMatch_nndrMatch_FREAK = _gpuComputeModule->registerKernel("bruteForceMatch_nndrMatch_FREAK", "bfmatcher_macros.cl", opts);
 
-			opts = "-DBLOCK_SIZE=16 -DDESC_LEN=32 -DKERNEL_NAME=bruteForceMatch_2nnMatch_ORB -DQUERY_TYPE=uchar -DDIST_TYPE=int -DDIST_FUNCTION=hammingDistIter -DDIST_FINISH=hammingDistFinish";
-			_kidBruteForceMatch_nndrMatch_ORB = _gpuComputeModule->registerKernel("bruteForceMatch_2nnMatch_ORB", "bfmatcher_macros.cl", opts);
+			opts = "-DBLOCK_SIZE=16 -DDESC_LEN=32 -DKERNEL_NAME=bruteForceMatch_nndrMatch_ORB -DQUERY_TYPE=uchar -DDIST_TYPE=int -DDIST_FUNCTION=hammingDistIter -DDIST_FINISH=hammingDistFinish";
+			_kidBruteForceMatch_nndrMatch_ORB = _gpuComputeModule->registerKernel("bruteForceMatch_nndrMatch_ORB", "bfmatcher_macros.cl", opts);
 		}
 
 		return _kidBruteForceMatch_nndrMatch_SURF != InvalidKernelID
