@@ -334,5 +334,138 @@ public:
 	}
 };
 
+/// Only BFMatcher as LSH (FLANN) for 1-bit descriptor isn't supported
+class RadiusBruteForceMatcherNodeType : public NodeType
+{
+public:
+	RadiusBruteForceMatcherNodeType()
+		: _maxDistance(100.0)
+		, _crossCheck(false)
+	{
+	}
+
+	bool setProperty(PropertyID propId, const QVariant& newValue) override
+	{
+		switch(propId)
+		{
+		case ID_MaxDistance:
+			_maxDistance = newValue.toFloat();
+			return true;
+		case ID_CrossCheck:
+			_crossCheck = newValue.toBool();
+			return true;
+		}
+
+		return false;
+	}
+
+	QVariant property(PropertyID propId) const override
+	{
+		switch(propId)
+		{
+		case ID_MaxDistance: return _maxDistance;
+		case ID_CrossCheck: return _crossCheck;
+		}
+
+		return QVariant();
+	}
+
+	ExecutionStatus execute(NodeSocketReader& reader, NodeSocketWriter& writer) override
+	{
+		// inputs
+		const KeyPoints& queryKp = reader.readSocket(0).getKeypoints();
+		const cv::Mat& queryDesc = reader.readSocket(1).getArray();
+		const KeyPoints& trainKp = reader.readSocket(2).getKeypoints();
+		const cv::Mat& trainDesc = reader.readSocket(3).getArray();
+		// outputs
+		Matches& mt = writer.acquireSocket(0).getMatches();
+
+		// validate inputs
+		if(trainDesc.empty() || queryDesc.empty())
+			return ExecutionStatus(EStatus::Ok);
+
+		if((size_t) trainDesc.rows != trainKp.kpoints.size()
+		|| (size_t) queryDesc.rows != queryKp.kpoints.size())
+		{
+			return ExecutionStatus(EStatus::Error, "Keypoints and descriptors mismatched");
+		}
+
+		int normType = cv::NORM_L2;
+		// If BRISK, ORB or FREAK was used as a descriptor
+		if(queryDesc.depth() == CV_8U && trainDesc.depth() == CV_8U)
+			normType = cv::NORM_HAMMING;
+
+		mt.queryPoints.clear();
+		mt.trainPoints.clear();
+
+		cv::BFMatcher matcher(normType, _crossCheck);
+		vector<vector<cv::DMatch>> radiusMatches;
+
+		matcher.radiusMatch(queryDesc, trainDesc, radiusMatches, _maxDistance);
+
+		// remove unmatched ones and pick only first matches
+		vector<cv::DMatch> matches;
+
+		for(auto&& rmatches : radiusMatches)
+		{
+			if(!rmatches.empty())
+			{
+				matches.push_back(rmatches[0]);
+			}
+		}
+
+		// Convert to 'Matches' data type
+		mt.queryPoints.clear();
+		mt.trainPoints.clear();
+
+		for(auto&& match : matches)
+		{
+			mt.queryPoints.push_back(queryKp.kpoints[match.queryIdx].pt);
+			mt.trainPoints.push_back(trainKp.kpoints[match.trainIdx].pt);
+		}
+
+		mt.queryImage = queryKp.image;
+		mt.trainImage = trainKp.image;
+
+		return ExecutionStatus(EStatus::Ok, 
+			formatMessage("Matches found: %d", (int) mt.queryPoints.size()));
+	}
+
+	void configuration(NodeConfig& nodeConfig) const override
+	{
+		static const InputSocketConfig in_config[] = {
+			{ ENodeFlowDataType::Keypoints, "keypoints1", "Query keypoints", "" },
+			{ ENodeFlowDataType::Array, "descriptors1", "Query descriptors", "" },
+			{ ENodeFlowDataType::Keypoints, "keypoints2", "Train keypoints", "" },
+			{ ENodeFlowDataType::Array, "descriptors2", "Train descriptors", "" },
+			{ ENodeFlowDataType::Invalid, "", "", "" }
+		};
+		static const OutputSocketConfig out_config[] = {
+			{ ENodeFlowDataType::Matches, "matches", "Matches", "" },
+			{ ENodeFlowDataType::Invalid, "", "", "" }
+		};
+		static const PropertyConfig prop_config[] = {
+			{ EPropertyType::Double, "Max distance", "min:0.0, decimals:1" },
+			{ EPropertyType::Boolean, "Symmetry test", "" },
+			{ EPropertyType::Unknown, "", "" }
+		};
+
+		nodeConfig.description = "";
+		nodeConfig.pInputSockets = in_config;
+		nodeConfig.pOutputSockets = out_config;
+		nodeConfig.pProperties = prop_config;
+	}
+private:
+	enum EPropertyID
+	{
+		ID_MaxDistance,
+		ID_CrossCheck
+	};
+
+	float _maxDistance;
+	bool _crossCheck;
+};
+
+REGISTER_NODE("Features/Radius BForce Matcher", RadiusBruteForceMatcherNodeType);
 REGISTER_NODE("Features/BForce Matcher", BruteForceMatcherNodeType);
 REGISTER_NODE("Features/ANN Matcher", AproximateNearestNeighborMatcherNodeType)
