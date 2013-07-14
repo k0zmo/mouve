@@ -238,7 +238,7 @@ class DrawKeypointsNodeType : public NodeType
 public:
 	DrawKeypointsNodeType()
 		: _color(cv::Scalar::all(-1))
-		, _richKeypoints(false)
+		, _richKeypoints(true)
 	{
 	}
 
@@ -278,12 +278,23 @@ public:
 		// validate inputs
 		if(kp.kpoints.empty() || kp.image.empty())
 			return ExecutionStatus(EStatus::Ok);
-
+#if 0
 		int drawFlags = _richKeypoints
 			? cv::DrawMatchesFlags::DRAW_RICH_KEYPOINTS
 			: cv::DrawMatchesFlags::DEFAULT;
 		cv::drawKeypoints(kp.image, kp.kpoints, imageDst, _color, drawFlags);
+#else
+		cvtColor(kp.image, imageDst, CV_GRAY2BGR);
 
+		cv::RNG& rng = cv::theRNG();
+		bool isRandColor = _color == cv::Scalar::all(-1);
+
+		for(auto&& it : kp.kpoints)
+		{
+			cv::Scalar color = isRandColor ? cv::Scalar(rng(256), rng(256), rng(256)) : _color;
+			drawKeypoint(imageDst, it, color, _richKeypoints);
+		}
+#endif
 		return ExecutionStatus(EStatus::Ok);
 	}
 
@@ -307,6 +318,67 @@ public:
 		nodeConfig.pInputSockets = in_config;
 		nodeConfig.pOutputSockets = out_config;
 		nodeConfig.pProperties = prop_config;
+	}
+
+private:
+	void drawKeypoint(cv::Mat& img, 
+		const cv::KeyPoint& p,
+		const cv::Scalar& color,
+		bool richKeypoint)
+	{
+		CV_Assert(!img.empty());
+
+		if(richKeypoint)
+		{
+			/*
+			float radius = p.size;
+			float ori = p.angle * (float)CV_PI/180.f;
+			float r1 = cvRound(p.pt.y);
+			float c1 = cvRound(p.pt.x);
+			float c2 = cvRound(radius * cos(ori)) + c1;
+			float r2 = cvRound(radius * sin(ori)) + r1;
+
+			cv::line(img, cv::Point(c1, r1), cv::Point(c2, r2), color, 1, CV_AA);
+			cv::circle(img, cv::Point(c1, r1), cvRound(radius), color, 1, CV_AA);
+			cv::circle(img, cv::Point(c1, r1), 2, color, 1, CV_AA);
+			*/
+
+			float radius = p.size;
+			float ori = p.angle * (float)CV_PI/180.f;
+			float r1 = cvRound(p.pt.y);
+			float c1 = cvRound(p.pt.x);
+
+			cv::Point2f x1(-radius, -radius);
+			cv::Point2f x2(+radius, -radius);
+			cv::Point2f x3(-radius, +radius);
+			cv::Point2f x4(+radius, +radius);
+
+			float c = std::cos(ori);
+			float s = std::sin(ori);
+
+			auto transform = [=](const cv::Point2f& p)
+			{
+				return cv::Point2f(c*p.x - s*p.y + c1, s*p.x + c*p.y + r1);
+			};
+
+			x1 = transform(x1);
+			x2 = transform(x2); 
+			x3 = transform(x3);
+			x4 = transform(x4);
+
+			float c2 = cvRound(radius * c) + c1;
+			float r2 = cvRound(radius * s) + r1;
+
+			cv::line(img, cv::Point(c1, r1), cv::Point(c2, r2), color, 1, CV_AA);
+			cv::line(img, x1, x2, color, 1, CV_AA);
+			cv::line(img, x2, x4, color, 1, CV_AA);
+			cv::line(img, x4, x3, color, 1, CV_AA);
+			cv::line(img, x3, x1, color, 1, CV_AA);
+		}
+		else
+		{
+			cv::circle(img, cv::Point(p.pt), 3, color, 1, CV_AA);
+		}
 	}
 
 private:
