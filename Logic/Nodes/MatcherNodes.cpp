@@ -340,7 +340,6 @@ class RadiusBruteForceMatcherNodeType : public NodeType
 public:
 	RadiusBruteForceMatcherNodeType()
 		: _maxDistance(100.0)
-		, _crossCheck(false)
 	{
 	}
 
@@ -350,9 +349,6 @@ public:
 		{
 		case ID_MaxDistance:
 			_maxDistance = newValue.toFloat();
-			return true;
-		case ID_CrossCheck:
-			_crossCheck = newValue.toBool();
 			return true;
 		}
 
@@ -364,7 +360,6 @@ public:
 		switch(propId)
 		{
 		case ID_MaxDistance: return _maxDistance;
-		case ID_CrossCheck: return _crossCheck;
 		}
 
 		return QVariant();
@@ -398,7 +393,7 @@ public:
 		mt.queryPoints.clear();
 		mt.trainPoints.clear();
 
-		cv::BFMatcher matcher(normType, _crossCheck);
+		cv::BFMatcher matcher(normType);
 		vector<vector<cv::DMatch>> radiusMatches;
 
 		matcher.radiusMatch(queryDesc, trainDesc, radiusMatches, _maxDistance);
@@ -446,7 +441,6 @@ public:
 		};
 		static const PropertyConfig prop_config[] = {
 			{ EPropertyType::Double, "Max distance", "min:0.0, decimals:1" },
-			{ EPropertyType::Boolean, "Symmetry test", "" },
 			{ EPropertyType::Unknown, "", "" }
 		};
 
@@ -458,12 +452,10 @@ public:
 private:
 	enum EPropertyID
 	{
-		ID_MaxDistance,
-		ID_CrossCheck
+		ID_MaxDistance
 	};
 
 	float _maxDistance;
-	bool _crossCheck;
 };
 
 REGISTER_NODE("Features/Radius BForce Matcher", RadiusBruteForceMatcherNodeType);
