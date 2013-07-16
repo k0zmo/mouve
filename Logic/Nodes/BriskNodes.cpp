@@ -1,3 +1,4 @@
+#if 0
 #include "NodeType.h"
 #include "NodeFactory.h"
 
@@ -197,3 +198,4 @@ public:
 REGISTER_NODE("Features/Descriptors/BRISK", BriskDescriptorExtractorNodeType)
 REGISTER_NODE("Features/Detectors/BRISK", BriskFeatureDetectorNodeType)
 REGISTER_NODE("Features/BRISK", BriskNodeType)
+#endif
