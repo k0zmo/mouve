@@ -61,6 +61,9 @@ private:
 
 signals:
 	void mouseDoubleClicked(NodeView*);
+
+	void mouseHoverEntered(QGraphicsSceneHoverEvent* event);
+	void mouseHoverLeft(QGraphicsSceneHoverEvent* event);
 };
 
 inline int NodeView::type() const

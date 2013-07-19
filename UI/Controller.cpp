@@ -19,6 +19,7 @@
 #include "NodeLinkView.h"
 #include "NodeSocketView.h"
 #include "NodeStyle.h"
+#include "NodeToolTip.h"
 
 // Properties
 #include "PropertyDelegate.h"
@@ -56,6 +57,7 @@ template<> Controller* Singleton<Controller>::_singleton = nullptr;
 Controller::Controller(QWidget* parent, Qt::WindowFlags flags)
 	: QMainWindow(parent, flags)
 	, _previewSelectedNodeView(nullptr)
+	, _nodeToolTip(nullptr)
 	, _nodeScene(nullptr)
 	, _propManager(new PropertyManager(this))
 	, _nodeSystem(new NodeSystem())
@@ -264,6 +266,26 @@ void Controller::addNodeView(const QString& nodeTitle,
 		this, &Controller::changeProperty);
 	connect(nodeView, &NodeView::mouseDoubleClicked,
 		this, &Controller::mouseDoubleClickNodeView);
+
+	/// TODO: Experimental feature
+	connect(nodeView, &NodeView::mouseHoverEntered,
+		[=](QGraphicsSceneHoverEvent* event) {
+			if(_nodeToolTip != nullptr)
+			{
+				auto text = _nodeTree->nodeExecuteInformation(nodeID);
+				if(!text.empty())
+				{
+					_nodeToolTip->setText(QString::fromStdString(text));
+					_nodeToolTip->setPos(event->scenePos());
+					_nodeToolTip->setVisible(true);
+				}
+			}
+	});
+	connect(nodeView, &NodeView::mouseHoverLeft,
+		[=](QGraphicsSceneHoverEvent* event) {
+			if(_nodeToolTip != nullptr)
+				_nodeToolTip->setVisible(false);
+	});
 
 	// Add node view to a scene
 	_nodeScene->addItem(nodeView);
@@ -1045,6 +1067,11 @@ void Controller::createNewNodeScene()
 	connect(_nodeScene, &QGraphicsScene::selectionChanged,
 		this, &Controller::sceneSelectionChanged);
 	_ui->graphicsView->setScene(_nodeScene);
+
+	// Setup tooltip
+	_nodeToolTip = new NodeToolTip(nullptr);
+	_nodeToolTip->setVisible(false);
+	_nodeScene->addItem(_nodeToolTip);	
 }
 
 void Controller::createNewTree()

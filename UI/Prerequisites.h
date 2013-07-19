@@ -14,6 +14,7 @@ class NodeTemporaryLinkView;
 class NodeSocketView;
 class NodeLinkView;
 class NodeView;
+class NodeToolTip;
 
 class PreviewWidget;
 

@@ -151,6 +151,7 @@
     <ClCompile Include="NodeLinkView.cpp" />
     <ClCompile Include="NodeSocketView.cpp" />
     <ClCompile Include="NodeStyle.cpp" />
+    <ClCompile Include="NodeToolTip.cpp" />
     <ClCompile Include="NodeView.cpp" />
     <ClCompile Include="Precomp.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
@@ -523,6 +524,7 @@
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">.\GeneratedFiles\$(ConfigurationName)\moc_%(Filename).cpp</Outputs>
       <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">"$(QTDIR)\bin\moc.exe"  "%(FullPath)" -o ".\GeneratedFiles\$(ConfigurationName)\moc_%(Filename).cpp" "-fPrecomp.h" "-f../../GpuModuleUI.h"  -DUNICODE -DWIN32 -DQT_LARGEFILE_SUPPORT -DQT_DLL -DQT_NO_DEBUG -DNDEBUG -DQT_CORE_LIB -DQT_GUI_LIB -DQT_WIDGETS_LIB -DQT_OPENGL_LIB -DHAVE_OPENCL -DHAVE_OPENCL_1_1 -DJAI_SDK_DYNAMIC_LOAD=1 -DHAVE_JAI -DHAVE_VLD "-D$(NOINHERIT)\." "-I.\GeneratedFiles" "-I." "-I$(QTDIR)\include" "-I.\GeneratedFiles\$(ConfigurationName)\." "-I$(QTDIR)\include\QtCore" "-I$(QTDIR)\include\QtGui" "-I$(QTDIR)\include\QtWidgets" "-I$(QTDIR)\include\QtOpenGL" "-I$(SolutionDir)external\clw" "-I$(AMDAPPSDKROOT)\include" "-I$(JAI_SDK_INCLUDE)\." "-ID:\Programowanie\SDKs\boost" "-I$(OPENCVDIR)\include" "-ID:\Programowanie\Visual Leak Detector\include" "-I$(SolutionDir)\."</Command>
     </CustomBuild>
+    <ClInclude Include="NodeToolTip.h" />
     <ClInclude Include="Property.h" />
     <CustomBuild Include="PropertyWidgets.h">
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(QTDIR)\bin\moc.exe;%(FullPath)</AdditionalInputs>

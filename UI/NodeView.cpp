@@ -186,14 +186,14 @@ void NodeView::paint(QPainter* painter,
 
 void NodeView::hoverEnterEvent(QGraphicsSceneHoverEvent* event)
 {
-	Q_UNUSED(event);
 	setZValue(NodeStyle::ZValueNodeHovered);
+	emit mouseHoverEntered(event);
 }
 
 void NodeView::hoverLeaveEvent(QGraphicsSceneHoverEvent* event)
 {
-	Q_UNUSED(event);
 	setZValue(NodeStyle::ZValueNode);
+	emit mouseHoverLeft(event);
 }
 
 void NodeView::mouseDoubleClickEvent(QGraphicsSceneMouseEvent* event)

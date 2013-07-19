@@ -155,6 +155,7 @@ private:
 	QHash<NodeID, NodeView*> _nodeViews;
 
 	NodeView* _previewSelectedNodeView;
+	NodeToolTip* _nodeToolTip;
 	QGraphicsScene* _nodeScene;
 	PropertyManager* _propManager;
 
