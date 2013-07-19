@@ -513,6 +513,8 @@ void Controller::setupUi()
 	_ui->actionPause->setEnabled(false);
 	_ui->actionStop->setEnabled(false);
 
+	connect(_ui->graphicsView, &NodeEditorView::nodeTypeDropped, this, &Controller::addNode);
+
 	// Init properties window
 	PropertyDelegate* delegate = new PropertyDelegate(this);
 	delegate->setImmediateUpdate(true);

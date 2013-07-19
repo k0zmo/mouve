@@ -4,8 +4,6 @@
 #include <QMimeData>
 #include <QStandardItem>
 
-#include "Controller.h"
-
 NodeEditorView::NodeEditorView(QWidget* parent)
 	: QGraphicsView(parent)
 	, mZoom(1.0f)
@@ -132,7 +130,7 @@ void NodeEditorView::dropEvent(QDropEvent* event)
 			
 			NodeTypeID typeId = item->data(Qt::UserRole).toUInt();
 			if(typeId != InvalidNodeTypeID)
-				Controller::instance().addNode(typeId, mapToScene(event->pos()));
+				emit nodeTypeDropped(typeId, mapToScene(event->pos()));
 		}
 	}
 }

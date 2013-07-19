@@ -33,4 +33,5 @@ private:
 signals:
 	void contextMenu(const QPoint& globalPos, const QPointF& scenePos);
 	void keyPress(QKeyEvent* event);
+	void nodeTypeDropped(NodeTypeID nodeTypeID, const QPointF& scenePos);
 };
