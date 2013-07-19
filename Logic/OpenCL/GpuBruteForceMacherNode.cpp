@@ -260,14 +260,22 @@ private:
 
 		// Read matches count
 		_gpuComputeModule->queue().readBuffer(_matchesCount_cl, &matchesCount);
-		// and allocate required size
-		vector<DMatch> matches(matchesCount);
 
-		// Read matches
-		_gpuComputeModule->queue().readBuffer(_matches_cl, matches.data(), 
-			0, matchesCount * sizeof(DMatch));
+		if(matchesCount > 0)
+		{
+			// and allocate required size
+			vector<DMatch> matches(matchesCount);
 
-		return matches;
+			// Read matches
+			_gpuComputeModule->queue().readBuffer(_matches_cl, matches.data(), 
+				0, matchesCount * sizeof(DMatch));
+
+			return matches;
+		}
+		else
+		{
+			return vector<DMatch>();
+		}
 	}
 
 private:

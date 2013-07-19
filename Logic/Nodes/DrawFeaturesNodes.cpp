@@ -275,8 +275,8 @@ public:
 		// outputs
 		cv::Mat& imageDst = writer.acquireSocket(0).getImageRgb();
 
-		// validate inputs
-		if(kp.kpoints.empty() || kp.image.empty())
+		// validate input
+		if(kp.image.empty())
 			return ExecutionStatus(EStatus::Ok);
 #if 0
 		int drawFlags = _richKeypoints
@@ -285,6 +285,9 @@ public:
 		cv::drawKeypoints(kp.image, kp.kpoints, imageDst, _color, drawFlags);
 #else
 		cvtColor(kp.image, imageDst, CV_GRAY2BGR);
+
+		if(kp.kpoints.empty())
+			return ExecutionStatus(EStatus::Ok);
 
 		cv::RNG& rng = cv::theRNG();
 		bool isRandColor = _color == cv::Scalar::all(-1);

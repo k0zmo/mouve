@@ -272,7 +272,10 @@ public:
 		}
 		else
 		{
-			kp = KeyPoints();
+			// Finish downloading input image
+			_gpuComputeModule->dataQueue().finish();
+
+			kp.kpoints = vector<cv::KeyPoint>();
 			descriptors = cv::Mat();
 			descriptors_dev = DeviceArray();
 		}

@@ -440,7 +440,7 @@ public:
 			{ ENodeFlowDataType::Invalid, "", "", "" }
 		};
 		static const PropertyConfig prop_config[] = {
-			{ EPropertyType::Double, "Max distance", "min:0.0, decimals:1" },
+			{ EPropertyType::Double, "Max distance", "min:0.0, decimals:2" },
 			{ EPropertyType::Unknown, "", "" }
 		};
 
