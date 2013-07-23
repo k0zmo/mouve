@@ -4,10 +4,10 @@
 #include "NodeFactory.h"
 #include "Kommon/Hash.h"
 
-class GpuMorphologyNodeType : public GpuNodeType
+class GpuMorphologyOperatorNodeType : public GpuNodeType
 {
 public:
-	GpuMorphologyNodeType()
+	GpuMorphologyOperatorNodeType()
 		: _op(Erode)
 		, _sElemHash(0)
 	{
@@ -284,6 +284,6 @@ private:
 	uint32_t _sElemHash;
 };
 
-REGISTER_NODE("OpenCL/Image/Morphology op.", GpuMorphologyNodeType)
+REGISTER_NODE("OpenCL/Morphology/Operator", GpuMorphologyOperatorNodeType)
 
 #endif

@@ -1,16 +1,15 @@
 #include "NodeType.h"
 #include "NodeFactory.h"
 
-#include <opencv2/features2d/features2d.hpp>
+#include <opencv2/nonfree/features2d.hpp>
 
-class OrbFeatureDetectorNodeType : public NodeType
+class FastFeatureDetector : public NodeType
 {
 public:
-	OrbFeatureDetectorNodeType()
-		: _nfeatures(1000)
-		, _scaleFactor(1.2f)
-		, _nlevels(8)
-		, _edgeThreshold(31)
+	FastFeatureDetector()
+		: _threshold(10)
+		, _type(cv::FastFeatureDetector::TYPE_9_16)
+		, _nonmaxSupression(true)
 	{
 	}
 
@@ -18,17 +17,14 @@ public:
 	{
 		switch(propId)
 		{
-		case ID_NumFeatures:
-			_nfeatures = newValue.toInt();
+		case 0:
+			_threshold = newValue.toInt();
 			return true;
-		case ID_ScaleFactor:
-			_scaleFactor = newValue.toFloat();
+		case 1:
+			_nonmaxSupression = newValue.toBool();
 			return true;
-		case ID_NumLevels:
-			_nlevels = newValue.toInt();
-			return true;
-		case ID_EdgeThreshold:
-			_edgeThreshold = newValue.toInt();
+		case 2:
+			_type = newValue.toInt();
 			return true;
 		}
 
@@ -39,10 +35,9 @@ public:
 	{
 		switch(propId)
 		{
-		case ID_NumFeatures: return _nfeatures;
-		case ID_ScaleFactor: return _scaleFactor;
-		case ID_NumLevels: return _nlevels;
-		case ID_EdgeThreshold: return _edgeThreshold;
+		case 0: return _threshold;
+		case 1: return _nonmaxSupression;
+		case 2: return _type;
 		}
 
 		return QVariant();
@@ -60,8 +55,7 @@ public:
 			return ExecutionStatus(EStatus::Ok);
 
 		// Do stuff
-		cv::OrbFeatureDetector orb(_nfeatures, _scaleFactor, _nlevels, _edgeThreshold);
-		orb.detect(src, kp.kpoints);
+		cv::FASTX(src, kp.kpoints, _threshold, _nonmaxSupression, _type);
 		kp.image = src;
 
 		return ExecutionStatus(EStatus::Ok, 
@@ -79,54 +73,52 @@ public:
 			{ ENodeFlowDataType::Invalid, "", "", "" }
 		};
 		static const PropertyConfig prop_config[] = {
-			{ EPropertyType::Integer, "Number of features to retain", "min:1" },
-			{ EPropertyType::Double, "Pyramid decimation ratio", "min:1.0" },
-			{ EPropertyType::Integer, "The number of pyramid levels", "min:1" },
-			{ EPropertyType::Integer, "Border margin", "min:1" },
+			{ EPropertyType::Integer, "Threshold", "min:0, max:255" },
+			{ EPropertyType::Boolean, "Nonmax supression", "" },
+			{ EPropertyType::Enum, "Neighborhoods type", "item: 5_8, item: 7_12, item: 9_16" },
 			{ EPropertyType::Unknown, "", "" }
 		};
 
-		nodeConfig.description = "Extracts keypoints using FAST in pyramids.";
+		nodeConfig.description = "Detects corners using the FAST algorithm.";
 		nodeConfig.pInputSockets = in_config;
 		nodeConfig.pOutputSockets = out_config;
 		nodeConfig.pProperties = prop_config;
 	}
 
-protected:
-	enum EPropertyID
-	{
-		ID_NumFeatures,
-		ID_ScaleFactor,
-		ID_NumLevels,
-		ID_EdgeThreshold
-	};
-
-	int _nfeatures;
-	float _scaleFactor;
-	int _nlevels;
-	int _edgeThreshold;
+private:
+	int _threshold;
+	int _type;
+	bool _nonmaxSupression;
 };
 
-class OrbDescriptorExtractorNodeType : public NodeType
+class MserSalientRegionDetectorNodeType : public NodeType
 {
 public:
 	ExecutionStatus execute(NodeSocketReader& reader, NodeSocketWriter& writer) override
 	{
 		// Read input sockets
-		const KeyPoints& kp = reader.readSocket(0).getKeypoints();
+		const cv::Mat& src = reader.readSocket(0).getImage();
+		// Acquire output sockets
+		cv::Mat& img = writer.acquireSocket(0).getImageRgb();
 
 		// Validate inputs
-		if(kp.kpoints.empty() || kp.image.empty())
+		if(src.empty())
 			return ExecutionStatus(EStatus::Ok);
 
-		// Acquire output sockets
-		KeyPoints& outKp = writer.acquireSocket(0).getKeypoints();
-		cv::Mat& outDescriptors = writer.acquireSocket(1).getArray();
-		outKp = kp;
-
 		// Do stuff
-		cv::OrbDescriptorExtractor orb;
-		orb.compute(kp.image, outKp.kpoints, outDescriptors);
+		cvtColor(src, img, CV_GRAY2BGR);
+
+		cv::MserFeatureDetector mser;
+		vector<vector<cv::Point>> msers;
+		mser(src, msers);
+
+		for(int i = (int)msers.size()-1; i >= 0; i--)
+		{
+			// fit ellipse
+			cv::RotatedRect box = cv::fitEllipse(msers[i]);
+			box.angle = (float)CV_PI/2 - box.angle;
+			cv::ellipse(img, box, cv::Scalar(196,255,255), 1, CV_AA);
+		}		
 
 		return ExecutionStatus(EStatus::Ok);
 	}
@@ -134,40 +126,37 @@ public:
 	void configuration(NodeConfig& nodeConfig) const override
 	{
 		static const InputSocketConfig in_config[] = {
-			{ ENodeFlowDataType::Keypoints, "keypoints", "Keypoints", "" },
+			{ ENodeFlowDataType::Image, "image", "Image", "" },
 			{ ENodeFlowDataType::Invalid, "", "", "" }
 		};
 		static const OutputSocketConfig out_config[] = {
-			{ ENodeFlowDataType::Keypoints, "output", "Keypoints", "" },
-			{ ENodeFlowDataType::Array, "output", "Descriptors", "" },
+			{ ENodeFlowDataType::ImageRgb, "output", "Output", "" },
 			{ ENodeFlowDataType::Invalid, "", "", "" }
 		};
 
-		nodeConfig.description = "Computes descriptors using oriented and rotated BRIEF (ORB).";
+		nodeConfig.description = "Maximally stable extremal region extractor.";
 		nodeConfig.pInputSockets = in_config;
 		nodeConfig.pOutputSockets = out_config;
 	}
 };
 
-class OrbNodeType : public OrbFeatureDetectorNodeType
+class StarFeatureDetectorNodeType : public NodeType
 {
 public:
-
 	ExecutionStatus execute(NodeSocketReader& reader, NodeSocketWriter& writer) override
 	{
 		// Read input sockets
 		const cv::Mat& src = reader.readSocket(0).getImage();
-		// ouputs
+		// Acquire output sockets
 		KeyPoints& kp = writer.acquireSocket(0).getKeypoints();
-		cv::Mat& descriptors = writer.acquireSocket(1).getArray();
 
 		// Validate inputs
 		if(src.empty())
 			return ExecutionStatus(EStatus::Ok);
 
 		// Do stuff
-		cv::ORB orb(_nfeatures, _scaleFactor, _nlevels, _edgeThreshold);
-		orb(src, cv::noArray(), kp.kpoints, descriptors);
+		cv::StarFeatureDetector star;
+		star(src, kp.kpoints);
 		kp.image = src;
 
 		return ExecutionStatus(EStatus::Ok, 
@@ -176,19 +165,21 @@ public:
 
 	void configuration(NodeConfig& nodeConfig) const override
 	{
-		OrbFeatureDetectorNodeType::configuration(nodeConfig);
-
+		static const InputSocketConfig in_config[] = {
+			{ ENodeFlowDataType::Image, "image", "Image", "" },
+			{ ENodeFlowDataType::Invalid, "", "", "" }
+		};
 		static const OutputSocketConfig out_config[] = {
 			{ ENodeFlowDataType::Keypoints, "keypoints", "Keypoints", "" },
-			{ ENodeFlowDataType::Array, "output", "Descriptors", "" },
 			{ ENodeFlowDataType::Invalid, "", "", "" }
 		};
 
-		nodeConfig.description = "Detects keypoints and computes descriptors using oriented and rotated BRIEF (ORB).";
+		nodeConfig.description = "CenSurE keypoint detector.";
+		nodeConfig.pInputSockets = in_config;
 		nodeConfig.pOutputSockets = out_config;
 	}
 };
 
-REGISTER_NODE("Features/Descriptors/ORB", OrbDescriptorExtractorNodeType)
-REGISTER_NODE("Features/Detectors/ORB", OrbFeatureDetectorNodeType)
-REGISTER_NODE("Features/ORB", OrbNodeType)
+REGISTER_NODE("Features/STAR", StarFeatureDetectorNodeType)
+REGISTER_NODE("Features/MSER", MserSalientRegionDetectorNodeType)
+REGISTER_NODE("Features/FAST", FastFeatureDetector)

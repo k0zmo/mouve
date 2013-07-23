@@ -126,7 +126,7 @@ bool PropertyDelegate::eventFilter(QObject* obj, QEvent* event)
 				while (w)
 				{
 					if(w == editor)
-					return false;
+						return false;
 					w = w->parentWidget();
 				}
 

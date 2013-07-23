@@ -36,13 +36,13 @@ public:
 
 	ExecutionStatus execute(NodeSocketReader& reader, NodeSocketWriter& writer) override
 	{
-		// inputs
+		// Read input sockets
 		const Matches& mt = reader.readSocket(0).getMatches();
-		// outputs
+		// Acquire output sockets
 		cv::Mat& H = writer.acquireSocket(0).getArray();
 		Matches& outMt = writer.acquireSocket(1).getMatches();
 
-		// validate inputs
+		// Validate inputs
 		if(mt.queryPoints.empty() || mt.trainPoints.empty()
 		|| mt.queryImage.empty() || mt.trainImage.empty())
 			return ExecutionStatus(EStatus::Ok);
@@ -51,6 +51,7 @@ public:
 			return ExecutionStatus(EStatus::Error, 
 				"Points from one images doesn't correspond to key points in another one");
 
+		// Do stuff
 		outMt.queryImage = mt.queryImage;
 		outMt.trainImage = mt.trainImage;
 		outMt.queryPoints.clear();
@@ -129,7 +130,7 @@ public:
 			{ EPropertyType::Unknown, "", "" }
 		};
 
-		nodeConfig.description = "";
+		nodeConfig.description = "Finds a perspective transformation between two planes.";
 		nodeConfig.pInputSockets = in_config;
 		nodeConfig.pOutputSockets = out_config;
 		nodeConfig.pProperties = prop_config;
@@ -181,13 +182,13 @@ public:
 
 	ExecutionStatus execute(NodeSocketReader& reader, NodeSocketWriter& writer) override
 	{
-		// inputs
+		// Read input sockets
 		const Matches& mt = reader.readSocket(0).getMatches();
-		// outputs
+		// Acquire output sockets
 		cv::Mat& H = writer.acquireSocket(0).getArray();
 		Matches& outMt = writer.acquireSocket(1).getMatches();
 
-		// validate inputs
+		// Validate inputs
 		if(mt.queryPoints.empty() || mt.trainPoints.empty()
 		|| mt.queryImage.empty() || mt.trainImage.empty())
 			return ExecutionStatus(EStatus::Ok);
@@ -196,7 +197,7 @@ public:
 			return ExecutionStatus(EStatus::Error, 
 			"Points from one images doesn't correspond to key points in another one");
 
-		// Load real homography 
+		// Do stuff - Load real homography 
 		std::ifstream homographyFile(_homographyPath, std::ios::in);
 		if(!homographyFile.is_open())
 			return ExecutionStatus(EStatus::Error, formatMessage("Can't load %s\n", _homographyPath.c_str()));
@@ -268,7 +269,7 @@ public:
 			{ EPropertyType::Unknown, "", "" }
 		};
 
-		nodeConfig.description = "";
+		nodeConfig.description = "Rejects outliers using known homography.";
 		nodeConfig.pInputSockets = in_config;
 		nodeConfig.pOutputSockets = out_config;
 		nodeConfig.pProperties = prop_config;

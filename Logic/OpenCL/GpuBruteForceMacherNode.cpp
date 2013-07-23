@@ -103,12 +103,12 @@ public:
 
 	ExecutionStatus execute(NodeSocketReader& reader, NodeSocketWriter& writer) override
 	{
-		// inputs
+		// Read input sockets
 		const KeyPoints& queryKp = reader.readSocket(0).getKeypoints();
 		const DeviceArray& query_dev = reader.readSocket(1).getDeviceArray();
 		const KeyPoints& trainKp = reader.readSocket(2).getKeypoints();
 		const DeviceArray& train_dev = reader.readSocket(3).getDeviceArray();
-		// outputs
+		// Acquire output sockets
 		Matches& mt = writer.acquireSocket(0).getMatches();
 
 		if(query_dev.isNull() || query_dev.size() == 0

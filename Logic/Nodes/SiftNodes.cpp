@@ -1,4 +1,3 @@
-#include "Prerequisites.h"
 #include "NodeType.h"
 #include "NodeFactory.h"
 
@@ -55,15 +54,16 @@ public:
 
 	ExecutionStatus execute(NodeSocketReader& reader, NodeSocketWriter& writer) override
 	{
-		// inputs
+		// Read input sockets
 		const cv::Mat& src = reader.readSocket(0).getImage();
-		// outputs
+		// Acquire output sockets
 		KeyPoints& kp = writer.acquireSocket(0).getKeypoints();
 
-		// validate inputs
+		// Validate inputs
 		if(src.empty())
 			return ExecutionStatus(EStatus::Ok);
 
+		// Do stuff
 		cv::SiftFeatureDetector detector(_nFeatures, _nOctaveLayers,
 			_contrastThreshold, _edgeThreshold, _sigma);
 		detector.detect(src, kp.kpoints);
@@ -92,7 +92,7 @@ public:
 			{ EPropertyType::Unknown, "", "" }
 		};
 
-		nodeConfig.description = "";
+		nodeConfig.description = "Extracts keypoints using difference of gaussians (DoG) algorithm.";
 		nodeConfig.pInputSockets = in_config;
 		nodeConfig.pOutputSockets = out_config;
 		nodeConfig.pProperties = prop_config;
@@ -120,18 +120,19 @@ class SiftDescriptorExtractorNodeType : public NodeType
 public:
 	ExecutionStatus execute(NodeSocketReader& reader, NodeSocketWriter& writer) override
 	{
-		// inputs
+		// Read input sockets
 		const KeyPoints& kp = reader.readSocket(0).getKeypoints();
 
-		// validate inputs
+		// Validate inputs
 		if(kp.kpoints.empty() || kp.image.empty())
 			return ExecutionStatus(EStatus::Ok);
 
-		// outputs
+		// Acquire output sockets
 		KeyPoints& outKp = writer.acquireSocket(0).getKeypoints();
 		cv::Mat& outDescriptors = writer.acquireSocket(1).getArray();
 		outKp = kp;
 
+		// Do stuff
 		cv::SiftDescriptorExtractor extractor;
 		extractor.compute(kp.image, outKp.kpoints, outDescriptors);
 
@@ -150,7 +151,7 @@ public:
 			{ ENodeFlowDataType::Invalid, "", "", "" }
 		};
 
-		nodeConfig.description = "";
+		nodeConfig.description = "Computes descriptors using the Scale Invariant Feature Transform (SIFT) algorithm.";
 		nodeConfig.pInputSockets = in_config;
 		nodeConfig.pOutputSockets = out_config;
 	}
@@ -161,16 +162,17 @@ class SiftNodeType : public SiftFeatureDetectorNodeType
 public:
 	ExecutionStatus execute(NodeSocketReader& reader, NodeSocketWriter& writer) override
 	{
-		// inputs
+		// Read input sockets
 		const cv::Mat& src = reader.readSocket(0).getImage();
-		// outputs
+		// Acquire output sockets
 		KeyPoints& kp = writer.acquireSocket(0).getKeypoints();
 		cv::Mat& descriptors = writer.acquireSocket(1).getArray();
 
-		// validate inputs
+		// Validate inputs
 		if(src.empty())
 			return ExecutionStatus(EStatus::Ok);
 
+		// Do stuff
 		cv::SIFT sift(_nFeatures, _nOctaveLayers,
 			_contrastThreshold, _edgeThreshold, _sigma);
 		sift(src, cv::noArray(), kp.kpoints, descriptors);
@@ -191,7 +193,7 @@ public:
 			{ ENodeFlowDataType::Invalid, "", "", "" }
 		};
 
-		nodeConfig.description = "";
+		nodeConfig.description = "Extracts keypoints and computes descriptors using the Scale Invariant Feature Transform (SIFT) algorithm.";
 		nodeConfig.pOutputSockets = out_config;
 	}
 };

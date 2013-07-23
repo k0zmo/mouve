@@ -94,16 +94,17 @@ public:
 
 	ExecutionStatus execute(NodeSocketReader& reader, NodeSocketWriter& writer) override
 	{
-		// inputs
+		// Read input sockets
 		const cv::Mat& imageSrc = reader.readSocket(0).getImage();
 		const cv::Mat& circles = reader.readSocket(1).getArray();
 		// ouputs
 		cv::Mat& imageDst = writer.acquireSocket(0).getImageRgb();
 
-		// validate inputs
+		// Validate inputs
 		if(imageSrc.empty())
 			return ExecutionStatus(EStatus::Ok);
 
+		// Do stuff
 		cvtColor(imageSrc, imageDst, CV_GRAY2BGR);
 
 		return executeImpl(circles, imageSrc, imageDst);
@@ -127,7 +128,7 @@ public:
 			{ EPropertyType::Unknown, "", "" }
 		};
 
-		nodeConfig.description = "";
+		nodeConfig.description = "Draws simple geometric shapes.";
 		nodeConfig.pInputSockets = in_config;
 		nodeConfig.pOutputSockets = out_config;
 		nodeConfig.pProperties = prop_config;
@@ -270,9 +271,9 @@ public:
 
 	ExecutionStatus execute(NodeSocketReader& reader, NodeSocketWriter& writer) override
 	{
-		// inputs
+		// Read input sockets
 		const KeyPoints& kp = reader.readSocket(0).getKeypoints();
-		// outputs
+		// Acquire output sockets
 		cv::Mat& imageDst = writer.acquireSocket(0).getImageRgb();
 
 		// validate input
@@ -317,7 +318,7 @@ public:
 			{ EPropertyType::Unknown, "", "" }
 		};
 
-		nodeConfig.description = "";
+		nodeConfig.description = "Draws keypoints.";
 		nodeConfig.pInputSockets = in_config;
 		nodeConfig.pOutputSockets = out_config;
 		nodeConfig.pProperties = prop_config;
@@ -429,12 +430,12 @@ public:
 
 	ExecutionStatus execute(NodeSocketReader& reader, NodeSocketWriter& writer) override
 	{
-		// inputs
+		// Read input sockets
 		const Matches& mt = reader.readSocket(0).getMatches();
-		// outputs
+		// Acquire output sockets
 		cv::Mat& imageMatches = writer.acquireSocket(0).getImageRgb();
 
-		// validate inputs
+		// Validate inputs
 		if(mt.queryImage.empty() || mt.trainImage.empty())
 			return ExecutionStatus(EStatus::Ok);
 
@@ -461,7 +462,7 @@ public:
 			{ EPropertyType::Unknown, "", "" }
 		};
 
-		nodeConfig.description = "";
+		nodeConfig.description = "Draws matches.";
 		nodeConfig.pInputSockets = in_config;
 		nodeConfig.pOutputSockets = out_config;
 		nodeConfig.pProperties = prop_config;
@@ -538,10 +539,10 @@ public:
 		const cv::Mat& homography = reader.readSocket(0).getArray();
 		// in fact we need only one image and size of another but this solution is way cleaner
 		const Matches& mt = reader.readSocket(1).getMatches();
-		// outputs
+		// Acquire output sockets
 		cv::Mat& img_matches = writer.acquireSocket(0).getImageRgb();
 
-		// validate inputs
+		// Validate inputs
 		if(mt.queryImage.empty() || mt.trainImage.empty() || homography.empty())
 			return ExecutionStatus(EStatus::Ok);
 
@@ -578,7 +579,7 @@ public:
 			{ ENodeFlowDataType::Invalid, "", "", "" }
 		};
 
-		nodeConfig.description = "";
+		nodeConfig.description = "Draws homography.";
 		nodeConfig.pInputSockets = in_config;
 		nodeConfig.pOutputSockets = out_config;
 	}
@@ -616,13 +617,13 @@ public:
 
 	ExecutionStatus execute(NodeSocketReader& reader, NodeSocketWriter& writer) override
 	{
-		// inputs
+		// Read input sockets
 		const cv::Mat& mask = reader.readSocket(0).getImage();
 		const cv::Mat& source = reader.readSocket(1).getImage();
-		// outputs
+		// Acquire output sockets
 		cv::Mat& imagePainted = writer.acquireSocket(0).getImageRgb();
 
-		// validate inputs
+		// Validate inputs
 		if(mask.empty() || source.empty())
 			return ExecutionStatus(EStatus::Ok);
 
@@ -630,6 +631,7 @@ public:
 			return ExecutionStatus(EStatus::Error, 
 			"Mask must be the same size as source image");
 
+		// Do stuff
 		cv::Vec3b tmp(_color[0], _color[1], _color[2]);
 		cv::RNG& rng = cv::theRNG();
 		cv::Vec3b color = (_color == cv::Scalar::all(-1)) 
@@ -669,7 +671,7 @@ public:
 			{ EPropertyType::Unknown, "", "" }
 		};
 
-		nodeConfig.description = "";
+		nodeConfig.description = "Paints image using binary mask.";
 		nodeConfig.pInputSockets = in_config;
 		nodeConfig.pOutputSockets = out_config;
 		nodeConfig.pProperties = prop_config;
@@ -682,7 +684,6 @@ private:
 
 	cv::Scalar _color;
 };
-
 
 REGISTER_NODE("Draw features/Paint mask", PaintMaskNodeType)
 REGISTER_NODE("Draw features/Draw homography", DrawHomographyNodeType)

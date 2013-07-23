@@ -1,4 +1,3 @@
-#include "Prerequisites.h"
 #include "NodeType.h"
 #include "NodeFactory.h"
 #include "Kommon/Utils.h"
@@ -103,7 +102,7 @@ public:
 			{ EPropertyType::Unknown, "", "" }
 		};
 
-		nodeConfig.description = "";
+		nodeConfig.description = "Finds best matches between query and train descriptors using nearest neighbour distance ratio and/or symmetry test.";
 		nodeConfig.pInputSockets = in_config;
 		nodeConfig.pOutputSockets = out_config;
 		nodeConfig.pProperties = prop_config;
@@ -125,15 +124,15 @@ class BruteForceMatcherNodeType : public MatcherNodeType
 public:
 	ExecutionStatus execute(NodeSocketReader& reader, NodeSocketWriter& writer) override
 	{
-		// inputs
+		// Read input sockets
 		const KeyPoints& queryKp = reader.readSocket(0).getKeypoints();
 		const cv::Mat& query = reader.readSocket(1).getArray();
 		const KeyPoints& trainKp = reader.readSocket(2).getKeypoints();
 		const cv::Mat& train = reader.readSocket(3).getArray();
-		// outputs
+		// Acquire output sockets
 		Matches& mt = writer.acquireSocket(0).getMatches();
 
-		// validate inputs
+		// Validate inputs
 		if(train.empty() || query.empty())
 			return ExecutionStatus(EStatus::Ok);
 
@@ -148,6 +147,7 @@ public:
 				"(must be float for L2 norm or Uint8 for Hamming norm");
 		}
 
+		// Do stuff
 		vector<cv::DMatch> matches;
 
 		if(_symmetryTest)
@@ -267,34 +267,40 @@ class AproximateNearestNeighborMatcherNodeType : public MatcherNodeType
 public:
 	ExecutionStatus execute(NodeSocketReader& reader, NodeSocketWriter& writer) override
 	{
-		// inputs
+		// Read input sockets
 		const KeyPoints& queryKp = reader.readSocket(0).getKeypoints();
 		const cv::Mat& queryDesc = reader.readSocket(1).getArray();
 		const KeyPoints& trainKp = reader.readSocket(2).getKeypoints();
 		const cv::Mat& trainDesc = reader.readSocket(3).getArray();
-		// outputs
+		// Acquire output sockets
 		Matches& mt = writer.acquireSocket(0).getMatches();
 
-		// validate inputs
+		// Validate inputs
 		if(trainDesc.empty() || queryDesc.empty())
 			return ExecutionStatus(EStatus::Ok);
 
 		if((size_t) trainDesc.rows != trainKp.kpoints.size()
-			|| (size_t) queryDesc.rows != queryKp.kpoints.size())
+		|| (size_t) queryDesc.rows != queryKp.kpoints.size())
 		{
 			return ExecutionStatus(EStatus::Error, "Keypoints and descriptors mismatched");
 		}
 
-		cv::Ptr<cv::flann::IndexParams> indexParams = new cv::flann::KDTreeIndexParams();
-		cv::Ptr<cv::flann::SearchParams> searchParams = new cv::flann::SearchParams();
-
+		// Do stuff
+		cv::Ptr<cv::flann::IndexParams> indexParams;
+		
 		if(trainDesc.depth() == CV_8U)
 		{
-			indexParams->setAlgorithm(cvflann::FLANN_INDEX_LSH);
-			searchParams->setAlgorithm(cvflann::FLANN_INDEX_LSH);
+			indexParams = new cv::flann::LshIndexParams(12, 20, 2);
+			// For now doesn't work for binary descriptors :(
+			//cv::flann::HierarchicalClusteringIndexParams();
 		}
-
-		cv::FlannBasedMatcher matcher(indexParams, searchParams);
+		else if(trainDesc.depth() == CV_32F 
+			 || trainDesc.depth() == CV_64F)
+		{
+			indexParams = new cv::flann::HierarchicalClusteringIndexParams();
+		}
+		
+		cv::FlannBasedMatcher matcher(indexParams);
 		vector<cv::DMatch> matches;
 
 		if(_symmetryTest)
@@ -367,15 +373,15 @@ public:
 
 	ExecutionStatus execute(NodeSocketReader& reader, NodeSocketWriter& writer) override
 	{
-		// inputs
+		// Read input sockets
 		const KeyPoints& queryKp = reader.readSocket(0).getKeypoints();
 		const cv::Mat& queryDesc = reader.readSocket(1).getArray();
 		const KeyPoints& trainKp = reader.readSocket(2).getKeypoints();
 		const cv::Mat& trainDesc = reader.readSocket(3).getArray();
-		// outputs
+		// Acquire output sockets
 		Matches& mt = writer.acquireSocket(0).getMatches();
 
-		// validate inputs
+		// Validate inputs
 		if(trainDesc.empty() || queryDesc.empty())
 			return ExecutionStatus(EStatus::Ok);
 
@@ -444,7 +450,7 @@ public:
 			{ EPropertyType::Unknown, "", "" }
 		};
 
-		nodeConfig.description = "";
+		nodeConfig.description = "Finds the training descriptors not farther than the specified distance.";
 		nodeConfig.pInputSockets = in_config;
 		nodeConfig.pOutputSockets = out_config;
 		nodeConfig.pProperties = prop_config;

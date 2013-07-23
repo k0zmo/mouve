@@ -271,16 +271,18 @@
     <ClCompile Include="NodeSystem.cpp" />
     <ClCompile Include="Nodes\ArithmeticNodes.cpp" />
     <ClCompile Include="Nodes\BriskNodes.cpp" />
-    <ClCompile Include="Nodes\BasicNodes.cpp" />
+    <ClCompile Include="Nodes\FeaturesNodes.cpp" />
+    <ClCompile Include="Nodes\HistogramNodes.cpp" />
     <ClCompile Include="Nodes\ColorConversionNodes.cpp" />
     <ClCompile Include="Nodes\CV.cpp" />
     <ClCompile Include="Nodes\DrawFeaturesNodes.cpp" />
-    <ClCompile Include="Nodes\FeaturesNodes.cpp" />
+    <ClCompile Include="Nodes\FeatureDetectorsNodes.cpp" />
+    <ClCompile Include="Nodes\KeypointsNodes.cpp" />
     <ClCompile Include="Nodes\FiltersNodes.cpp" />
     <ClCompile Include="Nodes\FreakNodes.cpp" />
     <ClCompile Include="Nodes\HomographyNodes.cpp" />
-    <ClCompile Include="Nodes\HoughNodes.cpp" />
-    <ClCompile Include="Nodes\ImageTransformationNodes.cpp" />
+    <ClCompile Include="Nodes\SegmentationNodes.cpp" />
+    <ClCompile Include="Nodes\TransformationNodes.cpp" />
     <ClCompile Include="Nodes\ksurf.cpp" />
     <ClCompile Include="Nodes\kSurfNodes.cpp" />
     <ClCompile Include="Nodes\MatcherNodes.cpp" />
@@ -302,7 +304,7 @@
     <ClCompile Include="OpenCL\GpuKernelLibrary.cpp" />
     <ClCompile Include="OpenCL\GpuMixtureOfGaussians.cpp" />
     <ClCompile Include="OpenCL\GpuNodeModule.cpp" />
-    <ClCompile Include="OpenCL\GpuMorphologyNode.cpp" />
+    <ClCompile Include="OpenCL\GpuMorphologyOperatorNode.cpp" />
     <ClCompile Include="OpenCL\GpuSurfNode.cpp" />
     <ClCompile Include="Precomp.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>

@@ -54,12 +54,12 @@ public:
 
 	ExecutionStatus execute(NodeSocketReader& reader, NodeSocketWriter& writer) override
 	{
-		// inputs
+		// Read input sockets
 		const cv::Mat& src = reader.readSocket(0).getImage();
-		// outputs
+		// Acquire output sockets
 		KeyPoints& kp = writer.acquireSocket(0).getKeypoints();
 
-		// validate inputs
+		// Validate inputs
 		if(src.empty())
 			return ExecutionStatus(EStatus::Ok);
 
@@ -118,14 +118,14 @@ public:
 
 	ExecutionStatus execute(NodeSocketReader& reader, NodeSocketWriter& writer) override
 	{
-		// inputs
+		// Read input sockets
 		const KeyPoints& kp = reader.readSocket(0).getKeypoints();
 
-		// validate inputs
+		// Validate inputs
 		if(kp.kpoints.empty() || kp.image.empty())
 			return ExecutionStatus(EStatus::Ok);
 
-		// outputs
+		// Acquire output sockets
 		KeyPoints& outKp = writer.acquireSocket(0).getKeypoints();
 		cv::Mat& outDescriptors = writer.acquireSocket(1).getArray();
 		outKp = kp;
@@ -163,13 +163,13 @@ public:
 
 	ExecutionStatus execute(NodeSocketReader& reader, NodeSocketWriter& writer) override
 	{
-		// inputs
+		// Read input sockets
 		const cv::Mat& src = reader.readSocket(0).getImage();
 		// ouputs
 		KeyPoints& kp = writer.acquireSocket(0).getKeypoints();
 		cv::Mat& descriptors = writer.acquireSocket(1).getArray();
 
-		// validate inputs
+		// Validate inputs
 		if(src.empty())
 			return ExecutionStatus(EStatus::Ok);
 

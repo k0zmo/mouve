@@ -58,9 +58,6 @@
     <ClCompile Include="Nodes\CV.cpp">
       <Filter>Nodes</Filter>
     </ClCompile>
-    <ClCompile Include="Nodes\DrawFeaturesNodes.cpp">
-      <Filter>Nodes</Filter>
-    </ClCompile>
     <ClCompile Include="Nodes\HomographyNodes.cpp">
       <Filter>Nodes</Filter>
     </ClCompile>
@@ -70,16 +67,7 @@
     <ClCompile Include="Nodes\SurfNodes.cpp">
       <Filter>Nodes</Filter>
     </ClCompile>
-    <ClCompile Include="Nodes\BasicNodes.cpp">
-      <Filter>Nodes</Filter>
-    </ClCompile>
-    <ClCompile Include="Nodes\HoughNodes.cpp">
-      <Filter>Nodes</Filter>
-    </ClCompile>
     <ClCompile Include="OpenCL\GpuNodeModule.cpp">
-      <Filter>OpenCL</Filter>
-    </ClCompile>
-    <ClCompile Include="OpenCL\GpuMorphologyNode.cpp">
       <Filter>OpenCL</Filter>
     </ClCompile>
     <ClCompile Include="OpenCL\GpuBasicNodes.cpp">
@@ -109,9 +97,6 @@
     <ClCompile Include="Nodes\SiftNodes.cpp">
       <Filter>Nodes</Filter>
     </ClCompile>
-    <ClCompile Include="Nodes\ImageTransformationNodes.cpp">
-      <Filter>Nodes</Filter>
-    </ClCompile>
     <ClCompile Include="Nodes\ksurf.cpp">
       <Filter>Nodes</Filter>
     </ClCompile>
@@ -139,9 +124,6 @@
     <ClCompile Include="NodeTreeSerializer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Nodes\FeaturesNodes.cpp">
-      <Filter>Nodes</Filter>
-    </ClCompile>
     <ClCompile Include="Nodes\FreakNodes.cpp">
       <Filter>Nodes</Filter>
     </ClCompile>
@@ -159,6 +141,30 @@
     </ClCompile>
     <ClCompile Include="Nodes\VideoSegmentationNodes.cpp">
       <Filter>Nodes</Filter>
+    </ClCompile>
+    <ClCompile Include="Nodes\TransformationNodes.cpp">
+      <Filter>Nodes</Filter>
+    </ClCompile>
+    <ClCompile Include="Nodes\SegmentationNodes.cpp">
+      <Filter>Nodes</Filter>
+    </ClCompile>
+    <ClCompile Include="Nodes\HistogramNodes.cpp">
+      <Filter>Nodes</Filter>
+    </ClCompile>
+    <ClCompile Include="Nodes\FeatureDetectorsNodes.cpp">
+      <Filter>Nodes</Filter>
+    </ClCompile>
+    <ClCompile Include="Nodes\KeypointsNodes.cpp">
+      <Filter>Nodes</Filter>
+    </ClCompile>
+    <ClCompile Include="Nodes\FeaturesNodes.cpp">
+      <Filter>Nodes</Filter>
+    </ClCompile>
+    <ClCompile Include="Nodes\DrawFeaturesNodes.cpp">
+      <Filter>Nodes</Filter>
+    </ClCompile>
+    <ClCompile Include="OpenCL\GpuMorphologyOperatorNode.cpp">
+      <Filter>OpenCL</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

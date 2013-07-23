@@ -50,18 +50,19 @@ public:
 
 	ExecutionStatus execute(NodeSocketReader& reader, NodeSocketWriter& writer) override
 	{
-		// inputs
+		// Read input sockets
 		const KeyPoints& kp = reader.readSocket(0).getKeypoints();
 
-		// validate inputs
+		// Validate inputs
 		if(kp.kpoints.empty() || kp.image.empty())
 			return ExecutionStatus(EStatus::Ok);
 
-		// outputs
+		// Acquire output sockets
 		KeyPoints& outKp = writer.acquireSocket(0).getKeypoints();
 		cv::Mat& outDescriptors = writer.acquireSocket(1).getArray();
 		outKp = kp;
 
+		// Do stuff
 		cv::FREAK freak(_orientationNormalized, _scaleNormalized, _patternScale, _nOctaves);
 		freak.compute(kp.image, outKp.kpoints, outDescriptors);
 
@@ -87,7 +88,7 @@ public:
 			{ EPropertyType::Unknown, "", "" }
 		};
 
-		nodeConfig.description = "";
+		nodeConfig.description = "FREAK (Fast Retina Keypoint) keypoint descriptor.";
 		nodeConfig.pInputSockets = in_config;
 		nodeConfig.pOutputSockets = out_config;
 		nodeConfig.pProperties = prop_config;

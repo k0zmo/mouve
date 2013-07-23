@@ -14,7 +14,7 @@ public:
 		// output
 		cv::Mat& mosaic = writer.acquireSocket(0).getImage();
 
-		// validate inputs
+		// Validate inputs
 		if(mt.queryImage.empty() || mt.trainImage.empty() || homography.empty())
 			return ExecutionStatus(EStatus::Ok);
 
@@ -159,4 +159,4 @@ private:
 	cv::Mat maskWarped[2];
 };
 
-REGISTER_NODE("Images/Simple mosaic", SimpleMosaicNodeType)
+REGISTER_NODE("Multi-images/Simple mosaic", SimpleMosaicNodeType)

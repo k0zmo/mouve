@@ -5,8 +5,6 @@
 
 #include "CV.h"
 
-/// TODO: Hit miss operations
-
 class StructuringElementNodeType : public NodeType
 {
 public:
@@ -60,6 +58,7 @@ public:
 		if(_xradius == 0 || _yradius == 0)
 			return ExecutionStatus(EStatus::Ok);
 
+		// Do stuff
 		kernel = cvu::standardStructuringElement(_xradius, _yradius, _se, _rotation);
 
 		return ExecutionStatus(EStatus::Ok);

@@ -177,6 +177,6 @@ private:
 	KernelID _kidConvertBG2Gray;
 };
 
-REGISTER_NODE("OpenCL/Conversion/Gray de-bayer", GpuBayerToGrayNodeType)
+REGISTER_NODE("OpenCL/Format conversion/Gray de-bayer", GpuBayerToGrayNodeType)
 
 #endif

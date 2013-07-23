@@ -11,12 +11,16 @@ class GrayToRgbNodeType : public NodeType
 public:
 	ExecutionStatus execute(NodeSocketReader& reader, NodeSocketWriter& writer) override
 	{
+		// Read input sockets
 		const cv::Mat& input = reader.readSocket(0).getImage();
+		// Acquire output sockets
 		cv::Mat& output = writer.acquireSocket(0).getImageRgb();
 
+		// Validate inputs
 		if(input.empty())
 			return ExecutionStatus(EStatus::Ok);
 
+		// Do stuff
 		cv::cvtColor(input, output, CV_GRAY2BGR);
 
 		return ExecutionStatus(EStatus::Ok);
@@ -44,12 +48,16 @@ class RgbToGrayNodeType : public NodeType
 public:
 	ExecutionStatus execute(NodeSocketReader& reader, NodeSocketWriter& writer) override
 	{
+		// Read input sockets
 		const cv::Mat& input = reader.readSocket(0).getImageRgb();
+		// Acquire output sockets
 		cv::Mat& output = writer.acquireSocket(0).getImage();
 
+		// Validate inputs
 		if(input.empty())
 			return ExecutionStatus(EStatus::Ok);
 
+		// Do stuff
 		cv::cvtColor(input, output, CV_BGR2GRAY);
 
 		return ExecutionStatus(EStatus::Ok);
@@ -104,12 +112,15 @@ public:
 
 	ExecutionStatus execute(NodeSocketReader& reader, NodeSocketWriter& writer) override
 	{
+		// Read input sockets
 		const cv::Mat& input = reader.readSocket(0).getImage();
+		// Acquire output sockets
 		cv::Mat& output = writer.acquireSocket(0).getImage();
 
-		if(input.rows == 0 || input.cols == 0)
+		if(input.empty())
 			return ExecutionStatus(EStatus::Ok);
 		
+		// Do stuff
 		cv::cvtColor(input, output, cvu::bayerCodeGray(_BayerCode));
 
 		return ExecutionStatus(EStatus::Ok);
@@ -187,12 +198,16 @@ public:
 
 	ExecutionStatus execute(NodeSocketReader& reader, NodeSocketWriter& writer) override
 	{
+		// Read input sockets
 		const cv::Mat& input = reader.readSocket(0).getImage();
+		// Acquire output sockets
 		cv::Mat& output = writer.acquireSocket(0).getImageRgb();
 
-		if(input.rows == 0 || input.cols == 0)
+		// Validate inputs
+		if(input.empty())
 			return ExecutionStatus(EStatus::Ok);
 		
+		// Do stuff
 		cv::cvtColor(input, output, cvu::bayerCodeRgb(_BayerCode));
 
 		if(!fcmp(_redGain, 1.0)
@@ -236,7 +251,7 @@ public:
 			{ EPropertyType::Unknown, "", "" }
 		};
 
-		nodeConfig.description = "Performs demosaicing from Bayer pattern image to RGB image";
+		nodeConfig.description = "Performs demosaicing from Bayer pattern image to RGB image.";
 		nodeConfig.pInputSockets = in_config;
 		nodeConfig.pOutputSockets = out_config;
 		nodeConfig.pProperties = prop_config;	
@@ -294,12 +309,16 @@ public:
 
 	ExecutionStatus execute(NodeSocketReader& reader, NodeSocketWriter& writer) override
 	{
+		// Read input sockets
 		const cv::Mat& input = reader.readSocket(0).getImage();
+		// Acquire output sockets
 		cv::Mat& output = writer.acquireSocket(0).getImage();
 
-		if(input.rows == 0 || input.cols == 0)
+		// Validate inputs
+		if(input.empty())
 			return ExecutionStatus(EStatus::Ok);
 
+		// Do stuff
 		if(!fcmp(_gain, 1.0) || _bias != 0)
 		{
 			output.create(input.size(), CV_8UC1);
@@ -340,7 +359,7 @@ public:
 			{ EPropertyType::Unknown, "", "" }
 		};
 
-		nodeConfig.description = "Adjust contrast and brightness of input gray image";
+		nodeConfig.description = "Adjusts contrast and brightness of input gray image.";
 		nodeConfig.pInputSockets = in_config;
 		nodeConfig.pOutputSockets = out_config;
 		nodeConfig.pProperties = prop_config;	
@@ -367,12 +386,16 @@ public:
 
 	ExecutionStatus execute(NodeSocketReader& reader, NodeSocketWriter& writer) override
 	{
+		// Read input sockets
 		const cv::Mat& input = reader.readSocket(0).getImageRgb();
+		// Acquire output sockets
 		cv::Mat& output = writer.acquireSocket(0).getImageRgb();
 
-		if(input.rows == 0 || input.cols == 0)
+		// Validate inputs
+		if(input.empty())
 			return ExecutionStatus(EStatus::Ok);
 
+		// Do stuff
 		if(!fcmp(_gain, 1.0) || _bias != 0)
 		{
 			output.create(input.size(), CV_8UC3);
@@ -413,15 +436,15 @@ public:
 			{ ENodeFlowDataType::Invalid, "", "", "" }
 		};
 
-		nodeConfig.description = "Adjust contrast and brightness of input color image";
+		nodeConfig.description = "Adjusts contrast and brightness of input color image.";
 		nodeConfig.pInputSockets = in_config;
 		nodeConfig.pOutputSockets = out_config;
 	}
 };
 
-REGISTER_NODE("Conversion/Contrast & brightness RGB", ContrastAndBrightnessRgbNodeType)
-REGISTER_NODE("Conversion/Contrast & brightness", ContrastAndBrightnessNodeType)
-REGISTER_NODE("Conversion/Gray de-bayer", BayerToGrayNodeType)
-REGISTER_NODE("Conversion/RGB de-bayer", BayerToRgbNodeType)
-REGISTER_NODE("Conversion/RGB to gray", RgbToGrayNodeType)
-REGISTER_NODE("Conversion/Gray to RGB", GrayToRgbNodeType)
+REGISTER_NODE("Format conversion/Contrast & brightness RGB", ContrastAndBrightnessRgbNodeType)
+REGISTER_NODE("Format conversion/Contrast & brightness", ContrastAndBrightnessNodeType)
+REGISTER_NODE("Format conversion/Gray de-bayer", BayerToGrayNodeType)
+REGISTER_NODE("Format conversion/RGB de-bayer", BayerToRgbNodeType)
+REGISTER_NODE("Format conversion/RGB to gray", RgbToGrayNodeType)
+REGISTER_NODE("Format conversion/Gray to RGB", GrayToRgbNodeType)

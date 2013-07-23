@@ -42,6 +42,7 @@ public:
 		if(input.empty())
 			return ExecutionStatus(EStatus::Ok);
 
+		// Do stuff
 		cv::boxFilter(input, output, CV_8UC1, 
 			cv::Size(_kernelSize, _kernelSize),
 			cv::Point(-1,1), true, cv::BORDER_REFLECT_101);
@@ -123,6 +124,7 @@ public:
 		if(input.empty())
 			return ExecutionStatus(EStatus::Ok);
 
+		// Do stuff
 		cv::bilateralFilter(input, output, _diameter,
 			_sigmaColor, _sigmaSpace, cv::BORDER_REFLECT_101);
 		return ExecutionStatus(EStatus::Ok);
@@ -196,6 +198,7 @@ public:
 		if(!input.data)
 			return ExecutionStatus(EStatus::Ok);
 
+		// Do stuff
 		// sigma = 0.3 * ((ksize-1)*0.5 - 1) + 0.8
 		// int ksize = cvRound((20*_sigma - 7)/3);
 		//cv::Mat kernel = cv::getGaussianKernel(ksize, _sigma, CV_64F);
@@ -274,6 +277,7 @@ public:
 		if(input.empty())
 			return ExecutionStatus(EStatus::Ok);
 
+		// Do stuff
 		cv::medianBlur(input, output, _apertureSize);
 		return ExecutionStatus(EStatus::Ok);
 	}
@@ -345,6 +349,7 @@ public:
 		if(input.empty())
 			return ExecutionStatus(EStatus::Ok);
 
+		// Do stuff
 		cv::Laplacian(input, output, CV_8UC1, _apertureSize);
 		return ExecutionStatus(EStatus::Ok);
 	}
@@ -427,6 +432,7 @@ public:
 		if(input.empty())
 			return ExecutionStatus(EStatus::Ok);
 
+		// Do stuff
 		cv::Mat xgrad;
 		cv::Sobel(input, xgrad, CV_16S, _order, 0, _apertureSize);
 		cv::convertScaleAbs(xgrad, xgrad);
@@ -482,6 +488,7 @@ public:
 		if(input.empty())
 			return ExecutionStatus(EStatus::Ok);
 
+		// Do stuff
 		cv::Mat xgrad;
 		cv::Scharr(input, xgrad, CV_16S, 1, 0);
 		cv::convertScaleAbs(xgrad, xgrad);
@@ -553,6 +560,7 @@ public:
 		if(input.empty())
 			return ExecutionStatus(EStatus::Ok);
 
+		// Do stuff
 		cv::Mat kernel = cvu::predefinedConvolutionKernel(_filterType);
 		bool weight0 = cv::sum(kernel) == cv::Scalar(0);
 		int ddepth = weight0 ? CV_16S : -1;
@@ -641,6 +649,7 @@ public:
 		if(input.empty())
 			return ExecutionStatus(EStatus::Ok);
 
+		// Do stuff
 		int ddepth = _scaleAbs ? CV_16S : -1;
 
 		cv::Mat kernel(3, 3, CV_64FC1, _coeffs.v);

@@ -34,12 +34,16 @@ public:
 
 	ExecutionStatus execute(NodeSocketReader& reader, NodeSocketWriter& writer) override
 	{
+		// Read input sockets
 		const cv::Mat& input = reader.readSocket(0).getImage();
+		// Acquire output sockets
 		cv::Mat& output = writer.acquireSocket(0).getImage();
 
+		// Validate inputs
 		if(input.empty())
 			return ExecutionStatus(EStatus::Ok);
 
+		// Do stuff
 		cv::Point2f center(input.cols * 0.5f, input.rows * 0.5f);
 		cv::Mat rotationMat = cv::getRotationMatrix2D(center, _angle, 1);
 		cv::warpAffine(input, output, rotationMat, input.size(), cv::INTER_CUBIC);
@@ -63,7 +67,7 @@ public:
 			{ EPropertyType::Unknown, "", "" }
 		};
 
-		nodeConfig.description = "";
+		nodeConfig.description = "Applies rotation transformation to a given image.";
 		nodeConfig.pInputSockets = in_config;
 		nodeConfig.pOutputSockets = out_config;
 		nodeConfig.pProperties = prop_config;
@@ -74,6 +78,7 @@ private:
 	{
 		ID_Angle
 	};
+
 	double _angle;
 };
 
@@ -113,12 +118,16 @@ public:
 
 	ExecutionStatus execute(NodeSocketReader& reader, NodeSocketWriter& writer) override
 	{
+		// Read input sockets
 		const cv::Mat& input = reader.readSocket(0).getImage();
+		// Acquire output sockets
 		cv::Mat& output = writer.acquireSocket(0).getImage();
 
+		// Validate inputs
 		if(input.empty())
 			return ExecutionStatus(EStatus::Ok);
 
+		// Do stuff
 		cv::Size dstSize(int(input.cols * _scale), int(input.rows * _scale));
 		cv::resize(input, output, dstSize, 0, 0, _inter);
 
@@ -145,7 +154,7 @@ public:
 			{ EPropertyType::Unknown, "", "" }
 		};
 
-		nodeConfig.description = "";
+		nodeConfig.description = "Resizes given image.";
 		nodeConfig.pInputSockets = in_config;
 		nodeConfig.pOutputSockets = out_config;
 		nodeConfig.pProperties = prop_config;
@@ -171,5 +180,81 @@ private:
 	EInterpolationMethod _inter;
 };
 
-REGISTER_NODE("Image/Rotate", RotateImageNodeType)
-REGISTER_NODE("Image/Scale", ScaleImageNodeType)
+class DownsampleNodeType : public NodeType
+{
+public:
+	ExecutionStatus execute(NodeSocketReader& reader, NodeSocketWriter& writer) override
+	{
+		// Read input sockets
+		const cv::Mat& src = reader.readSocket(0).getImage();
+		// Acquire output sockets
+		cv::Mat& dst = writer.acquireSocket(0).getImage();
+
+		// Acquire output sockets
+		if(src.empty())
+			return ExecutionStatus(EStatus::Ok);
+
+		// Do stuff
+		cv::pyrDown(src, dst, cv::Size(src.cols/2, src.rows/2));
+
+		return ExecutionStatus(EStatus::Ok);
+	}
+
+	void configuration(NodeConfig& nodeConfig) const override
+	{
+		static const InputSocketConfig in_config[] = {
+			{ ENodeFlowDataType::Image, "source", "Source", "" },
+			{ ENodeFlowDataType::Invalid, "", "", "" }
+		};
+		static const OutputSocketConfig out_config[] = {
+			{ ENodeFlowDataType::Image, "output", "Output", "" },
+			{ ENodeFlowDataType::Invalid, "", "", "" }
+		};
+
+		nodeConfig.description = "Blurs an image and downsamples it.";
+		nodeConfig.pInputSockets = in_config;
+		nodeConfig.pOutputSockets = out_config;
+	}
+};
+
+class UpsampleNodeType : public NodeType
+{
+public:
+	ExecutionStatus execute(NodeSocketReader& reader, NodeSocketWriter& writer) override
+	{
+		// Read input sockets
+		const cv::Mat& src = reader.readSocket(0).getImage();
+		// Acquire output sockets
+		cv::Mat& dst = writer.acquireSocket(0).getImage();
+
+		// Acquire output sockets
+		if(src.empty())
+			return ExecutionStatus(EStatus::Ok);
+
+		// Do stuff
+		cv::pyrUp(src, dst, cv::Size(src.cols*2, src.rows*2));
+
+		return ExecutionStatus(EStatus::Ok);
+	}
+
+	void configuration(NodeConfig& nodeConfig) const override
+	{
+		static const InputSocketConfig in_config[] = {
+			{ ENodeFlowDataType::Image, "source", "Source", "" },
+			{ ENodeFlowDataType::Invalid, "", "", "" }
+		};
+		static const OutputSocketConfig out_config[] = {
+			{ ENodeFlowDataType::Image, "output", "Output", "" },
+			{ ENodeFlowDataType::Invalid, "", "", "" }
+		};
+
+		nodeConfig.description = "Upsamples an image and then blurs it.";
+		nodeConfig.pInputSockets = in_config;
+		nodeConfig.pOutputSockets = out_config;
+	}
+};
+
+REGISTER_NODE("Transformations/Upsample", UpsampleNodeType)
+REGISTER_NODE("Transformations/Downsample", DownsampleNodeType)
+REGISTER_NODE("Transformations/Rotate", RotateImageNodeType)
+REGISTER_NODE("Transformations/Scale", ScaleImageNodeType)

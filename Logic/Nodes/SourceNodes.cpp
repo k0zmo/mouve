@@ -159,7 +159,7 @@ public:
 			{ EPropertyType::Unknown, "", "" }
 		};
 
-		nodeConfig.description = "Provides video frames from specified stream";
+		nodeConfig.description = "Provides video frames from specified stream.";
 		nodeConfig.pOutputSockets = out_config;
 		nodeConfig.pProperties = prop_config;
 		nodeConfig.flags = Node_HasState | Node_AutoTag | Node_OverridesTimeComputation;
@@ -251,7 +251,7 @@ public:
 			{ EPropertyType::Unknown, "", "" }
 		};
 
-		nodeConfig.description = "Loads image from a given location";
+		nodeConfig.description = "Loads image from a given location.";
 		nodeConfig.pOutputSockets = out_config;
 		nodeConfig.pProperties = prop_config;
 	}
@@ -364,7 +364,7 @@ public:
 			{ EPropertyType::Unknown, "", "" }
 		};
 
-		nodeConfig.description = "Provides video frames from specified camera device";
+		nodeConfig.description = "Provides video frames from specified camera device.";
 		nodeConfig.pOutputSockets = out_config;
 		nodeConfig.pProperties = prop_config;
 		nodeConfig.flags = Node_HasState | Node_AutoTag;
@@ -380,7 +380,7 @@ private:
 	cv::VideoCapture _capture;
 };
 
-REGISTER_NODE("Source/Image from file stream", ImageFromFileStreamNodeType)
-REGISTER_NODE("Source/Camera capture", CameraCaptureNodeType)
-REGISTER_NODE("Source/Video from file", VideoFromFileNodeType)
-REGISTER_NODE("Source/Image from file", ImageFromFileNodeType)
+REGISTER_NODE("Sources/Image from file stream", ImageFromFileStreamNodeType)
+REGISTER_NODE("Sources/Camera capture", CameraCaptureNodeType)
+REGISTER_NODE("Sources/Video from file", VideoFromFileNodeType)
+REGISTER_NODE("Sources/Image from file", ImageFromFileNodeType)

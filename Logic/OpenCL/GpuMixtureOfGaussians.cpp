@@ -280,6 +280,6 @@ private:
 	bool _showBackground;
 };
 
-REGISTER_NODE("OpenCL/Video/Mixture of Gaussians", GpuMixtureOfGaussiansNodeType)
+REGISTER_NODE("OpenCL/Video segmentation/Mixture of Gaussians", GpuMixtureOfGaussiansNodeType)
 
 #endif

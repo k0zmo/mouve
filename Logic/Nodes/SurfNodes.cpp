@@ -1,4 +1,3 @@
-#include "Prerequisites.h"
 #include "NodeType.h"
 #include "NodeFactory.h"
 
@@ -46,15 +45,16 @@ public:
 
 	ExecutionStatus execute(NodeSocketReader& reader, NodeSocketWriter& writer) override
 	{
-		// inputs
+		// Read input sockets
 		const cv::Mat& src = reader.readSocket(0).getImage();
-		// outputs
+		// Acquire output sockets
 		KeyPoints& kp = writer.acquireSocket(0).getKeypoints();
 
-		// validate inputs
+		// Validate inputs
 		if(src.empty())
 			return ExecutionStatus(EStatus::Ok);
 
+		// Do stuff
 		cv::SurfFeatureDetector detector(_hessianThreshold, _nOctaves, _nOctaveLayers);
 		detector.detect(src, kp.kpoints);
 		kp.image = src;
@@ -80,7 +80,7 @@ public:
 			{ EPropertyType::Unknown, "", "" }
 		};
 
-		nodeConfig.description = "";
+		nodeConfig.description = "Extracts Speeded Up Robust Features from an image.";
 		nodeConfig.pInputSockets = in_config;
 		nodeConfig.pOutputSockets = out_config;
 		nodeConfig.pProperties = prop_config;
@@ -136,18 +136,19 @@ public:
 
 	ExecutionStatus execute(NodeSocketReader& reader, NodeSocketWriter& writer) override
 	{
-		// inputs
+		// Read input sockets
 		const KeyPoints& kp = reader.readSocket(0).getKeypoints();
 
-		// valudate inputs
+		// Validate inputs
 		if(kp.kpoints.empty() || kp.image.empty())
 			return ExecutionStatus(EStatus::Ok);
 
-		// outputs
+		// Acquire output sockets
 		KeyPoints& outKp = writer.acquireSocket(0).getKeypoints();
 		cv::Mat& outDescriptors = writer.acquireSocket(1).getArray();
 		outKp = kp;
 
+		// Do stuff
 		cv::SurfDescriptorExtractor extractor;
 		extractor.compute(kp.image, outKp.kpoints, outDescriptors);
 
@@ -171,7 +172,7 @@ public:
 			{ EPropertyType::Unknown, "", "" }
 		};
 
-		nodeConfig.description = "";
+		nodeConfig.description = "Describes local features using SURF algorithm.";
 		nodeConfig.pInputSockets = in_config;
 		nodeConfig.pOutputSockets = out_config;
 		nodeConfig.pProperties = prop_config;
@@ -240,16 +241,17 @@ public:
 
 	ExecutionStatus execute(NodeSocketReader& reader, NodeSocketWriter& writer) override
 	{
-		// inputs
+		// Read input sockets
 		const cv::Mat& src = reader.readSocket(0).getImage();
-		// outputs
+		// Acquire output sockets
 		KeyPoints& kp = writer.acquireSocket(0).getKeypoints();
 		cv::Mat& descriptors = writer.acquireSocket(1).getArray();
 
-		// validate inputs
+		// Validate inputs
 		if(src.empty())
 			return ExecutionStatus(EStatus::Ok);
 
+		// Do stuff
 		cv::SURF surf(_hessianThreshold, _nOctaves,
 			_nOctaveLayers, _extended, _upright);
 		surf(src, cv::noArray(), kp.kpoints, descriptors);
@@ -279,7 +281,7 @@ public:
 			{ EPropertyType::Unknown, "", "" }
 		};
 
-		nodeConfig.description = "";
+		nodeConfig.description = "Extracts Speeded Up Robust Features and computes their descriptors from an image.";
 		nodeConfig.pInputSockets = in_config;
 		nodeConfig.pOutputSockets = out_config;
 		nodeConfig.pProperties = prop_config;
