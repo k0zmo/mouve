@@ -269,6 +269,7 @@
     <ClCompile Include="NodeLink.cpp" />
     <ClCompile Include="NodePlugin.cpp" />
     <ClCompile Include="NodeSystem.cpp" />
+    <ClCompile Include="Nodes\ArithmeticNodes.cpp" />
     <ClCompile Include="Nodes\BriskNodes.cpp" />
     <ClCompile Include="Nodes\BasicNodes.cpp" />
     <ClCompile Include="Nodes\ColorConversionNodes.cpp" />
