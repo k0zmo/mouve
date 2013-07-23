@@ -283,6 +283,7 @@
     <ClCompile Include="Nodes\ksurf.cpp" />
     <ClCompile Include="Nodes\kSurfNodes.cpp" />
     <ClCompile Include="Nodes\MatcherNodes.cpp" />
+    <ClCompile Include="Nodes\MorphologyNodes.cpp" />
     <ClCompile Include="Nodes\MosaicingNodes.cpp" />
     <ClCompile Include="Nodes\OrbNodes.cpp" />
     <ClCompile Include="Nodes\SiftNodes.cpp" />
