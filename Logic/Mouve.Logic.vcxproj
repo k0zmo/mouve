@@ -275,6 +275,7 @@
     <ClCompile Include="Nodes\CV.cpp" />
     <ClCompile Include="Nodes\DrawFeaturesNodes.cpp" />
     <ClCompile Include="Nodes\FeaturesNodes.cpp" />
+    <ClCompile Include="Nodes\FiltersNodes.cpp" />
     <ClCompile Include="Nodes\FreakNodes.cpp" />
     <ClCompile Include="Nodes\HomographyNodes.cpp" />
     <ClCompile Include="Nodes\HoughNodes.cpp" />

@@ -240,6 +240,10 @@ cv::Mat predefinedConvolutionKernel(EPredefinedConvolutionType type)
 		return cv::Mat((cv::Mat_<double>(3,3) << -1,-2,-1, 0,0,0, 1,2,1));
 	case EPredefinedConvolutionType::SobelVertical:
 		return cv::Mat((cv::Mat_<double>(3,3) << -1,0,1, -2,0,2, -1,0,1));
+	case EPredefinedConvolutionType::ScharrHorizontal:
+		return cv::Mat((cv::Mat_<double>(3,3) << -3,-10,-3, 0,0,0, 3,10,3));
+	case EPredefinedConvolutionType::ScharrVertical:
+		return cv::Mat((cv::Mat_<double>(3,3) << -3,0,3, -10,0,10, -3,0,3));
 	default:
 		return cv::Mat(3,3,CV_64FC1,cv::Scalar(0));
 	}

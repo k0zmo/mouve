@@ -82,7 +82,17 @@ enum class EPredefinedConvolutionType
 	/// [-1 0 1]
 	/// [-2 0 2]
 	/// [-1 0 1]
-	SobelVertical
+	SobelVertical,
+
+	/// [-3 -10 -3]
+	/// [ 0  0   0]
+	/// [ 3  10  3]
+	ScharrHorizontal,
+
+	/// [-3  0 3 ]
+	/// [-10 0 10]
+	/// [-3  0 3 ]
+	ScharrVertical
 };
 
 cv::Mat predefinedConvolutionKernel(EPredefinedConvolutionType type);
