@@ -712,6 +712,7 @@ void Controller::addNodeTypeTreeItem(NodeTypeID typeId, const QStringList& token
 	QTreeWidgetItem* item = new QTreeWidgetItem(parent);
 	item->setText(0, tokens.last());
 	item->setData(0, Qt::UserRole, typeId);
+	item->setToolTip(0, QString::fromStdString(_nodeSystem->nodeDescription(typeId)));
 	item->setFlags(flags | Qt::ItemIsDragEnabled);
 
 	treeItems.append(item);

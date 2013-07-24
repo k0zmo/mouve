@@ -90,6 +90,17 @@ const std::string& NodeSystem::nodeTypeName(NodeTypeID nodeTypeID) const
 	return _registeredNodeTypes[nodeTypeID].nodeTypeName;
 }
 
+std::string NodeSystem::nodeDescription(NodeTypeID nodeTypeID) const
+{
+	auto tmpNode = createNode(nodeTypeID);
+	if(!tmpNode)
+		return InvalidType;
+	NodeConfig nodeConfig;
+	/// TODO: Perhaps configuration should be static ?
+	tmpNode->configuration(nodeConfig);
+	return nodeConfig.description;
+}
+
 NodeTypeID NodeSystem::nodeTypeID(const std::string& nodeTypeName) const
 {
 	auto iter = _typeNameToTypeID.find(nodeTypeName);
