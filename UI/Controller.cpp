@@ -1656,7 +1656,7 @@ void Controller::openTree()
 
 	QString filePath = QFileDialog::getOpenFileName(
 		this, tr("Open file"),
-		QFileInfo(_nodeTreeFilePath).absolutePath(),
+		_nodeTreeFilePath.isEmpty() ? QString() : QFileInfo(_nodeTreeFilePath).absolutePath(),
 		"Node tree files (*.tree)");
 	if(filePath.isEmpty())
 		return;

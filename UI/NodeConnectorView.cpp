@@ -29,7 +29,7 @@ NodeConnectorView::NodeConnectorView(bool isOutput, QGraphicsItem* parent)
 	mAnimation.setStartValue(penWidth());
 
 	connect(this, SIGNAL(draggingLinkDropped(QGraphicsWidget*, QGraphicsWidget*)),
-		gC, SLOT(draggingLinkDrop(QGraphicsWidget*, QGraphicsWidget*)));
+		gC, SLOT(draggingLinkDropped(QGraphicsWidget*, QGraphicsWidget*)));
 }
 
 void NodeConnectorView::setBrushGradient(const QColor& start, const QColor& stop)
