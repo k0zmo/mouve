@@ -78,6 +78,7 @@ Controller::Controller(QWidget* parent, Qt::WindowFlags flags)
 	, _startWithInit(true)
 	, _nodeTreeFilePath(QString())
 	, _nodeTreeDirty(false)
+	, _showTooltips(false)
 {
 	QCoreApplication::setApplicationName(applicationTitle);
 	QCoreApplication::setOrganizationName(applicationTitle);
@@ -106,7 +107,7 @@ Controller::Controller(QWidget* parent, Qt::WindowFlags flags)
 		this, &Controller::contextMenu);
 	// Key handler from node graphics view
 	connect(_ui->graphicsView, &NodeEditorView::keyPress,
-		this, &Controller::keyPress);
+		this, &Controller::keyPressed);
 
 	_treeWorker->moveToThread(&_workerThread);
 
@@ -262,30 +263,15 @@ void Controller::addNodeView(const QString& nodeTitle,
 
 	auto* propModel = _propManager->propertyModel(nodeID);
 	Q_ASSERT(propModel);
+
 	connect(propModel, &PropertyModel::propertyChanged,
 		this, &Controller::changeProperty);
 	connect(nodeView, &NodeView::mouseDoubleClicked,
-		this, &Controller::mouseDoubleClickNodeView);
-
-	/// TODO: Experimental feature
+		this, &Controller::nodeViewMouseDoubleClicked);
 	connect(nodeView, &NodeView::mouseHoverEntered,
-		[=](QGraphicsSceneHoverEvent* event) {
-			if(_nodeToolTip != nullptr)
-			{
-				auto text = _nodeTree->nodeExecuteInformation(nodeID);
-				if(!text.empty())
-				{
-					_nodeToolTip->setText(QString::fromStdString(text));
-					_nodeToolTip->setPos(event->scenePos());
-					_nodeToolTip->setVisible(true);
-				}
-			}
-	});
+		this, &Controller::nodeViewMouseHoverEntered);
 	connect(nodeView, &NodeView::mouseHoverLeft,
-		[=](QGraphicsSceneHoverEvent* event) {
-			if(_nodeToolTip != nullptr)
-				_nodeToolTip->setVisible(false);
-	});
+		this, &Controller::nodeViewMouseHoverLeft);
 
 	// Add node view to a scene
 	_nodeScene->addItem(nodeView);
@@ -311,9 +297,14 @@ void Controller::linkNodes(NodeID fromNodeID, SocketID fromSocketID,
 		return;
 	}
 
-	/// TODO: Add some checking to release
 	Q_ASSERT(_nodeViews[fromNodeID]);
 	Q_ASSERT(_nodeViews[toNodeID]);
+
+	if(!_nodeViews[fromNodeID] || !_nodeViews[toNodeID])
+	{
+		showErrorMessage("Error looking for node views with given NodeID");
+		return;
+	}
 
 	linkNodesView(_nodeViews[fromNodeID]->outputSocketView(fromSocketID),
 		_nodeViews[toNodeID]->inputSocketView(toSocketID));
@@ -325,9 +316,14 @@ void Controller::linkNodes(NodeID fromNodeID, SocketID fromSocketID,
 
 void Controller::linkNodesView(NodeSocketView* from, NodeSocketView* to)
 {
-	/// TODO: Add some checking to release
 	Q_ASSERT(from);
 	Q_ASSERT(to);
+
+	if(!from || !to)
+	{
+		showErrorMessage("One of socket is null");
+		return;
+	}
 
 	// Create new link view 
 	NodeLinkView* link = new NodeLinkView(from, to, nullptr);
@@ -342,10 +338,15 @@ void Controller::linkNodesView(NodeSocketView* from, NodeSocketView* to)
 
 void Controller::unlinkNodes(NodeLinkView* linkView)
 {
-	/// TODO: Add some checking to release
 	Q_ASSERT(linkView);
 	Q_ASSERT(linkView->fromSocketView());
 	Q_ASSERT(linkView->toSocketView());	
+
+	if(!linkView || !linkView->fromSocketView() || !linkView->toSocketView())
+	{
+		showErrorMessage("Connection or one of its sockets are null");
+		return;
+	}
 
 	const NodeSocketView* from = linkView->fromSocketView();
 	const NodeSocketView* to = linkView->toSocketView();
@@ -530,6 +531,7 @@ void Controller::setupUi()
 
 	connect(_ui->actionDisplayTimeInfo, &QAction::triggered, this, &Controller::displayNodeTimeInfo);
 	connect(_ui->actionFitToView, &QAction::triggered, this, &Controller::fitToView);
+	connect(_ui->actionNodesTooltips, &QAction::toggled, this, &Controller::toggleDisplayNodesTooltips);
 
 	_ui->actionPlay->setEnabled(false);
 	_ui->actionPause->setEnabled(false);
@@ -745,7 +747,7 @@ void Controller::populateAddNodeContextMenu()
 			QAction* action = new QAction(text, this);
 			action->setData(typeId);
 
-			// Level starts cunting from 1 so at worst - it's gonnaa point to 0-indexed which is main menu
+			// Level starts counting from 1 so at worst - it's gonnaa point to 0-indexed which is main menu
 			subMenuList[level-1]->addAction(action);
 		}
 		// Categories
@@ -1315,8 +1317,7 @@ void Controller::updateRecentFileActions(const QString& filePath)
 	_actionClearRecentFiles->setVisible(numRecentFiles > 0);
 }
 
-void Controller::contextMenu(const QPoint& globalPos,
-	const QPointF& scenePos)
+void Controller::contextMenu(const QPoint& globalPos, const QPointF& scenePos)
 {
 	_ui->statusBar->showMessage(QString("Scene position: %1, %2")
 		.arg(scenePos.x())
@@ -1339,17 +1340,7 @@ void Controller::contextMenu(const QPoint& globalPos,
 	else
 	{
 		// Preview socket menu
-		NodeView* nodeView = nullptr;
-
-		for(int i = 0; i < items.size(); ++i)
-		{
-			auto item = items[i];
-
-			if(item->type() != NodeView::Type)
-				continue;
-			nodeView = static_cast<NodeView*>(item);
-		}
-
+		NodeView* nodeView = nodeViewInScene(scenePos);
 		// did we clicked on a node view
 		if(!nodeView)
 			return;
@@ -1442,7 +1433,7 @@ void Controller::contextMenu(const QPoint& globalPos,
 	}
 }
 
-void Controller::keyPress(QKeyEvent* event)
+void Controller::keyPressed(QKeyEvent* event)
 {
 	if(!treeIdle())
 		return;
@@ -1505,7 +1496,7 @@ void Controller::keyPress(QKeyEvent* event)
 #endif
 }
 
-void Controller::draggingLinkDrop(QGraphicsWidget* from, QGraphicsWidget* to)
+void Controller::draggingLinkDropped(QGraphicsWidget* from, QGraphicsWidget* to)
 {
 	/// TODO: Do not let connector view to even start dragging
 	if(!treeIdle())
@@ -1519,13 +1510,19 @@ void Controller::draggingLinkDrop(QGraphicsWidget* from, QGraphicsWidget* to)
 	Q_ASSERT(fromSocket->nodeView());
 	Q_ASSERT(toSocket->nodeView());
 
+	if(!fromSocket || !toSocket || !fromSocket->nodeView() || !toSocket->nodeView())
+	{
+		showErrorMessage("One of socket or its node are null");
+		return;
+	}
+
 	linkNodes(fromSocket->nodeView()->nodeKey(),
 		fromSocket->socketKey(),
 		toSocket->nodeView()->nodeKey(),
 		toSocket->socketKey());
 }
 
-void Controller::mouseDoubleClickNodeView(NodeView* nodeView)
+void Controller::nodeViewMouseDoubleClicked(NodeView* nodeView)
 {
 	if(_previewSelectedNodeView != nodeView)
 	{
@@ -1887,6 +1884,82 @@ void Controller::fitToView()
 	QTransform t = _ui->graphicsView->transform();
 	
 	_ui->graphicsView->setZoom(t.m11()-0.15f);
+}
+
+void Controller::toggleDisplayNodesTooltips(bool checked)
+{
+	_showTooltips = checked;
+
+	if(!_showTooltips && _nodeToolTip)
+	{
+		// Hide shown tooltip
+		_nodeToolTip->setVisible(false);
+	}
+	else if(_showTooltips && _nodeToolTip)
+	{
+		// Show tooltip if already over node view
+		QPoint cursorWidgetPos = _ui->graphicsView->mapFromGlobal(QCursor::pos());
+		QPointF scenePos = _ui->graphicsView->mapToScene(cursorWidgetPos);
+
+		// Preview socket menu
+		NodeView* nodeView = nodeViewInScene(scenePos);
+		if(!nodeView)
+			return;
+
+		auto text = _nodeTree->nodeExecuteInformation(nodeView->nodeKey());
+		if(!text.empty())
+		{
+			_nodeToolTip->setText(QString::fromStdString(text));
+			_nodeToolTip->setPos(scenePos);
+			_nodeToolTip->setVisible(true);
+		}
+	}
+}
+
+NodeView* Controller::nodeViewInScene(const QPointF& scenePos)
+{
+	QList<QGraphicsItem*> items = _nodeScene->items(scenePos, 
+		Qt::ContainsItemShape, Qt::AscendingOrder);
+
+	// If the user clicked onto empty space
+	if(items.isEmpty())
+		return nullptr;
+
+	// Preview socket menu
+	NodeView* nodeView = nullptr;
+
+	for(int i = 0; i < items.size(); ++i)
+	{
+		auto item = items[i];
+
+		if(item->type() != NodeView::Type)
+			continue;
+		nodeView = static_cast<NodeView*>(item);
+	}
+
+	// Can be nullptr here!
+	return nodeView;
+}
+
+void Controller::nodeViewMouseHoverEntered(NodeID nodeID, QGraphicsSceneHoverEvent* event)
+{
+	if(_showTooltips && _nodeToolTip != nullptr)
+	{
+		auto text = _nodeTree->nodeExecuteInformation(nodeID);
+		if(!text.empty())
+		{
+			_nodeToolTip->setText(QString::fromStdString(text));
+			_nodeToolTip->setPos(event->scenePos());
+			_nodeToolTip->setVisible(true);
+		}
+	}
+}
+
+void Controller::nodeViewMouseHoverLeft(NodeID nodeID, QGraphicsSceneHoverEvent* event)
+{
+	Q_UNUSED(nodeID);
+	if(_nodeToolTip != nullptr)
+		_nodeToolTip->setVisible(false);
 }
 
 void Controller::updateControlButtonState(EState state)
@@ -2258,7 +2331,7 @@ namespace {
 
 #if K_SYSTEM == K_SYSTEM_WINDOWS
 
-HMODULE moduleHandle()
+static HMODULE moduleHandle()
 {
 	static int s_somevar = 0;
 	MEMORY_BASIC_INFORMATION mbi;
@@ -2269,7 +2342,7 @@ HMODULE moduleHandle()
 	return static_cast<HMODULE>(mbi.AllocationBase);
 }
 
-QString pluginDirectory()
+static QString pluginDirectory()
 {
 	HMODULE hModule = moduleHandle();
 	char buffer[MAX_PATH];
@@ -2287,7 +2360,7 @@ QString pluginDirectory()
 
 #elif K_SYSTEM == K_SYSTEM_LINUX
 
-QString pluginDirectory()
+static QString pluginDirectory()
 {
 	return "./plugins";
 }

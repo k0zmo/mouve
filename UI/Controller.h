@@ -107,17 +107,19 @@ private:
 
 	void pluginLookUp();
 
+	NodeView* nodeViewInScene(const QPointF& scenePos);
+
 private slots:
 	void showErrorMessage(const QString& message);
 
 	// Slots for QGraphicsView's events
 	void contextMenu(const QPoint& globalPos, const QPointF& scenePos);
-	void keyPress(QKeyEvent* event);
+	void keyPressed(QKeyEvent* event);
 
-	void draggingLinkDrop(QGraphicsWidget* from, QGraphicsWidget* to);
+	void draggingLinkDropped(QGraphicsWidget* from, QGraphicsWidget* to);
 
 	// Changes "preview node"
-	void mouseDoubleClickNodeView(NodeView* nodeView);
+	void nodeViewMouseDoubleClicked(NodeView* nodeView);
 
 	// Updates property view with new property model
 	void sceneSelectionChanged();
@@ -148,6 +150,11 @@ private slots:
 
 	// Fit whole scene to a current view size
 	void fitToView();
+
+	// Node execute information as a tooltip
+	void toggleDisplayNodesTooltips(bool checked);
+	void nodeViewMouseHoverEntered(NodeID nodeID, QGraphicsSceneHoverEvent* event);
+	void nodeViewMouseHoverLeft(NodeID nodeID, QGraphicsSceneHoverEvent* event);
 
 private:
 	/// TODO: QHash
@@ -208,6 +215,8 @@ private:
 
 	QString _nodeTreeFilePath;
 	bool _nodeTreeDirty;
+
+	bool _showTooltips;
 };
 
 #define gC Controller::instancePtr()

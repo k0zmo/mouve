@@ -1,26 +1,27 @@
 <RCC>
-  <qresource prefix="/">
-    <file>images/button-search.png</file>
-    <file>images/button-brick.png</file>
-    <file>images/button-fit.png</file>
-    <file>images/button-gears.png</file>
-    <file>images/button-image.png</file>
-    <file>images/button-zoom-in.png</file>
-    <file>images/button-zoom-out.png</file>
-    <file>images/button-floppy.png</file>
-    <file>images/button-edit.png</file>
-    <file>images/button-upload.png</file>
-    <file>images/button-document.png</file>
-    <file>images/button-folder.png</file>
-    <file>images/button-end.png</file>
-    <file>images/button-home.png</file>
-    <file>images/button-pause.png</file>
-    <file>images/button-play.png</file>
-    <file>images/button-stop.png</file>
-    <file>images/button-synchronize.png</file>
-    <file>images/exclamation-black.png</file>
-    <file>images/exclamation-white.png</file>
-    <file>images/question-baloon.png</file>
-    <file>images/opencv-logo.png</file>
-  </qresource>
+    <qresource prefix="/">
+        <file>images/button-search.png</file>
+        <file>images/button-brick.png</file>
+        <file>images/button-fit.png</file>
+        <file>images/button-gears.png</file>
+        <file>images/button-image.png</file>
+        <file>images/button-zoom-in.png</file>
+        <file>images/button-zoom-out.png</file>
+        <file>images/button-floppy.png</file>
+        <file>images/button-edit.png</file>
+        <file>images/button-upload.png</file>
+        <file>images/button-document.png</file>
+        <file>images/button-folder.png</file>
+        <file>images/button-end.png</file>
+        <file>images/button-home.png</file>
+        <file>images/button-pause.png</file>
+        <file>images/button-play.png</file>
+        <file>images/button-stop.png</file>
+        <file>images/button-synchronize.png</file>
+        <file>images/exclamation-black.png</file>
+        <file>images/exclamation-white.png</file>
+        <file>images/question-baloon.png</file>
+        <file>images/opencv-logo.png</file>
+        <file>images/button-cloud.png</file>
+    </qresource>
 </RCC>

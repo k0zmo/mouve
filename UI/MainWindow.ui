@@ -41,7 +41,7 @@
      <x>0</x>
      <y>0</y>
      <width>800</width>
-     <height>20</height>
+     <height>21</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -124,6 +124,7 @@
    <addaction name="actionStop"/>
    <addaction name="separator"/>
    <addaction name="actionFitToView"/>
+   <addaction name="actionNodesTooltips"/>
   </widget>
   <widget class="QDockWidget" name="propertiesDockWidget">
    <property name="windowTitle">
@@ -429,6 +430,24 @@
    </property>
    <property name="toolTip">
     <string>Enables or disables displaying individual node's time information</string>
+   </property>
+  </action>
+  <action name="actionNodesTooltips">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="Editor.qrc">
+     <normaloff>:/images/button-cloud.png</normaloff>:/images/button-cloud.png</iconset>
+   </property>
+   <property name="text">
+    <string>Tooltips</string>
+   </property>
+   <property name="toolTip">
+    <string>Enables node's tooltips</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+F1</string>
    </property>
   </action>
  </widget>
