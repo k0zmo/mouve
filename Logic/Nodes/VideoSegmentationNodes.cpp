@@ -119,10 +119,10 @@ class AdaptiveMixtureOfGaussiansNodeType : public NodeType
 {
 public:
 	AdaptiveMixtureOfGaussiansNodeType()
-		: _history(200)
+		: _learningRate(-1)
+		, _history(200)
 		, _varThreshold(16.0f)
 		, _shadowDetection(true)
-		, _learningRate(-1)
 	{
 	}
 

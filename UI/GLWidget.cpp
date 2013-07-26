@@ -104,6 +104,10 @@ void GLWidget::show(const QImage& image)
 	case QImage::Format_ARGB4444_Premultiplied:
 		// TODO: Some of them we could support in near future
 		return;
+
+	// Just to shut down compiler
+	case QImage::NImageFormats:
+		break;
 	}
 
 	glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, image.width(), image.height(),	

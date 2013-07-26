@@ -94,6 +94,9 @@ Property::Property(const QString& name,
 	case EPropertyType::String:
 		Q_ASSERT(value.type() == QVariant::String);
 		break;
+
+	case EPropertyType::Matrix:
+		break;
 /*
 	case EPropertyType::Vector3:
 		break;

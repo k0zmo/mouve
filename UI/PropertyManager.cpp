@@ -54,7 +54,7 @@ void PropertyManager::deletePropertyModel(NodeID nodeID)
 	if(model != nullptr)
 	{
 		int res = _idPropertyModelHash.remove(nodeID);
-		Q_ASSERT(res == 1);
+		Q_ASSERT(res == 1); (void) res;
 		model->deleteLater();
 	}
 }

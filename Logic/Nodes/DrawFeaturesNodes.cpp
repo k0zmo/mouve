@@ -381,7 +381,7 @@ private:
 		}
 		else
 		{
-			cv::circle(img, cv::Point(p.pt), 3, color, 1, CV_AA);
+			cv::circle(img, cv::Point(p.pt.x, p.pt.y), 3, color, 1, CV_AA);
 		}
 	}
 

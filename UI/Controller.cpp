@@ -39,7 +39,7 @@
 #include <QDebug>
 #include <QProgressBar>
 #include <QProgressDialog>
-
+#include <QGraphicsSceneHoverEvent>
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QJsonArray>
@@ -1958,6 +1958,7 @@ void Controller::nodeViewMouseHoverEntered(NodeID nodeID, QGraphicsSceneHoverEve
 void Controller::nodeViewMouseHoverLeft(NodeID nodeID, QGraphicsSceneHoverEvent* event)
 {
 	Q_UNUSED(nodeID);
+	Q_UNUSED(event);
 	if(_nodeToolTip != nullptr)
 		_nodeToolTip->setVisible(false);
 }

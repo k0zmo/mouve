@@ -1,8 +1,11 @@
 #include "NodeToolTip.h"
 #include "NodeStyle.h"
 
+#include <QPainter>
+
 NodeToolTip::NodeToolTip(QGraphicsItem* parent)
-	: _text()
+	: QGraphicsItem(parent)
+	, _text()
 	, _boundingRect(QRectF())
 {
 	setCacheMode(DeviceCoordinateCache);

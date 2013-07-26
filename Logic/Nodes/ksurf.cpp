@@ -189,6 +189,7 @@ static inline bool isLocalMaximum(float v, float N9[M][N])
     return true;
 }
 
+#if INTERPOLATE_HESSIAN != 0
 static cv::Vec3f solve3x3(const cv::Matx33f& A, const cv::Vec3f& b)
 {
     // Cramer rule
@@ -207,6 +208,7 @@ static cv::Vec3f solve3x3(const cv::Matx33f& A, const cv::Vec3f& b)
     float invDet = 1.0f / det;
     return cv::Vec3f(detA * invDet, detB * invDet, detC * invDet);
 }
+#endif
 
 static inline float polyPeak(float lower, float middle, float upper)
 {
@@ -727,6 +729,8 @@ static void msurfDescriptors_kpoint(const KeyPoint& kpoint,
                                     const cv::Mat& intImage, 
                                     float desc[], float gaussWeights[])
 {
+    (void) gaussWeights;
+
     float scale = kpoint.scale;
     float c = cosf(kpoint.orientation);
     float s = sinf(kpoint.orientation);

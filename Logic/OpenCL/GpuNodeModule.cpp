@@ -304,6 +304,9 @@ void GpuNodeModule::beginPerfMarker(const char* markerName,
 			throw GpuNodeException(error, "Error on OpenCL performance marker beginning: " + 
 				std::string(markerName) + ", " + clPerfMarkerErrorString(error));
 	}
+#else
+	(void) groupName;
+	(void) markerName;
 #endif
 }
 
@@ -335,6 +338,10 @@ GpuPerformanceMarker::GpuPerformanceMarker(bool perfMarkersInitialized,
 				std::string(markerName) + ", " + clPerfMarkerErrorString(error));
 		_ok = error == AP_SUCCESS;
 	}
+#else
+	(void) perfMarkersInitialized;
+	(void) markerName;
+	(void) groupName;
 #endif
 }
 
@@ -357,6 +364,8 @@ std::unique_ptr<IGpuNodeModule> createGpuModule()
 }
 
 #else
+
++#include "IGpuNodeModule.h"
 
 std::unique_ptr<IGpuNodeModule> createGpuModule()
 {

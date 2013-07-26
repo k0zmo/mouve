@@ -99,6 +99,8 @@ QJsonObject NodeTreeSerializer::serializeJson(const std::shared_ptr<NodeTree>& n
 						jsonProp.insert(QStringLiteral("value"), propValue.toString());
 						jsonProp.insert(QStringLiteral("type"), QStringLiteral("string"));
 						break;
+					case EPropertyType::Unknown:
+						break;
 					}
 
 					jsonProperties.append(jsonProp);

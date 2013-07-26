@@ -17,7 +17,3 @@ CONFIG(release, debug|release): {
 CONFIG += c++11
 INCLUDEPATH += ../
 LIBS += -L$$DESTDIR
-
-win32 {
-    INCLUDEPATH += D:/Programowanie/SDKs/opencv/include
-}

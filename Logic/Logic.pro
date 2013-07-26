@@ -27,6 +27,7 @@ HEADERS += \
     OpenCL/GpuKernelLibrary.h \
     OpenCL/GpuNode.h \
     OpenCL/GpuNodeModule.h
+    OpenCL/IGpuNodeModule.h
            
 SOURCES += \
     Node.cpp \
@@ -40,54 +41,78 @@ SOURCES += \
     NodeTreeSerializer.cpp \
     Jai/JaiCameraNodes.cpp \
     Jai/JaiNodeModule.cpp \
-    Nodes/BasicNodes.cpp \
+    Nodes/ArithmeticNodes.cpp \
     Nodes/BriskNodes.cpp \
-    Nodes/OrbNodes.cpp \
-    Nodes/FreakNodes.cpp \
-    Nodes/FeaturesNodes.cpp \
     Nodes/ColorConversionNodes.cpp \
     Nodes/CV.cpp \
     Nodes/DrawFeaturesNodes.cpp \
+    Nodes/FeatureDetectorsNodes.cpp \
+    Nodes/FiltersNodes.cpp \
+    Nodes/FreakNodes.cpp \
+    Nodes/HistogramNodes.cpp \
     Nodes/HomographyNodes.cpp \
-    Nodes/HoughNodes.cpp \
-    Nodes/ImageTransformationNodes.cpp \
     Nodes/ksurf.cpp \
     Nodes/kSurfNodes.cpp \
     Nodes/MatcherNodes.cpp \
+    Nodes/MorphologyNodes.cpp \
     Nodes/MosaicingNodes.cpp \
+    Nodes/OrbNodes.cpp \
+    Nodes/SegmentationNodes.cpp \
     Nodes/SiftNodes.cpp \
     Nodes/SourceNodes.cpp \
     Nodes/SurfNodes.cpp \
+    Nodes/TransformationNodes.cpp \
+    Nodes/VideoSegmentationNodes.cpp \
     OpenCL/DeviceArray.cpp \
     OpenCL/GpuBasicNodes.cpp \
-    OpenCL/GpuColorConversionNodes.cpp \
     OpenCL/GpuBruteForceMacherNode.cpp \
+    OpenCL/GpuColorConversionNodes.cpp \
     OpenCL/GpuHoughLinesNode.cpp \
     OpenCL/GpuKernelLibrary.cpp \
     OpenCL/GpuMixtureOfGaussians.cpp \
-    OpenCL/GpuMorphologyNode.cpp \
+    OpenCL/GpuMorphologyOperatorNode.cpp \
     OpenCL/GpuNodeModule.cpp \
     OpenCL/GpuSurfNode.cpp
-    
+
+OTHER_FILES += \
+    OpenCL/kernels/bfmatcher.cl \
+    OpenCL/kernels/bfmatcher_macros.cl \
+    OpenCL/kernels/bayer.cl \
+    OpenCL/kernels/fill.cl \
+    OpenCL/kernels/hough.cl \
+    OpenCL/kernels/integral.cl \
+    OpenCL/kernels/mog.cl \
+    OpenCL/kernels/morphOp.cl \
+    OpenCL/kernels/surf.cl
+
 PRECOMPILED_HEADER = Precomp.h
 DEFINES += LOGIC_LIB
 LIBS += -lMouve.Kommon
+INCLUDEPATH += .
 unix {
     QMAKE_LFLAGS += -Wl,--rpath=.
-    LIBS += -lopencv_core -lopencv_imgproc -lopencv_highgui -lopencv_video
-    LIBS += -lopencv_flann -lopencv_calib3d -lopencv_features2d -lopencv_nonfree
+
+    !exists($$quote($$DESTDIR/kernels)) {
+        QMAKE_POST_LINK += mkdir $$quote($$DESTDIR/kernels) $$escape_expand(\n\t)
+    }
+
+    # Copy kernel files to DESTDIR/kernels/ directory
+    for(FILE, OTHER_FILES) {
+        QMAKE_POST_LINK += $$QMAKE_COPY $$quote($$PWD/$${FILE}) $$quote($$DESTDIR/kernels/) $$escape_expand(\n\t)
+    }
+
+    # Copy clw to DESTDIR/ directory
+    CONFIG(release, debug|release): {
+        QMAKE_PRE_LINK += $$QMAKE_COPY $$quote($$PWD/../external/clw/bin64/libclw.so) $$quote($$DESTDIR/)
+    } else {
+        QMAKE_PRE_LINK += $$QMAKE_COPY $$quote($$PWD/../external/clw/bin64/libclw_d.so) $$quote($$DESTDIR/)
+    }
+    # OpenCV
+    LIBS += -lopencv_core -lopencv_imgproc -lopencv_highgui -lopencv_video -lopencv_flann -lopencv_calib3d -lopencv_features2d -lopencv_nonfree
 
     # Intel TBB
     DEFINES += HAVE_TBB
     LIBS += -ltbb
-}
 
-# TODO: Haven't been used for awhile now
-win32 {
-    LIBS += -LD:/Programowanie/SDKs/opencv/lib/x86
-    # TODO: version, dir and debug|release
-    LIBS += -lopencv_core243d -lopencv_imgproc243d -lopencv_highgui243d -lopencv_video243d
-    LIBS += -lopencv_flann243d -lopencv_calib3d243d -lopencv_features2d243d -lopencv_nonfree243d
-
-    INCLUDEPATH += D:/Programowanie/SDKs/boost
+    # Boost should be in common path (like /usr/include
 }

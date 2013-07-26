@@ -15,6 +15,7 @@ class QLabel;
 class TreeWorker;
 class QProgressBar;
 class QTreeWidgetItem;
+class QGraphicsSceneHoverEvent;
 
 class IJaiNodeModule;
 class IGpuNodeModule;

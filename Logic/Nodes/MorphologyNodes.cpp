@@ -319,7 +319,6 @@ private:
 						uchar p2 = pixels2[offset-rowOffset];
 						uchar p3 = pixels2[offset-rowOffset+1];
 						uchar p4 = pixels2[offset-1];
-						uchar p5 = v;
 						uchar p6 = pixels2[offset+1];
 						uchar p7 = pixels2[offset+rowOffset-1];
 						uchar p8 = pixels2[offset+rowOffset];
