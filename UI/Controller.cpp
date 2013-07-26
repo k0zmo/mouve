@@ -203,8 +203,8 @@ void Controller::addNodeView(const QString& nodeTitle,
 
 	QString nodeTypeName = QString::fromStdString(_nodeTree->nodeTypeName(nodeID));
 	NodeView* nodeView = new NodeView(nodeTitle, nodeTypeName);
-	if(!nodeConfig.description.empty())
-		nodeView->setToolTip(QString::fromStdString(nodeConfig.description));
+	//if(!nodeConfig.description.empty())
+	//	nodeView->setToolTip(QString::fromStdString(nodeConfig.description));
 
 	// Add input sockets views to node view
 	SocketID socketID = 0;
@@ -1145,7 +1145,8 @@ bool Controller::saveTreeToFileImpl(const QString& filePath)
 	jsonTree.insert(QStringLiteral("scene"), jsonScene);
 
 	QJsonDocument doc(jsonTree);
-	QByteArray textJson = doc.toJson();
+	QByteArray textJson = doc.toJson(QJsonDocument::Indented);
+	textJson.replace("    ", "  ");
 
 	QFile file(filePath);
 	if(!file.open(QIODevice::WriteOnly | QIODevice::Text))

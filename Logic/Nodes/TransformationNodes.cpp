@@ -197,7 +197,8 @@ public:
 		// Do stuff
 		cv::pyrDown(src, dst, cv::Size(src.cols/2, src.rows/2));
 
-		return ExecutionStatus(EStatus::Ok);
+		return ExecutionStatus(EStatus::Ok, 
+			formatMessage("Image size: %dx%d\n", dst.cols, dst.rows));
 	}
 
 	void configuration(NodeConfig& nodeConfig) const override
@@ -234,7 +235,8 @@ public:
 		// Do stuff
 		cv::pyrUp(src, dst, cv::Size(src.cols*2, src.rows*2));
 
-		return ExecutionStatus(EStatus::Ok);
+		return ExecutionStatus(EStatus::Ok, 
+			formatMessage("Image size: %dx%d\n", dst.cols, dst.rows));
 	}
 
 	void configuration(NodeConfig& nodeConfig) const override
