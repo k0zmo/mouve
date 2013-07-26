@@ -47,10 +47,12 @@ SOURCES += \
     Nodes/CV.cpp \
     Nodes/DrawFeaturesNodes.cpp \
     Nodes/FeatureDetectorsNodes.cpp \
+    Nodes/FeaturesNodes.cpp \
     Nodes/FiltersNodes.cpp \
     Nodes/FreakNodes.cpp \
     Nodes/HistogramNodes.cpp \
     Nodes/HomographyNodes.cpp \
+    Nodes/KeypointsNodes.cpp \
     Nodes/ksurf.cpp \
     Nodes/kSurfNodes.cpp \
     Nodes/MatcherNodes.cpp \
