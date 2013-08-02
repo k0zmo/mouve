@@ -317,14 +317,7 @@ NodeID NodeTree::duplicateNode(NodeID nodeID)
 	NodeTypeID typeID = _nodes[nodeID].nodeTypeID();
 
 	// Generate unique name
-	std::string defaultNodeTitle = _nodeSystem->defaultNodeName(typeID);
-	std::string newNodeTitle = defaultNodeTitle;
-	int num = 1;
-	while(resolveNode(newNodeTitle) != InvalidNodeID)
-	{
-		newNodeTitle = defaultNodeTitle + " " + std::to_string(num);
-		++num;
-	}
+	std::string newNodeTitle = generateNodeName(typeID);
 
 	// Create node of the same typeID
 	NodeID newNodeID = createNode(typeID, newNodeTitle);
@@ -346,6 +339,20 @@ NodeID NodeTree::duplicateNode(NodeID nodeID)
 	}
 
 	return newNodeID;
+}
+
+std::string NodeTree::generateNodeName(NodeTypeID typeID) const
+{
+	// Generate unique name
+	std::string defaultNodeTitle = _nodeSystem->defaultNodeName(typeID);
+	std::string nodeTitle = defaultNodeTitle;
+	int num = 1;
+	while(resolveNode(nodeTitle) != InvalidNodeID)
+	{
+		nodeTitle = defaultNodeTitle + " " + std::to_string(num);
+		++num;
+	}
+	return nodeTitle;
 }
 
 bool NodeTree::linkNodes(SocketAddress from, SocketAddress to)

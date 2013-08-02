@@ -157,22 +157,12 @@ void Controller::closeEvent(QCloseEvent* event)
 void Controller::addNode(NodeTypeID nodeTypeID, const QPointF& scenePos)
 {
 	// Generate unique name
-	std::string defaultNodeTitle = _nodeSystem->defaultNodeName(nodeTypeID);
-	std::string nodeTitle = defaultNodeTitle;
-	int num = 1;
-	while(_nodeTree->resolveNode(nodeTitle) != InvalidNodeID)
-	{
-		QString newName = QString("%1 %2")
-			.arg(QString::fromStdString(defaultNodeTitle))
-			.arg(num);
-		nodeTitle = newName.toStdString();
-		++num;
-	}
+	std::string nodeTitle = _nodeTree->generateNodeName(nodeTypeID);
 
 	NodeID nodeID = _nodeTree->createNode(nodeTypeID, nodeTitle);
 	if(nodeID == InvalidNodeID)
 	{
-		showErrorMessage("[NodeTree] Couldn't create given node");
+		showErrorMessage("Node system couldn't create node of given type.");
 		return;
 	}
 
@@ -192,7 +182,8 @@ void Controller::addNodeView(const QString& nodeTitle,
 	NodeConfig nodeConfig;
 	if(!_nodeTree->nodeConfiguration(nodeID, nodeConfig))
 	{
-		showErrorMessage("[NodeTree] Error during querying node configuration");
+		showErrorMessage("Error during querying node type configuration.\n"
+			"Given node ID was invalid.");
 		return;
 	}
 

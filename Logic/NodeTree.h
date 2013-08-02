@@ -31,6 +31,7 @@ public:
 	bool removeNode(NodeID nodeID);
 	bool removeNode(const std::string& nodeName);
 	NodeID duplicateNode(NodeID nodeID);
+	std::string generateNodeName(NodeTypeID typeID) const;
 
 	bool linkNodes(SocketAddress from, SocketAddress to);
 	bool unlinkNodes(SocketAddress from, SocketAddress to);
