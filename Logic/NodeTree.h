@@ -30,6 +30,7 @@ public:
 	NodeID createNode(NodeTypeID typeID, const std::string& name);
 	bool removeNode(NodeID nodeID);
 	bool removeNode(const std::string& nodeName);
+	NodeID duplicateNode(NodeID nodeID);
 
 	bool linkNodes(SocketAddress from, SocketAddress to);
 	bool unlinkNodes(SocketAddress from, SocketAddress to);

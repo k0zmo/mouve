@@ -310,6 +310,44 @@ bool NodeTree::removeNode(const std::string& nodeName)
 	return removeNode(iter->second);
 }
 
+NodeID NodeTree::duplicateNode(NodeID nodeID)
+{
+	if(!validateNode(nodeID))
+		return InvalidNodeID;
+	NodeTypeID typeID = _nodes[nodeID].nodeTypeID();
+
+	// Generate unique name
+	std::string defaultNodeTitle = _nodeSystem->defaultNodeName(typeID);
+	std::string newNodeTitle = defaultNodeTitle;
+	int num = 1;
+	while(resolveNode(newNodeTitle) != InvalidNodeID)
+	{
+		newNodeTitle = defaultNodeTitle + " " + std::to_string(num);
+		++num;
+	}
+
+	// Create node of the same typeID
+	NodeID newNodeID = createNode(typeID, newNodeTitle);
+	if(newNodeID == InvalidNodeID)
+		return InvalidNodeID;
+
+	// Set properties
+	NodeConfig nodeConfig;
+	_nodes[nodeID].configuration(nodeConfig);
+
+	PropertyID propID = 0;
+	if(nodeConfig.pProperties)
+	{
+		while(nodeConfig.pProperties[propID].type != EPropertyType::Unknown)
+		{
+			_nodes[newNodeID].setProperty(propID, _nodes[nodeID].property(propID));
+			++propID;
+		}
+	}
+
+	return newNodeID;
+}
+
 bool NodeTree::linkNodes(SocketAddress from, SocketAddress to)
 {
 	if(!validateLink(from, to))
