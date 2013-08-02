@@ -156,13 +156,8 @@ void Controller::closeEvent(QCloseEvent* event)
 
 void Controller::addNode(NodeTypeID nodeTypeID, const QPointF& scenePos)
 {
-	// Create new model
-	std::string defaultNodeTitle = _nodeSystem->nodeTypeName(nodeTypeID);
-	size_t pos = defaultNodeTitle.find_last_of('/');
-	if(pos != std::string::npos && pos < defaultNodeTitle.size() - 1)
-		defaultNodeTitle = defaultNodeTitle.substr(pos + 1);
-
 	// Generate unique name
+	std::string defaultNodeTitle = _nodeSystem->defaultNodeName(nodeTypeID);
 	std::string nodeTitle = defaultNodeTitle;
 	int num = 1;
 	while(_nodeTree->resolveNode(nodeTitle) != InvalidNodeID)

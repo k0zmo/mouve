@@ -20,6 +20,7 @@ public:
 	const std::string& nodeTypeName(NodeTypeID nodeTypeID) const;
 	std::string nodeDescription(NodeTypeID nodeTypeID) const;
 	NodeTypeID nodeTypeID(const std::string& nodeTypeName) const;
+	std::string defaultNodeName(NodeTypeID nodeTypeID) const;
 
 	std::unique_ptr<NodeTypeIterator> createNodeTypeIterator() const;
 

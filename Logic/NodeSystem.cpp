@@ -114,6 +114,15 @@ NodeTypeID NodeSystem::nodeTypeID(const std::string& nodeTypeName) const
 	}
 }
 
+std::string NodeSystem::defaultNodeName(NodeTypeID nodeTypeID) const
+{
+	std::string defaultNodeTitle = nodeTypeName(nodeTypeID);
+	size_t pos = defaultNodeTitle.find_last_of('/');
+	if(pos != std::string::npos && pos < defaultNodeTitle.size() - 1)
+		defaultNodeTitle = defaultNodeTitle.substr(pos + 1);
+	return defaultNodeTitle;
+}
+
 void NodeSystem::registerAutoTypes()
 {
 	AutoRegisterNodeBase* autoFactory = AutoRegisterNodeBase::head;
