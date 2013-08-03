@@ -104,10 +104,10 @@ Controller::Controller(QWidget* parent, Qt::WindowFlags flags)
 
 	// Context menu from node graphics view
 	connect(_ui->graphicsView, &NodeEditorView::contextMenu,
-		this, &Controller::contextMenu);
+		this, &Controller::nodeEditorContextMenu);
 	// Key handler from node graphics view
 	connect(_ui->graphicsView, &NodeEditorView::keyPress,
-		this, &Controller::keyPressed);
+		this, &Controller::nodeEditorKeyPressed);
 
 	_treeWorker->moveToThread(&_workerThread);
 
@@ -322,6 +322,23 @@ void Controller::linkNodesView(NodeSocketView* from, NodeSocketView* to)
 	_nodeScene->addItem(link);
 }
 
+void Controller::duplicateNode(NodeID nodeID, const QPointF& scenePos)
+{
+	NodeID newNodeID = _nodeTree->duplicateNode(nodeID);
+	if(newNodeID == InvalidNodeID)
+	{
+		showErrorMessage("Couldn't duplicate given node.");
+		return;
+	}
+
+	// Create new view associated with the model
+	addNodeView(QString::fromStdString(_nodeTree->nodeName(newNodeID)), 
+		newNodeID, scenePos + QPointF(40, 40));
+
+	_nodeTreeDirty = true;
+	updateTitleBar();
+}
+
 void Controller::unlinkNodes(NodeLinkView* linkView)
 {
 	Q_ASSERT(linkView);
@@ -426,6 +443,7 @@ void Controller::setupUi()
 {
 	_ui->setupUi(this);
 
+	// Restore window geometry and window state from previous session
 	QSettings settings;
 	QVariant varGeometry = settings.value("geometry");
 	QVariant varState = settings.value("windowState");
@@ -508,6 +526,12 @@ void Controller::setupUi()
 	connect(_ui->actionOpenTree, &QAction::triggered, this, &Controller::openTree);
 	connect(_ui->actionSaveTree, &QAction::triggered, this, &Controller::saveTree);
 	connect(_ui->actionSaveTreeAs, &QAction::triggered, this, &Controller::saveTreeAs);
+	
+	connect(_ui->actionTagNodes, &QAction::triggered, this, &Controller::tagSelected);
+	connect(_ui->actionRemoveSelected, &QAction::triggered, this, &Controller::removeSelected);
+
+	_ui->actionTagNodes->setEnabled(false);
+	_ui->actionRemoveSelected->setEnabled(false);
 
 	connect(_ui->actionSingleStep, &QAction::triggered, this, &Controller::singleStep);
 	connect(_ui->actionAutoRefresh, &QAction::triggered, this, &Controller::autoRefresh);
@@ -1304,7 +1328,7 @@ void Controller::updateRecentFileActions(const QString& filePath)
 	_actionClearRecentFiles->setVisible(numRecentFiles > 0);
 }
 
-void Controller::contextMenu(const QPoint& globalPos, const QPointF& scenePos)
+void Controller::nodeEditorContextMenu(const QPoint& globalPos, const QPointF& scenePos)
 {
 	_ui->statusBar->showMessage(QString("Scene position: %1, %2")
 		.arg(scenePos.x())
@@ -1332,28 +1356,27 @@ void Controller::contextMenu(const QPoint& globalPos, const QPointF& scenePos)
 		if(!nodeView)
 			return;
 
+		// Construct context menu
 		QMenu menu;
 		QAction actionTagNode("Tag node", nullptr);
-		if(!_processing)
-		{
-			connect(&actionTagNode, &QAction::triggered,
-				[=]
-				{
-					NodeID nodeID = nodeView->nodeKey();
-					_nodeTree->tagNode(nodeID);
-				});	
-			menu.addAction(&actionTagNode);
-		}
-
 		QAction actionRemoveNode("Remove node", nullptr);
+		QAction actionDuplicateNode("Duplicate node", nullptr);
+
 		if(treeIdle())
 		{
-			connect(&actionRemoveNode, &QAction::triggered,
-				[=]
-				{
-					deleteNode(nodeView);
-				});	
+			connect(&actionTagNode, &QAction::triggered, [=] {
+				_nodeTree->tagNode(nodeView->nodeKey());
+			});	
+			connect(&actionRemoveNode, &QAction::triggered, [=] {
+				deleteNode(nodeView);
+			});	
+			connect(&actionDuplicateNode, &QAction::triggered, [=] {
+				duplicateNode(nodeView->nodeKey(), scenePos);
+			});
+
+			menu.addAction(&actionTagNode);
 			menu.addAction(&actionRemoveNode);
+			menu.addAction(&actionDuplicateNode);
 		}
 
 		int previewsCount = nodeView->outputSocketCount();
@@ -1420,59 +1443,14 @@ void Controller::contextMenu(const QPoint& globalPos, const QPointF& scenePos)
 	}
 }
 
-void Controller::keyPressed(QKeyEvent* event)
+void Controller::nodeEditorKeyPressed(QKeyEvent* event)
 {
 	if(!treeIdle())
 		return;
 
-	if(event->key() == Qt::Key_Delete)
-	{
-		QList<QGraphicsItem*> selectedItems = _nodeScene->selectedItems();
-		QList<QGraphicsItem*> selectedNodeViews;
-		_nodeScene->clearSelection();
-
-		// First remove all selected link
-		for(int i = 0; i < selectedItems.size(); ++i)
-		{
-			auto item = selectedItems[i];
-
-			if(item->type() == NodeLinkView::Type)
-			{
-				NodeLinkView* linkView = static_cast<NodeLinkView*>(item);
-				unlinkNodes(linkView);
-			}
-			else
-			{
-				selectedNodeViews.append(item);
-			}
-		}
-
-		// Then remove all selected nodes
-		for(int i = 0; i < selectedNodeViews.size(); ++i)
-		{
-			auto item = selectedNodeViews[i];
-
-			if(item->type() == NodeView::Type)
-			{
-				NodeView* nodeView = static_cast<NodeView*>(item);
-				deleteNode(nodeView);
-			}
-		}
-
-		event->accept();
-	}
 #if defined(QT_DEBUG)
 	// Debugging feature
-	else if(event->key() == Qt::Key_T
-		&& event->modifiers() & Qt::ControlModifier)
-	{
-		// tag all nodes if ctrl+T was pressed
-		auto iter = _nodeTree->createNodeIterator();
-		NodeID nodeID;
-		while(iter->next(nodeID))
-			_nodeTree->tagNode(nodeID);
-	}
-	else if(event->key() == Qt::Key_1)
+	if(event->key() == Qt::Key_1)
 	{
 		if(!canQuit())
 			return;
@@ -1530,6 +1508,13 @@ void Controller::sceneSelectionChanged()
 {
 	auto items = _nodeScene->selectedItems();
 
+	_ui->actionTagNodes->setEnabled(!items.isEmpty()
+		&& std::any_of(items.begin(), items.end(), [](QGraphicsItem* item) {
+			return item->type() == NodeView::Type;
+		})
+	);
+	_ui->actionRemoveSelected->setEnabled(!items.isEmpty());
+
 	if(items.count() == 1)
 	{
 		// User selected one node 
@@ -1571,9 +1556,6 @@ void Controller::changeProperty(NodeID nodeID,
 		*ok = false;
 		return;
 	}
-
-	//qDebug() << "Property changed! details: nodeID:" << 
-	//	nodeID << ", propID:" << propID << "newValue:" << newValue;
 
 	// 'System' property
 	if(propID < 0)
@@ -1676,6 +1658,70 @@ bool Controller::saveTreeAs()
 		return false;
 
 	return saveTreeToFile(filePath);
+}
+
+void Controller::removeSelected()
+{
+	if(!treeIdle())
+		return;
+
+	QList<QGraphicsItem*> selectedItems = _nodeScene->selectedItems();
+	if(selectedItems.isEmpty())
+		return;
+
+	//int ret = QMessageBox::question(this, applicationTitle, 
+	//	"Are you sure to remove all selected items?", 
+	//	QMessageBox::Yes, QMessageBox::Cancel);
+	//if(ret != QMessageBox::Yes)
+	//	return;
+
+	QList<QGraphicsItem*> selectedNodeViews;
+	_nodeScene->clearSelection();
+
+	// First remove all selected link
+	for(int i = 0; i < selectedItems.size(); ++i)
+	{
+		auto item = selectedItems[i];
+
+		if(item->type() == NodeLinkView::Type)
+		{
+			NodeLinkView* linkView = static_cast<NodeLinkView*>(item);
+			unlinkNodes(linkView);
+		}
+		else
+		{
+			selectedNodeViews.append(item);
+		}
+	}
+
+	// Then remove all selected nodes
+	for(int i = 0; i < selectedNodeViews.size(); ++i)
+	{
+		auto item = selectedNodeViews[i];
+
+		if(item->type() == NodeView::Type)
+		{
+			NodeView* nodeView = static_cast<NodeView*>(item);
+			deleteNode(nodeView);
+		}
+	}
+}
+
+void Controller::tagSelected()
+{
+	if(!treeIdle())
+		return;
+
+	QList<QGraphicsItem*> selectedItems = _nodeScene->selectedItems();
+
+	for(auto&& item : selectedItems)
+	{
+		if(item->type() == NodeView::Type)
+		{
+			auto nodeView = static_cast<NodeView*>(item);
+			_nodeTree->tagNode(nodeView->nodeKey());
+		}
+	}	
 }
 
 void Controller::updatePreview(bool res)

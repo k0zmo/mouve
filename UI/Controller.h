@@ -40,6 +40,7 @@ public:
 	void addNode(NodeTypeID nodeTypeID, const QPointF& scenePos);
 	void linkNodes(NodeID fromNodeID, SocketID fromSocketID,
 		NodeID toNodeID, SocketID toSocketID);
+	void duplicateNode(NodeID nodeID, const QPointF& scenePos);
 
 protected:
 	void closeEvent(QCloseEvent* event);
@@ -114,13 +115,15 @@ private slots:
 	void showErrorMessage(const QString& message);
 
 	// Slots for QGraphicsView's events
-	void contextMenu(const QPoint& globalPos, const QPointF& scenePos);
-	void keyPressed(QKeyEvent* event);
+	void nodeEditorContextMenu(const QPoint& globalPos, const QPointF& scenePos);
+	void nodeEditorKeyPressed(QKeyEvent* event);
 
 	void draggingLinkDropped(QGraphicsWidget* from, QGraphicsWidget* to);
 
-	// Changes "preview node"
+	// Slots for NodeViews' events
 	void nodeViewMouseDoubleClicked(NodeView* nodeView);
+	void nodeViewMouseHoverEntered(NodeID nodeID, QGraphicsSceneHoverEvent* event);
+	void nodeViewMouseHoverLeft(NodeID nodeID, QGraphicsSceneHoverEvent* event);
 
 	// Updates property view with new property model
 	void sceneSelectionChanged();
@@ -129,7 +132,11 @@ private slots:
 	void changeProperty(NodeID nodeID, PropertyID propID, 
 		const QVariant& newValue, bool* ok);
 
+	// Toggles displaying nodes' time info
 	void displayNodeTimeInfo(bool checked);
+
+	// Called after node tree execution has been finished
+	void updatePreview(bool res);
 
 	// Menu (toolbar) actions
 	void newTree();
@@ -137,8 +144,9 @@ private slots:
 	bool saveTree();
 	bool saveTreeAs();
 
-	// Called after node tree execution has been finished
-	void updatePreview(bool res);
+	// Edit menu
+	void removeSelected();
+	void tagSelected();
 
 	// Image mode toolbar
 	void singleStep();
@@ -154,8 +162,6 @@ private slots:
 
 	// Node execute information as a tooltip
 	void toggleDisplayNodesTooltips(bool checked);
-	void nodeViewMouseHoverEntered(NodeID nodeID, QGraphicsSceneHoverEvent* event);
-	void nodeViewMouseHoverLeft(NodeID nodeID, QGraphicsSceneHoverEvent* event);
 
 private:
 	/// TODO: QHash
