@@ -1,6 +1,7 @@
 TEMPLATE = app
 TARGET = Mouve.UI
 QT += widgets opengl
+CONFIG += precompile_header
 
 include(../mouve.pri)
 include(../clw.pri)
@@ -25,6 +26,7 @@ HEADERS += \
     PropertyModel.h \
     PropertyWidgets.h \
     TreeWorker.h \
+    Precomp.h
 
 SOURCES += \
     Application.cpp \

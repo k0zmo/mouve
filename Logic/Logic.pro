@@ -1,6 +1,7 @@
 TEMPLATE = lib
 TARGET = Mouve.Logic
 QT -= gui
+CONFIG += precompile_header
 
 include(../mouve.pri)
 include(../clw.pri)
@@ -18,6 +19,7 @@ HEADERS += \
     NodePlugin.h \
     NodeTreeSerializer.h \
     Prerequisites.h \
+    Precomp.h \
     Jai/JaiException.h \
     Jai/JaiNodeModule.h \
     Nodes/CV.h \
