@@ -38,6 +38,8 @@ public:
 	void setTimeInfo(const QString& text);
 	void setTimeInfoVisible(bool visible);
 
+	void setNodeWithStateMark(bool visible);
+
 protected:
 	virtual void hoverEnterEvent(QGraphicsSceneHoverEvent* event);
 	virtual void hoverLeaveEvent(QGraphicsSceneHoverEvent* event);
@@ -47,6 +49,7 @@ private:
 	QGraphicsSimpleTextItem* mLabel;
 	QGraphicsSimpleTextItem* mTypeLabel;
 	QGraphicsSimpleTextItem* mTimeInfo;
+	QGraphicsItem* mStateMark;
 	QGraphicsDropShadowEffect* mDropShadowEffect;
 	QPainterPath mShape1;
 	QPainterPath mShape2;
@@ -54,6 +57,7 @@ private:
 	QMap<SocketID, NodeSocketView*> mOutputSocketViews;
 	int mPreviewSocketID;
 	bool mPreviewSelected;
+	bool mStateMarkVisible;
 
 private:
 	QPainterPath shape1(qreal titleHeight) const;

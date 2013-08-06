@@ -7,6 +7,18 @@
 #include <QPainter>
 #include <QDebug>
 
+class StateMarkGraphicsItem : public QGraphicsItem
+{
+public:
+	StateMarkGraphicsItem(QGraphicsItem* parent = nullptr);
+	QRectF boundingRect() const override;
+	void paint(QPainter* painter, const QStyleOptionGraphicsItem* option,
+		QWidget* widget = nullptr) override;
+
+private:
+	QPainterPath _path;
+};
+
 NodeView::NodeView(const QString& title, 
 				   const QString& typeName,
 				   QGraphicsItem* parent)
@@ -14,9 +26,11 @@ NodeView::NodeView(const QString& title,
 	, mLabel(new QGraphicsSimpleTextItem(this))
 	, mTypeLabel(new QGraphicsSimpleTextItem(this))
 	, mTimeInfo(new QGraphicsSimpleTextItem(this))
+	, mStateMark(new StateMarkGraphicsItem(this))
 	, mDropShadowEffect(new QGraphicsDropShadowEffect(this))
 	, mPreviewSocketID(0)
 	, mPreviewSelected(false)
+	, mStateMarkVisible(false)
 {
 	setFlag(QGraphicsItem::ItemIsMovable);
 	setFlag(QGraphicsItem::ItemIsSelectable);
@@ -44,6 +58,8 @@ NodeView::NodeView(const QString& title,
 	mTimeInfo->setText("0 ms");
 	mTimeInfo->setFont(NodeStyle::NodeTimeInfoFont);
 	mTimeInfo->setBrush(NodeStyle::NodeTimeInfoFontBrush);
+
+	mStateMark->setVisible(false);
 
 	// To alter Z value on moouse hover
 	setAcceptHoverEvents(true);
@@ -210,13 +226,17 @@ void NodeView::selectPreview(bool selected)
 
 void NodeView::updateLayout()
 {
+	// Some top and bottom margin for node title
+	qreal heightPadding = 2 * NodeStyle::NodeTitleSize;
+
 	qreal titleWidth = mLabel->boundingRect().width();
-	qreal titleHeight = mLabel->boundingRect().bottom()
-		+ 2 * NodeStyle::NodeTitleSize;
+	qreal titleHeight = mLabel->boundingRect().bottom() + heightPadding;
 
 	qreal typeNameWidth = mTypeLabel->boundingRect().width();
-	qreal typeNameHeight = mTypeLabel->boundingRect().bottom()
-		+ 2 * NodeStyle::NodeTitleSize;
+	qreal typeNameHeight = mTypeLabel->boundingRect().bottom() + heightPadding;
+
+	qreal stateMarkWidth = mStateMark->boundingRect().width();
+	qreal stateMarkHeight = mStateMark->boundingRect().height() + heightPadding;
 
 	// During first pass we layout input slots and calculate
 	// required spacing between them and output slots.
@@ -229,6 +249,13 @@ void NodeView::updateLayout()
 			qreal(typeNameWidth + 2 * NodeStyle::NodeTypeNameHorizontalMargin)));
 
 	qreal yPos = titleHeight + typeNameHeight;
+
+	if(mStateMarkVisible)
+	{
+		totalWidth = qMax(totalWidth, stateMarkWidth);
+		yPos += stateMarkHeight;
+	}
+
 	const qreal yPosStart = yPos;
 	qreal inputsWidth = 0.0;
 	qreal outputsWidth = 0.0;
@@ -254,8 +281,7 @@ void NodeView::updateLayout()
 			NodeStyle::NodeSocketHorizontalMargin + sv->boundingRect().width() + 5.0);
 	}
 
-	totalWidth = qMax(totalWidth, qMax(
-		outputsWidth, inputsWidth));
+	totalWidth = qMax(totalWidth, qMax(outputsWidth, inputsWidth));
 
 	// Second pass
 	qreal inputsHeight = qMax(yPos, yPosStart * 1.5); // if node is trivial
@@ -313,6 +339,8 @@ void NodeView::updateLayout()
 		NodeStyle::NodeTitleSize);
 	mTypeLabel->setPos((totalWidth - typeNameWidth) * 0.5,
 		titleHeight);
+	mStateMark->setPos(totalWidth  * 0.5, 
+		titleHeight + typeNameHeight + stateMarkHeight * 0.5);
 
 	resize(totalWidth, qMax(yPos, inputsHeight));
 
@@ -343,4 +371,59 @@ void NodeView::setNodeViewName(const QString& newName)
 {
 	mLabel->setText(newName);
 	updateLayout();
+}
+
+void NodeView::setNodeWithStateMark(bool visible)
+{
+	mStateMark->setVisible(visible);
+	mStateMarkVisible = visible;
+	updateLayout();
+}
+
+StateMarkGraphicsItem::StateMarkGraphicsItem(QGraphicsItem* parent)
+	: QGraphicsItem(parent)
+{
+	_path.addRect(-10, -10, 20, 20);
+
+	// left line
+	_path.moveTo(-30, 0);
+	_path.lineTo(-11, 0);
+
+	// right line 
+	_path.moveTo(11, 0);
+	_path.lineTo(30, 0);
+
+	// out arrow
+	_path.moveTo(31, 0);
+	_path.lineTo(26, -3);
+	_path.moveTo(31, 0);
+	_path.lineTo(26, +3);
+
+	// feedback loop
+	_path.moveTo(20, -1);
+	_path.lineTo(20, -20);
+	_path.lineTo(-20, -20);
+	_path.lineTo(-20, -1);
+
+	// feedback arrow
+	_path.lineTo(-17, -5);
+	_path.moveTo(-20, -1);
+	_path.lineTo(-23, -5);
+}
+
+QRectF StateMarkGraphicsItem::boundingRect() const
+{
+	return _path.boundingRect();
+}
+
+void StateMarkGraphicsItem::paint(QPainter* painter, 
+								  const QStyleOptionGraphicsItem* option,
+								  QWidget* widget)
+{
+	Q_UNUSED(option);
+	Q_UNUSED(widget);
+
+	painter->setBrush(Qt::NoBrush);
+	painter->setPen(QPen(QColor(180, 180, 180), 1.5, Qt::SolidLine));
+	painter->drawPath(_path);
 }
