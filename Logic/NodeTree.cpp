@@ -533,7 +533,7 @@ bool NodeTree::isInputSocketConnected(NodeID nodeID, SocketID socketID) const
 
 bool NodeTree::isOutputSocketConnected(NodeID nodeID, SocketID socketID) const
 {
-	return firstOutputLink(nodeID, socketID) != size_t(-1);
+	return firstOutputLink(nodeID, socketID) != _links.size();
 }
 
 bool NodeTree::allRequiredInputSocketConnected(NodeID nodeID) const
@@ -660,7 +660,7 @@ size_t NodeTree::firstOutputLink(NodeID fromNode,
 			return i;
 		}
 	}
-	return size_t(-1);
+	return _links.size();
 }
 
 // Requires links to be sorted first
@@ -680,13 +680,14 @@ std::tuple<size_t, size_t> NodeTree::outLinks(NodeID fromNode) const
 				return link.fromNode != fromNode;
 		});
 
-		return std::make_tuple(size_t(start - std::begin(_links)), 
-			size_t(end != std::end(_links) ? (end - std::begin(_links)) : size_t(-1)));
+		return std::make_tuple(
+			size_t(start - std::begin(_links)), 
+			size_t(end - std::begin(_links)));
 	}
 	else
 	{
 		// No output links from this node
-		return std::make_tuple(size_t(-1), size_t(-1));
+		return std::make_tuple(_links.size(), _links.size());
 	}
 }
 
@@ -722,7 +723,7 @@ bool NodeTree::checkCycle(NodeID startNode)
 		std::tie(nodeID, link, link_end) = stack.back();
 		stack.pop_back();
 
-		while(link != link_end && link < _links.size())
+		while(link != link_end)
 		{
 			auto targetLink = std::begin(_links) + link;
 			NodeID targetNodeID = targetLink->toNode;
@@ -790,7 +791,7 @@ void NodeTree::prepareListImpl()
 			stack.pop_back();
 
 			// For each output links
-			while(link != link_end && link < _links.size())
+			while(link != link_end)
 			{
 				// Get target node and its color
 				auto targetLink = std::begin(_links) + link;
