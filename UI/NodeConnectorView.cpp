@@ -188,12 +188,7 @@ NodeConnectorView* NodeConnectorView::canDrop(const QPointF& scenePos)
 			NodeConnectorView* citem = static_cast<NodeConnectorView*>(item);
 			if(citem->isOutput() != isOutput())
 			{
-				// Protect from constructing algebraic loops
-				/// TODO: move to logic
-				if(citem->socketView()->nodeView() != socketView()->nodeView())
-				{
-					return citem;
-				}
+				return citem;
 			}
 		}
 	}

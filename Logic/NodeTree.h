@@ -87,6 +87,9 @@ private:
 	void deallocateNodeID(NodeID id);
 
 	size_t firstOutputLink(NodeID fromNode, SocketID fromSocket, size_t start = 0) const;
+	std::tuple<size_t, size_t> outLinks(NodeID fromNode) const;
+	bool checkCycle(NodeID startNode);
+
 	void addToExecuteList(std::vector<NodeID>& execList, NodeID nodeID);
 	void traverseRecurs(std::vector<NodeID>& execList, NodeID nodeID);
 
@@ -95,8 +98,6 @@ private:
 	void cleanUpAfterExecution(const std::vector<NodeID>& selfTagging,
 		const std::vector<NodeID>& correctlyExecutedNodes);
 	void handleException(const std::string& nodeName, const std::string& nodeTypeName);
-
-	bool checkCycle(NodeID startNode) const;
 
 private:
 	std::vector<Node> _nodes;

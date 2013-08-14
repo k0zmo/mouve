@@ -369,12 +369,26 @@ ELinkNodesResult NodeTree::linkNodes(SocketAddress from, SocketAddress to)
 	if(alreadyExisingConnection)
 		return ELinkNodesResult::TwoOutputsOnInput;
 
-	// Check for would-be created cycle(s)
-	if(checkCycle(to.node))
-		return ELinkNodesResult::CycleDetected;
-
-	// Everything ok - make a connection
+	// Try to make a connection
 	_links.emplace_back(NodeLink(from, to));
+
+	// Check for created cycle(s)
+	if(checkCycle(to.node))
+	{
+		// NOTE: Links are already sorted
+		// look for given node link
+		NodeLink nodeLinkToFind(from, to);
+		auto iter = std::lower_bound(std::begin(_links), 
+			std::end(_links), nodeLinkToFind);
+
+		assert(iter != std::end(_links));
+
+		if(iter != std::end(_links))
+			_links.erase(iter);
+
+		return ELinkNodesResult::CycleDetected;
+	}
+
 	// tag affected node
 	tagNode(to.node);
 
@@ -669,6 +683,33 @@ size_t NodeTree::firstOutputLink(NodeID fromNode,
 	return size_t(-1);
 }
 
+// Requires links to be sorted first
+std::tuple<size_t, size_t> NodeTree::outLinks(NodeID fromNode) const
+{
+	auto start = std::find_if(std::begin(_links), std::end(_links), 
+		[=](const NodeLink& link) {
+			return link.fromNode == fromNode;
+	});
+
+	// There are some output links from this node
+	if(start != std::end(_links))
+	{
+		// Now, get last+1 output link index
+		auto end = std::find_if(start + 1, std::end(_links), 
+			[=](const NodeLink& link) {
+				return link.fromNode != fromNode;
+		});
+
+		return std::make_tuple(size_t(start - std::begin(_links)), 
+			size_t(end != std::end(_links) ? (end - std::begin(_links)) : size_t(-1)));
+	}
+	else
+	{
+		// No output links from this node
+		return std::make_tuple(size_t(-1), size_t(-1));
+	}
+}
+
 void NodeTree::addToExecuteList(std::vector<NodeID>& execList, NodeID nodeID)
 {
 	// Check if the given nodeID is already on the list
@@ -745,8 +786,62 @@ bool NodeTree::validateNode(NodeID nodeID) const
 	return _nodes[nodeID].isValid();
 }
 
-bool NodeTree::checkCycle(NodeID startNode) const
+enum class EVertexColor
 {
+	White,
+	Gray,
+	Black
+};
+
+bool NodeTree::checkCycle(NodeID startNode)
+{
+	// Initialize color map with white color
+	vector<EVertexColor> colorMap(_nodes.size(), EVertexColor::White);
+
+	// outLinks requires links to be sorted
+	std::stable_sort(std::begin(_links), std::end(_links));
+
+	// Paint start node with gray
+	colorMap[startNode] = EVertexColor::Gray;
+
+	typedef std::tuple<NodeID, size_t, size_t> EdgeInfo;
+
+	std::vector<EdgeInfo> stack;
+	stack.push_back(std::tuple_cat(std::make_tuple(startNode), outLinks(startNode)));
+
+	while(!stack.empty())
+	{
+		NodeID nodeID; size_t link, link_end;
+		std::tie(nodeID, link, link_end) = stack.back();
+		stack.pop_back();
+
+		while(link != link_end)
+		{
+			auto targetLink = std::begin(_links) + link;
+			NodeID targetNodeID = targetLink->toNode;
+			EVertexColor color = colorMap[targetNodeID];
+
+			if(color == EVertexColor::White)
+			{
+				stack.push_back(std::make_tuple(nodeID, ++link, link_end));
+				nodeID = targetNodeID;
+				colorMap[nodeID] = EVertexColor::Gray;
+				std::tie(link, link_end) = outLinks(nodeID);
+			}
+			else if(color == EVertexColor::Gray)
+			{
+				// Cycle detected (back-edge)
+				return true;
+			}
+			else// if(color == EVertexColor == Black)
+			{
+				++link;
+			}
+		}
+
+		colorMap[nodeID] = EVertexColor::Black;
+	}
+
 	return false;
 }
 
