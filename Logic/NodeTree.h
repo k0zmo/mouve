@@ -4,6 +4,18 @@
 #include "Node.h"
 #include "NodeLink.h"
 
+enum class ELinkNodesResult
+{
+	// Linking was successful
+	Ok,
+	// Cycle would be created (which is forbidden)
+	CycleDetected,
+	// Tried to link already linked input (two)
+	TwoOutputsOnInput,
+	// Linking addresses were invalid
+	InvalidAddress
+};
+
 class LOGIC_EXPORT NodeTree
 {
 	K_DISABLE_COPY(NodeTree)
@@ -33,7 +45,7 @@ public:
 	NodeID duplicateNode(NodeID nodeID);
 	std::string generateNodeName(NodeTypeID typeID) const;
 
-	bool linkNodes(SocketAddress from, SocketAddress to);
+	ELinkNodesResult linkNodes(SocketAddress from, SocketAddress to);
 	bool unlinkNodes(SocketAddress from, SocketAddress to);
 
 	// Set a new name for a given node
@@ -83,6 +95,8 @@ private:
 	void cleanUpAfterExecution(const std::vector<NodeID>& selfTagging,
 		const std::vector<NodeID>& correctlyExecutedNodes);
 	void handleException(const std::string& nodeName, const std::string& nodeTypeName);
+
+	bool checkCycle(NodeID startNode) const;
 
 private:
 	std::vector<Node> _nodes;

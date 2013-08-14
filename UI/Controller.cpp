@@ -277,10 +277,26 @@ void Controller::linkNodes(NodeID fromNodeID, SocketID fromSocketID,
 	SocketAddress addrFrom(fromNodeID, fromSocketID, true);
 	SocketAddress addrTo(toNodeID, toSocketID, false);
 
-	/// TODO: give a reason
-	if(!_nodeTree->linkNodes(addrFrom, addrTo))
+	ELinkNodesResult result = _nodeTree->linkNodes(addrFrom, addrTo);
+	if(result != ELinkNodesResult::Ok)
 	{
-		showErrorMessage("[NodeTree] Couldn't linked given sockets");
+		switch(result)
+		{
+		case ELinkNodesResult::InvalidAddress:
+			showErrorMessage("Internal error - Something was wrong with given socket addresses.\n"
+				"New connection will not be made.");
+			break;
+		case ELinkNodesResult::CycleDetected:
+			showErrorMessage("New connection would create cycle which is not permitted.\n"
+				"New connection will not be made.");
+			break;
+		case ELinkNodesResult::TwoOutputsOnInput:
+			showErrorMessage("You can't connect many-to-one outputs to an input.\n"
+				"Remove first already exisiting connection.\n"
+				"New connection will not be made.");
+			break;
+		}
+
 		return;
 	}
 

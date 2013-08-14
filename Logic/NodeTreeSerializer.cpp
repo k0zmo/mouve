@@ -292,8 +292,8 @@ bool NodeTreeSerializer::deserializeJsonLinks(std::shared_ptr<NodeTree>& nodeTre
 		NodeID toNode = mapLink["toNode"].toUInt();
 		SocketID toSocket = mapLink["toSocket"].toUInt();
 
-		if(!nodeTree->linkNodes(SocketAddress(mapping[fromNode], fromSocket, true),
-			SocketAddress(mapping[toNode], toSocket, false)))
+		if(nodeTree->linkNodes(SocketAddress(mapping[fromNode], fromSocket, true),
+		                       SocketAddress(mapping[toNode], toSocket, false)) != ELinkNodesResult::Ok)
 		{
 			qCritical() << QString("Couldn't link nodes %1:%2 with %3:%4")
 				.arg(fromNode)

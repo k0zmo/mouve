@@ -355,28 +355,30 @@ std::string NodeTree::generateNodeName(NodeTypeID typeID) const
 	return nodeTitle;
 }
 
-bool NodeTree::linkNodes(SocketAddress from, SocketAddress to)
+ELinkNodesResult NodeTree::linkNodes(SocketAddress from, SocketAddress to)
 {
+	// Check if given addresses are OK
 	if(!validateLink(from, to))
-		return false;
+		return ELinkNodesResult::InvalidAddress;
 
 	// Check if we are not trying to link input socket with more than one output
-	for(size_t i = 0; i < _links.size(); ++i)
-	{
-		auto&& link = _links[i];
+	bool alreadyExisingConnection = std::any_of(std::begin(_links), std::end(_links), 
+		[&](const NodeLink& link) {
+			return link.toNode == to.node && link.toSocket == to.socket;
+		});
+	if(alreadyExisingConnection)
+		return ELinkNodesResult::TwoOutputsOnInput;
 
-		if(link.toNode == to.node &&
-			link.toSocket == to.socket)
-		{
-			return false;
-		}
-	}
+	// Check for would-be created cycle(s)
+	if(checkCycle(to.node))
+		return ELinkNodesResult::CycleDetected;
 
+	// Everything ok - make a connection
 	_links.emplace_back(NodeLink(from, to));
 	// tag affected node
 	tagNode(to.node);
 
-	return true;
+	return ELinkNodesResult::Ok;
 }
 
 bool NodeTree::unlinkNodes(SocketAddress from, SocketAddress to)
@@ -741,6 +743,11 @@ bool NodeTree::validateNode(NodeID nodeID) const
 	if(nodeID >= _nodes.size() || nodeID == InvalidNodeID)
 		return false;
 	return _nodes[nodeID].isValid();
+}
+
+bool NodeTree::checkCycle(NodeID startNode) const
+{
+	return false;
 }
 
 // -----------------------------------------------------------------------------
