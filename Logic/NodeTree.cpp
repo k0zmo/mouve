@@ -97,27 +97,7 @@ std::vector<NodeID> NodeTree::prepareList()
 		return _executeList;
 	_executeList.clear();
 
-	// stable_sort doesn't touch already sorted items (?)
-	//std::sort(std::begin(links), std::end(links));
-	std::stable_sort(std::begin(_links), std::end(_links));
-
-	for(NodeID nodeID = 0; nodeID < NodeID(_nodes.size()); ++nodeID)
-	{
-		if(!_nodes[nodeID].flag(ENodeFlags::Tagged))
-			continue;
-
-		if(!validateNode(nodeID))
-			continue;
-
-		if(!allRequiredInputSocketConnected(nodeID))
-			continue;
-
-		if(!stlu::contains_value(_executeList, nodeID))
-		{
-			addToExecuteList(_executeList, nodeID);
-			traverseRecurs(_executeList, nodeID);
-		}
-	}
+	prepareListImpl();
 
 	_executeListDirty = false;
 	return _executeList;
@@ -401,7 +381,7 @@ bool NodeTree::unlinkNodes(SocketAddress from, SocketAddress to)
 		return false;
 
 	// lower_bound requires container to be sorted
-	std::stable_sort(std::begin(_links), std::end(_links));
+	std::sort(std::begin(_links), std::end(_links));
 
 	// look for given node link
 	NodeLink nodeLinkToFind(from, to);
@@ -710,82 +690,6 @@ std::tuple<size_t, size_t> NodeTree::outLinks(NodeID fromNode) const
 	}
 }
 
-void NodeTree::addToExecuteList(std::vector<NodeID>& execList, NodeID nodeID)
-{
-	// Check if the given nodeID is already on the list
-	for(auto iter = execList.begin(); iter != execList.end(); ++iter)
-	{
-		if(*iter == nodeID)
-		{
-			// If so, we need to "move it" to last position
-			execList.erase(iter);
-			break;
-		}
-	}
-
-	// If not, just append it at the end of the list
-	execList.push_back(nodeID);
-}
-
-void NodeTree::traverseRecurs(std::vector<NodeID>& execList, NodeID nodeID)
-{
-	SocketID numOutputSockets = _nodes[nodeID].numOutputSockets();
-	SocketID lastSocketID = 0;
-
-	for(SocketID socketID = 0; socketID < numOutputSockets; ++socketID)
-	{
-		// Find first output link from this node and socket (can be more than 1)
-		size_t firstOutputLinkIndex = firstOutputLink(nodeID, socketID, lastSocketID);
-		if(firstOutputLinkIndex == size_t(-1))
-			continue;
-		lastSocketID = firstOutputLinkIndex;
-
-		auto iter    = std::begin(_links) + firstOutputLinkIndex;
-		auto iterEnd = std::end(_links);
-
-		while(iter != iterEnd &&
-			  iter->fromNode == nodeID &&
-			  iter->fromSocket == socketID)
-		{
-			NodeID nodeID = iter->toNode;
-
-			if(allRequiredInputSocketConnected(nodeID))
-			{
-				addToExecuteList(execList, nodeID);
-				traverseRecurs(execList, nodeID);
-			}
-			++iter;
-		}
-	}
-}
-
-bool NodeTree::validateLink(SocketAddress& from, SocketAddress& to)
-{
-	if(from.isOutput == to.isOutput)
-		return false;
-
-	// A little correction
-	if(!from.isOutput)
-		std::swap(from, to);
-
-	if(!validateNode(from.node) || 
-	   !_nodes[from.node].validateSocket(from.socket, from.isOutput))
-		return false;
-
-	if(!validateNode(to.node) ||
-	   !_nodes[to.node].validateSocket(to.socket, to.isOutput))
-		return false;
-
-	return true;
-}
-
-bool NodeTree::validateNode(NodeID nodeID) const
-{
-	if(nodeID >= _nodes.size() || nodeID == InvalidNodeID)
-		return false;
-	return _nodes[nodeID].isValid();
-}
-
 enum class EVertexColor
 {
 	White,
@@ -793,19 +697,22 @@ enum class EVertexColor
 	Black
 };
 
+// <NodeID, index of first output link, index of last+1 output link>
+typedef std::tuple<NodeID, size_t, size_t> EdgeInfo;
+
+// Internally uses DFS for graph traversal
 bool NodeTree::checkCycle(NodeID startNode)
 {
 	// Initialize color map with white color
 	vector<EVertexColor> colorMap(_nodes.size(), EVertexColor::White);
 
-	// outLinks requires links to be sorted
-	std::stable_sort(std::begin(_links), std::end(_links));
+	/// TODO: move sorting to link modifying methods
+	std::sort(std::begin(_links), std::end(_links));
 
 	// Paint start node with gray
 	colorMap[startNode] = EVertexColor::Gray;
 
-	typedef std::tuple<NodeID, size_t, size_t> EdgeInfo;
-
+	// Helper container for iterative DFS
 	std::vector<EdgeInfo> stack;
 	stack.push_back(std::tuple_cat(std::make_tuple(startNode), outLinks(startNode)));
 
@@ -815,7 +722,7 @@ bool NodeTree::checkCycle(NodeID startNode)
 		std::tie(nodeID, link, link_end) = stack.back();
 		stack.pop_back();
 
-		while(link != link_end)
+		while(link != link_end && link < _links.size())
 		{
 			auto targetLink = std::begin(_links) + link;
 			NodeID targetNodeID = targetLink->toNode;
@@ -843,6 +750,109 @@ bool NodeTree::checkCycle(NodeID startNode)
 	}
 
 	return false;
+}
+
+// Internally uses DFS for graph traversal (in fact it's topological sort)
+void NodeTree::prepareListImpl()
+{
+	// Initialize color map with white color
+	vector<EVertexColor> colorMap(_nodes.size(), EVertexColor::White);
+
+	/// TODO: move sorting to link modifying methods
+	std::sort(std::begin(_links), std::end(_links));
+
+	// For each tagged and valid nodes that haven't been visited yet do ..
+	for(NodeID nodeID = 0; nodeID < NodeID(_nodes.size()); ++nodeID)
+	{
+		if(!_nodes[nodeID].flag(ENodeFlags::Tagged))
+			continue;
+
+		if(!validateNode(nodeID))
+			continue;
+
+		if(!allRequiredInputSocketConnected(nodeID))
+			continue;
+
+		if(colorMap[nodeID] != EVertexColor::White)
+			continue;
+
+		// Paint start node with gray
+		colorMap[nodeID] = EVertexColor::Gray;
+
+		// Helper container for iterative DFS
+		std::vector<EdgeInfo> stack;
+		stack.push_back(std::tuple_cat(std::make_tuple(nodeID), outLinks(nodeID)));
+
+		while(!stack.empty())
+		{
+			NodeID nodeID; size_t link, link_end;
+			std::tie(nodeID, link, link_end) = stack.back();
+			stack.pop_back();
+
+			// For each output links
+			while(link != link_end && link < _links.size())
+			{
+				// Get target node and its color
+				auto targetLink = std::begin(_links) + link;
+				NodeID targetNodeID = targetLink->toNode;
+				EVertexColor color = colorMap[targetNodeID];
+
+				// Still not explored vertex - depth search
+				if(color == EVertexColor::White)
+				{
+					stack.push_back(std::make_tuple(nodeID, ++link, link_end));
+					nodeID = targetNodeID;
+					colorMap[nodeID] = EVertexColor::Gray;
+					std::tie(link, link_end) = outLinks(nodeID);
+				}
+				// Shouldn't happen at all
+				else if(color == EVertexColor::Gray)
+				{
+					/// TODO: Cycle detected (back-edge) - throw?
+					_executeList.clear();
+					return;
+				}
+				else// if(color == EVertexColor == Black)
+				{
+					// We've been here
+					++link;
+				}
+			}
+
+			colorMap[nodeID] = EVertexColor::Black;
+			_executeList.push_back(nodeID);
+		}
+	}
+
+	// Topological sort gives result in inverse order
+	std::reverse(std::begin(_executeList), std::end(_executeList));
+}
+
+bool NodeTree::validateLink(SocketAddress& from, SocketAddress& to)
+{
+	if(from.isOutput == to.isOutput)
+		return false;
+
+	// A little correction
+	if(!from.isOutput)
+		std::swap(from, to);
+
+	if(!validateNode(from.node) || 
+		!_nodes[from.node].validateSocket(from.socket, from.isOutput))
+		return false;
+
+	if(!validateNode(to.node) ||
+		!_nodes[to.node].validateSocket(to.socket, to.isOutput))
+		return false;
+
+	return true;
+}
+
+bool NodeTree::validateNode(NodeID nodeID) const
+{
+	if(nodeID >= _nodes.size() || nodeID == InvalidNodeID)
+		return false;
+	return _nodes[nodeID].isValid();
 }
 
 // -----------------------------------------------------------------------------
