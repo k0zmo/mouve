@@ -29,6 +29,7 @@ public:
 
 	void tagNode(NodeID nodeID);
 	void untagNode(NodeID nodeID);
+	bool isNodeExecutable(NodeID nodeID) const;
 	bool isTreeStateless() const;
 
 	std::vector<NodeID> prepareList();
@@ -90,6 +91,11 @@ private:
 	std::tuple<size_t, size_t> outLinks(NodeID fromNode) const;
 	bool checkCycle(NodeID startNode);
 	void prepareListImpl();
+
+	enum class ENodeColor : int;
+	bool depthFirstSearch(NodeID startNodeID,
+		std::vector<ENodeColor>& colorMap,
+		std::vector<NodeID>* execList = nullptr);
 
 	bool validateLink(SocketAddress& from, SocketAddress& to);
 	bool validateNode(NodeID nodeID) const;

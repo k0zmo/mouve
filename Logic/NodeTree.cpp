@@ -65,19 +65,10 @@ void NodeTree::untagNode(NodeID nodeID)
 	}
 }
 
-void NodeTree::notifyFinish()
+bool NodeTree::isNodeExecutable(NodeID nodeID) const
 {
-	for(NodeID nodeID = 0; nodeID < NodeID(_nodes.size()); ++nodeID)
-	{
-		if(!validateNode(nodeID))
-			continue;
-
-		_nodes[nodeID].finish();
-
-		// Finally, tag node that need to be auto-tagged
-		if(_nodes[nodeID].flag(ENodeFlags::AutoTag))
-			tagNode(nodeID);
-	}
+	return validateNode(nodeID) 
+		&& allRequiredInputSocketConnected(nodeID);
 }
 
 bool NodeTree::isTreeStateless() const
@@ -195,6 +186,21 @@ void NodeTree::execute(bool withInit)
 	}
 
 	cleanUpAfterExecution(selfTagging, correctlyExecutedNodes);
+}
+
+void NodeTree::notifyFinish()
+{
+	for(NodeID nodeID = 0; nodeID < NodeID(_nodes.size()); ++nodeID)
+	{
+		if(!validateNode(nodeID))
+			continue;
+
+		_nodes[nodeID].finish();
+
+		// Finally, tag node that need to be auto-tagged
+		if(_nodes[nodeID].flag(ENodeFlags::AutoTag))
+			tagNode(nodeID);
+	}
 }
 
 std::vector<NodeID> NodeTree::executeList() const
@@ -690,78 +696,52 @@ std::tuple<size_t, size_t> NodeTree::outLinks(NodeID fromNode) const
 	}
 }
 
-enum class EVertexColor
+enum class NodeTree::ENodeColor : int
 {
 	White,
 	Gray,
 	Black
 };
 
-// <NodeID, index of first output link, index of last+1 output link>
-typedef std::tuple<NodeID, size_t, size_t> EdgeInfo;
-
 // Internally uses DFS for graph traversal
 bool NodeTree::checkCycle(NodeID startNode)
 {
 	// Initialize color map with white color
-	vector<EVertexColor> colorMap(_nodes.size(), EVertexColor::White);
+	std::vector<ENodeColor> colorMap(_nodes.size(), ENodeColor::White);
 
 	/// TODO: move sorting to link modifying methods
 	std::sort(std::begin(_links), std::end(_links));
 
-	// Paint start node with gray
-	colorMap[startNode] = EVertexColor::Gray;
-
-	// Helper container for iterative DFS
-	std::vector<EdgeInfo> stack;
-	stack.push_back(std::tuple_cat(std::make_tuple(startNode), outLinks(startNode)));
-
-	while(!stack.empty())
-	{
-		NodeID nodeID; size_t link, link_end;
-		std::tie(nodeID, link, link_end) = stack.back();
-		stack.pop_back();
-
-		while(link != link_end)
-		{
-			auto targetLink = std::begin(_links) + link;
-			NodeID targetNodeID = targetLink->toNode;
-			EVertexColor color = colorMap[targetNodeID];
-
-			if(color == EVertexColor::White)
-			{
-				stack.push_back(std::make_tuple(nodeID, ++link, link_end));
-				nodeID = targetNodeID;
-				colorMap[nodeID] = EVertexColor::Gray;
-				std::tie(link, link_end) = outLinks(nodeID);
-			}
-			else if(color == EVertexColor::Gray)
-			{
-				// Cycle detected (back-edge)
-				return true;
-			}
-			else// if(color == EVertexColor == Black)
-			{
-				++link;
-			}
-		}
-
-		colorMap[nodeID] = EVertexColor::Black;
-	}
-
-	return false;
+	return !depthFirstSearch(startNode, colorMap);
 }
 
 // Internally uses DFS for graph traversal (in fact it's topological sort)
 void NodeTree::prepareListImpl()
 {
 	// Initialize color map with white color
-	vector<EVertexColor> colorMap(_nodes.size(), EVertexColor::White);
+	std::vector<ENodeColor> colorMap(_nodes.size(), ENodeColor::White);
 
 	/// TODO: move sorting to link modifying methods
 	std::sort(std::begin(_links), std::end(_links));
 
 	_executeList.clear();
+
+	// For each invalid nodes (in terms of executable) mark them black
+	// so "true" graph traversal can skip them
+	for(NodeID nodeID = 0; nodeID < NodeID(_nodes.size()); ++nodeID)
+	{
+		if(!validateNode(nodeID))
+			continue;
+
+		if(colorMap[nodeID] != ENodeColor::White)
+			continue;
+
+		if(isNodeExecutable(nodeID))
+			continue;
+
+		if(!depthFirstSearch(nodeID, colorMap))
+			return;
+	}	
 
 	// For each tagged and valid nodes that haven't been visited yet do ..
 	for(NodeID nodeID = 0; nodeID < NodeID(_nodes.size()); ++nodeID)
@@ -769,65 +749,75 @@ void NodeTree::prepareListImpl()
 		if(!validateNode(nodeID))
 			continue;
 
+		if(colorMap[nodeID] != ENodeColor::White)
+			continue;
+
 		if(!_nodes[nodeID].flag(ENodeFlags::Tagged))
 			continue;
 
-		if(colorMap[nodeID] != EVertexColor::White)
-			continue;
-
-		if(!allRequiredInputSocketConnected(nodeID))
-			continue;
-
-		// Paint start node with gray
-		colorMap[nodeID] = EVertexColor::Gray;
-
-		// Helper container for iterative DFS
-		std::vector<EdgeInfo> stack;
-		stack.push_back(std::tuple_cat(std::make_tuple(nodeID), outLinks(nodeID)));
-
-		while(!stack.empty())
+		if(!depthFirstSearch(nodeID, colorMap, &_executeList))
 		{
-			NodeID nodeID; size_t link, link_end;
-			std::tie(nodeID, link, link_end) = stack.back();
-			stack.pop_back();
-
-			// For each output links
-			while(link != link_end)
-			{
-				// Get target node and its color
-				auto targetLink = std::begin(_links) + link;
-				NodeID targetNodeID = targetLink->toNode;
-				EVertexColor color = colorMap[targetNodeID];
-
-				// Still not explored vertex - depth search
-				if(color == EVertexColor::White)
-				{
-					stack.push_back(std::make_tuple(nodeID, ++link, link_end));
-					nodeID = targetNodeID;
-					colorMap[nodeID] = EVertexColor::Gray;
-					std::tie(link, link_end) = outLinks(nodeID);
-				}
-				// Shouldn't happen at all
-				else if(color == EVertexColor::Gray)
-				{
-					/// TODO: Cycle detected (back-edge) - throw?
-					_executeList.clear();
-					return;
-				}
-				else// if(color == EVertexColor == Black)
-				{
-					// We've been here
-					++link;
-				}
-			}
-
-			colorMap[nodeID] = EVertexColor::Black;
-			_executeList.push_back(nodeID);
+			_executeList.clear();
+			return;
 		}
 	}
 
 	// Topological sort gives result in inverse order
 	std::reverse(std::begin(_executeList), std::end(_executeList));
+}
+
+bool NodeTree::depthFirstSearch(NodeID nodeID, 
+								std::vector<ENodeColor>& colorMap, 
+								std::vector<NodeID>* execList)
+{
+	colorMap[nodeID] = ENodeColor::Gray;
+
+	// Helper container for iterative DFS
+	// <NodeID, index of first output link, index of last+1 output link>
+	typedef std::tuple<NodeID, size_t, size_t> EdgeInfo;
+
+	std::vector<EdgeInfo> stack;
+	stack.push_back(std::tuple_cat(std::make_tuple(nodeID), outLinks(nodeID)));
+
+	while(!stack.empty())
+	{
+		NodeID nodeID; size_t link, link_end;
+		std::tie(nodeID, link, link_end) = stack.back();
+		stack.pop_back();
+
+		// For each output links
+		while(link != link_end)
+		{
+			// Get target node and its color
+			auto targetLink = std::begin(_links) + link;
+			NodeID targetNodeID = targetLink->toNode;
+			ENodeColor color = colorMap[targetNodeID];
+
+			// Still not explored vertex - more depth search
+			if(color == ENodeColor::White)
+			{
+				stack.push_back(std::make_tuple(nodeID, ++link, link_end));
+				nodeID = targetNodeID;
+				colorMap[nodeID] = ENodeColor::Gray;
+				std::tie(link, link_end) = outLinks(nodeID);
+			}
+			// Shouldn't happen in acyclic graph
+			else if(color == ENodeColor::Gray)
+			{
+				return false;
+			}
+			// We've been here - go to next node
+			else// if(color == EVertexColor == Black)
+			{
+				++link; 
+			}
+		}
+
+		colorMap[nodeID] = ENodeColor::Black;
+		if(execList) execList->push_back(nodeID);
+	}
+
+	return true;
 }
 
 bool NodeTree::validateLink(SocketAddress& from, SocketAddress& to)
