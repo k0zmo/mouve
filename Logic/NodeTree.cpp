@@ -95,7 +95,6 @@ std::vector<NodeID> NodeTree::prepareList()
 {
 	if(!_executeListDirty)
 		return _executeList;
-	_executeList.clear();
 
 	prepareListImpl();
 
@@ -762,19 +761,21 @@ void NodeTree::prepareListImpl()
 	/// TODO: move sorting to link modifying methods
 	std::sort(std::begin(_links), std::end(_links));
 
+	_executeList.clear();
+
 	// For each tagged and valid nodes that haven't been visited yet do ..
 	for(NodeID nodeID = 0; nodeID < NodeID(_nodes.size()); ++nodeID)
 	{
-		if(!_nodes[nodeID].flag(ENodeFlags::Tagged))
-			continue;
-
 		if(!validateNode(nodeID))
 			continue;
 
-		if(!allRequiredInputSocketConnected(nodeID))
+		if(!_nodes[nodeID].flag(ENodeFlags::Tagged))
 			continue;
 
 		if(colorMap[nodeID] != EVertexColor::White)
+			continue;
+
+		if(!allRequiredInputSocketConnected(nodeID))
 			continue;
 
 		// Paint start node with gray
