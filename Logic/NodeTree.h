@@ -29,6 +29,7 @@ public:
 
 	void tagNode(NodeID nodeID);
 	void untagNode(NodeID nodeID);
+	void setNodeEnable(NodeID nodeID, bool enable);
 	bool isNodeExecutable(NodeID nodeID) const;
 	bool isTreeStateless() const;
 

@@ -65,9 +65,28 @@ void NodeTree::untagNode(NodeID nodeID)
 	}
 }
 
+void NodeTree::setNodeEnable(NodeID nodeID, bool enable)
+{
+	if(!validateNode(nodeID))
+		return;
+
+	auto&& node = _nodes[nodeID];
+
+	if(node.flag(ENodeFlags::Disabled) == enable)
+	{
+		_executeListDirty = true;
+
+		if(enable)
+			node.unsetFlag(ENodeFlags::Disabled);
+		else
+			node.setFlag(ENodeFlags::Disabled);
+	}
+}
+
 bool NodeTree::isNodeExecutable(NodeID nodeID) const
 {
 	return validateNode(nodeID) 
+		&& !_nodes[nodeID].flag(ENodeFlags::Disabled)
 		&& allRequiredInputSocketConnected(nodeID);
 }
 

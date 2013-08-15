@@ -11,7 +11,8 @@ enum class ENodeFlags : int
 	StateNode          = K_BIT(2),
 	AutoTag            = K_BIT(3),
 	NotFullyConnected  = K_BIT(4),
-	OverridesTimeComp  = K_BIT(5)
+	OverridesTimeComp  = K_BIT(5),
+	Disabled           = K_BIT(6)
 };
 
 class LOGIC_EXPORT Node

@@ -1378,6 +1378,7 @@ void Controller::nodeEditorContextMenu(const QPoint& globalPos, const QPointF& s
 		QAction actionTagNode("Tag node", nullptr);
 		QAction actionRemoveNode("Remove node", nullptr);
 		QAction actionDuplicateNode("Duplicate node", nullptr);
+		QAction actionDisableNode("Disable node", nullptr);
 
 		if(treeIdle())
 		{
@@ -1390,10 +1391,18 @@ void Controller::nodeEditorContextMenu(const QPoint& globalPos, const QPointF& s
 			connect(&actionDuplicateNode, &QAction::triggered, [=] {
 				duplicateNode(nodeView->nodeKey(), scenePos);
 			});
+			connect(&actionDisableNode, &QAction::triggered, [=] {
+				_nodeTree->setNodeEnable(nodeView->nodeKey(), !nodeView->isNodeEnabled());
+				nodeView->setNodeEnabled(!nodeView->isNodeEnabled());
+			});
+
+			if(!nodeView->isNodeEnabled())
+				actionDisableNode.setText("Enable node");
 
 			menu.addAction(&actionTagNode);
 			menu.addAction(&actionRemoveNode);
 			menu.addAction(&actionDuplicateNode);
+			menu.addAction(&actionDisableNode);
 		}
 
 		int previewsCount = nodeView->outputSocketCount();

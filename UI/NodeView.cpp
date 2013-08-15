@@ -31,6 +31,7 @@ NodeView::NodeView(const QString& title,
 	, mPreviewSocketID(0)
 	, mPreviewSelected(false)
 	, mStateMarkVisible(false)
+	, mNodeEnabled(true)
 {
 	setFlag(QGraphicsItem::ItemIsMovable);
 	setFlag(QGraphicsItem::ItemIsSelectable);
@@ -188,11 +189,15 @@ void NodeView::paint(QPainter* painter,
 	Q_UNUSED(option);
 	Q_UNUSED(widget);
 
-	painter->setPen(mPreviewSelected
+	// Priority: nodeEnabled, nodePreviewSelected, nodeSelected, node
+	painter->setPen(!mNodeEnabled
+		? NodeStyle::NodeBorderDisabledPen
+		: mPreviewSelected
 		? NodeStyle::NodeBorderPreviewSelectedPen 
 		: isSelected()
 		? NodeStyle::NodeBorderSelectedPen
 		: NodeStyle::NodeBorderPen);
+
 	painter->setBrush(NodeStyle::NodeTitleBrush);
 	painter->drawPath(mShape1);
 
@@ -378,6 +383,12 @@ void NodeView::setNodeWithStateMark(bool visible)
 	mStateMark->setVisible(visible);
 	mStateMarkVisible = visible;
 	updateLayout();
+}
+
+void NodeView::setNodeEnabled(bool enable)
+{
+	mNodeEnabled = enable;
+	update();
 }
 
 StateMarkGraphicsItem::StateMarkGraphicsItem(QGraphicsItem* parent)

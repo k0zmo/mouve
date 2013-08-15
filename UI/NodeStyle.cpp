@@ -26,6 +26,7 @@ QBrush NodeStyle::NodeBrush = QBrush(QColor(37, 37, 37));
 QPen NodeStyle::NodeBorderPen = QPen(QColor(88, 88, 88), 1.0, Qt::SolidLine);
 QPen NodeStyle::NodeBorderSelectedPen = QPen(QColor(128, 128, 128), 2.5, Qt::SolidLine);
 QPen NodeStyle::NodeBorderPreviewSelectedPen = QPen(QColor(119, 189, 255), 2.5, Qt::SolidLine);
+QPen NodeStyle::NodeBorderDisabledPen = QPen(QColor(136, 11, 17), 2.5, Qt::SolidLine);
 int NodeStyle::NodeRoundArc = 15;
 float NodeStyle::NodeTitleSize = 5.0;
 float NodeStyle::NodeTitleHorizontalMargin = 20.0;

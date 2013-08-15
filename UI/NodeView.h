@@ -40,6 +40,9 @@ public:
 
 	void setNodeWithStateMark(bool visible);
 
+	bool isNodeEnabled() const;
+	void setNodeEnabled(bool enable);
+
 protected:
 	virtual void hoverEnterEvent(QGraphicsSceneHoverEvent* event);
 	virtual void hoverLeaveEvent(QGraphicsSceneHoverEvent* event);
@@ -58,6 +61,7 @@ private:
 	int mPreviewSocketID;
 	bool mPreviewSelected;
 	bool mStateMarkVisible;
+	bool mNodeEnabled;
 
 private:
 	QPainterPath shape1(qreal titleHeight) const;
@@ -90,3 +94,6 @@ inline SocketID NodeView::previewSocketID() const
 
 inline void NodeView::setPreviewSocketID(SocketID socketID)
 { mPreviewSocketID = socketID; }
+
+inline bool NodeView::isNodeEnabled() const
+{ return mNodeEnabled; }
