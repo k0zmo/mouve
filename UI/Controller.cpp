@@ -1432,7 +1432,7 @@ void Controller::nodeEditorContextMenu(const QPoint& globalPos, const QPointF& s
 				menu.addAction(actionPreviewSocket);
 			}
 
-			// Save socket image menu (disable when tree is still being processed
+			// Save socket image menu (disable when tree is still being processed)
 			if(_state != EState::Playing && !_processing)
 			{
 				for(int socketID = 0; socketID < previewsCount; ++socketID)

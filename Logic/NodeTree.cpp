@@ -299,6 +299,9 @@ bool NodeTree::removeNode(NodeID nodeID)
 		});
 	_links.erase(removeFirstNodeLink, std::end(_links));
 
+	// Keep links sorted
+	std::sort(std::begin(_links), std::end(_links));
+
 	// Finally remove the node
 	deallocateNodeID(nodeID);
 
@@ -376,11 +379,13 @@ ELinkNodesResult NodeTree::linkNodes(SocketAddress from, SocketAddress to)
 	// Try to make a connection
 	_links.emplace_back(NodeLink(from, to));
 
+	// Keep links sorted
+	std::sort(std::begin(_links), std::end(_links));
+
 	// Check for created cycle(s)
 	if(checkCycle(to.node))
 	{
-		// NOTE: Links are already sorted
-		// look for given node link
+		// Look for given node link
 		NodeLink nodeLinkToFind(from, to);
 		auto iter = std::lower_bound(std::begin(_links), 
 			std::end(_links), nodeLinkToFind);
@@ -388,7 +393,12 @@ ELinkNodesResult NodeTree::linkNodes(SocketAddress from, SocketAddress to)
 		assert(iter != std::end(_links));
 
 		if(iter != std::end(_links))
+		{
 			_links.erase(iter);
+
+			// Keep links sorted
+			std::sort(std::begin(_links), std::end(_links));
+		}
 
 		return ELinkNodesResult::CycleDetected;
 	}
@@ -404,10 +414,7 @@ bool NodeTree::unlinkNodes(SocketAddress from, SocketAddress to)
 	if(!validateLink(from, to))
 		return false;
 
-	// lower_bound requires container to be sorted
-	std::sort(std::begin(_links), std::end(_links));
-
-	// look for given node link
+	// Look for given node link
 	NodeLink nodeLinkToFind(from, to);
 	auto iter = std::lower_bound(std::begin(_links), 
 		std::end(_links), nodeLinkToFind);
@@ -418,6 +425,9 @@ bool NodeTree::unlinkNodes(SocketAddress from, SocketAddress to)
 		NodeID nodeID = iter->toNode;
 
 		_links.erase(iter);
+
+		// Keep links sorted
+		std::sort(std::begin(_links), std::end(_links));
 
 		// tag affected node
 		tagNode(nodeID);
@@ -687,7 +697,6 @@ size_t NodeTree::firstOutputLink(NodeID fromNode,
 	return _links.size();
 }
 
-// Requires links to be sorted first
 std::tuple<size_t, size_t> NodeTree::outLinks(NodeID fromNode) const
 {
 	auto start = std::find_if(std::begin(_links), std::end(_links), 
@@ -728,9 +737,6 @@ bool NodeTree::checkCycle(NodeID startNode)
 	// Initialize color map with white color
 	std::vector<ENodeColor> colorMap(_nodes.size(), ENodeColor::White);
 
-	/// TODO: move sorting to link modifying methods
-	std::sort(std::begin(_links), std::end(_links));
-
 	return !depthFirstSearch(startNode, colorMap);
 }
 
@@ -739,9 +745,6 @@ void NodeTree::prepareListImpl()
 {
 	// Initialize color map with white color
 	std::vector<ENodeColor> colorMap(_nodes.size(), ENodeColor::White);
-
-	/// TODO: move sorting to link modifying methods
-	std::sort(std::begin(_links), std::end(_links));
 
 	_executeList.clear();
 
