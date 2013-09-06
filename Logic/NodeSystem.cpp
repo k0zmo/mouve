@@ -66,7 +66,7 @@ std::unique_ptr<NodeType> NodeSystem::createNode(NodeTypeID nodeTypeID) const
 		return nullptr;
 
 	// Retrieve proper factory
-	auto& nodeFactory = _registeredNodeTypes[nodeTypeID].nodeFactory;
+	const auto& nodeFactory = _registeredNodeTypes[nodeTypeID].nodeFactory;
 	if(nodeFactory != nullptr)
 	{
 		return nodeFactory->create();

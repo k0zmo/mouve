@@ -293,7 +293,7 @@ public:
 		cv::RNG& rng = cv::theRNG();
 		bool isRandColor = _color == cv::Scalar::all(-1);
 
-		for(auto&& it : kp.kpoints)
+		for(const auto& it : kp.kpoints)
 		{
 			cv::Scalar color = isRandColor ? cv::Scalar(rng(256), rng(256), rng(256)) : _color;
 			drawKeypoint(imageDst, it, color, _richKeypoints);
@@ -491,8 +491,8 @@ private:
 
 		for(size_t i = 0; i < mt.queryPoints.size(); ++i)
 		{
-			auto&& kp1 = mt.queryPoints[i];
-			auto&& kp2 = mt.trainPoints[i];
+			const auto& kp1 = mt.queryPoints[i];
+			const auto& kp2 = mt.trainPoints[i];
 
 			cv::Scalar color = isRandColor ? cv::Scalar(rng(256), rng(256), rng(256)) : _color;
 			cv::Scalar kpColor = isRandColor ? color : _kpColor;

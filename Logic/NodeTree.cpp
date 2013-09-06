@@ -56,7 +56,7 @@ void NodeTree::untagNode(NodeID nodeID)
 	if(!validateNode(nodeID))
 		return;
 
-	auto&& node = _nodes[nodeID];
+	auto& node = _nodes[nodeID];
 
 	if(node.flag(ENodeFlags::Tagged))
 	{
@@ -70,7 +70,7 @@ void NodeTree::setNodeEnable(NodeID nodeID, bool enable)
 	if(!validateNode(nodeID))
 		return;
 
-	auto&& node = _nodes[nodeID];
+	auto& node = _nodes[nodeID];
 
 	if(node.flag(ENodeFlags::Disabled) == enable)
 	{
@@ -255,7 +255,7 @@ NodeID NodeTree::createNode(NodeTypeID typeID, const std::string& name)
 	if(!nodeConfig.module.empty())
 	{
 		bool res = false;
-		auto&& module = _nodeSystem->nodeModule(nodeConfig.module);
+		const auto& module = _nodeSystem->nodeModule(nodeConfig.module);
 		if(module && module->ensureInitialized())
 			res = nodeType->init(module);
 
@@ -283,7 +283,7 @@ bool NodeTree::removeNode(NodeID nodeID)
 		return false;
 
 	// Tag nodes that are directly connected to the removed node
-	for(auto&& nodeLink : _links)
+	for(const auto& nodeLink : _links)
 	{
 		if(nodeLink.fromNode == nodeID)
 			tagNode(nodeLink.toNode);
@@ -442,7 +442,7 @@ void NodeTree::setNodeName(NodeID nodeID, const std::string& newNodeName)
 {
 	if(nodeID < _nodes.size())
 	{
-		auto&& node = _nodes[nodeID];
+		auto& node = _nodes[nodeID];
 		if(node.isValid() && node.nodeName() != newNodeName)
 		{
 			// Remove old mapping
@@ -462,7 +462,7 @@ const std::string& NodeTree::nodeName(NodeID nodeID) const
 
 	if(nodeID < _nodes.size())
 	{
-		auto&& node = _nodes[nodeID];
+		const auto& node = _nodes[nodeID];
 		if(node.isValid())
 		{
 			return node.nodeName();
@@ -575,7 +575,7 @@ bool NodeTree::allRequiredInputSocketConnected(NodeID nodeID) const
 	if(!validateNode(nodeID))
 		return false;
 
-	auto&& node = _nodes[nodeID];
+	const auto& node = _nodes[nodeID];
 
 	for(SocketID socketID = 0; socketID < node.numInputSockets(); ++socketID)
 	{
@@ -686,7 +686,7 @@ size_t NodeTree::firstOutputLink(NodeID fromNode,
 {
 	for(size_t i = start; i < _links.size(); ++i)
 	{
-		auto&& link = _links[i];
+		const auto& link = _links[i];
 
 		if(link.fromNode == fromNode &&
 		   link.fromSocket == fromSocket)

@@ -50,7 +50,7 @@ QJsonObject NodeTreeSerializer::serializeJson(const std::shared_ptr<NodeTree>& n
 
 				if(propValue.isValid())
 				{
-					auto&& prop = nodeConfig.pProperties[propID];
+					const auto& prop = nodeConfig.pProperties[propID];
 
 					QJsonObject jsonProp;
 					jsonProp.insert(QStringLiteral("id"), propID);
@@ -179,7 +179,7 @@ bool NodeTreeSerializer::deserializeJsonNodes(std::shared_ptr<NodeTree>& nodeTre
 	int i = 0;
 
 	// Load nodes
-	for(auto&& node : nodes)
+	for(const auto& node : nodes)
 	{
 		QVariantMap mapNode = node.toMap();		
 
@@ -223,7 +223,7 @@ bool NodeTreeSerializer::deserializeJsonNodes(std::shared_ptr<NodeTree>& nodeTre
 		{
 			QVariantList properties = varProperties.toList();
 
-			for(auto&& prop : properties)
+			for(const auto& prop : properties)
 			{
 				QVariantMap propMap = prop.toMap();
 
@@ -283,7 +283,7 @@ bool NodeTreeSerializer::deserializeJsonLinks(std::shared_ptr<NodeTree>& nodeTre
 	int i = 0;
 	QVariantList links = jsonLinks.toVariantList();
 
-	for(auto&& link : links)
+	for(const auto& link : links)
 	{
 		QVariantMap mapLink = link.toMap();
 

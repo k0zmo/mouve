@@ -192,7 +192,7 @@ vector<GpuRegisteredProgram> KernelLibrary::populateListOfRegisteredPrograms() c
 		{
 			// find how many kernels uses this program-build options configuration
 			vector<string> kernelNames;
-			for(auto& kentry : _kernels)
+			for(const auto& kentry : _kernels)
 			{
 				if(kentry.programName == entry.programName
 					&& kentry.buildOptions == ri->second.buildOptions)
@@ -282,7 +282,7 @@ void KernelLibrary::updateKernelEntry(const clw::Program& program,
 			<< entry.programName << ".\n\nList of kernels: \n";
 		auto kernels = program.createKernels();
 		string kernelNames;
-		for(auto& k : kernels)
+		for(const auto& k : kernels)
 			strm << "\t" << k.name() << "\n";
 		throw GpuBuildException(strm.str());
 	}

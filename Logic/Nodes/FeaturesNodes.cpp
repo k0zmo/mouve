@@ -147,7 +147,7 @@ public:
 		lines.create(linesVector.size(), 2, CV_32F);
 
 		float* linesPtr = lines.ptr<float>();
-		for(auto& line : linesVector)
+		for(const auto& line : linesVector)
 		{
 			linesPtr[0] = line[0];
 			linesPtr[1] = line[1];

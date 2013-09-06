@@ -62,8 +62,8 @@ public:
 		cv::goodFeaturesToTrack(src, corners, _maxCorners, _qualityLevel, 
 			_minDistance, cv::noArray(), blockSize, useHarrisDetector, k);
 
-		for(auto&& corner : corners)
-			kp.kpoints.emplace_back(cv::KeyPoint(corner, 8.0));
+		for(const auto& corner : corners)
+			kp.kpoints.emplace_back(corner, 8.0f);
 		kp.image = src;
 
 		return ExecutionStatus(EStatus::Ok, 

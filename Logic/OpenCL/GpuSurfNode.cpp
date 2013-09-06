@@ -451,7 +451,7 @@ protected:
 		{
 			for(int scale = 0; scale < _nScales; ++scale)
 			{
-				auto&& layer = _scaleLayers[octave*_nScales + scale];
+				auto& layer = _scaleLayers[octave*_nScales + scale];
 
 				layer.width = imageWidth >> octave;
 				layer.height = imageHeight >> octave;
@@ -495,7 +495,7 @@ protected:
 		{
 			for(int scale = 0; scale < _nScales; ++scale)
 			{
-				auto&& layer = _scaleLayers[octave*_nScales + scale];
+				auto& layer = _scaleLayers[octave*_nScales + scale];
 
 				if(imageWidth < layer.filterSize
 				|| imageHeight < layer.filterSize)
@@ -559,9 +559,9 @@ protected:
 			for(int scale = 1; scale < _nScales-1; ++scale)
 			{
 				int indexMiddle = octave*_nScales + scale;
-				auto&& layerBottom = _scaleLayers[indexMiddle - 1];
-				auto&& layerMiddle = _scaleLayers[indexMiddle];
-				auto&& layerTop = _scaleLayers[indexMiddle + 1];
+				const auto& layerBottom = _scaleLayers[indexMiddle - 1];
+				const auto& layerMiddle = _scaleLayers[indexMiddle];
+				const auto& layerTop = _scaleLayers[indexMiddle + 1];
 
 				int layerMargin = (layerTop.filterSize) / (2 * layerTop.sampleStep) + 1;
 				int scaleDiff = layerMiddle.filterSize - layerBottom.filterSize;
@@ -843,7 +843,7 @@ protected:
 		{
 			for(int scale = 0; scale < _nScales; ++scale)
 			{
-				auto&& layer = _scaleLayers[octave*_nScales + scale];
+				auto& layer = _scaleLayers[octave*_nScales + scale];
 
 				if(imageWidth < layer.filterSize
 					|| imageHeight < layer.filterSize)

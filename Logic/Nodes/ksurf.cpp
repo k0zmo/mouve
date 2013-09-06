@@ -100,7 +100,7 @@ vector<cv::KeyPoint> transformKeyPoint(const vector<KeyPoint>& keypoints)
     vector<cv::KeyPoint> ret(keypoints.size());
 
     tbb::parallel_for(0, (int) keypoints.size(), [&](int idx) {
-        auto&& kp = keypoints[idx];
+        const auto& kp = keypoints[idx];
         ret[idx] = cv::KeyPoint(kp.x, kp.y, kp.scale,
             RAD2DEG(kp.orientation), kp.response, 0 /*octave*/, kp.laplacian);
     });
@@ -126,7 +126,7 @@ vector<KeyPoint> transformKeyPoint(const vector<cv::KeyPoint>& keypoints)
     vector<KeyPoint> ret(keypoints.size());
 
     tbb::parallel_for(0, (int) keypoints.size(), [&](int idx) {
-        auto&& kp = keypoints[idx];
+        const auto& kp = keypoints[idx];
         KeyPoint kpoint = {
             kp.pt.x,  kp.pt.y, 
             kp.size,
@@ -398,9 +398,9 @@ static void buildScaleSpaceLayer(ScaleSpaceLayer& scaleLayer,
 }
 
 static inline void findScaleSpaceMaxima_pix(double hessianThreshold, int lx, int ly,
-                                            ScaleSpaceLayer& layerBottom,
-                                            ScaleSpaceLayer& layerMiddle,
-                                            ScaleSpaceLayer& layerTop,
+                                            const ScaleSpaceLayer& layerBottom,
+                                            const ScaleSpaceLayer& layerMiddle,
+                                            const ScaleSpaceLayer& layerTop,
 #if defined(HAVE_TBB)
                                             tbb::concurrent_vector<KeyPoint>& kpoints)
 #else
@@ -494,9 +494,9 @@ static inline void findScaleSpaceMaxima_pix(double hessianThreshold, int lx, int
 }
 
 static void findScaleSpaceMaxima(double hessianThreshold,
-                                 ScaleSpaceLayer& layerBottom,
-                                 ScaleSpaceLayer& layerMiddle,
-                                 ScaleSpaceLayer& layerTop,
+                                 const ScaleSpaceLayer& layerBottom,
+                                 const ScaleSpaceLayer& layerMiddle,
+                                 const ScaleSpaceLayer& layerTop,
                                  vector<KeyPoint>& kpoints)
 {
     // Margin is one pixel bigger than during hessian
@@ -599,9 +599,9 @@ vector<KeyPoint> fastHessianDetector(const cv::Mat& intImage,
 
         for(int scale = 1; scale < numScales - 1; ++scale)
         {
-            auto&& layerBottom = scaleLayers[scale - 1];
-            auto&& layerMiddle = scaleLayers[scale];
-            auto&& layerTop = scaleLayers[scale + 1];
+            const auto& layerBottom = scaleLayers[scale - 1];
+            const auto& layerMiddle = scaleLayers[scale];
+            const auto& layerTop = scaleLayers[scale + 1];
 
             findScaleSpaceMaxima(hessianThreshold, layerBottom, 
                 layerMiddle, layerTop, kpoints);
@@ -685,7 +685,7 @@ void surfOrientation(vector<KeyPoint>& kpoints,
             {
                 float sumX = 0, sumY = 0.0f;
 
-                for(auto&& resp : responses)
+                for(const auto& resp : responses)
                 {
                     float d = resp.angle - angleWin1;
                     if(d > 0 && d < ORIENTATION_WINDOW_SIZE)
@@ -899,14 +899,14 @@ void msurfDescriptors(const vector<KeyPoint>& kpoints,
     // We need idx for a index in descriptors matrix - no for_each for us this time
     tbb::parallel_for(0, (int) kpoints.size(), [&](int idx)
     {
-        auto&& kpoint = kpoints[idx];
+        const auto& kpoint = kpoints[idx];
         float* desc = descriptors.ptr<float>(idx);
         msurfDescriptors_kpoint(kpoint, intImage, desc, gaussWeights);
     });
 #else
     for(int idx = 0; idx < (int) kpoints.size(); ++idx)
     {
-        auto&& kpoint = kpoints[idx];
+        const auto& kpoint = kpoints[idx];
         float* desc = descriptors.ptr<float>(idx);
         msurfDescriptors_kpoint(kpoint, intImage, desc, gaussWeights);
     }
@@ -924,14 +924,14 @@ void surfDescriptors(const vector<KeyPoint>& kpoints,
     // We need idx for a index in descriptors matrix - no for_each for us this time
     tbb::parallel_for(0, (int) kpoints.size(), [&](int idx)
     {
-        auto&& kpoint = kpoints[idx];
+        const auto& kpoint = kpoints[idx];
         float* desc = descriptors.ptr<float>(idx);
         surfDescriptors_kpoint(kpoint, intImage, desc);
     });
 #else
     for(int idx = 0; idx < (int) kpoints.size(); ++idx)
     {
-        auto&& kpoint = kpoints[idx];
+        const auto& kpoint = kpoints[idx];
         float* desc = descriptors.ptr<float>(idx);
         surfDescriptors_kpoint(kpoint, intImage, desc);
     }

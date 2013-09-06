@@ -15,9 +15,9 @@ static vector<DMatch> symmetryTest(const vector<DMatch>& matches1to2,
 {
 	vector<DMatch> bothMatches;
 
-	for(auto&& match1to2 : matches1to2)
+	for(const auto& match1to2 : matches1to2)
 	{
-		for(auto&& match2to1 : matches2to1)
+		for(const auto& match2to1 : matches2to1)
 		{
 			if(match1to2.queryIdx == match2to1.trainIdx
 				&& match2to1.queryIdx == match1to2.trainIdx)
@@ -146,7 +146,7 @@ public:
 		mt.queryPoints.clear();
 		mt.trainPoints.clear();
 
-		for(auto&& match : matches)
+		for(const auto& match : matches)
 		{
 			mt.queryPoints.push_back(queryKp.kpoints[match.queryIdx].pt);
 			mt.trainPoints.push_back(trainKp.kpoints[match.trainIdx].pt);

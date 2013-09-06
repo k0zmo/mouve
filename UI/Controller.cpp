@@ -198,7 +198,7 @@ void Controller::addNodeView(const QString& nodeTitle,
 	{
 		while(nodeConfig.pInputSockets[socketID].dataType != ENodeFlowDataType::Invalid)
 		{
-			auto& input = nodeConfig.pInputSockets[socketID];
+			const auto& input = nodeConfig.pInputSockets[socketID];
 
 			QString socketTitle = input.humanName.length() > 0
 				? QString::fromStdString(input.humanName)
@@ -214,7 +214,7 @@ void Controller::addNodeView(const QString& nodeTitle,
 	{
 		while(nodeConfig.pOutputSockets[socketID].dataType != ENodeFlowDataType::Invalid)
 		{
-			auto& output = nodeConfig.pOutputSockets[socketID];
+			const auto& output = nodeConfig.pOutputSockets[socketID];
 
 			QString socketTitle = output.humanName.length() > 0
 				? QString::fromStdString(output.humanName)
@@ -236,7 +236,7 @@ void Controller::addNodeView(const QString& nodeTitle,
 
 		while(nodeConfig.pProperties[propID].type != EPropertyType::Unknown)
 		{
-			auto& prop = nodeConfig.pProperties[propID];
+			const auto& prop = nodeConfig.pProperties[propID];
 
 			_propManager->newProperty(nodeID, propID, prop.type, 
 				QString::fromStdString(prop.name),
@@ -1240,7 +1240,7 @@ bool Controller::openTreeFromFileImpl(const QString& filePath)
 	QJsonArray jsonScene = jsonTree["scene"].toArray();
 	QVariantList scene = jsonScene.toVariantList();
 
-	for(auto& sceneElem : scene)
+	for(const auto& sceneElem : scene)
 	{
 		QVariantMap elemMap = sceneElem.toMap();
 
@@ -1740,7 +1740,7 @@ void Controller::tagSelected()
 
 	QList<QGraphicsItem*> selectedItems = _nodeScene->selectedItems();
 
-	for(auto&& item : selectedItems)
+	for(auto item : selectedItems)
 	{
 		if(item->type() == NodeView::Type)
 		{
@@ -1774,7 +1774,7 @@ void Controller::updatePreview(bool res)
 
 	// Update time info on nodes
 	double totalTimeElapsed = 0.0;
-	for(auto&& nodeID : execList)
+	for(auto nodeID : execList)
 	{
 		double elapsed = _nodeTree->nodeTimeElapsed(nodeID);
 		totalTimeElapsed += elapsed;
@@ -2102,7 +2102,7 @@ void Controller::initGpuModule(QMenu* menuModules)
 			return;
 		}
 
-		auto&& gpuPlatforms = _gpuModule->availablePlatforms();
+		const auto& gpuPlatforms = _gpuModule->availablePlatforms();
 		if(gpuPlatforms.empty())
 		{
 			showErrorMessage("No OpenCL platforms found!");
@@ -2128,19 +2128,19 @@ void Controller::showProgramsList()
 	auto list = _gpuModule->populateListOfRegisteredPrograms();
 	
 	QList<QTreeWidgetItem*> items;
-	for(auto&& programEntry : list)
+	for(const auto& programEntry : list)
 	{
 		QTreeWidgetItem* item = new QTreeWidgetItem((QTreeWidget*)nullptr, 
 			QStringList() << QString::fromStdString(programEntry.programName));
 
-		for(auto&& build : programEntry.builds)
+		for(const auto& build : programEntry.builds)
 		{
 			QString buildOptions = QString::fromStdString(build.options);
 			if(buildOptions.isEmpty())
 				buildOptions = QStringLiteral("[no build options]");
 			QTreeWidgetItem* buildItem = new QTreeWidgetItem(item, QStringList() << buildOptions);
 			
-			for(auto&& kernel : build.kernels)
+			for(const auto& kernel : build.kernels)
 			{
 				QString kernelName = QString::fromStdString(kernel);
 				QTreeWidgetItem* kernelItem = new QTreeWidgetItem(buildItem, QStringList() << kernelName);
@@ -2295,7 +2295,7 @@ void queryAndFillParameters(const std::shared_ptr<IJaiNodeModule>& jaiModule,
 	modifyLabels(ui.adcGainLabel, settings.gain);
 
 	int pindex = 0;
-	for(auto& px : settings.pixelFormats)
+	for(const auto& px : settings.pixelFormats)
 	{
 		int pxcode = std::get<0>(px);
 		ui.pixelFormatComboBox->addItem(QString::fromStdString(std::get<1>(px)), pxcode);
@@ -2349,7 +2349,7 @@ void Controller::showDeviceSettings()
 	Ui::CameraDialog ui;
 	ui.setupUi(&dialog);
 
-	for(auto& info : cameraInfos)
+	for(const auto& info : cameraInfos)
 		ui.cameraComboBox->addItem(QString::fromStdString(info.modelName));
 	queryAndFillParameters(_jaiModule, ui, cameraInfos[0], 0);
 
@@ -2438,7 +2438,7 @@ void Controller::pluginLookUp()
 	auto list = pluginDir.entryInfoList(QStringList("*.so"), QDir::Files);
 #endif
 
-	for(auto&& pluginName : list)
+	for(const auto& pluginName : list)
 	{
 		try
 		{

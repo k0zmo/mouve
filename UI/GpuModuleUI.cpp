@@ -13,13 +13,13 @@ GpuChoiceDialog::GpuChoiceDialog(const std::vector<GpuPlatform>& gpuPlatforms,
 
 	QList<QTreeWidgetItem*> treeItems;
 	int platformID = 0;
-	for(auto&& platform : gpuPlatforms)
+	for(const auto& platform : gpuPlatforms)
 	{
 		QTreeWidgetItem* itemPlatform = new QTreeWidgetItem((QTreeWidgetItem*)nullptr,
 			QStringList(QString::fromStdString(platform.name)));
 
 		int deviceID = 0;
-		for(auto&& device : platform.devices)
+		for(const auto& device : platform.devices)
 		{
 			QTreeWidgetItem* itemDevice = new QTreeWidgetItem(itemPlatform, 
 				QStringList(QString::fromStdString(device)));
@@ -84,7 +84,7 @@ void GpuChoiceDialog::accept()
 			return;
 		}
 
-		auto&& item = items[0];
+		const auto& item = items[0];
 		if(item->parent() == nullptr)
 		{
 			QMessageBox::critical(this, "Gpu module", 
@@ -115,7 +115,7 @@ int GpuChoiceDialog::extractUserData(int index) const
 	auto items = devicesTreeWidget->selectedItems();
 	if(!items.isEmpty())
 	{
-		auto&& item = items[0];
+		const auto& item = items[0];
 		if(item->parent())
 		{
 			return item->data(0, Qt::UserRole + index).toInt();

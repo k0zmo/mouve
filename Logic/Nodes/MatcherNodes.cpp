@@ -12,13 +12,13 @@ static vector<cv::DMatch> distanceRatioTest(const vector<vector<cv::DMatch>>& kn
 	vector<cv::DMatch> positiveMatches;
 	positiveMatches.reserve(knMatches.size());
 
-	for(auto&& knMatch : knMatches)
+	for(const auto& knMatch : knMatches)
 	{
 		if(knMatch.size() != 2)
 			continue;
 
-		auto&& best = knMatch[0];
-		auto&& good = knMatch[1];
+		const auto& best = knMatch[0];
+		const auto& good = knMatch[1];
 
 		if(best.distance <= distanceRatioThreshold * good.distance)
 			positiveMatches.push_back(best);
@@ -32,9 +32,9 @@ static vector<cv::DMatch> symmetryTest(const vector<cv::DMatch>& matches1to2,
 {
 	vector<cv::DMatch> bothMatches;
 
-	for(auto&& match1to2 : matches1to2)
+	for(const auto& match1to2 : matches1to2)
 	{
-		for(auto&& match2to1 : matches2to1)
+		for(const auto& match2to1 : matches2to1)
 		{
 			if(match1to2.queryIdx == match2to1.trainIdx
 			&& match2to1.queryIdx == match1to2.trainIdx)
@@ -168,7 +168,7 @@ public:
 		mt.queryImage = queryKp.image;
 		mt.trainImage = trainKp.image;
 
-		for(auto&& match : matches)
+		for(const auto& match : matches)
 		{
 			mt.queryPoints.push_back(queryKp.kpoints[match.queryIdx].pt);
 			mt.trainPoints.push_back(trainKp.kpoints[match.trainIdx].pt);
@@ -326,7 +326,7 @@ public:
 		mt.queryPoints.clear();
 		mt.trainPoints.clear();
 
-		for(auto&& match : matches)
+		for(const auto& match : matches)
 		{
 			mt.queryPoints.push_back(queryKp.kpoints[match.queryIdx].pt);
 			mt.trainPoints.push_back(trainKp.kpoints[match.trainIdx].pt);
@@ -407,7 +407,7 @@ public:
 		// remove unmatched ones and pick only first matches
 		vector<cv::DMatch> matches;
 
-		for(auto&& rmatches : radiusMatches)
+		for(const auto& rmatches : radiusMatches)
 		{
 			if(!rmatches.empty())
 			{
@@ -419,7 +419,7 @@ public:
 		mt.queryPoints.clear();
 		mt.trainPoints.clear();
 
-		for(auto&& match : matches)
+		for(const auto& match : matches)
 		{
 			mt.queryPoints.push_back(queryKp.kpoints[match.queryIdx].pt);
 			mt.trainPoints.push_back(trainKp.kpoints[match.trainIdx].pt);
