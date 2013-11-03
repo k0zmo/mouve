@@ -12,7 +12,7 @@ class LOGIC_EXPORT GpuNodeModule : public IGpuNodeModule
 {
 public:
 	explicit GpuNodeModule(bool interactiveInit);
-	~GpuNodeModule() override;
+	virtual ~GpuNodeModule();
 
 	void setInteractiveInit(bool interactiveInit) override;
 	bool isInteractiveInit() const override;

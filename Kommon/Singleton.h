@@ -27,19 +27,15 @@ public:
 #endif
 };
 
-template <class Type>
-inline Singleton<Type>::Singleton()
+template <class Type> inline Singleton<Type>::Singleton()
 { assert(!_singleton); _singleton = static_cast<Type*>(this); }
 
-template <class Type>
-inline Singleton<Type>::~Singleton()
+template <class Type> inline Singleton<Type>::~Singleton()
 { assert(_singleton); _singleton = nullptr; }
 
-template <class Type>
-inline Type& Singleton<Type>::instance()
+template <class Type> inline Type& Singleton<Type>::instance()
 { assert(_singleton); return *_singleton; }
 
-template <class Type>
-inline Type* Singleton<Type>::instancePtr()
+template <class Type> inline Type* Singleton<Type>::instancePtr()
 { return _singleton; }
 

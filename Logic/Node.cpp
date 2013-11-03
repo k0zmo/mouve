@@ -113,16 +113,10 @@ ExecutionStatus Node::execute(NodeSocketReader& reader, NodeSocketWriter& writer
 	double stop = _stopWatch.currentTimeInSeconds();
 
 	_message = status.message;
+	_timeElapsed = !flag(ENodeFlags::OverridesTimeComp)
+		? (stop - start) * 1e3 // Save in milliseconds
+		: status.timeElapsed;
 
-	if(!flag(ENodeFlags::OverridesTimeComp))
-	{
-		// Save in milliseconds
-		_timeElapsed = (stop - start) * 1e3;
-	}
-	else
-	{
-		_timeElapsed = status.timeElapsed;
-	}
 	return status;
 }
 

@@ -104,14 +104,9 @@ std::string NodeSystem::nodeDescription(NodeTypeID nodeTypeID) const
 NodeTypeID NodeSystem::nodeTypeID(const std::string& nodeTypeName) const
 {
 	auto iter = _typeNameToTypeID.find(nodeTypeName);
-	if(iter == _typeNameToTypeID.end())
-	{
-		return InvalidNodeTypeID;
-	}
-	else
-	{
-		return iter->second;
-	}
+	return iter != _typeNameToTypeID.end()
+		? iter->second
+		: InvalidNodeTypeID;
 }
 
 std::string NodeSystem::defaultNodeName(NodeTypeID nodeTypeID) const
