@@ -38,7 +38,7 @@ void TreeWorker::process(bool withInit)
 	}
 	catch(...)
 	{
-		emit error(QStringLiteral("Unknown exception was caught"));
+		emit error(QStringLiteral("Internal error - Unknown exception was caught"));
 	}
 
 	emit completed(res);

@@ -51,11 +51,12 @@
 #include <future>
 #include <thread>
 
-static const QString applicationTitle = QStringLiteral("mouve");
 template<> Controller* Singleton<Controller>::_singleton = nullptr;
 
-Controller::Controller(QWidget* parent, Qt::WindowFlags flags)
+Controller::Controller(const QString& appTitle, 
+	QWidget* parent, Qt::WindowFlags flags)
 	: QMainWindow(parent, flags)
+	, _appTitle(appTitle)
 	, _previewSelectedNodeView(nullptr)
 	, _nodeToolTip(nullptr)
 	, _nodeScene(nullptr)
@@ -80,9 +81,6 @@ Controller::Controller(QWidget* parent, Qt::WindowFlags flags)
 	, _nodeTreeDirty(false)
 	, _showTooltips(false)
 {
-	QCoreApplication::setApplicationName(applicationTitle);
-	QCoreApplication::setOrganizationName(applicationTitle);
-
 	setupUi();
 
 	// Lookup for plugins in ./plugins directory
@@ -162,7 +160,7 @@ void Controller::addNode(NodeTypeID nodeTypeID, const QPointF& scenePos)
 	NodeID nodeID = _nodeTree->createNode(nodeTypeID, nodeTitle);
 	if(nodeID == InvalidNodeID)
 	{
-		showErrorMessage("Node system couldn't create node of given type.");
+		showErrorMessage("Internal error - Node system couldn't create node of given type.");
 		return;
 	}
 
@@ -182,7 +180,7 @@ void Controller::addNodeView(const QString& nodeTitle,
 	NodeConfig nodeConfig;
 	if(!_nodeTree->nodeConfiguration(nodeID, nodeConfig))
 	{
-		showErrorMessage("Error during querying node type configuration.\n"
+		showErrorMessage("Internal error - querying node type configuration.\n"
 			"Given node ID was invalid.");
 		return;
 	}
@@ -305,7 +303,7 @@ void Controller::linkNodes(NodeID fromNodeID, SocketID fromSocketID,
 
 	if(!_nodeViews[fromNodeID] || !_nodeViews[toNodeID])
 	{
-		showErrorMessage("Error looking for node views with given NodeID");
+		showErrorMessage("Internal error - Error looking for node views with given NodeID");
 		return;
 	}
 
@@ -324,7 +322,7 @@ void Controller::linkNodesView(NodeSocketView* from, NodeSocketView* to)
 
 	if(!from || !to)
 	{
-		showErrorMessage("One of socket is null");
+		showErrorMessage("Internal error - One of socket is null");
 		return;
 	}
 
@@ -344,7 +342,7 @@ void Controller::duplicateNode(NodeID nodeID, const QPointF& scenePos)
 	NodeID newNodeID = _nodeTree->duplicateNode(nodeID);
 	if(newNodeID == InvalidNodeID)
 	{
-		showErrorMessage("Couldn't duplicate given node.");
+		showErrorMessage("Internal error - Couldn't duplicate given node.");
 		return;
 	}
 
@@ -364,7 +362,7 @@ void Controller::unlinkNodes(NodeLinkView* linkView)
 
 	if(!linkView || !linkView->fromSocketView() || !linkView->toSocketView())
 	{
-		showErrorMessage("Connection or one of its sockets are null");
+		showErrorMessage("Internal error - Connection or one of its sockets are null");
 		return;
 	}
 
@@ -379,14 +377,14 @@ void Controller::unlinkNodes(NodeLinkView* linkView)
 	/// TODO: give a reason
 	if(!_nodeTree->unlinkNodes(addrFrom, addrTo))
 	{
-		showErrorMessage("[NodeTree] Couldn't unlinked given sockets");
+		showErrorMessage("Internal error - Couldn't unlinked given sockets");
 		return;
 	}
 
 	// Remove link view
 	if(!_linkViews.removeOne(linkView))
 	{
-		showErrorMessage("[Controller] Couldn't removed link view");
+		showErrorMessage("Internal error - Couldn't removed link view");
 		return;
 	}
 	_nodeScene->removeItem(linkView);
@@ -406,7 +404,7 @@ void Controller::deleteNode(NodeView* nodeView)
 
 	if(!_nodeTree->removeNode(nodeID))
 	{
-		showErrorMessage("[NodeTree] Couldn't removed given node");
+		showErrorMessage("Internal error - Couldn't removed given node");
 		return;
 	}
 
@@ -636,11 +634,11 @@ void Controller::setupUiAbout()
 	_ui->menuHelp->addAction(actionAboutOpenCV);
 
 	// About program
-	QAction* actionAboutApplication = new QAction(tr("About ") + applicationTitle, this);
-	actionAboutApplication->setToolTip(tr("Show information about ") + applicationTitle);
+	QAction* actionAboutApplication = new QAction(tr("About ") + _appTitle, this);
+    actionAboutApplication->setToolTip(tr("Show information about ") + _appTitle);
 	connect(actionAboutApplication, &QAction::triggered, [=] {
 		QString translatedTextAboutCaption = QString(
-			"<h3>About %1</h3>").arg(applicationTitle);
+            "<h3>About %1</h3>").arg(_appTitle);
 #ifdef Q_OS_LINUX
 		// Causes linker error in msvc2012
 		QString translatedTextAboutText = QString::fromWCharArray(
@@ -655,7 +653,7 @@ void Controller::setupUiAbout()
 			L"© 2011, Double-J designs</p>");
 		QMessageBox *msgBox = new QMessageBox(this);
 		msgBox->setAttribute(Qt::WA_DeleteOnClose);
-		msgBox->setWindowTitle(tr("About ") + applicationTitle);
+        msgBox->setWindowTitle(tr("About ") + _appTitle);
 		msgBox->setText(translatedTextAboutCaption);
 		msgBox->setInformativeText(translatedTextAboutText);
 
@@ -816,7 +814,7 @@ void Controller::prepareRecentFileList()
 
 			if(!openTreeFromFile(filePath))
 			{
-				int fb = QMessageBox::question(this, applicationTitle, 
+                int fb = QMessageBox::question(this, _appTitle,
 					tr("\"%1\" could not be opened. Do you want to remove the reference to it from the Recent file list?")
 						.arg(filePath), QMessageBox::Yes, QMessageBox::No);
 				if(fb == QMessageBox::Yes)
@@ -852,7 +850,8 @@ void Controller::prepareRecentFileList()
 
 void Controller::showErrorMessage(const QString& message)
 {
-	QMessageBox::critical(nullptr, applicationTitle, message);
+	qCritical(qPrintable(message));
+    QMessageBox::critical(nullptr, _appTitle, message);
 }
 
 void Controller::switchToVideoMode()
@@ -1027,7 +1026,7 @@ void Controller::updateTitleBar()
 	QString tmp = _nodeTreeFilePath.isEmpty()
 		? tr("Untitled")
 		: QFileInfo(_nodeTreeFilePath).fileName();
-	QString windowTitle = applicationTitle + " - ";
+    QString windowTitle = _appTitle + " - ";
 	if(_nodeTreeDirty)
 		windowTitle += "*";
 	setWindowTitle(windowTitle + tmp);
@@ -1138,15 +1137,12 @@ bool Controller::saveTreeToFile(const QString& filePath)
 		updateRecentFileActions(filePath);
 		updateTitleBar();
 
-		qDebug() << "Tree successfully saved to file:" << filePath;
-
+		qDebug() << "Node tree successfully written to the file:" << filePath;
 		return true;
 	}
 	else
 	{
-		showErrorMessage("Error occured during saving file! Check logs for more details.");
-		qCritical() << "Couldn't save node tree to file:" << filePath;
-
+		showErrorMessage(QString("Couldn't save node tree to the output file: %1!").arg(filePath));
 		return false;
 	}
 }
@@ -1197,10 +1193,34 @@ bool Controller::openTreeFromFile(const QString& filePath)
 		updateTitleBar();
 		fitToView();
 
-		qDebug() << "Tree successfully opened from file:" << filePath;
+		qDebug() << "Node tree successfully opened and read from file:" << filePath;
 	}
 
 	return res;
+}
+
+QString jsonParseError(QJsonParseError::ParseError parseError)
+{
+#define CASE(x) case QJsonParseError::x: return QStringLiteral(#x);
+	switch (parseError)
+	{
+	CASE(NoError)
+	CASE(UnterminatedObject)
+	CASE(MissingNameSeparator)
+	CASE(UnterminatedArray)
+	CASE(MissingValueSeparator)
+	CASE(IllegalValue)
+	CASE(TerminationByNumber)
+	CASE(IllegalNumber)
+	CASE(IllegalEscapeSequence)
+	CASE(IllegalUTF8String)
+	CASE(UnterminatedString)
+	CASE(MissingObject)
+	CASE(DeepNesting)
+	CASE(DocumentTooLarge)
+	default: return QStringLiteral("Unknown");
+	}
+#undef CASE
 }
 
 bool Controller::openTreeFromFileImpl(const QString& filePath)
@@ -1214,17 +1234,20 @@ bool Controller::openTreeFromFileImpl(const QString& filePath)
 	QJsonDocument doc = QJsonDocument::fromJson(fileContents, &error);
 	if(error.error != QJsonParseError::NoError)
 	{
-		showErrorMessage("Error occured during parsing file! Check logs for more details.");
-		qCritical() << "Couldn't open node tree from file:" << filePath
-			<< " details:" << error.errorString() << "in" << error.offset << "character";
+		showErrorMessage(QString("Couldn't open node tree from file: %1\n"
+			"Error details: %2 in %3 character (error code: %4)")
+			.arg(filePath)
+			.arg(error.errorString())
+			.arg(error.offset)
+			.arg(jsonParseError(error.error)));
 		return false;
 	}
 
 	if(!doc.isObject())
 	{
-		showErrorMessage("Error occured during parsing file! Check logs for more details.");
-		qCritical() << "Couldn't open node tree from file:" << filePath
-			<< " details: root value isn't JSON object";
+		showErrorMessage(QString("Couldn't open node tree from file: %1\n"
+			"Error details: root value isn't JSON object")
+			.arg(filePath));
 		return false;
 	}
 
@@ -1234,7 +1257,11 @@ bool Controller::openTreeFromFileImpl(const QString& filePath)
 	std::map<NodeID, NodeID> mapping;
 	NodeTreeSerializer nodeTreeSerializer(QFileInfo(filePath).absolutePath().toStdString());
 	if(!nodeTreeSerializer.deserializeJson(_nodeTree, jsonTree, &mapping))
+	{
+		showErrorMessage("Couldn't deserialized given JSON into node tree structure.\n"
+			"Check logs for more details");
 		return false;
+	}		
 
 	// Deserialize view part
 	QJsonArray jsonScene = jsonTree["scene"].toArray();
@@ -1503,7 +1530,7 @@ void Controller::draggingLinkDropped(QGraphicsWidget* from, QGraphicsWidget* to)
 
 	if(!fromSocket || !toSocket || !fromSocket->nodeView() || !toSocket->nodeView())
 	{
-		showErrorMessage("One of socket or its node are null");
+		showErrorMessage("Internal error - One of the sockets or their node are null");
 		return;
 	}
 
@@ -1613,7 +1640,7 @@ void Controller::changeProperty(NodeID nodeID,
 				else
 				{
 					*ok = false;
-					showErrorMessage("Name already taken");
+					showErrorMessage("Node name already taken");
 				}
 			}
 			return;
@@ -1630,8 +1657,10 @@ void Controller::changeProperty(NodeID nodeID,
 	else
 	{
 		*ok = false;
-		qWarning() << "Bad value for nodeID:" << nodeID << 
-			", propertyID:" << propID << ", newValue:" << newValue;
+		qWarning(qPrintable(QString("Wrong value for nodeID: %1, propertyID: %2 (new value: %3)")
+			.arg(nodeID)
+			.arg(propID)
+			.arg(newValue.toString())));
 	}
 }
 
@@ -1656,11 +1685,7 @@ void Controller::openTree()
 	if(filePath.isEmpty())
 		return;
 
-	if(!openTreeFromFile(filePath))
-	{
-		showErrorMessage("Error occured during opening file! Check logs for more details.");
-		qCritical() << "Couldn't open node tree from file:" << filePath;
-	}
+	openTreeFromFile(filePath);
 }
 
 bool Controller::saveTree()
@@ -2096,8 +2121,8 @@ void Controller::initGpuModule(QMenu* menuModules)
 	{
 		if(_gpuModule->isInitialized())
 		{
-			QMessageBox::warning(nullptr, applicationTitle,
-				"GPU Module already initialized");
+            QMessageBox::warning(nullptr, _appTitle,
+				"GPU Module - GPU Module already initialized");
 			_actionInteractiveSetup->setEnabled(false);
 			return;
 		}
@@ -2105,7 +2130,7 @@ void Controller::initGpuModule(QMenu* menuModules)
 		const auto& gpuPlatforms = _gpuModule->availablePlatforms();
 		if(gpuPlatforms.empty())
 		{
-			showErrorMessage("No OpenCL platforms found!");
+			showErrorMessage("GPU Module - No OpenCL platforms found!");
 			return;
 		}
 
@@ -2327,21 +2352,21 @@ void Controller::showDeviceSettings()
 
 		if(!res.get())
 		{
-			showErrorMessage("Couldn't initialized properly JAI module!");
+			showErrorMessage("JAI Module - Couldn't initialized JAI module!");
 			return;
 		}
 	}
 
 	if(_jaiModule->cameraCount() == 0)
 	{
-		showErrorMessage("No camera has been found.\nCheck your connection and try again");
+		showErrorMessage("JAI Module - No camera has been found.\nCheck your connection and try again");
 		return;
 	}
 
 	vector<CameraInfo> cameraInfos = _jaiModule->discoverCameras(EDriverType::All);
 	if(cameraInfos.empty())
 	{
-		showErrorMessage("Couldn't detect any camera devices");
+		showErrorMessage("JAI Module - Couldn't detect any camera devices");
 		return;
 	}
 
@@ -2377,7 +2402,7 @@ void Controller::showDeviceSettings()
 			ui.pixelFormatComboBox->currentIndex()).toInt();
 
 		if(!_jaiModule->setCameraSettings(index, settings))
-			showErrorMessage("Error occured during setting given camera's parameters");
+			showErrorMessage("JAI Module - Error occured during setting given camera's parameters");
 		else
 			dialog.accept();
 	});
@@ -2447,6 +2472,7 @@ void Controller::pluginLookUp()
 		}
 		catch (std::exception&)
 		{
+			// Silent error
 			qCritical() << "Couldn't load plugin" << pluginName.completeBaseName();
 		}
 	}

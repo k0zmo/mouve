@@ -21,6 +21,7 @@ NodeConnectorView::NodeConnectorView(bool isOutput, QGraphicsItem* parent)
 	setBrushGradient(Qt::white, Qt::black);
 	setPenWidth(NodeStyle::NodeSocketPenWidth);
 	setAnnotation(QString());
+	setCursor(Qt::PointingHandCursor);
 
 	setAcceptHoverEvents(true);
 
@@ -29,7 +30,7 @@ NodeConnectorView::NodeConnectorView(bool isOutput, QGraphicsItem* parent)
 	mAnimation.setStartValue(penWidth());
 
 	connect(this, SIGNAL(draggingLinkDropped(QGraphicsWidget*, QGraphicsWidget*)),
-		gC, SLOT(draggingLinkDropped(QGraphicsWidget*, QGraphicsWidget*)));
+		Controller::instancePtr(), SLOT(draggingLinkDropped(QGraphicsWidget*, QGraphicsWidget*)));
 }
 
 void NodeConnectorView::setBrushGradient(const QColor& start, const QColor& stop)

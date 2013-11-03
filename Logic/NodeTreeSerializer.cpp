@@ -286,11 +286,32 @@ bool NodeTreeSerializer::deserializeJsonLinks(std::shared_ptr<NodeTree>& nodeTre
 	for(const auto& link : links)
 	{
 		QVariantMap mapLink = link.toMap();
+		bool ok;
 
-		NodeID fromNode = mapLink["fromNode"].toUInt();
-		SocketID fromSocket = mapLink["fromSocket"].toUInt();
-		NodeID toNode = mapLink["toNode"].toUInt();
-		SocketID toSocket = mapLink["toSocket"].toUInt();
+		NodeID fromNode = mapLink["fromNode"].toUInt(&ok);
+		if(!ok)
+		{
+			qCritical() << "\"fromNode\" is bad";
+			break;
+		}
+		SocketID fromSocket = mapLink["fromSocket"].toUInt(&ok);
+		if(!ok)
+		{
+			qCritical() << "\"fromSocket\" is bad";
+			break;
+		}
+		NodeID toNode = mapLink["toNode"].toUInt(&ok);
+		if(!ok)
+		{
+			qCritical() << "\"toNode\" is bad";
+			break;
+		}
+		SocketID toSocket = mapLink["toSocket"].toUInt(&ok);
+		if(!ok)
+		{
+			qCritical() << "\"toSocket\" is bad";
+			break;
+		}
 
 		if(nodeTree->linkNodes(SocketAddress(mapping[fromNode], fromSocket, true),
 		                       SocketAddress(mapping[toNode], toSocket, false)) != ELinkNodesResult::Ok)

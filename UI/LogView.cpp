@@ -66,10 +66,12 @@ void LogView::messageHandler(QtMsgType type,
 {
 	Q_UNUSED(context)
 
+#if QT_VERSION == 0x050001 || QT_VERSION == 0x050000
 	// This should be fixed in 5.0.2
 	if(msg == "QWindowsNativeInterface::nativeResourceForWindow: 'handle' "
 		"requested for null window or window without handle.")
 		return;
+#endif
 
 	// If this isn't UI thread
 	if(QThread::currentThread() != QCoreApplication::instance()->thread())
@@ -80,10 +82,13 @@ void LogView::messageHandler(QtMsgType type,
 	auto it = _headView;
 	while(it)
 	{
-		auto item = new QListWidgetItem(msg);
+ 		auto item = new QListWidgetItem(msg);
 
-		item->setToolTip(QDateTime::currentDateTime()
-			.toString("[MM.dd.yyyy hh:mm:ss.zzz]"));
+		QString toolTip = QString("Time: %1 (%2:%3)")
+			.arg(QDateTime::currentDateTime().toString("MM.dd.yyyy hh:mm:ss.zzz"))
+			.arg(context.file)
+			.arg(context.line);
+		item->setToolTip(toolTip);
 
 		switch(type)
 		{

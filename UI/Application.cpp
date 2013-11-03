@@ -10,10 +10,18 @@
 #  include <Windows.h>
 #endif
 
+static const QString applicationTitle = QStringLiteral("mouve");
+
 int main(int argc, char* argv[])
 {
 	QApplication a(argc, argv);
-	//QApplication::setFont(QFont());
+
+	QCoreApplication::setApplicationName(applicationTitle);
+	QCoreApplication::setOrganizationName(applicationTitle);
+
+	QSettings settings;
+	if (settings.value("defaultFont").toBool())
+		QApplication::setFont(QFont());
 
 #if defined(DEBUGGING_CONSOLE)
 	AllocConsole();
@@ -23,11 +31,11 @@ int main(int argc, char* argv[])
 
 	if (!QGLFormat::hasOpenGL())
 	{
-		qWarning("This system has no OpenGL support. Exiting.");
+		qCritical("This system has no OpenGL support. Exiting.");
 		return -1;
 	}
 
-	Controller controller;
+	Controller controller(applicationTitle);
 	controller.show();
 	return a.exec();
 }
