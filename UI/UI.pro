@@ -11,13 +11,13 @@ HEADERS += \
     GLWidget.h \
     GpuModuleUI.h \
     LogView.h \
-    NodeConnectorView.h \
-    NodeEditorView.h \
-    NodeLinkView.h \
-    NodeSocketView.h \
-    NodeStyle.h \
-    NodeToolTip.h \
-    NodeView.h \
+    NodeEditor/NodeConnectorView.h \
+    NodeEditor/NodeEditorView.h \
+    NodeEditor/NodeLinkView.h \
+    NodeEditor/NodeSocketView.h \
+    NodeEditor/NodeStyle.h \
+    NodeEditor/NodeToolTip.h \
+    NodeEditor/NodeView.h \
     PreviewWidget.h \
     Prerequisites.h \
     PropertyDelegate.h \
@@ -34,13 +34,13 @@ SOURCES += \
     GLWidget.cpp \
     GpuModuleUI.cpp \
     LogView.cpp \
-    NodeConnectorView.cpp \
-    NodeEditorView.cpp \
-    NodeLinkView.cpp \
-    NodeSocketView.cpp \
-    NodeStyle.cpp \
-    NodeToolTip.cpp \
-    NodeView.cpp \
+    NodeEditor/NodeConnectorView.cpp \
+    NodeEditor/NodeEditorView.cpp \
+    NodeEditor/NodeLinkView.cpp \
+    NodeEditor/NodeSocketView.cpp \
+    NodeEditor/NodeStyle.cpp \
+    NodeEditor/NodeToolTip.cpp \
+    NodeEditor/NodeView.cpp \
     PreviewWidget.cpp \
     Property.cpp \
     PropertyDelegate.cpp \

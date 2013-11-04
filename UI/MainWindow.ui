@@ -486,7 +486,7 @@
   <customwidget>
    <class>NodeEditorView</class>
    <extends>QGraphicsView</extends>
-   <header>NodeEditorView.h</header>
+   <header>NodeEditor/NodeEditorView.h</header>
   </customwidget>
  </customwidgets>
  <resources>

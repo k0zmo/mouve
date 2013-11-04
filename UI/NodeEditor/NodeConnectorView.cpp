@@ -2,7 +2,8 @@
 #include "NodeStyle.h"
 #include "NodeSocketView.h"
 #include "NodeLinkView.h"
-#include "Controller.h"
+
+#include "UI/Controller.h"
 
 #include <QGraphicsSceneMouseEvent>
 #include <QGraphicsScene>

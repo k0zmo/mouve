@@ -1,4 +1,5 @@
 #include "NodeEditorView.h"
+
 #include <QWheelEvent>
 #include <QScrollBar>
 #include <QMimeData>

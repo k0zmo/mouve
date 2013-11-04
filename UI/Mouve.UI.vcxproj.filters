@@ -36,11 +36,14 @@
     <Filter Include="Common Files">
       <UniqueIdentifier>{dd952f1f-36db-4d6c-b784-a7ecc726c918}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\NodeEditor">
+      <UniqueIdentifier>{46d2aee7-76e7-4705-b913-9eb59e27c93c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\NodeEditor">
+      <UniqueIdentifier>{749f0318-6c81-42cf-bb60-218eee1aa7cb}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="NodeStyle.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="Precomp.cpp">
       <Filter>Common Files</Filter>
     </ClCompile>
@@ -54,45 +57,6 @@
       <Filter>Generated Files\Debug</Filter>
     </ClCompile>
     <ClCompile Include="GeneratedFiles\Release\moc_Controller.cpp">
-      <Filter>Generated Files\Release</Filter>
-    </ClCompile>
-    <ClCompile Include="NodeConnectorView.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="GeneratedFiles\Debug\moc_NodeConnectorView.cpp">
-      <Filter>Generated Files\Debug</Filter>
-    </ClCompile>
-    <ClCompile Include="GeneratedFiles\Release\moc_NodeConnectorView.cpp">
-      <Filter>Generated Files\Release</Filter>
-    </ClCompile>
-    <ClCompile Include="NodeEditorView.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="GeneratedFiles\Debug\moc_NodeEditorView.cpp">
-      <Filter>Generated Files\Debug</Filter>
-    </ClCompile>
-    <ClCompile Include="GeneratedFiles\Release\moc_NodeEditorView.cpp">
-      <Filter>Generated Files\Release</Filter>
-    </ClCompile>
-    <ClCompile Include="NodeLinkView.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="NodeSocketView.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="GeneratedFiles\Debug\moc_NodeSocketView.cpp">
-      <Filter>Generated Files\Debug</Filter>
-    </ClCompile>
-    <ClCompile Include="GeneratedFiles\Release\moc_NodeSocketView.cpp">
-      <Filter>Generated Files\Release</Filter>
-    </ClCompile>
-    <ClCompile Include="NodeView.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="GeneratedFiles\Debug\moc_NodeView.cpp">
-      <Filter>Generated Files\Debug</Filter>
-    </ClCompile>
-    <ClCompile Include="GeneratedFiles\Release\moc_NodeView.cpp">
       <Filter>Generated Files\Release</Filter>
     </ClCompile>
     <ClCompile Include="Property.cpp">
@@ -182,34 +146,58 @@
     <ClCompile Include="GeneratedFiles\Release\moc_GpuModuleUI.cpp">
       <Filter>Generated Files\Release</Filter>
     </ClCompile>
-    <ClCompile Include="NodeToolTip.cpp">
-      <Filter>Source Files</Filter>
+    <ClCompile Include="GeneratedFiles\Debug\moc_NodeConnectorView.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Release\moc_NodeConnectorView.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Debug\moc_NodeEditorView.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Release\moc_NodeEditorView.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Debug\moc_NodeSocketView.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Release\moc_NodeSocketView.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Debug\moc_NodeView.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Release\moc_NodeView.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
+    <ClCompile Include="NodeEditor\NodeConnectorView.cpp">
+      <Filter>Source Files\NodeEditor</Filter>
+    </ClCompile>
+    <ClCompile Include="NodeEditor\NodeEditorView.cpp">
+      <Filter>Source Files\NodeEditor</Filter>
+    </ClCompile>
+    <ClCompile Include="NodeEditor\NodeLinkView.cpp">
+      <Filter>Source Files\NodeEditor</Filter>
+    </ClCompile>
+    <ClCompile Include="NodeEditor\NodeSocketView.cpp">
+      <Filter>Source Files\NodeEditor</Filter>
+    </ClCompile>
+    <ClCompile Include="NodeEditor\NodeStyle.cpp">
+      <Filter>Source Files\NodeEditor</Filter>
+    </ClCompile>
+    <ClCompile Include="NodeEditor\NodeToolTip.cpp">
+      <Filter>Source Files\NodeEditor</Filter>
+    </ClCompile>
+    <ClCompile Include="NodeEditor\NodeView.cpp">
+      <Filter>Source Files\NodeEditor</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="Controller.h">
       <Filter>Header Files</Filter>
     </CustomBuild>
-    <CustomBuild Include="NodeConnectorView.h">
-      <Filter>Header Files</Filter>
-    </CustomBuild>
-    <CustomBuild Include="NodeEditorView.h">
-      <Filter>Header Files</Filter>
-    </CustomBuild>
-    <CustomBuild Include="NodeSocketView.h">
-      <Filter>Header Files</Filter>
-    </CustomBuild>
-    <CustomBuild Include="NodeView.h">
-      <Filter>Header Files</Filter>
-    </CustomBuild>
     <CustomBuild Include="MainWindow.ui">
       <Filter>Form Files</Filter>
-    </CustomBuild>
-    <CustomBuild Include="NodeLinkView.h">
-      <Filter>Header Files</Filter>
-    </CustomBuild>
-    <CustomBuild Include="NodeStyle.h">
-      <Filter>Header Files</Filter>
     </CustomBuild>
     <CustomBuild Include="GeneratedFiles\ui_MainWindow.h">
       <Filter>Generated Files</Filter>
@@ -259,6 +247,18 @@
     <CustomBuild Include="GpuModuleUI.h">
       <Filter>Header Files</Filter>
     </CustomBuild>
+    <CustomBuild Include="NodeEditor\NodeConnectorView.h">
+      <Filter>Header Files\NodeEditor</Filter>
+    </CustomBuild>
+    <CustomBuild Include="NodeEditor\NodeEditorView.h">
+      <Filter>Header Files\NodeEditor</Filter>
+    </CustomBuild>
+    <CustomBuild Include="NodeEditor\NodeSocketView.h">
+      <Filter>Header Files\NodeEditor</Filter>
+    </CustomBuild>
+    <CustomBuild Include="NodeEditor\NodeView.h">
+      <Filter>Header Files\NodeEditor</Filter>
+    </CustomBuild>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Property.h">
@@ -273,8 +273,14 @@
     <ClInclude Include="GeneratedFiles\ui_GpuChoice.h">
       <Filter>Generated Files</Filter>
     </ClInclude>
-    <ClInclude Include="NodeToolTip.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="NodeEditor\NodeLinkView.h">
+      <Filter>Header Files\NodeEditor</Filter>
+    </ClInclude>
+    <ClInclude Include="NodeEditor\NodeStyle.h">
+      <Filter>Header Files\NodeEditor</Filter>
+    </ClInclude>
+    <ClInclude Include="NodeEditor\NodeToolTip.h">
+      <Filter>Header Files\NodeEditor</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

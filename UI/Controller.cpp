@@ -14,12 +14,12 @@
 #include "GpuModuleUI.h"
 #include "Logic/Jai/IJaiNodeModule.h"
 
-// Views
-#include "NodeView.h"
-#include "NodeLinkView.h"
-#include "NodeSocketView.h"
-#include "NodeStyle.h"
-#include "NodeToolTip.h"
+// Node editor
+#include "NodeEditor/NodeView.h"
+#include "NodeEditor/NodeLinkView.h"
+#include "NodeEditor/NodeSocketView.h"
+#include "NodeEditor/NodeStyle.h"
+#include "NodeEditor/NodeToolTip.h"
 
 // Properties
 #include "PropertyDelegate.h"
