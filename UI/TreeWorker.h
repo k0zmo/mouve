@@ -12,15 +12,12 @@ public:
 	~TreeWorker() override;
 
 	void setNodeTree(const std::shared_ptr<NodeTree>& nodeTree);
+	Q_INVOKABLE void process(bool withInit);
 
 signals:
 	void completed(bool res);
 	void error(const QString& msg);
 
-public slots:
-	void process(bool withInit);
-
 private:
 	std::shared_ptr<NodeTree> _nodeTree;
 };
-
