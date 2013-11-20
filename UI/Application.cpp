@@ -35,7 +35,7 @@ int main(int argc, char* argv[])
 		return -1;
 	}
 
-	Controller controller(applicationTitle);
+	Controller controller;
 	controller.show();
 	return a.exec();
 }

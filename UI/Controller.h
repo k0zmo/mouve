@@ -34,8 +34,7 @@ class Controller
 	Q_OBJECT
 	K_DISABLE_COPY(Controller)
 public:
-	explicit Controller(const QString& applicationTitle, 
-		QWidget* parent = nullptr, Qt::WindowFlags flags = 0);
+	explicit Controller(QWidget* parent = nullptr, Qt::WindowFlags flags = 0);
 	~Controller() override;
 
 	void addNode(NodeTypeID nodeTypeID, const QPointF& scenePos);
@@ -165,8 +164,6 @@ private slots:
 	void toggleDisplayNodesTooltips(bool checked);
 
 private:
-	QString _appTitle;
-
 	/// TODO: QHash
 	QList<NodeLinkView*> _linkViews;
 	QHash<NodeID, NodeView*> _nodeViews;

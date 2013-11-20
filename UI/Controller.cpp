@@ -53,16 +53,15 @@
 
 template<> Controller* Singleton<Controller>::_singleton = nullptr;
 
-Controller::Controller(const QString& appTitle, 
-	QWidget* parent, Qt::WindowFlags flags)
+Controller::Controller(QWidget* parent, Qt::WindowFlags flags)
 	: QMainWindow(parent, flags)
-	, _appTitle(appTitle)
 	, _previewSelectedNodeView(nullptr)
 	, _nodeToolTip(nullptr)
 	, _nodeScene(nullptr)
 	, _propManager(new PropertyManager(this))
 	, _nodeSystem(new NodeSystem())
 	, _nodeTree(nullptr)
+	// odd: below crashes in gcc 
 	//, _workerThread(QThread())
 	, _treeWorker(new TreeWorker())
 	, _progressBar(nullptr)
@@ -634,11 +633,11 @@ void Controller::setupUiAbout()
 	_ui->menuHelp->addAction(actionAboutOpenCV);
 
 	// About program
-	QAction* actionAboutApplication = new QAction(tr("About ") + _appTitle, this);
-    actionAboutApplication->setToolTip(tr("Show information about ") + _appTitle);
+    QAction* actionAboutApplication = new QAction(tr("About ") + QApplication::applicationName(), this);
+    actionAboutApplication->setToolTip(tr("Show information about ") + QApplication::applicationName());
 	connect(actionAboutApplication, &QAction::triggered, [=] {
 		QString translatedTextAboutCaption = QString(
-            "<h3>About %1</h3>").arg(_appTitle);
+            "<h3>About %1</h3>").arg(QApplication::applicationName());
 #ifdef Q_OS_LINUX
 		// Causes linker error in msvc2012
 		QString translatedTextAboutText = QString::fromWCharArray(
@@ -653,7 +652,7 @@ void Controller::setupUiAbout()
 			L"© 2011, Double-J designs</p>");
 		QMessageBox *msgBox = new QMessageBox(this);
 		msgBox->setAttribute(Qt::WA_DeleteOnClose);
-        msgBox->setWindowTitle(tr("About ") + _appTitle);
+        msgBox->setWindowTitle(tr("About ") + QApplication::applicationName());
 		msgBox->setText(translatedTextAboutCaption);
 		msgBox->setInformativeText(translatedTextAboutText);
 
@@ -814,7 +813,7 @@ void Controller::prepareRecentFileList()
 
 			if(!openTreeFromFile(filePath))
 			{
-                int fb = QMessageBox::question(this, _appTitle,
+                int fb = QMessageBox::question(this, QApplication::applicationName(),
 					tr("\"%1\" could not be opened. Do you want to remove the reference to it from the Recent file list?")
 						.arg(filePath), QMessageBox::Yes, QMessageBox::No);
 				if(fb == QMessageBox::Yes)
@@ -851,7 +850,7 @@ void Controller::prepareRecentFileList()
 void Controller::showErrorMessage(const QString& message)
 {
 	qCritical(qPrintable(message));
-    QMessageBox::critical(nullptr, _appTitle, message);
+    QMessageBox::critical(nullptr, QApplication::applicationName(), message);
 }
 
 void Controller::switchToVideoMode()
@@ -1026,7 +1025,7 @@ void Controller::updateTitleBar()
 	QString tmp = _nodeTreeFilePath.isEmpty()
 		? tr("Untitled")
 		: QFileInfo(_nodeTreeFilePath).fileName();
-    QString windowTitle = _appTitle + " - ";
+    QString windowTitle = QApplication::applicationName() + " - ";
 	if(_nodeTreeDirty)
 		windowTitle += "*";
 	setWindowTitle(windowTitle + tmp);
@@ -2121,7 +2120,7 @@ void Controller::initGpuModule(QMenu* menuModules)
 	{
 		if(_gpuModule->isInitialized())
 		{
-            QMessageBox::warning(nullptr, _appTitle,
+            QMessageBox::warning(nullptr, QApplication::applicationName(),
 				"GPU Module - GPU Module already initialized");
 			_actionInteractiveSetup->setEnabled(false);
 			return;
