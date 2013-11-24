@@ -603,7 +603,7 @@ __kernel void findKeypointOrientation2(__read_only image2d_t integralImage,
 }
 
 __attribute__((always_inline))
-float Gaussian(int x, int y, float sigma)
+float Gaussian(float x, float y, float sigma)
 {
     float sigma2 = 2.0f*sigma*sigma;
     return (1.0f/(M_PI_F*sigma2)) * exp(-(x*x+y*y)/(sigma2));
@@ -725,13 +725,6 @@ __kernel void calculateDescriptors(__read_only image2d_t integralImage,
     }
 }
 
-__attribute__((always_inline))
-float Gaussianf(float x, float y, float sigma)
-{
-    float sigma2 = 2.0f*sigma*sigma;
-    return (1.0f/(M_PI_F*sigma2)) * exp(-(x*x+y*y)/(sigma2));
-}
-
 __attribute__((reqd_work_group_size(9,9,1)))
 __kernel void calculateDescriptorsMSURF(__read_only image2d_t integralImage,
                                         __global float* keypoints,
@@ -817,7 +810,7 @@ __kernel void calculateDescriptorsMSURF(__read_only image2d_t integralImage,
     {
         float cx = regionX*0.2f + 0.5f;
         float cy = regionY*0.2f + 0.5f;
-        float weight = Gaussianf(cx, cy, DESC_REGION_SIGMA);
+        float weight = Gaussian(cx, cy, DESC_REGION_SIGMA);
 
         descriptors[keypointId*64 + 4*regionId + 0] = weight*smem_sumDx [0];
         descriptors[keypointId*64 + 4*regionId + 1] = weight*smem_sumDy [0];
