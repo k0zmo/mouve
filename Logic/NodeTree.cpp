@@ -8,9 +8,6 @@
 
 #include "Kommon/StlUtils.h"
 
-/// TODO: Add logger
-#include <QDebug>
-
 NodeTree::NodeTree(NodeSystem* nodeSystem)
 	: _nodeSystem(nodeSystem)
 	, _executeListDirty(false)

@@ -365,7 +365,7 @@ std::unique_ptr<IGpuNodeModule> createGpuModule()
 
 #else
 
-+#include "IGpuNodeModule.h"
+#include "IGpuNodeModule.h"
 
 std::unique_ptr<IGpuNodeModule> createGpuModule()
 {

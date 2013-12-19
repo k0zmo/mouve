@@ -24,7 +24,7 @@ public:
 	{
 		try
 		{
-			_jaiModule = std::dynamic_pointer_cast<JaiNodeModule, NodeModule>(nodeModule);
+			_jaiModule = std::dynamic_pointer_cast<JaiNodeModule>(nodeModule);
 			if(!_jaiModule)
 				return false;
 
