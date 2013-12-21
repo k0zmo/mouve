@@ -2,7 +2,7 @@
 
 #include "Prerequisites.h"
 
-#include "boost/variant.hpp"
+#include <boost/variant.hpp>
 
 // OpenCV
 #include <opencv2/core/core.hpp>

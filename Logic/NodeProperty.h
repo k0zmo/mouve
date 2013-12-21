@@ -3,7 +3,7 @@
 #include "Prerequisites.h"
 
 #include <type_traits>
-#include "boost/variant.hpp"
+#include <boost/variant.hpp>
 
 /// Allowed types of node property
 enum class EPropertyType : int
