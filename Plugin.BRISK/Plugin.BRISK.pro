@@ -1,5 +1,5 @@
 QT       -= gui
-TARGET    = BRISK.Plugin
+TARGET    = Plugin.BRISK
 TEMPLATE  = lib
 
 include(../mouve.pri)

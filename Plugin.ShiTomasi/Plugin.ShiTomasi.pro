@@ -1,5 +1,5 @@
 QT       -= gui
-TARGET    = ShiTomasi.Plugin
+TARGET    = Plugin.ShiTomasi
 TEMPLATE  = lib
 
 include(../mouve.pri)
