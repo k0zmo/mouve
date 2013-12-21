@@ -32,16 +32,6 @@ struct Matches
 	cv::Mat trainImage;
 };
 
-typedef boost::variant<
-	cv::Mat,
-	KeyPoints,
-	Matches
-#if defined(HAVE_OPENCL)
-	,clw::Image2D, // TODO - replace this with some thin wrapper
-	DeviceArray
-#endif
-> flow_data;
-
 enum class ENodeFlowDataType : int
 {
 	Invalid,
@@ -61,6 +51,16 @@ enum class ENodeFlowDataType : int
 
 class LOGIC_EXPORT NodeFlowData
 {
+	typedef boost::variant<
+		cv::Mat,
+		KeyPoints,
+		Matches
+	#if defined(HAVE_OPENCL)
+		,clw::Image2D, // TODO - replace this with some thin wrapper
+		DeviceArray
+	#endif
+	> flow_data;
+
 public:
 	NodeFlowData();
 	NodeFlowData(ENodeFlowDataType dataType);

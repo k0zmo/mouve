@@ -52,17 +52,17 @@ class MatcherNodeType : public NodeType
 {
 public:
 	MatcherNodeType()
-		: _distanceRatio(0.8)
+		: _distanceRatio(0.8f)
 		, _symmetryTest(false)
 	{
 	}
 
-	bool setProperty(PropertyID propId, const QVariant& newValue) override
+	bool setProperty(PropertyID propId, const NodeProperty& newValue) override
 	{
 		switch(propId)
 		{
 		case ID_DistanceRatio:
-			_distanceRatio = newValue.toDouble();
+			_distanceRatio = newValue.toFloat();
 			return true;
 		case ID_SymmetryTest:
 			_symmetryTest = newValue.toBool();
@@ -72,7 +72,7 @@ public:
 		return false;
 	}
 
-	QVariant property(PropertyID propId) const override
+	NodeProperty property(PropertyID propId) const override
 	{
 		switch(propId)
 		{
@@ -80,7 +80,7 @@ public:
 		case ID_SymmetryTest: return _symmetryTest;
 		}
 
-		return QVariant();
+		return NodeProperty();
 	}
 
 	void configuration(NodeConfig& nodeConfig) const override
@@ -115,7 +115,7 @@ protected:
 		ID_SymmetryTest,
 	};
 
-	double _distanceRatio;
+	float _distanceRatio;
 	bool _symmetryTest;
 };
 
@@ -253,7 +253,7 @@ private:
 
 				if(bestDistance1 <= _distanceRatio * bestDistance2)
 				{
-					nndrMatches.emplace_back(cv::DMatch(queryIdx, bestTrainIdx1, bestDistance1));
+					nndrMatches.emplace_back(cv::DMatch(queryIdx, bestTrainIdx1, (float)bestDistance1));
 				}
 			}
 		}
@@ -349,7 +349,7 @@ public:
 	{
 	}
 
-	bool setProperty(PropertyID propId, const QVariant& newValue) override
+	bool setProperty(PropertyID propId, const NodeProperty& newValue) override
 	{
 		switch(propId)
 		{
@@ -361,14 +361,14 @@ public:
 		return false;
 	}
 
-	QVariant property(PropertyID propId) const override
+	NodeProperty property(PropertyID propId) const override
 	{
 		switch(propId)
 		{
 		case ID_MaxDistance: return _maxDistance;
 		}
 
-		return QVariant();
+		return NodeProperty();
 	}
 
 	ExecutionStatus execute(NodeSocketReader& reader, NodeSocketWriter& writer) override

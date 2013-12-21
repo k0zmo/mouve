@@ -16,12 +16,12 @@ public:
 	{
 	}
 
-	bool setProperty(PropertyID propId, const QVariant& newValue) override
+	bool setProperty(PropertyID propId, const NodeProperty& newValue) override
 	{
 		switch(propId)
 		{
 		case ID_BayerFormat:
-			_BayerCode = cvu::EBayerCode(newValue.toUInt());
+			_BayerCode = newValue.toEnum().convert<cvu::EBayerCode>();
 			return true;
 		case ID_RedGain:
 			_redGain = newValue.toDouble();
@@ -37,17 +37,17 @@ public:
 		return false;
 	}
 
-	QVariant property(PropertyID propId) const override
+	NodeProperty property(PropertyID propId) const override
 	{
 		switch(propId)
 		{
-		case ID_BayerFormat: return int(_BayerCode);
+		case ID_BayerFormat: return _BayerCode;
 		case ID_RedGain: return _redGain;
 		case ID_GreenGain: return _greenGain;
 		case ID_BlueGain: return _blueGain;
 		}
 
-		return QVariant();
+		return NodeProperty();
 	}
 
 	bool postInit() override

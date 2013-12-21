@@ -4,6 +4,7 @@
 
 class QJsonObject;
 class QJsonArray;
+class QVariant;
 
 class LOGIC_EXPORT NodeTreeSerializer
 {
@@ -29,6 +30,13 @@ private:
 	bool deserializeJsonLinks(std::shared_ptr<NodeTree>& nodeTree,
 		const QJsonArray& jsonLinks,
 		std::map<NodeID, NodeID>& mapping);
+
+	QJsonObject serializeProperty(PropertyID propID,
+		const std::string& propName, EPropertyType propType,
+		const NodeProperty& propValue);
+	EPropertyType deserializePropertyType(const std::string&);
+	NodeProperty deserializeProperty(EPropertyType propType, 
+		const QVariant& qvalue);
 
 private:
 	std::string _rootDirectory;

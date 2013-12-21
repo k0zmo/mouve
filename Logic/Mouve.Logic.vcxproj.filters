@@ -166,6 +166,9 @@
     <ClCompile Include="OpenCL\GpuMorphologyOperatorNode.cpp">
       <Filter>OpenCL</Filter>
     </ClCompile>
+    <ClCompile Include="NodeProperty.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="Node.h">
@@ -268,6 +271,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="NodeTreeSerializer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="NodeProperty.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

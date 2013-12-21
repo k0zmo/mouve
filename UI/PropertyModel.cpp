@@ -40,13 +40,13 @@ void PropertyModel::addProperty(PropertyID propID, EPropertyType propType,
 			prop = new DoubleProperty(propName, value.toDouble());
 			break;
 		case EPropertyType::Enum:
-			prop = new EnumProperty(propName, value.toInt());
+			prop = new EnumProperty(propName, value.value<Enum>());
 			break;
 		case EPropertyType::Matrix:
 			prop = new MatrixProperty(propName, value.value<Matrix3x3>());
 			break;
 		case EPropertyType::Filepath:
-			prop = new FilePathProperty(propName, value.toString());
+			prop = new FilePathProperty(propName, value.value<Filepath>());
 			break;
 		case EPropertyType::String:
 			prop = new StringProperty(propName, value.toString());
@@ -139,17 +139,6 @@ QVariant PropertyModel::data(const QModelIndex& index, int role) const
 			return item->name();
 		if(index.column() == 1)
 			return item->value(role);
-
-	//case Qt::SizeHintRole:
-		//return QSize(QFontMetrics(QFont()).width(
-		//	data(index, Qt::DisplayRole).toString()) + 30, 22);
-	//case Qt::DecorationRole:
-	//case Qt::ToolTipRole:
-		//break;
-	//case Qt::BackgroundRole:
-	//	if(item->isRoot())
-	//		return QColor(Qt::lightGray);
-	//	break;
 	}
 
 	return QVariant();
@@ -167,7 +156,7 @@ bool PropertyModel::setData(const QModelIndex& index,
 		if(item->setValue(value, role))
 		{
 			bool ok = true;
-			emit propertyChanged(_nodeID, item->propertyID(), item->value(), &ok);
+			emit propertyChanged(_nodeID, item->propertyID(), item->value(Qt::UserRole), &ok);
 
 			if(ok)
 			{

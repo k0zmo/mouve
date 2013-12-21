@@ -12,7 +12,7 @@ public:
 	{
 	}
 
-	bool setProperty(PropertyID propId, const QVariant& newValue) override
+	bool setProperty(PropertyID propId, const NodeProperty& newValue) override
 	{
 		switch(propId)
 		{
@@ -24,14 +24,14 @@ public:
 		return false;
 	}
 
-	QVariant property(PropertyID propId) const override
+	NodeProperty property(PropertyID propId) const override
 	{
 		switch(propId)
 		{
 		case ID_ReprojThreshold: return _reprojThreshold;
 		}
 
-		return QVariant();
+		return NodeProperty();
 	}
 
 	ExecutionStatus execute(NodeSocketReader& reader, NodeSocketWriter& writer) override
@@ -154,12 +154,12 @@ public:
 	{
 	}
 
-	bool setProperty(PropertyID propId, const QVariant& newValue) override
+	bool setProperty(PropertyID propId, const NodeProperty& newValue) override
 	{
 		switch(propId)
 		{
 		case ID_HomographyPath:
-			_homographyPath = newValue.toString().toStdString();
+			_homographyPath = newValue.toFilepath();
 			return true;
 		case ID_ReprojThreshold:
 			_reprojThreshold = newValue.toDouble();
@@ -169,15 +169,15 @@ public:
 		return false;
 	}
 
-	QVariant property(PropertyID propId) const override
+	NodeProperty property(PropertyID propId) const override
 	{
 		switch(propId)
 		{
-		case ID_HomographyPath: return QString::fromStdString(_homographyPath);
+		case ID_HomographyPath: return _homographyPath;
 		case ID_ReprojThreshold: return _reprojThreshold;
 		}
 
-		return QVariant();
+		return NodeProperty();
 	}
 
 	ExecutionStatus execute(NodeSocketReader& reader, NodeSocketWriter& writer) override
@@ -198,9 +198,9 @@ public:
 			"Points from one images doesn't correspond to key points in another one");
 
 		// Do stuff - Load real homography 
-		std::ifstream homographyFile(_homographyPath, std::ios::in);
+		std::ifstream homographyFile(_homographyPath.data(), std::ios::in);
 		if(!homographyFile.is_open())
-			return ExecutionStatus(EStatus::Error, formatMessage("Can't load %s\n", _homographyPath.c_str()));
+			return ExecutionStatus(EStatus::Error, formatMessage("Can't load %s\n", _homographyPath.data().c_str()));
 
 		cv::Mat homography(3, 3, CV_32F);
 		homographyFile >> homography.at<float>(0, 0) >> homography.at<float>(0, 1) >> homography.at<float>(0, 2);
@@ -265,7 +265,7 @@ public:
 		};
 		static const PropertyConfig prop_config[] = {
 			{ EPropertyType::Filepath, "Homography path", "" },
-			{ EPropertyType::Integer, "Reprojection error threshold", "min:1.0, max:50.0" },
+			{ EPropertyType::Double, "Reprojection error threshold", "min:1.0, max:50.0" },
 			{ EPropertyType::Unknown, "", "" }
 		};
 
@@ -282,7 +282,7 @@ private:
 		ID_ReprojThreshold
 	};
 
-	std::string _homographyPath;
+	Filepath _homographyPath;
 	double _reprojThreshold;
 };
 

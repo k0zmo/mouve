@@ -13,7 +13,7 @@ public:
 	{
 	}
 
-	bool setProperty(PropertyID propId, const QVariant& newValue) override
+	bool setProperty(PropertyID propId, const NodeProperty& newValue) override
 	{
 		if(propId == ID_KernelSize)
 		{
@@ -24,11 +24,11 @@ public:
 		return false;
 	}
 
-	QVariant property(PropertyID propId) const override
+	NodeProperty property(PropertyID propId) const override
 	{
 		if(propId == ID_KernelSize)
 			return _kernelSize;
-		return QVariant();
+		return NodeProperty();
 	}
 
 	ExecutionStatus execute(NodeSocketReader& reader, NodeSocketWriter& writer) override
@@ -85,7 +85,7 @@ public:
 	{
 	}
 
-	bool setProperty(PropertyID propId, const QVariant& newValue) override
+	bool setProperty(PropertyID propId, const NodeProperty& newValue) override
 	{
 		switch(propId)
 		{
@@ -102,7 +102,7 @@ public:
 		}
 	}
 
-	QVariant property(PropertyID propId) const override
+	NodeProperty property(PropertyID propId) const override
 	{
 		switch(propId)
 		{
@@ -110,7 +110,7 @@ public:
 		case ID_SigmaColor: return _sigmaColor;
 		case ID_SigmaSpace: return _sigmaSpace;
 		}
-		return QVariant();
+		return NodeProperty();
 	}
 
 	ExecutionStatus execute(NodeSocketReader& reader, NodeSocketWriter& writer) override
@@ -168,7 +168,7 @@ public:
 	{
 	}
 
-	bool setProperty(PropertyID propId, const QVariant& newValue) override
+	bool setProperty(PropertyID propId, const NodeProperty& newValue) override
 	{
 		switch(propId)
 		{
@@ -180,14 +180,14 @@ public:
 		return false;
 	}
 
-	QVariant property(PropertyID propId) const override
+	NodeProperty property(PropertyID propId) const override
 	{
 		switch(propId)
 		{
 		case ID_Sigma: return _sigma;
 		}
 
-		return QVariant();
+		return NodeProperty();
 	}
 
 	ExecutionStatus execute(NodeSocketReader& reader, NodeSocketWriter& writer) override
@@ -245,7 +245,7 @@ public:
 	{
 	}
 
-	bool setProperty(PropertyID propId, const QVariant& newValue) override
+	bool setProperty(PropertyID propId, const NodeProperty& newValue) override
 	{
 		if(propId == ID_ApertureSize)
 		{
@@ -259,11 +259,11 @@ public:
 		return false;
 	}
 
-	QVariant property(PropertyID propId) const override
+	NodeProperty property(PropertyID propId) const override
 	{
 		if(propId == ID_ApertureSize)
 			return _apertureSize;
-		return QVariant();
+		return NodeProperty();
 	}
 
 	ExecutionStatus execute(NodeSocketReader& reader, NodeSocketWriter& writer) override
@@ -316,7 +316,7 @@ public:
 	{
 	}
 
-	bool setProperty(PropertyID propId, const QVariant& newValue) override
+	bool setProperty(PropertyID propId, const NodeProperty& newValue) override
 	{
 		if(propId == ID_ApertureSize)
 		{
@@ -331,11 +331,11 @@ public:
 		return false;
 	}
 
-	QVariant property(PropertyID propId) const override
+	NodeProperty property(PropertyID propId) const override
 	{
 		if(propId == ID_ApertureSize)
 			return _apertureSize;
-		return QVariant();
+		return NodeProperty();
 	}
 
 	ExecutionStatus execute(NodeSocketReader& reader, NodeSocketWriter& writer) override
@@ -389,7 +389,7 @@ public:
 	{
 	}
 
-	bool setProperty(PropertyID propId, const QVariant& newValue) override
+	bool setProperty(PropertyID propId, const NodeProperty& newValue) override
 	{
 		switch(propId)
 		{
@@ -411,14 +411,14 @@ public:
 		return false;
 	}
 
-	QVariant property(PropertyID propId) const override
+	NodeProperty property(PropertyID propId) const override
 	{
 		switch(propId)
 		{
 		case ID_ApertureSize: return _apertureSize;
 		case ID_Order: return _order;
 		}
-		return QVariant();
+		return NodeProperty();
 	}
 
 	ExecutionStatus execute(NodeSocketReader& reader, NodeSocketWriter& writer) override
@@ -527,26 +527,26 @@ public:
 	{
 	}
 
-	bool setProperty(PropertyID propId, const QVariant& newValue) override
+	bool setProperty(PropertyID propId, const NodeProperty& newValue) override
 	{
 		switch(propId)
 		{
 		case 0:
-			_filterType = cvu::EPredefinedConvolutionType(newValue.toInt());
+			_filterType = newValue.toEnum().convert<cvu::EPredefinedConvolutionType>();
 			return true;
 		}
 
 		return false;
 	}
 
-	QVariant property(PropertyID propId) const override
+	NodeProperty property(PropertyID propId) const override
 	{
 		switch(propId)
 		{
-		case 0: return int(_filterType);
+		case 0: return _filterType;
 		}
 
-		return QVariant();
+		return NodeProperty();
 	}
 
 	ExecutionStatus execute(NodeSocketReader& reader, NodeSocketWriter& writer) override
@@ -612,12 +612,12 @@ public:
 	{
 	}
 
-	bool setProperty(PropertyID propId, const QVariant& newValue) override
+	bool setProperty(PropertyID propId, const NodeProperty& newValue) override
 	{
 		switch(propId)
 		{
 		case ID_Coefficients:
-			_coeffs = newValue.value<Matrix3x3>();
+			_coeffs = newValue.toMatrix3x3();
 			return true;
 		case ID_ScaleAbs:
 			_scaleAbs = newValue.toBool();
@@ -627,15 +627,15 @@ public:
 		return false;
 	}
 
-	QVariant property(PropertyID propId) const override
+	NodeProperty property(PropertyID propId) const override
 	{
 		switch(propId)
 		{
-		case ID_Coefficients: return QVariant::fromValue<Matrix3x3>(_coeffs);
+		case ID_Coefficients: return _coeffs;
 		case ID_ScaleAbs: return _scaleAbs;
 		}
 
-		return QVariant();
+		return NodeProperty();
 	}
 
 	ExecutionStatus execute(NodeSocketReader& reader, NodeSocketWriter& writer) override

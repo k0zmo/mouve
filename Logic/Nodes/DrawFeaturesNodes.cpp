@@ -4,12 +4,12 @@
 #include <opencv2/features2d/features2d.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
 
-enum EColor
+enum class EColor
 {
-	Color_AllRandom,
-	Color_Red,
-	Color_Green,
-	Color_Blue
+	AllRandom,
+	Red,
+	Green,
+	Blue
 };
 
 cv::Scalar getColor(EColor color)
@@ -17,10 +17,10 @@ cv::Scalar getColor(EColor color)
 	switch(color)
 	{
 	// Order is BGR
-	case Color_AllRandom: return cv::Scalar::all(-1);
-	case Color_Red: return cv::Scalar(36, 28, 237);
-	case Color_Green: return cv::Scalar(76, 177, 34);
-	case Color_Blue: return cv::Scalar(244, 63, 72);
+	case EColor::AllRandom: return cv::Scalar::all(-1);
+	case EColor::Red: return cv::Scalar(36, 28, 237);
+	case EColor::Green: return cv::Scalar(76, 177, 34);
+	case EColor::Blue: return cv::Scalar(244, 63, 72);
 	}
 	return cv::Scalar::all(-1);
 }
@@ -30,10 +30,10 @@ cv::Scalar getAltColor(EColor color)
 	switch(color)
 	{
 		// Order is BGR
-	case Color_AllRandom: return cv::Scalar::all(-1);
-	case Color_Red: return cv::Scalar(76, 177, 34);
-	case Color_Green: return cv::Scalar(36, 28, 237);
-	case Color_Blue: return cv::Scalar(0, 255, 242);
+	case EColor::AllRandom: return cv::Scalar::all(-1);
+	case EColor::Red: return cv::Scalar(76, 177, 34);
+	case EColor::Green: return cv::Scalar(36, 28, 237);
+	case EColor::Blue: return cv::Scalar(0, 255, 242);
 	}
 	return cv::Scalar::all(-1);
 }
@@ -41,15 +41,15 @@ cv::Scalar getAltColor(EColor color)
 EColor getColor(const cv::Scalar& scalar)
 {
 	if(scalar == cv::Scalar::all(-1))
-		return Color_AllRandom;
+		return EColor::AllRandom;
 	else if(scalar == cv::Scalar(36, 28, 237))
-		return Color_Red;
+		return EColor::Red;
 	else if(scalar == cv::Scalar(76, 177, 34))
-		return Color_Green;
+		return EColor::Green;
 	else if(scalar == cv::Scalar(244, 63, 72))
-		return Color_Blue;
+		return EColor::Blue;
 	else
-		return Color_AllRandom;
+		return EColor::AllRandom;
 }
 
 class DrawSomethingLinesNodeType : public NodeType
@@ -62,34 +62,34 @@ public:
 	{
 	}
 
-	bool setProperty(PropertyID propId, const QVariant& newValue) override
+	bool setProperty(PropertyID propId, const NodeProperty& newValue) override
 	{
 		switch(propId)
 		{
 		case ID_LineColor:
-			_color = getColor(EColor(newValue.toUInt()));
+			_color = getColor(newValue.toEnum().convert<EColor>());
 			return true;
 		case ID_LineThickness:
-			_thickness = newValue.toUInt();
+			_thickness = newValue.toInt();
 			return true;
 		case ID_LineType:
-			_type = lineType(newValue.toUInt());
+			_type = lineType(newValue.toEnum().data());
 			return true;
 		}
 
 		return false;
 	}
 
-	QVariant property(PropertyID propId) const override
+	NodeProperty property(PropertyID propId) const override
 	{
 		switch(propId)
 		{
 		case ID_LineColor: return getColor(_color);
 		case ID_LineThickness: return _thickness;
-		case ID_LineType: return lineTypeIndex(_type);
+		case ID_LineType: return Enum(lineTypeIndex(_type));
 		}
 
-		return QVariant();
+		return NodeProperty();
 	}
 
 	ExecutionStatus execute(NodeSocketReader& reader, NodeSocketWriter& writer) override
@@ -243,30 +243,30 @@ public:
 	{
 	}
 
-	bool setProperty(PropertyID propId, const QVariant& newValue) override
+	bool setProperty(PropertyID propId, const NodeProperty& newValue) override
 	{
 		switch(propId)
 		{
+		case ID_Color:
+			_color = getColor(newValue.toEnum().convert<EColor>());
+			return true;
 		case ID_RichKeypoints:
 			_richKeypoints = newValue.toBool();
-			return true;
-		case ID_Color:
-			_color = getColor(EColor(newValue.toUInt()));
 			return true;
 		}
 
 		return false;
 	}
 
-	QVariant property(PropertyID propId) const override
+	NodeProperty property(PropertyID propId) const override
 	{
 		switch(propId)
 		{
-		case ID_RichKeypoints: return _richKeypoints;
 		case ID_Color: return getColor(_color);
+		case ID_RichKeypoints: return _richKeypoints;		
 		}
 
-		return QVariant();
+		return NodeProperty();
 	}
 
 	ExecutionStatus execute(NodeSocketReader& reader, NodeSocketWriter& writer) override
@@ -405,27 +405,27 @@ public:
 	{
 	}
 
-	bool setProperty(PropertyID propId, const QVariant& newValue) override
+	bool setProperty(PropertyID propId, const NodeProperty& newValue) override
 	{
 		switch(propId)
 		{
 		case ID_Color:
-			_color = getColor(EColor(newValue.toUInt()));
-			_kpColor = getAltColor(EColor(newValue.toUInt()));
+			_color = getColor(newValue.toEnum().convert<EColor>());
+			_kpColor = getAltColor(newValue.toEnum().convert<EColor>());
 			return true;
 		}
 
 		return false;
 	}
 
-	QVariant property(PropertyID propId) const override
+	NodeProperty property(PropertyID propId) const override
 	{
 		switch(propId)
 		{
 		case ID_Color: return getColor(_color);
 		}
 
-		return QVariant();
+		return NodeProperty();
 	}
 
 	ExecutionStatus execute(NodeSocketReader& reader, NodeSocketWriter& writer) override
@@ -589,30 +589,30 @@ class PaintMaskNodeType : public NodeType
 {
 public:
 	PaintMaskNodeType()
-		: _color(getColor(Color_Green))
+		: _color(getColor(EColor::Green))
 	{
 	}
 
-	bool setProperty(PropertyID propId, const QVariant& newValue) override
+	bool setProperty(PropertyID propId, const NodeProperty& newValue) override
 	{
 		switch(propId)
 		{
 		case ID_Color:
-			_color = getColor(EColor(newValue.toUInt()));
+			_color = getColor(newValue.toEnum().convert<EColor>());
 			return true;
 		}
 
 		return false;
 	}
 
-	QVariant property(PropertyID propId) const override
+	NodeProperty property(PropertyID propId) const override
 	{
 		switch(propId)
 		{
 		case ID_Color: return getColor(_color);
 		}
 
-		return QVariant();
+		return NodeProperty();
 	}
 
 	ExecutionStatus execute(NodeSocketReader& reader, NodeSocketWriter& writer) override

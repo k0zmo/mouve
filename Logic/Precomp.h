@@ -2,9 +2,9 @@
 
 // CRT
 #include <cstdio>
-#include <cstdio>
 #include <cstdint>
 #include <cstddef>
+#include <cstdarg>
 #include <exception>
 
 // STL
@@ -15,9 +15,8 @@
 #include <functional>
 #include <algorithm>
 
+// boost
 #include <boost/variant.hpp>
-// Temporary till property system uses it
-#include <QVariant> 
 
 // OpenCV
 #include <opencv2/core/core.hpp>

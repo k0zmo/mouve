@@ -22,6 +22,9 @@ public:
 
 	PropertyModel* propertyModel(NodeID nodeID);
 
+	static QVariant nodePropertyToVariant(const NodeProperty& propValue);
+	static NodeProperty variantToNodeProperty(const QVariant& value);
+
 private:
 	QHash<NodeID, PropertyModel*> _idPropertyModelHash;
 

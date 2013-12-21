@@ -76,8 +76,8 @@ public:
 	bool taggedButNotExecuted(NodeID nodeID) const;
 
 	bool nodeConfiguration(NodeID nodeID, NodeConfig& nodeConfig) const;
-	bool nodeSetProperty(NodeID nodeID, PropertyID propID, const QVariant& value);
-	QVariant nodeProperty(NodeID nodeID, PropertyID propID);
+	bool nodeSetProperty(NodeID nodeID, PropertyID propID, const NodeProperty& value);
+	NodeProperty nodeProperty(NodeID nodeID, PropertyID propID);
 	const std::string& nodeExecuteInformation(NodeID nodeID) const;
 	double nodeTimeElapsed(NodeID nodeID) const;
 

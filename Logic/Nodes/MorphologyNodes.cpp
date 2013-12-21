@@ -17,12 +17,12 @@ public:
 	{
 	}
 
-	bool setProperty(PropertyID propId, const QVariant& newValue) override
+	bool setProperty(PropertyID propId, const NodeProperty& newValue) override
 	{
 		switch(propId)
 		{
 		case ID_StructuringElementType:
-			_se = cvu::EStructuringElementType(newValue.toInt());
+			_se = newValue.toEnum().convert<cvu::EStructuringElementType>();
 			return true;
 		case ID_XRadius:
 			_xradius = newValue.toInt();
@@ -38,17 +38,17 @@ public:
 		return false;
 	}
 
-	QVariant property(PropertyID propId) const override
+	NodeProperty property(PropertyID propId) const override
 	{
 		switch(propId)
 		{
-		case ID_StructuringElementType: return int(_se);
+		case ID_StructuringElementType: return _se;
 		case ID_XRadius: return _xradius;
 		case ID_YRadius: return _yradius;
 		case ID_Rotation: return _rotation;
 		}
 
-		return QVariant();
+		return NodeProperty();
 	}
 
 	ExecutionStatus execute(NodeSocketReader&, NodeSocketWriter& writer) override
@@ -103,30 +103,30 @@ class MorphologyOperatorNodeType : public NodeType
 {
 public:
 	MorphologyOperatorNodeType()
-		: _op(Erode)
+		: _op(EMorphologyOperation::Erode)
 	{
 	}
 
-	bool setProperty(PropertyID propId, const QVariant& newValue) override
+	bool setProperty(PropertyID propId, const NodeProperty& newValue) override
 	{
 		switch(propId)
 		{
 		case ID_Operation:
-			_op = EMorphologyOperation(newValue.toInt());
+			_op = newValue.toEnum().convert<EMorphologyOperation>();
 			return true;
 		}
 
 		return false;
 	}
 
-	QVariant property(PropertyID propId) const override
+	NodeProperty property(PropertyID propId) const override
 	{
 		switch(propId)
 		{
-		case ID_Operation: return int(_op);
+		case ID_Operation: return _op;
 		}
 
-		return QVariant();
+		return NodeProperty();
 	}
 
 	ExecutionStatus execute(NodeSocketReader& reader, NodeSocketWriter& writer) override
@@ -142,7 +142,7 @@ public:
 			return ExecutionStatus(EStatus::Ok);
 
 		// Do stuff
-		cv::morphologyEx(src, dst, _op, se);
+		cv::morphologyEx(src, dst, int(_op), se);
 
 		return ExecutionStatus(EStatus::Ok);
 	}
@@ -172,7 +172,7 @@ public:
 	}
 
 private:
-	enum EMorphologyOperation
+	enum class EMorphologyOperation
 	{
 		Erode    = cv::MORPH_ERODE,
 		Dilate   = cv::MORPH_DILATE,
@@ -209,30 +209,30 @@ class HitMissOperatorNodeType : public NodeType
 {
 public:
 	HitMissOperatorNodeType()
-		: _op(Outline)
+		: _op(EHitMissOperation::Outline)
 	{
 	}
 
-	bool setProperty(PropertyID propId, const QVariant& newValue) override
+	bool setProperty(PropertyID propId, const NodeProperty& newValue) override
 	{
 		switch(propId)
 		{
 		case ID_Operation:
-			_op = EHitMissOperation(newValue.toInt());
+			_op = newValue.toEnum().convert<EHitMissOperation>();
 			return true;
 		}
 
 		return false;
 	}
 
-	QVariant property(PropertyID propId) const override
+	NodeProperty property(PropertyID propId) const override
 	{
 		switch(propId)
 		{
-		case ID_Operation: return int(_op);
+		case ID_Operation: return _op;
 		}
 
-		return QVariant();
+		return NodeProperty();
 	}
 
 	ExecutionStatus execute(NodeSocketReader& reader, NodeSocketWriter& writer) override
@@ -249,13 +249,13 @@ public:
 		// Do stuff
 		switch(_op)
 		{
-		case Outline:
+		case EHitMissOperation::Outline:
 			hitmissOutline(src, dst);
 			break;
-		case Skeleton:
+		case EHitMissOperation::Skeleton:
 			hitmissSkeleton(src, dst);
 			break;
-		case SkeletonZhang:
+		case EHitMissOperation::SkeletonZhang:
 			hitmissSkeletonZhangSuen(src, dst);
 			break;
 		}
@@ -743,7 +743,7 @@ private:
 	}
 
 private:
-	enum EHitMissOperation
+	enum class EHitMissOperation
 	{
 		Outline,
 		Skeleton,

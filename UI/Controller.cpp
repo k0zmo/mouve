@@ -237,7 +237,7 @@ void Controller::addNodeView(const QString& nodeTitle,
 
 			_propManager->newProperty(nodeID, propID, prop.type, 
 				QString::fromStdString(prop.name),
-				_nodeTree->nodeProperty(nodeID, propID),
+				PropertyManager::nodePropertyToVariant(_nodeTree->nodeProperty(nodeID, propID)),
 				QString::fromStdString(prop.uiHint));
 
 			++propID;
@@ -633,11 +633,11 @@ void Controller::setupUiAbout()
 	_ui->menuHelp->addAction(actionAboutOpenCV);
 
 	// About program
-    QAction* actionAboutApplication = new QAction(tr("About ") + QApplication::applicationName(), this);
-    actionAboutApplication->setToolTip(tr("Show information about ") + QApplication::applicationName());
+	QAction* actionAboutApplication = new QAction(tr("About ") + QApplication::applicationName(), this);
+	actionAboutApplication->setToolTip(tr("Show information about ") + QApplication::applicationName());
 	connect(actionAboutApplication, &QAction::triggered, [=] {
 		QString translatedTextAboutCaption = QString(
-            "<h3>About %1</h3>").arg(QApplication::applicationName());
+			"<h3>About %1</h3>").arg(QApplication::applicationName());
 #ifdef Q_OS_LINUX
 		// Causes linker error in msvc2012
 		QString translatedTextAboutText = QString::fromWCharArray(
@@ -652,7 +652,7 @@ void Controller::setupUiAbout()
 			L"© 2011, Double-J designs</p>");
 		QMessageBox *msgBox = new QMessageBox(this);
 		msgBox->setAttribute(Qt::WA_DeleteOnClose);
-        msgBox->setWindowTitle(tr("About ") + QApplication::applicationName());
+		msgBox->setWindowTitle(tr("About ") + QApplication::applicationName());
 		msgBox->setText(translatedTextAboutCaption);
 		msgBox->setInformativeText(translatedTextAboutText);
 
@@ -813,7 +813,7 @@ void Controller::prepareRecentFileList()
 
 			if(!openTreeFromFile(filePath))
 			{
-                int fb = QMessageBox::question(this, QApplication::applicationName(),
+				int fb = QMessageBox::question(this, QApplication::applicationName(),
 					tr("\"%1\" could not be opened. Do you want to remove the reference to it from the Recent file list?")
 						.arg(filePath), QMessageBox::Yes, QMessageBox::No);
 				if(fb == QMessageBox::Yes)
@@ -850,7 +850,7 @@ void Controller::prepareRecentFileList()
 void Controller::showErrorMessage(const QString& message)
 {
 	qCritical(qPrintable(message));
-    QMessageBox::critical(nullptr, QApplication::applicationName(), message);
+	QMessageBox::critical(nullptr, QApplication::applicationName(), message);
 }
 
 void Controller::switchToVideoMode()
@@ -1025,7 +1025,7 @@ void Controller::updateTitleBar()
 	QString tmp = _nodeTreeFilePath.isEmpty()
 		? tr("Untitled")
 		: QFileInfo(_nodeTreeFilePath).fileName();
-    QString windowTitle = QApplication::applicationName() + " - ";
+	QString windowTitle = QApplication::applicationName() + " - ";
 	if(_nodeTreeDirty)
 		windowTitle += "*";
 	setWindowTitle(windowTitle + tmp);
@@ -1646,20 +1646,27 @@ void Controller::changeProperty(NodeID nodeID,
 		}
 	}
 
-	if(_nodeTree->nodeSetProperty(nodeID, propID, newValue))
+	try
 	{
-		_nodeTree->tagNode(nodeID);
-		_nodeTreeDirty = true;
-		updateTitleBar();
-		processAutoRefresh();
+		if(_nodeTree->nodeSetProperty(nodeID, propID, PropertyManager::variantToNodeProperty(newValue)))
+		{
+			_nodeTree->tagNode(nodeID);
+			_nodeTreeDirty = true;
+			updateTitleBar();
+			processAutoRefresh();
+		}
+		else
+		{
+			*ok = false;
+			qWarning(qPrintable(QString("Wrong value for nodeID: %1, propertyID: %2 (new value: %3)")
+				.arg(nodeID)
+				.arg(propID)
+				.arg(newValue.toString())));
+		}
 	}
-	else
+	catch(std::exception& ex)
 	{
-		*ok = false;
-		qWarning(qPrintable(QString("Wrong value for nodeID: %1, propertyID: %2 (new value: %3)")
-			.arg(nodeID)
-			.arg(propID)
-			.arg(newValue.toString())));
+		qWarning() << ex.what();
 	}
 }
 
@@ -2120,7 +2127,7 @@ void Controller::initGpuModule(QMenu* menuModules)
 	{
 		if(_gpuModule->isInitialized())
 		{
-            QMessageBox::warning(nullptr, QApplication::applicationName(),
+			QMessageBox::warning(nullptr, QApplication::applicationName(),
 				"GPU Module - GPU Module already initialized");
 			_actionInteractiveSetup->setEnabled(false);
 			return;

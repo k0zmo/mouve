@@ -8,7 +8,7 @@ class GpuMorphologyOperatorNodeType : public GpuNodeType
 {
 public:
 	GpuMorphologyOperatorNodeType()
-		: _op(Erode)
+		: _op(EMorphologyOperation::Erode)
 		, _sElemHash(0)
 	{
 	}
@@ -23,14 +23,14 @@ public:
 			&& _kidDilate != InvalidKernelID;
 	}
 
-	bool setProperty(PropertyID propId, const QVariant& newValue) override
+	bool setProperty(PropertyID propId, const NodeProperty& newValue) override
 	{
 		switch(propId)
 		{
 		case ID_Operation:
-			if(newValue.toInt() < int(EMorphologyOperation::Gradient))
+			if(newValue.toEnum().data() < Enum(EMorphologyOperation::Gradient).data())
 			{
-				_op = EMorphologyOperation(newValue.toInt());
+				_op = newValue.toEnum().convert<EMorphologyOperation>();
 				return true;
 			}
 		}
@@ -38,14 +38,14 @@ public:
 		return false;
 	}
 
-	QVariant property(PropertyID propId) const override
+	NodeProperty property(PropertyID propId) const override
 	{
 		switch(propId)
 		{
-		case ID_Operation: return int(_op);
+		case ID_Operation: return _op;
 		}
 
-		return QVariant();
+		return NodeProperty();
 	}
 
 	ExecutionStatus execute(NodeSocketReader& reader, NodeSocketWriter& writer) override
@@ -71,7 +71,7 @@ public:
 			return ExecutionStatus(EStatus::Error, "Structuring element is too big to fit in constant memory");
 
 		// Prepare if necessary buffer for temporary result
-		if(_op > int(EMorphologyOperation::Dilate))
+		if(_op > EMorphologyOperation::Dilate)
 			ensureSizeIsEnough(_tmpImage, width, height);
 
 		// Acquire kernel(s)
@@ -79,9 +79,9 @@ public:
 		
 		if(_op != EMorphologyOperation::Dilate)
 			kernelErode = _gpuComputeModule->acquireKernel(_kidErode);
-		if(_op > int(EMorphologyOperation::Erode))
+		if(_op > EMorphologyOperation::Erode)
 			kernelDilate = _gpuComputeModule->acquireKernel(_kidDilate);
-		//if(_op > int(EMorphologyOperation::Close))
+		//if(_op > EMorphologyOperation::Close)
 		//	kernelSubtract = _gpuComputeModule->acquireKernel(_kidSubtract);
 
 		clw::Event evt;
@@ -264,7 +264,7 @@ private:
 	KernelID _kidDilate;
 	///KernelID _kidSubtract;
 
-	enum EMorphologyOperation
+	enum class EMorphologyOperation
 	{
 		Erode,
 		Dilate,

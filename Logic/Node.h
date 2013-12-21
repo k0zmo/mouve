@@ -3,8 +3,6 @@
 #include "Prerequisites.h"
 #include "Kommon/HighResolutionClock.h"
 
-class QVariant;
-
 enum class ENodeFlags : int
 {
 	Tagged             = K_BIT(1),
@@ -51,8 +49,8 @@ public:
 	// Below methods are thin wrapper for held NodeType interface
 	void configuration(NodeConfig& nodeConfig) const;
 	ExecutionStatus execute(NodeSocketReader& reader, NodeSocketWriter& writer);
-	bool setProperty(PropertyID propID, const QVariant& value);
-	QVariant property(PropertyID propID) const;
+	bool setProperty(PropertyID propID, const NodeProperty& value);
+	NodeProperty property(PropertyID propID) const;
 	const std::string& executeInformation() const;
 	bool restart();
 	void finish();

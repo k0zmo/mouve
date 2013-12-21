@@ -63,3 +63,52 @@ PropertyModel* PropertyManager::propertyModel(NodeID nodeID)
 {
 	return _idPropertyModelHash.value(nodeID);
 }
+
+QVariant PropertyManager::nodePropertyToVariant(const NodeProperty& propValue)
+{
+	switch(propValue.type())
+	{
+	case EPropertyType::Unknown:
+		return QVariant();
+	case EPropertyType::Boolean:
+		return propValue.toBool();
+	case EPropertyType::Integer:
+		return propValue.toInt();
+	case EPropertyType::Double:
+		return propValue.toDouble();
+	case EPropertyType::Enum:
+		return QVariant::fromValue<Enum>(propValue.toEnum());
+	case EPropertyType::Matrix:
+		return QVariant::fromValue<Matrix3x3>(propValue.toMatrix3x3());
+	case EPropertyType::Filepath:
+		return QVariant::fromValue<Filepath>(propValue.toFilepath());
+	case EPropertyType::String:
+		return QString::fromStdString(propValue.toString());
+	}
+
+	return QVariant();
+}
+
+NodeProperty PropertyManager::variantToNodeProperty(const QVariant& value)
+{
+	switch(value.type())
+	{
+	case QVariant::Bool:
+		return NodeProperty(value.toBool());
+	case QVariant::Int:
+		return NodeProperty(value.toInt());
+	case QVariant::Double:
+		return NodeProperty(value.toDouble());
+	case QVariant::String:
+		return NodeProperty(value.toString().toStdString());
+	}
+
+	if(value.userType() == qMetaTypeId<Matrix3x3>())
+		return NodeProperty(value.value<Matrix3x3>());
+	else if(value.userType() == qMetaTypeId<Enum>())
+		return NodeProperty(value.value<Enum>());
+	else if(value.userType() == qMetaTypeId<Filepath>())
+		return NodeProperty(value.value<Filepath>());
+
+	return NodeProperty();
+}

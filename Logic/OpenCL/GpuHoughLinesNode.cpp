@@ -15,12 +15,12 @@ public:
 	{
 	}
 
-	bool setProperty(PropertyID propId, const QVariant& newValue)
+	bool setProperty(PropertyID propId, const NodeProperty& newValue)
 	{
 		switch(propId)
 		{
 		case ID_Threshold:
-			_threshold = newValue.toUInt();
+			_threshold = newValue.toInt();
 			return true;
 		case ID_ShowHoughSpace:
 			_showHoughSpace = newValue.toBool();
@@ -39,7 +39,7 @@ public:
 		return false;
 	}
 
-	QVariant property(PropertyID propId) const
+	NodeProperty property(PropertyID propId) const
 	{
 		switch(propId)
 		{
@@ -50,7 +50,7 @@ public:
 		case ID_HoughSpaceScale: return _houghSpaceScale;
 		}
 
-		return QVariant();
+		return NodeProperty();
 	}
 
 	bool postInit() override

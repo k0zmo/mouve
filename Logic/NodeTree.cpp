@@ -606,7 +606,7 @@ bool NodeTree::nodeConfiguration(NodeID nodeID, NodeConfig& nodeConfig) const
 	return true;
 }
 
-bool NodeTree::nodeSetProperty(NodeID nodeID, PropertyID propID, const QVariant& value)
+bool NodeTree::nodeSetProperty(NodeID nodeID, PropertyID propID, const NodeProperty& value)
 {
 	if(!validateNode(nodeID))
 		return false;
@@ -614,10 +614,10 @@ bool NodeTree::nodeSetProperty(NodeID nodeID, PropertyID propID, const QVariant&
 	return _nodes[nodeID].setProperty(propID, value);
 }
 
-QVariant NodeTree::nodeProperty(NodeID nodeID, PropertyID propID)
+NodeProperty NodeTree::nodeProperty(NodeID nodeID, PropertyID propID)
 {
 	if(!validateNode(nodeID))
-		return QVariant();
+		return NodeProperty();
 
 	return _nodes[nodeID].property(propID);
 }

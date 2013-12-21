@@ -11,7 +11,7 @@ public:
 	{
 	}
 
-	bool setProperty(PropertyID propId, const QVariant& newValue)
+	bool setProperty(PropertyID propId, const NodeProperty& newValue)
 	{
 		if(propId == 0)
 		{
@@ -21,11 +21,11 @@ public:
 		return false;
 	}
 
-	QVariant property(PropertyID propId) const
+	NodeProperty property(PropertyID propId) const
 	{
 		if(propId == 0)
 			return _usePinnedMemory;
-		return QVariant();
+		return NodeProperty();
 	}
 
 	ExecutionStatus execute(NodeSocketReader& reader, NodeSocketWriter& writer) override
@@ -114,7 +114,7 @@ public:
 	{
 	}
 
-	bool setProperty(PropertyID propId, const QVariant& newValue)
+	bool setProperty(PropertyID propId, const NodeProperty& newValue)
 	{
 		if(propId == 0)
 		{
@@ -124,11 +124,11 @@ public:
 		return false;
 	}
 
-	QVariant property(PropertyID propId) const
+	NodeProperty property(PropertyID propId) const
 	{
 		if(propId == 0)
 			return _usePinnedMemory;
-		return QVariant();
+		return NodeProperty();
 	}
 
 	ExecutionStatus execute(NodeSocketReader& reader, NodeSocketWriter& writer) override

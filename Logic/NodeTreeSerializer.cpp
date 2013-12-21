@@ -46,64 +46,12 @@ QJsonObject NodeTreeSerializer::serializeJson(const std::shared_ptr<NodeTree>& n
 		{
 			while(nodeConfig.pProperties[propID].type != EPropertyType::Unknown)
 			{
-				QVariant propValue = node->property(propID);
+				NodeProperty propValue = node->property(propID);
 
 				if(propValue.isValid())
 				{
 					const auto& prop = nodeConfig.pProperties[propID];
-
-					QJsonObject jsonProp;
-					jsonProp.insert(QStringLiteral("id"), propID);
-					jsonProp.insert(QStringLiteral("name"), QString::fromStdString(prop.name));
-
-					switch(prop.type)
-					{
-					case EPropertyType::Boolean:
-						jsonProp.insert(QStringLiteral("value"), propValue.toBool());
-						jsonProp.insert(QStringLiteral("type"), QStringLiteral("boolean"));
-						break;
-					case EPropertyType::Integer:
-						jsonProp.insert(QStringLiteral("value"), propValue.toInt());
-						jsonProp.insert(QStringLiteral("type"), QStringLiteral("integer"));
-						break;
-					case EPropertyType::Double:
-						jsonProp.insert(QStringLiteral("value"), propValue.toDouble());
-						jsonProp.insert(QStringLiteral("type"), QStringLiteral("double"));
-						break;
-					case EPropertyType::Enum:
-						jsonProp.insert(QStringLiteral("value"), propValue.toInt());
-						jsonProp.insert(QStringLiteral("type"), QStringLiteral("enum"));
-						break;
-					case EPropertyType::Matrix:
-						{
-							QJsonArray jsonMatrix;
-							Matrix3x3 matrix = propValue.value<Matrix3x3>();
-							for(double v : matrix.v)
-								jsonMatrix.append(v);
-							jsonProp.insert(QStringLiteral("value"), jsonMatrix);
-							jsonProp.insert(QStringLiteral("type"), QStringLiteral("matrix3x3"));
-							break;
-						}
-					case EPropertyType::Filepath:
-						{
-							QString rootDirStr = QString::fromStdString(_rootDirectory);
-							QDir rootDir(rootDirStr);
-							if(rootDir.exists())
-								jsonProp.insert(QStringLiteral("value"), rootDir.relativeFilePath(propValue.toString()));
-							else
-								jsonProp.insert(QStringLiteral("value"), propValue.toString());
-							jsonProp.insert(QStringLiteral("type"), QStringLiteral("filepath"));
-						}
-						break;
-					case EPropertyType::String:
-						jsonProp.insert(QStringLiteral("value"), propValue.toString());
-						jsonProp.insert(QStringLiteral("type"), QStringLiteral("string"));
-						break;
-					case EPropertyType::Unknown:
-						break;
-					}
-
-					jsonProperties.append(jsonProp);
+					jsonProperties.append(serializeProperty(propID, prop.name, prop.type, propValue));
 				}
 
 				++propID;
@@ -235,37 +183,33 @@ bool NodeTreeSerializer::deserializeJsonNodes(std::shared_ptr<NodeTree>& nodeTre
 					continue;
 				}
 
-				QVariant value = propMap["value"];
-				if(!value.isValid())
+				QVariant qvalue = propMap["value"];
+				if(!qvalue.isValid())
 				{
 					qWarning() << "\"value\" is bad, property of id" << propId << "will be skipped";
 					continue;
 				}
 
-				// Special case - type is matrix3x3. For rest types we don't even check it (at least for now)
-				QString propType = propMap["type"].toString();
-				if(propType == "matrix3x3")
+				QString qpropType = propMap["type"].toString();
+				EPropertyType propType = deserializePropertyType(qpropType.toStdString());
+				if(propType == EPropertyType::Unknown)
 				{
-					// Convert from QList<QVariant (of double)> to Matrix3x3
-					QVariantList matrixList = value.toList();
-					Matrix3x3 matrix;
-					for(int i = 0; i < matrixList.count() && i < 9; ++i)
-						matrix.v[i] = matrixList[i].toDouble();
-
-					value = QVariant::fromValue<Matrix3x3>(matrix);
+					qWarning() << "\"type\" is bad, property of id" << propId << "will be skipped";
+					continue;
 				}
 
-				if(propType == "filepath")
-				{
-					QString rootDirStr = QString::fromStdString(_rootDirectory);
-					QDir rootDir(rootDirStr);
-					if(rootDir.exists())
-						value = rootDir.absoluteFilePath(value.toString());
-				}
+				NodeProperty propValue = deserializeProperty(propType, qvalue);
 
-				if(!nodeTree->nodeSetProperty(_nodeId, propId, value))
+				try
 				{
-					qWarning() << "Couldn't set loaded property" << propId <<  "to" << value;
+					if(!nodeTree->nodeSetProperty(_nodeId, propId, propValue))
+					{
+						qWarning() << "Couldn't set loaded property" << propId <<  "to" << qvalue;
+					}
+				}
+				catch(std::exception& ex)
+				{
+					qWarning() << ex.what();
 				}
 			}
 		}
@@ -314,7 +258,7 @@ bool NodeTreeSerializer::deserializeJsonLinks(std::shared_ptr<NodeTree>& nodeTre
 		}
 
 		if(nodeTree->linkNodes(SocketAddress(mapping[fromNode], fromSocket, true),
-		                       SocketAddress(mapping[toNode], toSocket, false)) != ELinkNodesResult::Ok)
+							   SocketAddress(mapping[toNode], toSocket, false)) != ELinkNodesResult::Ok)
 		{
 			qCritical() << QString("Couldn't link nodes %1:%2 with %3:%4")
 				.arg(fromNode)
@@ -327,4 +271,120 @@ bool NodeTreeSerializer::deserializeJsonLinks(std::shared_ptr<NodeTree>& nodeTre
 	}
 
 	return links.count() == i;
+}
+
+QJsonObject NodeTreeSerializer::serializeProperty(PropertyID propID,
+												  const std::string& propName,
+												  EPropertyType propType,
+												  const NodeProperty& propValue)
+{
+	QJsonObject jsonProp;
+	jsonProp.insert(QStringLiteral("id"), propID);
+	jsonProp.insert(QStringLiteral("name"), QString::fromStdString(propName));
+
+	switch(propType)
+	{
+	case EPropertyType::Boolean:
+		jsonProp.insert(QStringLiteral("value"), propValue.toBool());
+		jsonProp.insert(QStringLiteral("type"), QStringLiteral("boolean"));
+		break;
+	case EPropertyType::Integer:
+		jsonProp.insert(QStringLiteral("value"), propValue.toInt());
+		jsonProp.insert(QStringLiteral("type"), QStringLiteral("integer"));
+		break;
+	case EPropertyType::Double:
+		jsonProp.insert(QStringLiteral("value"), propValue.toDouble());
+		jsonProp.insert(QStringLiteral("type"), QStringLiteral("double"));
+		break;
+	case EPropertyType::Enum:
+		jsonProp.insert(QStringLiteral("value"), (int) propValue.toEnum().data());
+		jsonProp.insert(QStringLiteral("type"), QStringLiteral("enum"));
+		break;
+	case EPropertyType::Matrix:
+		{
+			QJsonArray jsonMatrix;
+			Matrix3x3 matrix = propValue.toMatrix3x3();
+			for(double v : matrix.v)
+				jsonMatrix.append(v);
+			jsonProp.insert(QStringLiteral("value"), jsonMatrix);
+			jsonProp.insert(QStringLiteral("type"), QStringLiteral("matrix3x3"));
+			break;
+		}
+	case EPropertyType::Filepath:
+		{
+			QString rootDirStr = QString::fromStdString(_rootDirectory);
+			QString filePath = QString::fromStdString(propValue.toFilepath().data());
+			QDir rootDir(rootDirStr);
+			if(rootDir.exists())
+				jsonProp.insert(QStringLiteral("value"), rootDir.relativeFilePath(filePath));
+			else
+				jsonProp.insert(QStringLiteral("value"), filePath);
+			jsonProp.insert(QStringLiteral("type"), QStringLiteral("filepath"));
+		}
+		break;
+	case EPropertyType::String:
+		jsonProp.insert(QStringLiteral("value"), QString::fromStdString(propValue.toString()));
+		jsonProp.insert(QStringLiteral("type"), QStringLiteral("string"));
+		break;
+	case EPropertyType::Unknown:
+		break;
+	}
+
+	return jsonProp;
+}
+
+EPropertyType NodeTreeSerializer::deserializePropertyType(const std::string& type)
+{
+	if(type == "boolean")
+		return EPropertyType::Boolean;
+	else if(type == "integer")
+		return EPropertyType::Integer;
+	else if(type == "double")
+		return EPropertyType::Double;
+	else if(type == "enum")
+		return EPropertyType::Enum;
+	else if(type == "matrix3x3")
+		return EPropertyType::Matrix;
+	else if(type == "filepath")
+		return EPropertyType::Filepath;
+	else if(type == "string")
+		return EPropertyType::String;
+	else
+		return EPropertyType::Unknown;
+}
+
+NodeProperty NodeTreeSerializer::deserializeProperty(EPropertyType propType, 
+													 const QVariant& qvalue)
+{
+	switch(propType)
+	{
+	case EPropertyType::Boolean:
+		return NodeProperty(qvalue.toBool());
+	case EPropertyType::Integer:
+		return NodeProperty(qvalue.toInt());
+	case EPropertyType::Double:
+		return NodeProperty(qvalue.toDouble());
+	case EPropertyType::Enum:
+		return NodeProperty(Enum(qvalue.toUInt()));
+	case EPropertyType::Matrix:
+		{
+			QVariantList matrixList = qvalue.toList();
+			Matrix3x3 matrix;
+			for(int i = 0; i < matrixList.count() && i < 9; ++i)
+				matrix.v[i] = matrixList[i].toDouble();
+			return NodeProperty(matrix);
+		}
+	case EPropertyType::Filepath:
+		{
+			QString rootDirStr = QString::fromStdString(_rootDirectory);
+			QDir rootDir(rootDirStr);
+			if(rootDir.exists())
+				return NodeProperty(Filepath(rootDir.absoluteFilePath(qvalue.toString()).toStdString()));
+			return NodeProperty();
+		}
+	case EPropertyType::String:
+		return NodeProperty(qvalue.toString().toStdString());
+	}
+
+	return NodeProperty();
 }

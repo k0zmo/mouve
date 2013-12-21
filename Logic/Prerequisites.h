@@ -10,9 +10,9 @@
 
 // CRT
 #include <cstdio>
-#include <cstdio>
 #include <cstdint>
 #include <cstddef>
+#include <cstdarg>
 #include <exception>
 
 // STL
@@ -49,6 +49,7 @@ class Node;
 class NodeType;
 class NodeSocket;
 class NodeFlowData;
+class NodeProperty;
 class NodeSocketReader;
 class NodeSocketWriter;
 class NodeTree;

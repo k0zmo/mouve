@@ -1,5 +1,6 @@
 #include "Node.h"
 #include "NodeType.h"
+#include "NodeProperty.h"
 #include "NodeException.h"
 
 HighResolutionClock Node::_stopWatch;
@@ -120,12 +121,12 @@ ExecutionStatus Node::execute(NodeSocketReader& reader, NodeSocketWriter& writer
 	return status;
 }
 
-bool Node::setProperty(PropertyID propID, const QVariant& value)
+bool Node::setProperty(PropertyID propID, const NodeProperty& value)
 {
 	return _nodeType->setProperty(propID, value);
 }
 
-QVariant Node::property(PropertyID propID) const
+NodeProperty Node::property(PropertyID propID) const
 {
 	return _nodeType->property(propID);
 }

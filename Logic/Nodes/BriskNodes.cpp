@@ -16,7 +16,7 @@ public:
 	{
 	}
 
-	bool setProperty(PropertyID propId, const QVariant& newValue) override
+	bool setProperty(PropertyID propId, const NodeProperty& newValue) override
 	{
 		if(propId > ID_PatternScale || propId < ID_Threshold)
 			return false;
@@ -40,7 +40,7 @@ public:
 		return true;
 	}
 
-	QVariant property(PropertyID propId) const override
+	NodeProperty property(PropertyID propId) const override
 	{
 		switch(propId)
 		{
@@ -49,7 +49,7 @@ public:
 		case ID_PatternScale: return _patternScale;
 		}
 
-		return QVariant();
+		return NodeProperty();
 	}
 
 	ExecutionStatus execute(NodeSocketReader& reader, NodeSocketWriter& writer) override

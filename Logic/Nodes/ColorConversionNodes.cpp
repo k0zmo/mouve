@@ -88,26 +88,26 @@ public:
 	{
 	}
 
-	bool setProperty(PropertyID propId, const QVariant& newValue) override
+	bool setProperty(PropertyID propId, const NodeProperty& newValue) override
 	{
 		switch(propId)
 		{
 		case 0:
-			_BayerCode = cvu::EBayerCode(newValue.toUInt());
+			_BayerCode = newValue.toEnum().convert<cvu::EBayerCode>();
 			return true;
 		}
 
 		return false;
 	}
 
-	QVariant property(PropertyID propId) const override
+	NodeProperty property(PropertyID propId) const override
 	{
 		switch(propId)
 		{
-		case 0: return int(_BayerCode);
+		case 0: return _BayerCode;
 		}
 
-		return QVariant();
+		return NodeProperty();
 	}
 
 	ExecutionStatus execute(NodeSocketReader& reader, NodeSocketWriter& writer) override
@@ -162,12 +162,12 @@ public:
 	{
 	}
 
-	bool setProperty(PropertyID propId, const QVariant& newValue) override
+	bool setProperty(PropertyID propId, const NodeProperty& newValue) override
 	{
 		switch(propId)
 		{
 		case ID_BayerFormat:
-			_BayerCode = cvu::EBayerCode(newValue.toUInt());
+			_BayerCode = newValue.toEnum().convert<cvu::EBayerCode>();
 			return true;
 		case ID_RedGain:
 			_redGain = newValue.toDouble();
@@ -183,17 +183,17 @@ public:
 		return false;
 	}
 
-	QVariant property(PropertyID propId) const override
+	NodeProperty property(PropertyID propId) const override
 	{
 		switch(propId)
 		{
-		case ID_BayerFormat: return int(_BayerCode);
+		case ID_BayerFormat: return _BayerCode;
 		case ID_RedGain: return _redGain;
 		case ID_GreenGain: return _greenGain;
 		case ID_BlueGain: return _blueGain;
 		}
 
-		return QVariant();
+		return NodeProperty();
 	}
 
 	ExecutionStatus execute(NodeSocketReader& reader, NodeSocketWriter& writer) override
@@ -281,7 +281,7 @@ public:
 	{
 	}
 
-	bool setProperty(PropertyID propId, const QVariant& newValue) override
+	bool setProperty(PropertyID propId, const NodeProperty& newValue) override
 	{
 		switch(propId)
 		{
@@ -289,14 +289,14 @@ public:
 			_gain = newValue.toDouble();
 			return true;
 		case ID_Bias:
-			_bias = newValue.toDouble();
+			_bias = newValue.toInt();
 			return true;
 		}
 
 		return false;
 	}
 
-	QVariant property(PropertyID propId) const override
+	NodeProperty property(PropertyID propId) const override
 	{
 		switch(propId)
 		{
@@ -304,7 +304,7 @@ public:
 		case ID_Bias: return _bias;
 		}
 
-		return QVariant();
+		return NodeProperty();
 	}
 
 	ExecutionStatus execute(NodeSocketReader& reader, NodeSocketWriter& writer) override

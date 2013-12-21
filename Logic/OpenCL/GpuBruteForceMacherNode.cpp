@@ -41,7 +41,7 @@ public:
 	{
 	}
 
-	bool setProperty(PropertyID propId, const QVariant& newValue) override
+	bool setProperty(PropertyID propId, const NodeProperty& newValue) override
 	{
 		switch(propId)
 		{
@@ -56,7 +56,7 @@ public:
 		return false;
 	}
 
-	QVariant property(PropertyID propId) const override
+	NodeProperty property(PropertyID propId) const override
 	{
 		switch(propId)
 		{
@@ -64,7 +64,7 @@ public:
 		case ID_SymmetryTest: return _symmetryTest;
 		}
 
-		return QVariant();
+		return NodeProperty();
 	}
 
 	bool postInit() override

@@ -16,7 +16,7 @@ public:
 	{
 	}
 
-	bool setProperty(PropertyID propId, const QVariant& newValue) override
+	bool setProperty(PropertyID propId, const NodeProperty& newValue) override
 	{
 		switch(propId)
 		{
@@ -37,7 +37,7 @@ public:
 		return false;
 	}
 
-	QVariant property(PropertyID propId) const override
+	NodeProperty property(PropertyID propId) const override
 	{
 		switch(propId)
 		{
@@ -47,7 +47,7 @@ public:
 		case ID_LearningRate: return _learningRate;
 		}
 
-		return QVariant();
+		return NodeProperty();
 	}
 
 	bool restart() override
@@ -126,7 +126,7 @@ public:
 	{
 	}
 
-	bool setProperty(PropertyID propId, const QVariant& newValue) override
+	bool setProperty(PropertyID propId, const NodeProperty& newValue) override
 	{
 		switch(propId)
 		{
@@ -134,10 +134,10 @@ public:
 			_history = newValue.toInt();
 			return true;
 		case ID_VarianceThreshold:
-			_varThreshold = newValue.toInt();
+			_varThreshold = newValue.toFloat();
 			return true;
 		case ID_ShadowDetection:
-			_shadowDetection = newValue.toDouble();
+			_shadowDetection = newValue.toBool();
 			return true;
 		case ID_LearningRate:
 			_learningRate = newValue.toDouble();
@@ -147,7 +147,7 @@ public:
 		return false;
 	}
 
-	QVariant property(PropertyID propId) const override
+	NodeProperty property(PropertyID propId) const override
 	{
 		switch(propId)
 		{
@@ -157,7 +157,7 @@ public:
 		case ID_LearningRate: return _learningRate;
 		}
 
-		return QVariant();
+		return NodeProperty();
 	}
 
 	bool restart() override
@@ -233,7 +233,7 @@ public:
 	{
 	}
 
-	bool setProperty(PropertyID propId, const QVariant& newValue) override
+	bool setProperty(PropertyID propId, const NodeProperty& newValue) override
 	{
 		switch(propId)
 		{
@@ -245,14 +245,14 @@ public:
 		return false;
 	}
 
-	QVariant property(PropertyID propId) const override
+	NodeProperty property(PropertyID propId) const override
 	{
 		switch(propId)
 		{
 		case ID_LearningRate: return _learningRate;
 		}
 
-		return QVariant();
+		return NodeProperty();
 	}
 
 	bool restart() override
@@ -317,29 +317,29 @@ public:
 	{
 	}
 
-	bool setProperty(PropertyID propId, const QVariant& newValue) override
+	bool setProperty(PropertyID propId, const NodeProperty& newValue) override
 	{
 		switch(propId)
 		{
 		case ID_Alpha:
-			_alpha = newValue.toDouble();
+			_alpha = newValue.toFloat();
 			return true;
 		case ID_ThresholdCoeff:
-			_threshCoeff = newValue.toDouble();
+			_threshCoeff = newValue.toFloat();
 			return true;
 		}
 
 		return false;
 	}
 
-	QVariant property(PropertyID propId) const override
+	NodeProperty property(PropertyID propId) const override
 	{
 		switch(propId)
 		{
 		case ID_Alpha: return _alpha;
 		case ID_ThresholdCoeff: return _threshCoeff;
 		}
-		return QVariant();
+		return NodeProperty();
 	}
 
 	bool restart() override

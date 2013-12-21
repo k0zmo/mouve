@@ -11,7 +11,7 @@ public:
 	{
 	}
 
-	bool setProperty(PropertyID propId, const QVariant& newValue) override
+	bool setProperty(PropertyID propId, const NodeProperty& newValue) override
 	{
 		switch(propId)
 		{
@@ -22,14 +22,14 @@ public:
 		return false;
 	}
 
-	QVariant property(PropertyID propId) const override
+	NodeProperty property(PropertyID propId) const override
 	{
 		switch(propId)
 		{
 		case ID_Angle: return _angle;
 		}
 
-		return QVariant();
+		return NodeProperty();
 	}
 
 	ExecutionStatus execute(NodeSocketReader& reader, NodeSocketWriter& writer) override
@@ -87,11 +87,11 @@ class ScaleImageNodeType : public NodeType
 public:
 	ScaleImageNodeType()
 		: _scale(1.0)
-		, _inter(eimArea)
+		, _inter(EInterpolationMethod::eimArea)
 	{
 	}
 
-	bool setProperty(PropertyID propId, const QVariant& newValue) override
+	bool setProperty(PropertyID propId, const NodeProperty& newValue) override
 	{
 		switch(propId)
 		{
@@ -99,13 +99,13 @@ public:
 			_scale = newValue.toDouble();
 			return true;
 		case ID_IntepolationMethod:
-			_inter = (EInterpolationMethod) newValue.toInt();
+			_inter = newValue.toEnum().convert<EInterpolationMethod>();
 			return true;
 		}
 		return false;
 	}
 
-	QVariant property(PropertyID propId) const override
+	NodeProperty property(PropertyID propId) const override
 	{
 		switch(propId)
 		{
@@ -113,7 +113,7 @@ public:
 		case ID_IntepolationMethod: return _inter;
 		}
 
-		return QVariant();
+		return NodeProperty();
 	}
 
 	ExecutionStatus execute(NodeSocketReader& reader, NodeSocketWriter& writer) override
@@ -129,7 +129,7 @@ public:
 
 		// Do stuff
 		cv::Size dstSize(int(input.cols * _scale), int(input.rows * _scale));
-		cv::resize(input, output, dstSize, 0, 0, _inter);
+		cv::resize(input, output, dstSize, 0, 0, int(_inter));
 
 		return ExecutionStatus(EStatus::Ok, 
 			formatMessage("Output image width: %d\nOutput image height: %d",
@@ -167,7 +167,7 @@ private:
 		ID_IntepolationMethod
 	};
 
-	enum EInterpolationMethod
+	enum class EInterpolationMethod
 	{
 		eimNearestNeighbour = cv::INTER_NEAREST,
 		eimLinear           = cv::INTER_LINEAR,

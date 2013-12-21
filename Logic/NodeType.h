@@ -2,9 +2,9 @@
 
 #include "Prerequisites.h"
 #include "NodeFlowData.h"
+#include "NodeProperty.h"
 
-#include <QVariant>
-
+/// Class responsible for reading data from a node socket
 class LOGIC_EXPORT NodeSocketReader
 {
 	K_DISABLE_COPY(NodeSocketReader);
@@ -18,7 +18,9 @@ public:
 	{
 	}
 
+	/// Reads data from the socket of given ID
 	const NodeFlowData& readSocket(SocketID socketID) const;
+	/// Reads data from the socket as an opencv image 
 	const cv::Mat& readSocketImage(SocketID socketID) const;
 
 private:
@@ -30,6 +32,7 @@ private:
 	NodeID _nodeID;
 };
 
+/// Class responsible for writing data to a node socket
 class LOGIC_EXPORT NodeSocketWriter
 {
 	K_DISABLE_COPY(NodeSocketWriter);
@@ -41,7 +44,9 @@ public:
 	{
 	}
 
+	/// Writes data to the socket of given ID
 	void writeSocket(SocketID socketID, NodeFlowData&& image);
+	/// Returns a reference to underlying socket data
 	NodeFlowData& acquireSocket(SocketID socketID);
 
 private:
@@ -51,86 +56,70 @@ private:
 	std::vector<NodeFlowData>* _outputs;
 };
 
-struct Matrix3x3
-{
-	double v[9];
-
-	Matrix3x3()
-	{
-		for(int i = 0; i < 9; ++i)
-			v[i] = 0.0;
-	}
-
-	Matrix3x3(double center)
-	{
-		for(int i = 0; i < 9; ++i)
-			v[i] = 0.0;
-		v[4] = center;
-	}
-
-	Matrix3x3(double m11, double m12, double m13,
-		double m21, double m22, double m23,
-		double m31, double m32, double m33)
-	{
-		v[0] = m11; v[1] = m12; v[2] = m13;
-		v[3] = m21; v[4] = m22; v[5] = m23;
-		v[6] = m31; v[7] = m32; v[8] = m33;
-	}
-};
-Q_DECLARE_METATYPE(Matrix3x3)
-
-enum class EPropertyType : int
-{
-	Unknown,
-	Boolean,
-	Integer,
-	Double,
-	Enum,
-	Matrix,
-	Filepath,
-	String
-}; 
-
+/// Describes input socket parameters
 struct InputSocketConfig
 {
+	/// Type of underlying data
 	ENodeFlowDataType dataType;
+	/// Name of input socket
 	std::string name;
+	/// Human-readable name of socket
 	std::string humanName;
+	/// Optional description
 	std::string description;
 };
 
+/// Describes output socket parameters
 struct OutputSocketConfig
 {
+	/// Type of underlying data
 	ENodeFlowDataType dataType;
+	/// Name of output socket
 	std::string name;
+	/// Human-readable name of socket
 	std::string humanName;
+	/// Optional description
 	std::string description;
 };
 
+/// Describes node property parameters
 struct PropertyConfig
 {
+	/// Type of property data
 	EPropertyType type;
-	std::string name; // humanName
+	/// Human-readable property name
+	std::string name;
+	/// Optional parameters for UI engine
 	std::string uiHint;
 };
 
+/// Additional, per-node settings
 enum ENodeConfigurationFlags
 {
-	Node_NoFlags                  = 0, // default 
+	Node_NoFlags                  = 0,
+	/// Node markes as a stateful
 	Node_HasState                 = K_BIT(0),
+	/// After one exec-run, node should be tagged for next one
 	Node_AutoTag                  = K_BIT(1),
+	/// Don't automatically do time computations for this node as it'll do it itself
 	Node_OverridesTimeComputation = K_BIT(2)
 };
-Q_DECLARE_FLAGS(NodeConfigurationFlags, ENodeConfigurationFlags);
-Q_DECLARE_OPERATORS_FOR_FLAGS(NodeConfigurationFlags)
+typedef int NodeConfigurationFlags;
 
+/// Describes node configuration
 struct NodeConfig
 {
+	/// Array of input socket descriptors
 	const InputSocketConfig* pInputSockets;
+	/// Array of output socket descriptors
 	const OutputSocketConfig* pOutputSockets;
+	/// Array of node property descriptors
 	const PropertyConfig* pProperties;
+	/// Optional human-readable description
 	std::string description;
+	/// Optional name of module that this node belongs to
 	std::string module;
+	/// Additional settings
 	NodeConfigurationFlags flags;
 
 	NodeConfig()
@@ -144,13 +133,19 @@ struct NodeConfig
 	}
 };
 
+/// Node execution status 
 enum class EStatus : int
 {
+	/// Everything was ok
 	Ok,
+	/// There was an error during execution
 	Error,
+	/// Mark this node for execution for next run
+	/// (requires Node_AutoTag flag set on)
 	Tag
 };
 
+/// Represents execution return information
 struct ExecutionStatus
 {
 	ExecutionStatus()
@@ -177,8 +172,12 @@ struct ExecutionStatus
 	{
 	}
 
+	/// If Node_OverridesTimeComputation is set on this value will be used
+	/// to display overriden time elapsed value
 	double timeElapsed;
+	/// Node execution status
 	EStatus status;
+	/// Additional message in case of an error
 	std::string message;
 };
 
@@ -192,8 +191,8 @@ public:
 	virtual ExecutionStatus execute(NodeSocketReader& reader, NodeSocketWriter& writer) = 0;
 
 	// Optional methods
-	virtual bool setProperty(PropertyID propId, const QVariant& newValue);
-	virtual QVariant property(PropertyID propId) const;
+	virtual bool setProperty(PropertyID propId, const NodeProperty& newValue);
+	virtual NodeProperty property(PropertyID propId) const;
 	virtual bool restart();
 	virtual void finish();
 
@@ -202,10 +201,10 @@ public:
 	LOGIC_EXPORT static std::string formatMessage(const char* msg, ...);
 };
 
-inline bool NodeType::setProperty(PropertyID, const QVariant&)
+inline bool NodeType::setProperty(PropertyID, const NodeProperty&)
 { return false; }
-inline QVariant NodeType::property(PropertyID) const
-{ return QVariant(); }
+inline NodeProperty NodeType::property(PropertyID) const
+{ return NodeProperty(); }
 inline bool NodeType::restart()
 { return false; }
 inline void NodeType::finish()

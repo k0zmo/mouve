@@ -41,7 +41,7 @@ public:
 			_kidGaussBackground != InvalidKernelID;
 	}
 
-	bool setProperty(PropertyID propId, const QVariant& newValue) override
+	bool setProperty(PropertyID propId, const NodeProperty& newValue) override
 	{
 		switch(propId)
 		{
@@ -63,10 +63,10 @@ public:
 				return true;
 			}
 		case ID_BackgroundRatio:
-			_backgroundRatio = newValue.toDouble();
+			_backgroundRatio = newValue.toFloat();
 			return true;
 		case ID_LearningRate:
-			_learningRate = newValue.toDouble();
+			_learningRate = newValue.toFloat();
 			return true;
 		case ID_ShowBackground:
 			_showBackground = newValue.toBool();
@@ -76,7 +76,7 @@ public:
 		return false;
 	}
 
-	QVariant property(PropertyID propId) const override
+	NodeProperty property(PropertyID propId) const override
 	{
 		switch(propId)
 		{
@@ -87,7 +87,7 @@ public:
 		case ID_ShowBackground: return _showBackground;
 		}
 
-		return QVariant();
+		return NodeProperty();
 	}
 
 	bool restart() override

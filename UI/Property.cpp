@@ -69,6 +69,7 @@ Property::Property(const QString& name,
 	switch(type)
 	{
 	case EPropertyType::Unknown:
+		Q_ASSERT(false);
 		break;
 
 	case EPropertyType::Boolean:
@@ -83,24 +84,21 @@ Property::Property(const QString& name,
 		Q_ASSERT(value.type() == QVariant::Double);
 		break;
 
-	case EPropertyType::Enum:
-		Q_ASSERT(value.type() == QVariant::Int);
-		break;
-
-	case EPropertyType::Filepath:
-		Q_ASSERT(value.type() == QVariant::String);
-		break;
-
 	case EPropertyType::String:
 		Q_ASSERT(value.type() == QVariant::String);
 		break;
 
+	case EPropertyType::Enum:
+		Q_ASSERT(value.userType() == qMetaTypeId<Enum>());
+		break;
+
+	case EPropertyType::Filepath:
+		Q_ASSERT(value.userType() == qMetaTypeId<Filepath>());
+		break;
+
 	case EPropertyType::Matrix:
+		Q_ASSERT(value.userType() == qMetaTypeId<Matrix3x3>());
 		break;
-/*
-	case EPropertyType::Vector3:
-		break;
-*/
 	}
 }
 
@@ -193,8 +191,8 @@ void DoubleProperty::setUiHints(const PropertyHintList& list)
 	}
 }
 
-EnumProperty::EnumProperty(const QString& name, int index)
-	: Property(name, QVariant(index), EPropertyType::Enum, nullptr)
+EnumProperty::EnumProperty(const QString& name, Enum index)
+	: Property(name, QVariant::fromValue<Enum>(index), EPropertyType::Enum, nullptr)
 {
 }
 
@@ -202,11 +200,13 @@ QVariant EnumProperty::value(int role) const
 {
 	if(role == Qt::UserRole)
 	{
-		return Property::value(role).toInt();
+		// Returns enum value
+		return Property::value(role);
 	}
 	else
 	{
-		int index = Property::value(role).toInt();
+		// Returns human-readable enum name
+		int index = Property::value(role).value<Enum>().data();
 		if(index < _valueList.count())
 			return _valueList[index];
 		return QVariant();
@@ -217,16 +217,14 @@ bool EnumProperty::setValue(const QVariant& value, int role)
 {
 	if(role == Qt::EditRole)
 	{
-		if(value.type() == qMetaTypeId<int>())
+		if(value.userType() == qMetaTypeId<Enum>())
 		{
-			bool ok;
-			int index = value.toInt(&ok);
+			Enum index = value.value<Enum>();
 			
-			if(ok && index != _value
-				&& index >= 0 
-				&& index < _valueList.count())
+			if(index.data() >= 0 
+				&& index.data() < (uint) _valueList.count())
 			{
-				_value = index;
+				_value = QVariant::fromValue<Enum>(Enum(index));
 				return true;
 			}
 		}
@@ -248,10 +246,11 @@ bool EnumProperty::setEditorData(QWidget* editor, const QVariant& data)
 
 	if(editor_ != nullptr)
 	{
+		// For Display role we return QString and that's what is send to us back
 		if(data.type() == qMetaTypeId<QString>())
 		{
 			editor_->blockSignals(true);
-			editor_->setCurrentIndex(_value.toInt());
+			editor_->setCurrentIndex(_value.value<Enum>().data());
 			editor_->blockSignals(false);
 
 			return true;
@@ -265,7 +264,7 @@ QVariant EnumProperty::editorData(QWidget* editor)
 {
 	PropertyComboBox* editor_ = qobject_cast<PropertyComboBox*>(editor);
 	if(editor_ != nullptr)
-		return editor_->currentIndex();
+		return QVariant::fromValue<Enum>(Enum(editor_->currentIndex()));
 	return QVariant();
 }
 
@@ -413,11 +412,21 @@ bool BooleanProperty::paint(QPainter* painter,
 	return true;
 }
 
+QString filepathToString(const Filepath& filepath)
+{
+	return QString::fromStdString(filepath.data());
+}
+
+QVariant stringToFilepathVariant(const QString& filepath)
+{
+	return QVariant::fromValue<Filepath>(Filepath(filepath.toStdString()));
+}
+
 FilePathProperty::FilePathProperty(const QString& name,
-								   const QString& initialPath)
-	: Property(name, QVariant(QFileInfo(initialPath).absoluteFilePath()), 
-		EPropertyType::Filepath, nullptr)
-	, _fileInfo(initialPath)
+								   const Filepath& initialPath)
+	: Property(name, stringToFilepathVariant(QFileInfo(filepathToString(initialPath)).absoluteFilePath()),
+	EPropertyType::Filepath, nullptr)
+	, _fileInfo(QString::fromStdString(initialPath.data()))
 	, _filter()
 {
 }
@@ -427,13 +436,13 @@ QVariant FilePathProperty::value(int role) const
 	if(role == Qt::UserRole || role == Qt::EditRole)
 	{
 		// Returns full path to a file
-		return Property::value(role).toString();
+		return Property::value(role);
 	}
 	else
 	{
 		// For display role - returns just a file name
 		QString ret = _fileInfo.fileName();
-		return ret.isEmpty() ? _value : ret;
+		return ret.isEmpty() ? filepathToString(_value.value<Filepath>()) : ret;
 	}
 }
 
@@ -448,7 +457,7 @@ bool FilePathProperty::setValue(const QVariant& value, int role)
 				&& tmpInfo.exists())
 			{
 				_fileInfo = tmpInfo;
-				_value = _fileInfo.filePath();
+				_value = stringToFilepathVariant(_fileInfo.filePath());
 				return true;
 			}
 
@@ -456,7 +465,7 @@ bool FilePathProperty::setValue(const QVariant& value, int role)
 			if(re.exactMatch(value.toString()))
 			{
 				_fileInfo = QFileInfo();
-				_value = value.toString();
+				_value = stringToFilepathVariant(value.toString());
 				return true;
 			}
 		}
@@ -479,10 +488,10 @@ bool FilePathProperty::setEditorData(QWidget* editor,
 
 	if(editor_ != nullptr)
 	{
-		if(data.type() == qMetaTypeId<QString>())
+		if(data.userType() == qMetaTypeId<Filepath>())
 		{
 			editor_->blockLineEditSignals(true);
-			editor_->setText(data.toString());
+			editor_->setText(filepathToString(data.value<Filepath>()));
 			editor_->blockLineEditSignals(false);
 
 			return true;

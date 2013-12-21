@@ -268,6 +268,7 @@
     <ClCompile Include="NodeFlowData.cpp" />
     <ClCompile Include="NodeLink.cpp" />
     <ClCompile Include="NodePlugin.cpp" />
+    <ClCompile Include="NodeProperty.cpp" />
     <ClCompile Include="NodeSystem.cpp" />
     <ClCompile Include="Nodes\ArithmeticNodes.cpp" />
     <ClCompile Include="Nodes\BriskNodes.cpp" />
@@ -321,6 +322,7 @@
     <ClInclude Include="NodeFlowData.h" />
     <ClInclude Include="NodeModule.h" />
     <ClInclude Include="NodePlugin.h" />
+    <ClInclude Include="NodeProperty.h" />
     <ClInclude Include="Nodes\CV.h" />
     <ClInclude Include="Nodes\ksurf.h" />
     <ClInclude Include="NodeTreeSerializer.h" />

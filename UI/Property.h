@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Prerequisites.h"
-#include "Logic/NodeType.h"
+#include "Logic/NodeProperty.h"
 
 #include <QStringList>
 #include <QVector>
@@ -12,6 +12,10 @@
 
 class QStyleOptionViewItem;
 class QPainter;
+
+Q_DECLARE_METATYPE(Enum)
+Q_DECLARE_METATYPE(Matrix3x3)
+Q_DECLARE_METATYPE(Filepath)
 
 typedef QList<QPair<QString, QString>> PropertyHintList;
 
@@ -97,7 +101,7 @@ private:
 class EnumProperty : public Property
 {
 public:
-	explicit EnumProperty(const QString& name, int value);
+	explicit EnumProperty(const QString& name, Enum value);
 
 	QVariant value(int role = Qt::UserRole) const override;
 	bool setValue(const QVariant& value, 
@@ -160,7 +164,7 @@ class FilePathProperty : public Property
 {
 public:
 	explicit FilePathProperty(const QString& name, 
-		const QString& initialPath = QString());
+		const Filepath& initialPath = Filepath());
 
 	QVariant value(int role = Qt::UserRole) const override;
 	bool setValue(const QVariant& value, 
@@ -192,48 +196,6 @@ public:
 		const QVariant& data) override;
 	QVariant editorData(QWidget* editor) override;
 };
-
-//
-// WIP
-//
-/*
-struct vec3
-{
-	double x, y, z;
-};
-
-class Vector3Property : public Property
-{
-public:
-	explicit Vector3Property(const QString& name, vec3 value)
-		: Property(name, QVariant(0), EPropertyType::Vector3, nullptr)
-		, _x(new DoubleProperty("X", value.x))
-		, _y(new DoubleProperty("Y", value.y))
-		, _z(new DoubleProperty("Z", value.z))
-	{
-		appendChild(_x);
-		appendChild(_y);
-		appendChild(_z);
-	}
-
-	QVariant value(int role = Qt::UserRole) const override
-	{
-		Q_UNUSED(role);
-
-		QString str = QString("[ %1 %2 %3 ]")
-			.arg(_x->value().toDouble())
-			.arg(_y->value().toDouble())
-			.arg(_z->value().toDouble());
-
-		return str;
-	}
-
-private:
-	DoubleProperty* _x;
-	DoubleProperty* _y;
-	DoubleProperty* _z;
-};
-*/
 
 inline PropertyID Property::propertyID() const
 { return _propID; }

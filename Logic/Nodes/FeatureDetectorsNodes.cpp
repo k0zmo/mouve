@@ -14,7 +14,7 @@ public:
 	{
 	}
 
-	bool setProperty(PropertyID propId, const QVariant& newValue) override
+	bool setProperty(PropertyID propId, const NodeProperty& newValue) override
 	{
 		switch(propId)
 		{
@@ -25,14 +25,14 @@ public:
 			_nonmaxSupression = newValue.toBool();
 			return true;
 		case 2:
-			_type = newValue.toInt();
+			_type = newValue.toEnum();
 			return true;
 		}
 
 		return false;
 	}
 
-	QVariant property(PropertyID propId) const override
+	NodeProperty property(PropertyID propId) const override
 	{
 		switch(propId)
 		{
@@ -41,7 +41,7 @@ public:
 		case 2: return _type;
 		}
 
-		return QVariant();
+		return NodeProperty();
 	}
 
 	ExecutionStatus execute(NodeSocketReader& reader, NodeSocketWriter& writer) override
@@ -56,7 +56,7 @@ public:
 			return ExecutionStatus(EStatus::Ok);
 
 		// Do stuff
-		cv::FASTX(src, kp.kpoints, _threshold, _nonmaxSupression, _type);
+		cv::FASTX(src, kp.kpoints, _threshold, _nonmaxSupression, _type.data());
 		kp.image = src;
 
 		return ExecutionStatus(EStatus::Ok, 
@@ -88,7 +88,7 @@ public:
 
 private:
 	int _threshold;
-	int _type;
+	Enum _type;
 	bool _nonmaxSupression;
 };
 

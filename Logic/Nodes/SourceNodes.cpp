@@ -24,18 +24,18 @@ public:
 	{
 	}
 
-	bool setProperty(PropertyID propId, const QVariant& newValue) override
+	bool setProperty(PropertyID propId, const NodeProperty& newValue) override
 	{
 		switch(propId)
 		{
 		case ID_VideoPath:
-			_videoPath = newValue.toString().toStdString();
+			_videoPath = newValue.toFilepath();
 			return true;
 		case ID_StartFrame:
-			_startFrame = newValue.toUInt();
+			_startFrame = newValue.toInt();
 			return true;
 		case ID_EndFrame:
-			_endFrame = newValue.toUInt();
+			_endFrame = newValue.toInt();
 			return true;
 		case ID_IgnoreFps:
 			_ignoreFps = newValue.toBool();
@@ -45,17 +45,17 @@ public:
 		return false;
 	}
 
-	QVariant property(PropertyID propId) const override
+	NodeProperty property(PropertyID propId) const override
 	{
 		switch(propId)
 		{
-		case ID_VideoPath: return QString::fromStdString(_videoPath);
-		case ID_StartFrame: return _startFrame;
-		case ID_EndFrame: return _endFrame;
+		case ID_VideoPath: return _videoPath;
+		case ID_StartFrame: return int(_startFrame);
+		case ID_EndFrame: return int(_endFrame);
 		case ID_IgnoreFps: return _ignoreFps;
 		}
 
-		return QVariant();
+		return NodeProperty();
 	}
 
 	bool restart() override
@@ -65,7 +65,7 @@ public:
 		if(_capture.isOpened())
 			_capture.release();
 
-		_capture.open(_videoPath);
+		_capture.open(_videoPath.data());
 		if(!_capture.isOpened())
 			return false;
 
@@ -174,7 +174,7 @@ private:
 		ID_IgnoreFps,
 	};
 
-	std::string _videoPath;
+	Filepath _videoPath;
 	cv::VideoCapture _capture;
 	unsigned _startFrame;
 	unsigned _endFrame;
@@ -199,30 +199,30 @@ public:
 	{
 	}
 
-	bool setProperty(PropertyID propId, const QVariant& newValue) override
+	bool setProperty(PropertyID propId, const NodeProperty& newValue) override
 	{
 		if(propId == 0)
 		{
-			_filePath = newValue.toString().toStdString();
+			_filePath = newValue.toFilepath();
 			return true;
 		}
 
 		return false;
 	}
 
-	QVariant property(PropertyID propId) const override
+	NodeProperty property(PropertyID propId) const override
 	{
 		if(propId == 0)
-			return QString::fromStdString(_filePath);
+			return _filePath;
 
-		return QVariant();
+		return NodeProperty();
 	}
 
 	ExecutionStatus execute(NodeSocketReader&, NodeSocketWriter& writer) override
 	{
 		cv::Mat& output = writer.acquireSocket(0).getImage();
 
-		output = cv::imread(_filePath, CV_LOAD_IMAGE_GRAYSCALE);
+		output = cv::imread(_filePath.data(), CV_LOAD_IMAGE_GRAYSCALE);
 
 		if(output.empty())
 			return ExecutionStatus(EStatus::Error, "File not found");
@@ -257,7 +257,7 @@ public:
 	}
 
 protected:
-	std::string _filePath;
+	Filepath _filePath;
 };
 
 class ImageFromFileStreamNodeType : public ImageFromFileNodeType
@@ -265,7 +265,7 @@ class ImageFromFileStreamNodeType : public ImageFromFileNodeType
 public: 
 	bool restart() override
 	{ 
-		_img = cv::imread(_filePath, CV_LOAD_IMAGE_GRAYSCALE);
+		_img = cv::imread(_filePath.data(), CV_LOAD_IMAGE_GRAYSCALE);
 
 		return !_img.empty();
 	}
@@ -299,7 +299,7 @@ public:
 	{
 	}
 
-	bool setProperty(PropertyID propId, const QVariant& newValue) override
+	bool setProperty(PropertyID propId, const NodeProperty& newValue) override
 	{
 		switch(propId)
 		{
@@ -311,14 +311,14 @@ public:
 		return false;
 	}
 
-	QVariant property(PropertyID propId) const override
+	NodeProperty property(PropertyID propId) const override
 	{
 		switch(propId)
 		{
 		case ID_DeviceId: return _deviceId;
 		}
 
-		return QVariant();
+		return NodeProperty();
 	}
 
 	bool restart() override
