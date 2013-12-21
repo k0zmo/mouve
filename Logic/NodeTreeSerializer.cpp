@@ -179,14 +179,19 @@ bool NodeTreeSerializer::deserializeJsonNodes(std::shared_ptr<NodeTree>& nodeTre
 				uint propId = propMap["id"].toUInt(&ok);
 				if(!ok)
 				{
-					qWarning() << "\"id\" is bad, property will be skipped";
+					qWarning() << QString("property \"id\" is bad, property will be skipped (id:%1, name:%2)")
+						.arg(nodeId)
+						.arg(nodeName);
 					continue;
 				}
 
 				QVariant qvalue = propMap["value"];
 				if(!qvalue.isValid())
 				{
-					qWarning() << "\"value\" is bad, property of id" << propId << "will be skipped";
+					qWarning() << QString("\"value\" is bad, property of id %1 will be skipped (id:%2, name:%3)")
+						.arg(propId)
+						.arg(nodeId)
+						.arg(nodeName);
 					continue;
 				}
 
@@ -194,7 +199,10 @@ bool NodeTreeSerializer::deserializeJsonNodes(std::shared_ptr<NodeTree>& nodeTre
 				EPropertyType propType = deserializePropertyType(qpropType.toStdString());
 				if(propType == EPropertyType::Unknown)
 				{
-					qWarning() << "\"type\" is bad, property of id" << propId << "will be skipped";
+					qWarning() << QString("\"type\" is bad, property of id %1 will be skipped (id:%2, name:%3)")
+						.arg(propId)
+						.arg(nodeId)
+						.arg(nodeName);
 					continue;
 				}
 
@@ -204,7 +212,7 @@ bool NodeTreeSerializer::deserializeJsonNodes(std::shared_ptr<NodeTree>& nodeTre
 				{
 					if(!nodeTree->nodeSetProperty(_nodeId, propId, propValue))
 					{
-						qWarning() << "Couldn't set loaded property" << propId <<  "to" << qvalue;
+						qWarning() << "Couldn't set loaded property" << propId << "to" << qvalue;
 					}
 				}
 				catch(std::exception& ex)
