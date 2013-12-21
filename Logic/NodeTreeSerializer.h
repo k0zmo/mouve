@@ -17,6 +17,9 @@ public:
 	// Serializes given node tree to JSON object
 	QJsonObject serializeJson(const std::shared_ptr<NodeTree>& nodeTree);
 
+	bool deserializeJson(std::shared_ptr<NodeTree>& nodeTree, 
+		const std::string& filePath);
+
 	// Deserializes given JSON object to nodeTree object
 	// Returns true upon a success
 	bool deserializeJson(std::shared_ptr<NodeTree>& nodeTree, 

@@ -87,6 +87,38 @@ QJsonObject NodeTreeSerializer::serializeJson(const std::shared_ptr<NodeTree>& n
 	return jsonTree;
 }
 
+bool NodeTreeSerializer::deserializeJson(std::shared_ptr<NodeTree>& nodeTree, 
+										 const std::string& filePath)
+{
+	QString filePath_ = QString::fromStdString(filePath);
+	QFile file(filePath_);
+	if(!file.open(QIODevice::ReadOnly | QIODevice::Text))
+		return false;
+
+	QByteArray fileContents = file.readAll();
+	QJsonParseError error;
+	QJsonDocument doc = QJsonDocument::fromJson(fileContents, &error);
+	if(error.error != QJsonParseError::NoError)
+	{
+		qWarning() << QString("Couldn't open node tree from file: %1\n"
+			"Error details: %2 in %3 character")
+			.arg(filePath_)
+			.arg(error.errorString())
+			.arg(error.offset);
+		return false;
+	}
+
+	if(!doc.isObject())
+	{
+		qWarning() << QString("Couldn't open node tree from file: %1\n"
+			"Error details: root value isn't JSON object")
+			.arg(filePath_);
+		return false;
+	}
+
+	QJsonObject jsonTree = doc.object();
+	return deserializeJson(nodeTree, jsonTree);
+}
 
 bool NodeTreeSerializer::deserializeJson(std::shared_ptr<NodeTree>& nodeTree,
 										 const QJsonObject& jsonTree, 

@@ -28,6 +28,12 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ShiTomasi.Plugin", "ShiToma
 		{201C0F8F-4B5D-4CA2-A267-1EBED6CD8460} = {201C0F8F-4B5D-4CA2-A267-1EBED6CD8460}
 	EndProjectSection
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Mouve.Console", "Console\Mouve.Console.vcxproj", "{631BB5DB-42BB-485B-BC9C-316ED5E58A20}"
+	ProjectSection(ProjectDependencies) = postProject
+		{DC17726C-68F2-4136-BBC4-25765372976A} = {DC17726C-68F2-4136-BBC4-25765372976A}
+		{201C0F8F-4B5D-4CA2-A267-1EBED6CD8460} = {201C0F8F-4B5D-4CA2-A267-1EBED6CD8460}
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -76,6 +82,14 @@ Global
 		{E4D0A5F3-CC77-4078-BDB0-EF002DCBE699}.Release|Win32.Build.0 = Release|Win32
 		{E4D0A5F3-CC77-4078-BDB0-EF002DCBE699}.Release|x64.ActiveCfg = Release|x64
 		{E4D0A5F3-CC77-4078-BDB0-EF002DCBE699}.Release|x64.Build.0 = Release|x64
+		{631BB5DB-42BB-485B-BC9C-316ED5E58A20}.Debug|Win32.ActiveCfg = Debug|Win32
+		{631BB5DB-42BB-485B-BC9C-316ED5E58A20}.Debug|Win32.Build.0 = Debug|Win32
+		{631BB5DB-42BB-485B-BC9C-316ED5E58A20}.Debug|x64.ActiveCfg = Debug|x64
+		{631BB5DB-42BB-485B-BC9C-316ED5E58A20}.Debug|x64.Build.0 = Debug|x64
+		{631BB5DB-42BB-485B-BC9C-316ED5E58A20}.Release|Win32.ActiveCfg = Release|Win32
+		{631BB5DB-42BB-485B-BC9C-316ED5E58A20}.Release|Win32.Build.0 = Release|Win32
+		{631BB5DB-42BB-485B-BC9C-316ED5E58A20}.Release|x64.ActiveCfg = Release|x64
+		{631BB5DB-42BB-485B-BC9C-316ED5E58A20}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
