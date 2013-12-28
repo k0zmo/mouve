@@ -99,7 +99,7 @@ public:
 			_scale = newValue.toDouble();
 			return true;
 		case ID_IntepolationMethod:
-			_inter = newValue.toEnum().convert<EInterpolationMethod>();
+			_inter = newValue.toEnum().cast<EInterpolationMethod>();
 			return true;
 		}
 		return false;

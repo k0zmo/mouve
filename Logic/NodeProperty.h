@@ -69,7 +69,7 @@ public:
 	}
 
 	template <typename EnumType>
-	typename std::enable_if<std::is_enum<EnumType>::value, EnumType>::type convert()
+	typename std::enable_if<std::is_enum<EnumType>::value, EnumType>::type cast()
 	{
 		return EnumType(_v);
 	}

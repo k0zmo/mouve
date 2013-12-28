@@ -67,7 +67,7 @@ public:
 		switch(propId)
 		{
 		case ID_LineColor:
-			_color = getColor(newValue.toEnum().convert<EColor>());
+			_color = getColor(newValue.toEnum().cast<EColor>());
 			return true;
 		case ID_LineThickness:
 			_thickness = newValue.toInt();
@@ -248,7 +248,7 @@ public:
 		switch(propId)
 		{
 		case ID_Color:
-			_color = getColor(newValue.toEnum().convert<EColor>());
+			_color = getColor(newValue.toEnum().cast<EColor>());
 			return true;
 		case ID_RichKeypoints:
 			_richKeypoints = newValue.toBool();
@@ -410,8 +410,8 @@ public:
 		switch(propId)
 		{
 		case ID_Color:
-			_color = getColor(newValue.toEnum().convert<EColor>());
-			_kpColor = getAltColor(newValue.toEnum().convert<EColor>());
+			_color = getColor(newValue.toEnum().cast<EColor>());
+			_kpColor = getAltColor(newValue.toEnum().cast<EColor>());
 			return true;
 		}
 
@@ -598,7 +598,7 @@ public:
 		switch(propId)
 		{
 		case ID_Color:
-			_color = getColor(newValue.toEnum().convert<EColor>());
+			_color = getColor(newValue.toEnum().cast<EColor>());
 			return true;
 		}
 

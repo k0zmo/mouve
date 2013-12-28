@@ -21,7 +21,7 @@ public:
 		switch(propId)
 		{
 		case ID_BayerFormat:
-			_BayerCode = newValue.toEnum().convert<cvu::EBayerCode>();
+			_BayerCode = newValue.toEnum().cast<cvu::EBayerCode>();
 			return true;
 		case ID_RedGain:
 			_redGain = newValue.toDouble();

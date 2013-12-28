@@ -22,7 +22,7 @@ public:
 		switch(propId)
 		{
 		case ID_StructuringElementType:
-			_se = newValue.toEnum().convert<cvu::EStructuringElementType>();
+			_se = newValue.toEnum().cast<cvu::EStructuringElementType>();
 			return true;
 		case ID_XRadius:
 			_xradius = newValue.toInt();
@@ -112,7 +112,7 @@ public:
 		switch(propId)
 		{
 		case ID_Operation:
-			_op = newValue.toEnum().convert<EMorphologyOperation>();
+			_op = newValue.toEnum().cast<EMorphologyOperation>();
 			return true;
 		}
 
@@ -218,7 +218,7 @@ public:
 		switch(propId)
 		{
 		case ID_Operation:
-			_op = newValue.toEnum().convert<EHitMissOperation>();
+			_op = newValue.toEnum().cast<EHitMissOperation>();
 			return true;
 		}
 

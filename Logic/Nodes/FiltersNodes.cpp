@@ -532,7 +532,7 @@ public:
 		switch(propId)
 		{
 		case 0:
-			_filterType = newValue.toEnum().convert<cvu::EPredefinedConvolutionType>();
+			_filterType = newValue.toEnum().cast<cvu::EPredefinedConvolutionType>();
 			return true;
 		}
 

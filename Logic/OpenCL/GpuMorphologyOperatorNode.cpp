@@ -30,7 +30,7 @@ public:
 		case ID_Operation:
 			if(newValue.toEnum().data() < Enum(EMorphologyOperation::Gradient).data())
 			{
-				_op = newValue.toEnum().convert<EMorphologyOperation>();
+				_op = newValue.toEnum().cast<EMorphologyOperation>();
 				return true;
 			}
 		}
