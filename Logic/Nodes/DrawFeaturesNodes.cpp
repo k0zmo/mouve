@@ -349,8 +349,8 @@ private:
 
 			float radius = p.size;
 			float ori = p.angle * (float)CV_PI/180.f;
-			float r1 = cvRound(p.pt.y);
-			float c1 = cvRound(p.pt.x);
+			float r1 = static_cast<float>(cvRound(p.pt.y));
+			float c1 = static_cast<float>(cvRound(p.pt.x));
 
 			cv::Point2f x1(-radius, -radius);
 			cv::Point2f x2(+radius, -radius);
@@ -373,7 +373,7 @@ private:
 			float c2 = cvRound(radius * c) + c1;
 			float r2 = cvRound(radius * s) + r1;
 
-			cv::line(img, cv::Point(c1, r1), cv::Point(c2, r2), color, 1, CV_AA);
+			cv::line(img, cv::Point(static_cast<int>(c1), static_cast<int>(r1)), cv::Point(static_cast<int>(c2), static_cast<int>(r2)), color, 1, CV_AA);
 			cv::line(img, x1, x2, color, 1, CV_AA);
 			cv::line(img, x2, x4, color, 1, CV_AA);
 			cv::line(img, x4, x3, color, 1, CV_AA);
@@ -381,7 +381,7 @@ private:
 		}
 		else
 		{
-			cv::circle(img, cv::Point(p.pt.x, p.pt.y), 3, color, 1, CV_AA);
+			cv::circle(img, cv::Point(static_cast<int>(p.pt.x), static_cast<int>(p.pt.y)), 3, color, 1, CV_AA);
 		}
 	}
 
@@ -632,7 +632,10 @@ public:
 			"Mask must be the same size as source image");
 
 		// Do stuff
-		cv::Vec3b tmp(_color[0], _color[1], _color[2]);
+		cv::Vec3b tmp(
+			cv::saturate_cast<uchar>(_color[0]), 
+			cv::saturate_cast<uchar>(_color[1]), 
+			cv::saturate_cast<uchar>(_color[2]));
 		cv::RNG& rng = cv::theRNG();
 		cv::Vec3b color = (_color == cv::Scalar::all(-1)) 
 			? cv::Vec3b(rng(256), rng(256), rng(256))

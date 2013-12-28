@@ -172,7 +172,7 @@ private:
 	{
 		ensureSizeIsEnough(_deviceAccum, numAngle * numRho * sizeof(cl_int));
 
-		uint64_t requiredSharedSize = numRho * sizeof(cl_int);
+		size_t requiredSharedSize = numRho * sizeof(cl_int);
 		float invRho = 1.0f / _rhoResolution;
 		float theta = CL_M_PI_F/180.0f * _thetaResolution;
 

@@ -16,7 +16,7 @@ public:
 
 	bool init(const std::shared_ptr<NodeModule>& nodeModule) override
 	{
-		_gpuComputeModule = std::dynamic_pointer_cast<GpuNodeModule, NodeModule>(nodeModule);
+		_gpuComputeModule = std::dynamic_pointer_cast<GpuNodeModule>(nodeModule);
 		return _gpuComputeModule != nullptr && postInit();
 	}
 

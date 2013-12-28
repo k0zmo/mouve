@@ -397,14 +397,14 @@ public:
 						if(!moving)
 						{
 							// Update background image
-							uchar newBackground = _alpha*float(background.at<uchar>(y, x)) + (1-_alpha)*float(pix);
+							uchar newBackground = cv::saturate_cast<uchar>(_alpha*float(background.at<uchar>(y, x)) + (1-_alpha)*float(pix));
 							background.at<uchar>(y, x) = newBackground;
 
 							// Update threshold image
 							float thresh = _alpha*float(threshold.at<uchar>(y, x)) + 
 								(1-_alpha)*(_threshCoeff * std::abs(pix - newBackground));
 							if(thresh > float(minThreshold))
-								threshold.at<uchar>(y, x) = thresh;
+								threshold.at<uchar>(y, x) = cv::saturate_cast<uchar>(thresh);
 						}
 						else
 						{

@@ -196,7 +196,7 @@ private:
 	uint32_t calculateStructuringElemCoordsHash(const vector<cl_int2>& sElemCoords) 
 	{
 		return SuperFastHash(reinterpret_cast<const char*>(sElemCoords.data()), 
-			sElemCoords.size() * sizeof(cl_int2));
+			static_cast<int>(sElemCoords.size() * sizeof(cl_int2)));
 	}
 
 	void uploadStructuringElement(const vector<cl_int2>& sElemCoords)

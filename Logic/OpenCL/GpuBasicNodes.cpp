@@ -53,7 +53,7 @@ public:
 		if(!_usePinnedMemory)
 		{
 			bool res = _gpuComputeModule->queue().writeImage2D(deviceImage, hostImage.data, 
-				clw::Rect(0, 0, hostImage.cols, hostImage.rows), hostImage.step);
+				clw::Rect(0, 0, hostImage.cols, hostImage.rows), static_cast<int>(hostImage.step));
 			return ExecutionStatus(res ? EStatus::Ok : EStatus::Error);
 		}
 		else
@@ -151,7 +151,7 @@ public:
 		if(!_usePinnedMemory)
 		{
 			bool res = _gpuComputeModule->queue().readImage2D(deviceImage, hostImage.data, 
-				clw::Rect(0, 0, hostImage.cols, hostImage.rows), hostImage.step);
+				clw::Rect(0, 0, hostImage.cols, hostImage.rows), static_cast<int>(hostImage.step));
 			return ExecutionStatus(res ? EStatus::Ok : EStatus::Error);
 		}
 		else
@@ -215,10 +215,6 @@ private:
 class GpuUploadArrayNodeType : public GpuNodeType
 {
 public:
-	GpuUploadArrayNodeType()
-	{
-	}
-
 	ExecutionStatus execute(NodeSocketReader& reader, NodeSocketWriter& writer) override
 	{
 		const cv::Mat& hostArray = reader.readSocket(0).getArray();
@@ -255,14 +251,9 @@ public:
 	}
 };
 
-
 class GpuDownloadArrayNodeType : public GpuNodeType
 {
 public:
-	GpuDownloadArrayNodeType()
-	{
-	}
-
 	ExecutionStatus execute(NodeSocketReader& reader, NodeSocketWriter& writer) override
 	{
 		const DeviceArray& deviceArray = reader.readSocket(0).getDeviceArray();

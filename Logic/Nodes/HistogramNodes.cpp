@@ -151,7 +151,7 @@ public:
 		{
 			cv::line(canvas, 
 				cv::Point(j, hist_h),
-				cv::Point(j, hist_h - (hist.at<float>(j))),
+				cv::Point(j, hist_h - static_cast<int>(hist.at<float>(j))),
 				cv::Scalar(200,200,200),
 				1, 8, 0);
 		}

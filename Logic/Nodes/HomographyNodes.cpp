@@ -227,7 +227,7 @@ public:
 			const auto& pt1 = mt.queryPoints[i];
 			const auto& pt2 = mt.trainPoints[i];
 
-			float invW = 1.0 / (homography.at<float>(2,0)*pt1.x + homography.at<float>(2,1)*pt1.y + homography.at<float>(2,2));
+			float invW = 1.0f / (homography.at<float>(2,0)*pt1.x + homography.at<float>(2,1)*pt1.y + homography.at<float>(2,2));
 			float xt = (homography.at<float>(0,0)*pt1.x + homography.at<float>(0,1)*pt1.y + homography.at<float>(0,2)) * invW;
 			float yt = (homography.at<float>(1,0)*pt1.x + homography.at<float>(1,1)*pt1.y + homography.at<float>(1,2)) * invW;
 			

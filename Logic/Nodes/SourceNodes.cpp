@@ -78,7 +78,7 @@ public:
 			? unsigned(ceil(1000.0 / fps))
 			: 0;
 		_timeStamp = std::chrono::high_resolution_clock::time_point();
-		_maxFrames = _capture.get(CV_CAP_PROP_FRAME_COUNT);
+		_maxFrames = static_cast<unsigned>(_capture.get(CV_CAP_PROP_FRAME_COUNT));
 		_currentFrame = _startFrame > 0 ? _startFrame : 0;
 
 		return true;

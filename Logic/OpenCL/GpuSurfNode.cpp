@@ -424,9 +424,9 @@ protected:
 		else
 		{
 			cv::Mat srcHost(imageHeight, imageWidth, CV_8UC1), integralHost;
-			_gpuComputeModule->queue().readImage2D(srcImage_cl, srcHost.data, srcHost.step);
+			_gpuComputeModule->queue().readImage2D(srcImage_cl, srcHost.data, static_cast<int>(srcHost.step));
 			cv::integral(srcHost, integralHost);
-			_gpuComputeModule->queue().writeImage2D(_imageIntegral_cl, integralHost.data, integralHost.step);
+			_gpuComputeModule->queue().writeImage2D(_imageIntegral_cl, integralHost.data, static_cast<int>(integralHost.step));
 		}
 	}
 
@@ -828,9 +828,9 @@ protected:
 		else
 		{
 			cv::Mat srcHost(imageHeight, imageWidth, CV_8UC1), integralHost;
-			_gpuComputeModule->queue().readImage2D(srcImage_cl, srcHost.data, srcHost.step);
+			_gpuComputeModule->queue().readImage2D(srcImage_cl, srcHost.data, static_cast<int>(srcHost.step));
 			cv::integral(srcHost, integralHost);
-			_gpuComputeModule->queue().writeImage2D(_imageIntegral_cl, integralHost.data, integralHost.step);
+			_gpuComputeModule->queue().writeImage2D(_imageIntegral_cl, integralHost.data, static_cast<int>(integralHost.step));
 			_gpuComputeModule->queue().asyncCopyImageToBuffer(_imageIntegral_cl, _imageIntegralBuffer_cl);
 		}
 	}
