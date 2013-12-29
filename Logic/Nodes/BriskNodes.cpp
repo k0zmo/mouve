@@ -18,8 +18,8 @@ public:
 
 	bool setProperty(PropertyID propId, const NodeProperty& newValue) override
 	{
-		if(propId > static_cast<int>(pid::PatternScale) || 
-			propId < static_cast<int>(pid::Threshold))
+		if(propId > underlying_cast(pid::PatternScale) || 
+			propId < underlying_cast(pid::Threshold))
 			return false;
 
 		switch(propId)

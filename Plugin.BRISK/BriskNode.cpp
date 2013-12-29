@@ -103,8 +103,8 @@ public:
 
 	bool setProperty(PropertyID propId, const NodeProperty& newValue) override
 	{
-		if(propId > static_cast<int>(pid::PatternScale) || 
-			propId < static_cast<int>(pid::RotationInvariant))
+		if(propId > underlying_cast(pid::PatternScale) || 
+			propId < underlying_cast(pid::RotationInvariant))
 			return false;
 
 		switch(propId)
@@ -224,8 +224,8 @@ public:
 			return true;
 		}
 
-		if(propId > static_cast<int>(pid::PatternScale) || 
-			propId < static_cast<int>(pid::RotationInvariant))
+		if(propId > underlying_cast(pid::PatternScale) || 
+			propId < underlying_cast(pid::RotationInvariant))
 			return false;
 
 		switch(propId)

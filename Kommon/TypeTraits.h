@@ -72,3 +72,9 @@ struct is_enum_signed
 	>
 {
 };
+
+template<typename Enum>
+typename std::underlying_type<Enum>::type underlying_cast(Enum e)
+{
+	return static_cast<typename std::underlying_type<Enum>::type>(e);
+}
