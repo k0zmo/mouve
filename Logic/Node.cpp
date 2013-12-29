@@ -31,11 +31,11 @@ Node::Node(std::unique_ptr<NodeType> nodeType,
 	NodeConfig config;
 	_nodeType->configuration(config);
 
-	if(config.flags & Node_HasState)
+	if(config.flags.testFlag(ENodeConfig::HasState))
 		setFlag(ENodeFlags::StateNode);
-	if(config.flags & Node_AutoTag)
+	if(config.flags.testFlag(ENodeConfig::AutoTag))
 		setFlag(ENodeFlags::AutoTag);
-	if(config.flags & Node_OverridesTimeComputation)
+	if(config.flags.testFlag(ENodeConfig::OverridesTimeComputation))
 		setFlag(ENodeFlags::OverridesTimeComp);
 
 	// Count number of input sockets

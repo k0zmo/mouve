@@ -3,6 +3,7 @@
 #include "Prerequisites.h"
 #include "NodeFlowData.h"
 #include "NodeProperty.h"
+#include "Kommon/EnumFlags.h"
 
 /// Class responsible for reading data from a node socket
 class LOGIC_EXPORT NodeSocketReader
@@ -94,17 +95,18 @@ struct PropertyConfig
 };
 
 /// Additional, per-node settings
-enum ENodeConfigurationFlags
+enum class ENodeConfig
 {
-	Node_NoFlags                  = 0,
+	NoFlags                  = 0,
 	/// Node markes as a stateful
-	Node_HasState                 = K_BIT(0),
+	HasState                 = K_BIT(0),
 	/// After one exec-run, node should be tagged for next one
-	Node_AutoTag                  = K_BIT(1),
+	AutoTag                  = K_BIT(1),
 	/// Don't automatically do time computations for this node as it'll do it itself
-	Node_OverridesTimeComputation = K_BIT(2)
+	OverridesTimeComputation = K_BIT(2)
 };
-typedef int NodeConfigurationFlags;
+typedef EnumFlags<ENodeConfig> NodeConfigFlags;
+K_DEFINE_ENUMFLAGS_OPERATORS(NodeConfigFlags)
 
 /// Describes node configuration
 struct NodeConfig
@@ -120,7 +122,7 @@ struct NodeConfig
 	/// Optional name of module that this node belongs to
 	std::string module;
 	/// Additional settings
-	NodeConfigurationFlags flags;
+	NodeConfigFlags flags;
 
 	NodeConfig()
 		: pInputSockets(nullptr)
@@ -128,7 +130,7 @@ struct NodeConfig
 		, pProperties(nullptr)
 		, description()
 		, module()
-		, flags(Node_NoFlags)
+		, flags(ENodeConfig::NoFlags)
 	{
 	}
 };

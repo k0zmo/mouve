@@ -162,7 +162,7 @@ public:
 		nodeConfig.description = "Provides video frames from specified stream.";
 		nodeConfig.pOutputSockets = out_config;
 		nodeConfig.pProperties = prop_config;
-		nodeConfig.flags = Node_HasState | Node_AutoTag | Node_OverridesTimeComputation;
+		nodeConfig.flags = ENodeConfig::HasState | ENodeConfig::AutoTag | ENodeConfig::OverridesTimeComputation;
 	}
 
 private:
@@ -284,7 +284,7 @@ public:
 	void configuration(NodeConfig& nodeConfig) const override
 	{
 		ImageFromFileNodeType::configuration(nodeConfig);
-		nodeConfig.flags = Node_AutoTag | Node_HasState;
+		nodeConfig.flags = ENodeConfig::AutoTag | ENodeConfig::HasState;
 	}
 
 private:
@@ -367,7 +367,7 @@ public:
 		nodeConfig.description = "Provides video frames from specified camera device.";
 		nodeConfig.pOutputSockets = out_config;
 		nodeConfig.pProperties = prop_config;
-		nodeConfig.flags = Node_HasState | Node_AutoTag;
+		nodeConfig.flags = ENodeConfig::HasState | ENodeConfig::AutoTag;
 	}
 
 private:

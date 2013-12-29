@@ -260,7 +260,7 @@ void Controller::addNodeView(const QString& nodeTitle,
 	_nodeScene->addItem(nodeView);
 	nodeView->setData(NodeDataIndex::NodeKey, nodeID);
 	nodeView->setPos(scenePos);
-	nodeView->setNodeWithStateMark((nodeConfig.flags & Node_HasState) != 0);
+	nodeView->setNodeWithStateMark(nodeConfig.flags.testFlag(ENodeConfig::HasState));
 	_nodeViews[nodeID] = nodeView;
 
 	// Set time info visibility on new nodes

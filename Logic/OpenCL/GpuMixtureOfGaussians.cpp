@@ -230,7 +230,7 @@ public:
 		nodeConfig.pInputSockets = in_config;
 		nodeConfig.pOutputSockets = out_config;
 		nodeConfig.pProperties = prop_config;
-		nodeConfig.flags = Node_HasState;
+		nodeConfig.flags = ENodeConfig::HasState;
 		nodeConfig.module = "opencl";
 	}
 

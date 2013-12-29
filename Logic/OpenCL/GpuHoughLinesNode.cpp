@@ -149,7 +149,6 @@ public:
 		nodeConfig.pOutputSockets = out_config;
 		nodeConfig.pProperties = prop_config;
 		nodeConfig.module = "opencl";
-		nodeConfig.flags = 0;
 	}
 
 private:
