@@ -39,7 +39,7 @@ string warpSizeDefine(const std::shared_ptr<GpuNodeModule>& gpuModule)
 {
 	ostringstream strm;
 	strm << "-DWARP_SIZE=";
-	if(gpuModule->device().deviceType() != clw::Gpu)
+	if(gpuModule->device().deviceType() != clw::EDeviceType::Gpu)
 	{
 		strm << 1;
 	}
@@ -47,12 +47,12 @@ string warpSizeDefine(const std::shared_ptr<GpuNodeModule>& gpuModule)
 	{
 		clw::EPlatformVendor vendor = gpuModule->device().platform().vendorEnum();
 
-		if(vendor == clw::Vendor_AMD)
+		if(vendor == clw::EPlatformVendor::AMD)
 			strm << gpuModule->device().wavefrontWidth();
 		// How to get this for Intel HD Graphics?
-		else if(vendor == clw::Vendor_Intel)
+		else if(vendor == clw::EPlatformVendor::Intel)
 			strm << 1;
-		else if(vendor == clw::Vendor_NVIDIA)
+		else if(vendor == clw::EPlatformVendor::NVIDIA)
 			strm << gpuModule->device().warpSize();
 	}
 
@@ -198,7 +198,7 @@ public:
 
 
 		// On AMD these are the same solutions
-		int* intPtr = (int*) _gpuComputeModule->queue().mapBuffer(_pinnedKeypointsCount_cl, clw::MapAccess_Write);
+		int* intPtr = (int*) _gpuComputeModule->queue().mapBuffer(_pinnedKeypointsCount_cl, clw::EMapAccess::Write);
 		if(!intPtr)
 			return ExecutionStatus(EStatus::Error, "Couldn't mapped keypoints counter buffer to host address space");
 		intPtr[0] = 0;
@@ -219,7 +219,7 @@ public:
 
 		// Read keypoints counter (use pinned memory)
 		_gpuComputeModule->queue().asyncCopyBuffer(_keypointsCount_cl, _pinnedKeypointsCount_cl);
-		intPtr = (int*) _gpuComputeModule->queue().mapBuffer(_pinnedKeypointsCount_cl, clw::MapAccess_Read);
+		intPtr = (int*) _gpuComputeModule->queue().mapBuffer(_pinnedKeypointsCount_cl, clw::EMapAccess::Read);
 		if(!intPtr)
 			return ExecutionStatus(EStatus::Error, "Couldn't mapped keypoints counter buffer to host address space");
 		int keypointsCount = min(intPtr[0], KEYPOINTS_MAX);
@@ -249,7 +249,7 @@ public:
 			if(_downloadDescriptors)
 			{
 				descriptors.create(keypointsCount, 64, CV_32F);
-				float* floatPtr = (float*) _gpuComputeModule->queue().mapBuffer(_pinnedDescriptors_cl, clw::MapAccess_Read);
+				float* floatPtr = (float*) _gpuComputeModule->queue().mapBuffer(_pinnedDescriptors_cl, clw::EMapAccess::Read);
 				if(!floatPtr)
 					return ExecutionStatus(EStatus::Error, "Couldn't mapped descriptors buffer to host address space");
 				if(descriptors.step == 64*sizeof(float))
@@ -325,12 +325,12 @@ protected:
 		const int nOriSamples = 109;
 
 		_gaussianWeights_cl = _gpuComputeModule->context().createBuffer(
-			clw::Access_ReadOnly, clw::Location_Device, sizeof(float)*nOriSamples);
+			clw::EAccess::ReadOnly, clw::EMemoryLocation::Device, sizeof(float)*nOriSamples);
 		_samplesCoords_cl = _gpuComputeModule->context().createBuffer(
-			clw::Access_ReadOnly, clw::Location_Device, sizeof(cl_int2)*nOriSamples);
+			clw::EAccess::ReadOnly, clw::EMemoryLocation::Device, sizeof(cl_int2)*nOriSamples);
 
-		float* gaussianPtr = (float*) _gpuComputeModule->queue().mapBuffer(_gaussianWeights_cl, clw::MapAccess_Write);
-		cl_int2* samplesPtr = (cl_int2*) _gpuComputeModule->queue().mapBuffer(_samplesCoords_cl, clw::MapAccess_Write);
+		float* gaussianPtr = (float*) _gpuComputeModule->queue().mapBuffer(_gaussianWeights_cl, clw::EMapAccess::Write);
+		cl_int2* samplesPtr = (cl_int2*) _gpuComputeModule->queue().mapBuffer(_samplesCoords_cl, clw::EMapAccess::Write);
 		if(!gaussianPtr || !samplesPtr)
 			return;
 		int index = 0;
@@ -362,17 +362,17 @@ protected:
 		if(_keypoints_cl.isNull() || _keypoints_cl.size() != KEYPOINTS_MAX*sizeof(KeyPoint))
 		{
 			_keypoints_cl = _gpuComputeModule->context().createBuffer(
-				clw::Access_ReadWrite, clw::Location_Device, KEYPOINTS_MAX*sizeof(KeyPoint));
+				clw::EAccess::ReadWrite, clw::EMemoryLocation::Device, KEYPOINTS_MAX*sizeof(KeyPoint));
 			_pinnedKeypoints_cl = _gpuComputeModule->context().createBuffer(
-				clw::Access_ReadWrite, clw::Location_AllocHostMemory, KEYPOINTS_MAX*sizeof(KeyPoint));
+				clw::EAccess::ReadWrite, clw::EMemoryLocation::AllocHostMemory, KEYPOINTS_MAX*sizeof(KeyPoint));
 		}
 
 		if(_keypointsCount_cl.isNull())
 		{
 			_keypointsCount_cl = _gpuComputeModule->context().createBuffer(
-				clw::Access_ReadWrite, clw::Location_Device, sizeof(int));
+				clw::EAccess::ReadWrite, clw::EMemoryLocation::Device, sizeof(int));
 			_pinnedKeypointsCount_cl = _gpuComputeModule->context().createBuffer(
-				clw::Access_ReadWrite, clw::Location_AllocHostMemory, sizeof(int));
+				clw::EAccess::ReadWrite, clw::EMemoryLocation::AllocHostMemory, sizeof(int));
 		}
 	}
 
@@ -386,13 +386,13 @@ protected:
 			_tempImage_cl.height() != imageHeight)
 		{
 			_tempImage_cl = _gpuComputeModule->context().createImage2D(
-				clw::Access_ReadWrite, clw::Location_Device,
-				clw::ImageFormat(clw::Order_R, clw::Type_Unnormalized_UInt32),
+				clw::EAccess::ReadWrite, clw::EMemoryLocation::Device,
+				clw::ImageFormat(clw::EChannelOrder::R, clw::EChannelType::Unnormalized_UInt32),
 				imageWidth, imageHeight);
 
 			_imageIntegral_cl = _gpuComputeModule->context().createImage2D(
-				clw::Access_ReadWrite, clw::Location_Device,
-				clw::ImageFormat(clw::Order_R, clw::Type_Unnormalized_UInt32),
+				clw::EAccess::ReadWrite, clw::EMemoryLocation::Device,
+				clw::ImageFormat(clw::EChannelOrder::R, clw::EChannelType::Unnormalized_UInt32),
 				imageWidth+1, imageHeight+1);
 
 			clw::Kernel kernelFillImage = _gpuComputeModule->acquireKernel(_kidFillImage);
@@ -404,7 +404,7 @@ protected:
 			_gpuComputeModule->queue().asyncRunKernel(kernelFillImage);
 		}
 
-		if(_gpuComputeModule->device().deviceType() != clw::Cpu)
+		if(_gpuComputeModule->device().deviceType() != clw::EDeviceType::Cpu)
 		{
 			clw::Kernel kernelMultiScan_horiz = _gpuComputeModule->acquireKernel(_kidMultiScan_horiz);
 			clw::Kernel kernelMultiScan_vert = _gpuComputeModule->acquireKernel(_kidMultiScan_vert);
@@ -478,10 +478,10 @@ protected:
 
 		if(layer.hessian_cl.isNull() || layer.hessian_cl.size() != layerSizeBytes)
 		{
-			layer.hessian_cl = _gpuComputeModule->context().createBuffer(clw::Access_ReadWrite, 
-				clw::Location_Device, layerSizeBytes);
-			layer.laplacian_cl = _gpuComputeModule->context().createBuffer(clw::Access_ReadWrite, 
-				clw::Location_Device, layerSizeBytes);
+			layer.hessian_cl = _gpuComputeModule->context().createBuffer(clw::EAccess::ReadWrite, 
+				clw::EMemoryLocation::Device, layerSizeBytes);
+			layer.laplacian_cl = _gpuComputeModule->context().createBuffer(clw::EAccess::ReadWrite, 
+				clw::EMemoryLocation::Device, layerSizeBytes);
 		}
 	}
 
@@ -631,10 +631,10 @@ protected:
 			// Allocate only if buffer is too small
 			_descriptors_cl.size() < sizeof(float)*64*keypointsCount)
 		{
-			_descriptors_cl = _gpuComputeModule->context().createBuffer(clw::Access_WriteOnly, 
-				clw::Location_Device, sizeof(float)*64*keypointsCount);
-			_pinnedDescriptors_cl = _gpuComputeModule->context().createBuffer(clw::Access_WriteOnly, 
-				clw::Location_AllocHostMemory, sizeof(float)*64*keypointsCount);
+			_descriptors_cl = _gpuComputeModule->context().createBuffer(clw::EAccess::WriteOnly, 
+				clw::EMemoryLocation::Device, sizeof(float)*64*keypointsCount);
+			_pinnedDescriptors_cl = _gpuComputeModule->context().createBuffer(clw::EAccess::WriteOnly, 
+				clw::EMemoryLocation::AllocHostMemory, sizeof(float)*64*keypointsCount);
 		}
 
 		if(_msurf)
@@ -670,7 +670,7 @@ protected:
 	{
 		vector<KeyPoint> kps(keypointsCount);
 		_gpuComputeModule->queue().asyncCopyBuffer(_keypoints_cl, _pinnedKeypoints_cl);
-		float* ptrBase = (float*) _gpuComputeModule->queue().mapBuffer(_pinnedKeypoints_cl, clw::MapAccess_Read);
+		float* ptrBase = (float*) _gpuComputeModule->queue().mapBuffer(_pinnedKeypoints_cl, clw::EMapAccess::Read);
 		if(!ptrBase)
 			return kps;
 
@@ -784,18 +784,18 @@ protected:
 			_tempImage_cl.height() != imageHeight)
 		{
 			_tempImage_cl = _gpuComputeModule->context().createImage2D(
-				clw::Access_ReadWrite, clw::Location_Device,
-				clw::ImageFormat(clw::Order_R, clw::Type_Unnormalized_UInt32),
+				clw::EAccess::ReadWrite, clw::EMemoryLocation::Device,
+				clw::ImageFormat(clw::EChannelOrder::R, clw::EChannelType::Unnormalized_UInt32),
 				imageWidth, imageHeight);
 
 			_imageIntegral_cl = _gpuComputeModule->context().createImage2D(
-				clw::Access_ReadWrite, clw::Location_Device,
-				clw::ImageFormat(clw::Order_R, clw::Type_Unnormalized_UInt32),
+				clw::EAccess::ReadWrite, clw::EMemoryLocation::Device,
+				clw::ImageFormat(clw::EChannelOrder::R, clw::EChannelType::Unnormalized_UInt32),
 				imageWidth+1, imageHeight+1);
 
 			_integralBufferPitch = imageWidth+1;
 			_imageIntegralBuffer_cl = _gpuComputeModule->context().createBuffer(
-				clw::Access_ReadOnly, clw::Location_Device,
+				clw::EAccess::ReadOnly, clw::EMemoryLocation::Device,
 				sizeof(cl_uint) * _integralBufferPitch * (imageHeight+1));
 
 			clw::Kernel kernelFillImage = _gpuComputeModule->acquireKernel(_kidFillImage);
@@ -807,7 +807,7 @@ protected:
 			_gpuComputeModule->queue().asyncRunKernel(kernelFillImage);
 		}
 
-		if(_gpuComputeModule->device().deviceType() != clw::Cpu)
+		if(_gpuComputeModule->device().deviceType() != clw::EDeviceType::Cpu)
 		{
 			clw::Kernel kernelMultiScan_horiz = _gpuComputeModule->acquireKernel(_kidMultiScan_horiz);
 			clw::Kernel kernelMultiScan_vert = _gpuComputeModule->acquireKernel(_kidMultiScan_vert);

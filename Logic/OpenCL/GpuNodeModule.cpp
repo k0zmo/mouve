@@ -69,7 +69,7 @@ bool GpuNodeModule::createDefault()
 	if(!_context.create(devs) || _context.numDevices() == 0)
 		return false;
 #else
-	if(!_context.create(clw::Default) || _context.numDevices() == 0)
+	if(!_context.create(clw::EDeviceType::Default) || _context.numDevices() == 0)
 		return false;
 #endif
 		
@@ -89,7 +89,7 @@ bool GpuNodeModule::createInteractive()
 			GpuPlatform gpuPlatform;
 			gpuPlatform.name = platform_cl.name();
 
-			const auto& devices_cl = clw::devices(clw::All, platform_cl);
+			const auto& devices_cl = clw::devices(clw::EDeviceType::All, platform_cl);
 			for(const auto& device_cl : devices_cl)
 				gpuPlatform.devices.emplace_back(device_cl.name());
 			gpuPlatforms.emplace_back(gpuPlatform);
@@ -111,7 +111,7 @@ bool GpuNodeModule::createInteractive()
 			&& result.device < (int) gpuPlatforms[result.platform].devices.size())
 			{
 				vector<clw::Device> devices0; devices0.emplace_back(
-					clw::devices(clw::All, platforms_cl[result.platform])[result.device]);
+					clw::devices(clw::EDeviceType::All, platforms_cl[result.platform])[result.device]);
 				if(!_context.create(devices0) || _context.numDevices() == 0)
 					return false;
 				return createAfterContext();
@@ -134,7 +134,7 @@ vector<GpuPlatform> GpuNodeModule::availablePlatforms() const
 		GpuPlatform gpuPlatform;
 		gpuPlatform.name = platform_cl.name();
 
-		const auto& devices_cl = clw::devices(clw::All, platform_cl);
+		const auto& devices_cl = clw::devices(clw::EDeviceType::All, platform_cl);
 		for(const auto& device_cl : devices_cl)
 			gpuPlatform.devices.emplace_back(device_cl.name());
 		gpuPlatforms.emplace_back(gpuPlatform);
@@ -176,8 +176,8 @@ void GpuNodeModule::rebuildProgram(const string& programName)
 bool GpuNodeModule::createAfterContext()
 {
 	_device = _context.devices()[0];
-	_queue = _context.createCommandQueue(_device, 0);//clw::Property_ProfilingEnabled);
-	_dataQueue = _context.createCommandQueue(_device, 0);//clw::Property_ProfilingEnabled);
+	_queue = _context.createCommandQueue(_device, clw::ECommandQueueProperty());//clw::ECommandQueueProperty::ProfilingEnabled);
+	_dataQueue = _context.createCommandQueue(_device, clw::ECommandQueueProperty());//clw::ECommandQueueProperty::ProfilingEnabled);
 
 	clw::installErrorHandler([=](cl_int error_id, const std::string& message)
 	{
@@ -254,8 +254,8 @@ string GpuNodeModule::additionalBuildOptions(const std::string& programName) con
 	string opts;
 #if defined(K_DEBUG) && K_COMPILER == K_COMPILER_MSVC
 	// Enable kernel debugging if device is CPU and it's Intel platform
-	if(_device.platform().vendorEnum() == clw::Vendor_Intel
-		&& _device.deviceType() == clw::Cpu)
+	if(_device.platform().vendorEnum() == clw::EPlatformVendor::Intel
+		&& _device.deviceType() == clw::EDeviceType::Cpu)
 	{
 		QFileInfo thisFile(K_FILE);
 		QDir thisDirectory = thisFile.dir();

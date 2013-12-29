@@ -206,14 +206,14 @@ private:
 			_deviceStructuringElement.size() != bmuSize)
 		{
 			_deviceStructuringElement = _gpuComputeModule->context().createBuffer(
-				clw::Access_ReadOnly, clw::Location_Device, bmuSize);
+				clw::EAccess::ReadOnly, clw::EMemoryLocation::Device, bmuSize);
 
 			_pinnedStructuringElement = _gpuComputeModule->context().createBuffer(
-				clw::Access_ReadWrite, clw::Location_AllocHostMemory, bmuSize);
+				clw::EAccess::ReadWrite, clw::EMemoryLocation::AllocHostMemory, bmuSize);
 		}
 
 		cl_int2* ptr = static_cast<cl_int2*>(_gpuComputeModule->queue().mapBuffer(
-			_pinnedStructuringElement, clw::MapAccess_Write));
+			_pinnedStructuringElement, clw::EMapAccess::Write));
 		memcpy(ptr, sElemCoords.data(), bmuSize);
 		_gpuComputeModule->queue().asyncUnmap(_pinnedStructuringElement, ptr);
 		_gpuComputeModule->queue().asyncCopyBuffer(_pinnedStructuringElement, _deviceStructuringElement);
@@ -226,8 +226,8 @@ private:
 			|| image.height() != height)
 		{
 			image = _gpuComputeModule->context().createImage2D(
-				clw::Access_ReadWrite, clw::Location_Device,
-				clw::ImageFormat(clw::Order_R, clw::Type_Normalized_UInt8),
+				clw::EAccess::ReadWrite, clw::EMemoryLocation::Device,
+				clw::ImageFormat(clw::EChannelOrder::R, clw::EChannelType::Normalized_UInt8),
 				width, height);
 		}
 	}

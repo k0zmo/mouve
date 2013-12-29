@@ -71,8 +71,8 @@ public:
 	{
 		string opts;
 
-		if(_gpuComputeModule->device().platform().vendorEnum() == clw::Vendor_AMD
-		&& _gpuComputeModule->device().platform().version() >= clw::Version_1_2)
+		if(_gpuComputeModule->device().platform().vendorEnum() == clw::EPlatformVendor::AMD
+		&& _gpuComputeModule->device().platform().version() >= clw::EPlatformVersion::v1_2)
 		{
 			opts = "-x clc++ -DCL_LANGUAGE_CPP=1";
 			_kidBruteForceMatch_nndrMatch_SURF = _gpuComputeModule->registerKernel("bruteForceMatch_nndrMatch_SURF", "bfmatcher.cl", opts);
@@ -231,14 +231,14 @@ private:
 		if(_matches_cl.isNull() || _matches_cl.size() < sizeof(DMatch) * query_dev.height())
 		{
 			_matches_cl = _gpuComputeModule->context().createBuffer(
-				clw::Access_ReadWrite, clw::Location_Device, 
+				clw::EAccess::ReadWrite, clw::EMemoryLocation::Device, 
 				sizeof(DMatch) * query_dev.height());
 		}
 
 		if(_matchesCount_cl.isNull())
 		{
 			_matchesCount_cl = _gpuComputeModule->context().createBuffer(
-				clw::Access_ReadWrite, clw::Location_AllocHostMemory, sizeof(int));
+				clw::EAccess::ReadWrite, clw::EMemoryLocation::AllocHostMemory, sizeof(int));
 		}
 
 		int matchesCount = 0;

@@ -42,12 +42,12 @@ public:
 			|| deviceImage.height() != hostImage.rows)
 		{
 			deviceImage = _gpuComputeModule->context().createImage2D(
-				clw::Access_ReadOnly, clw::Location_Device,
-				clw::ImageFormat(clw::Order_R, clw::Type_Normalized_UInt8),
+				clw::EAccess::ReadOnly, clw::EMemoryLocation::Device,
+				clw::ImageFormat(clw::EChannelOrder::R, clw::EChannelType::Normalized_UInt8),
 				hostImage.cols, hostImage.rows);
 
-			_pinnedBuffer = _gpuComputeModule->context().createBuffer(clw::Access_ReadWrite,
-				clw::Location_AllocHostMemory, hostImage.cols * hostImage.rows * sizeof(uchar));
+			_pinnedBuffer = _gpuComputeModule->context().createBuffer(clw::EAccess::ReadWrite,
+				clw::EMemoryLocation::AllocHostMemory, hostImage.cols * hostImage.rows * sizeof(uchar));
 		}
 
 		if(!_usePinnedMemory)
@@ -58,7 +58,7 @@ public:
 		}
 		else
 		{
-			void* ptr = _gpuComputeModule->queue().mapBuffer(_pinnedBuffer, clw::MapAccess_Write);
+			void* ptr = _gpuComputeModule->queue().mapBuffer(_pinnedBuffer, clw::EMapAccess::Write);
 			if(!ptr)
 				return ExecutionStatus(EStatus::Error, "Couldn't mapped pinned memory for device image transfer");
 			if((int) hostImage.step != hostImage.cols)
@@ -139,7 +139,7 @@ public:
 		if(deviceImage.isNull() || deviceImage.size() == 0)
 			return ExecutionStatus(EStatus::Ok);
 
-		if(deviceImage.format().order != clw::Order_R)
+		if(deviceImage.format().order != clw::EChannelOrder::R)
 			return ExecutionStatus(EStatus::Error, "Wrong data type (should be one channel device image)");
 
 		int width = deviceImage.width();
@@ -159,12 +159,12 @@ public:
 			if(_pinnedBuffer.isNull() || (width*height*sizeof(uchar) != _pinnedBuffer.size()))
 			{
 
-				_pinnedBuffer = _gpuComputeModule->context().createBuffer(clw::Access_ReadWrite,
-					clw::Location_AllocHostMemory, hostImage.cols * hostImage.rows * sizeof(uchar));
+				_pinnedBuffer = _gpuComputeModule->context().createBuffer(clw::EAccess::ReadWrite,
+					clw::EMemoryLocation::AllocHostMemory, hostImage.cols * hostImage.rows * sizeof(uchar));
 			}
 
 			_gpuComputeModule->queue().asyncCopyImageToBuffer(deviceImage, _pinnedBuffer);
-			void* ptr = _gpuComputeModule->queue().mapBuffer(_pinnedBuffer, clw::MapAccess_Read);
+			void* ptr = _gpuComputeModule->queue().mapBuffer(_pinnedBuffer, clw::EMapAccess::Read);
 			if(!ptr)
 				return ExecutionStatus(EStatus::Error, "Couldn't mapped pinned memory for device image transfer");
 			if((int) hostImage.step != hostImage.cols)
@@ -223,8 +223,8 @@ public:
 		if(hostArray.empty())
 			return ExecutionStatus(EStatus::Ok);
 
-		deviceArray = DeviceArray::create(_gpuComputeModule->context(), clw::Access_ReadWrite,
-			clw::Location_Device, hostArray.cols, hostArray.rows,
+		deviceArray = DeviceArray::create(_gpuComputeModule->context(), clw::EAccess::ReadWrite,
+			clw::EMemoryLocation::Device, hostArray.cols, hostArray.rows,
 			DeviceArray::matToDeviceType(hostArray.type()));
 		clw::Event evt = deviceArray.upload(_gpuComputeModule->queue(), hostArray.data);
 		evt.waitForFinished();

@@ -54,8 +54,8 @@ public:
 	{
 		// On AMD up from AMD APP 2.7 which supports 1.2 OpenCL we can use templates and other c++ goodies
 		string opts;
-		if(_gpuComputeModule->device().platform().vendorEnum() == clw::Vendor_AMD
-			&& _gpuComputeModule->device().platform().version() >= clw::Version_1_2)
+		if(_gpuComputeModule->device().platform().vendorEnum() == clw::EPlatformVendor::AMD
+			&& _gpuComputeModule->device().platform().version() >= clw::EPlatformVersion::v1_2)
 		{
 			opts = "-DTEMPLATES_SUPPORTED -x clc++";
 		}
@@ -107,8 +107,8 @@ public:
 		if(output.isNull() || output.width() != imageWidth || output.height() != imageHeight)
 		{
 			output = _gpuComputeModule->context().createImage2D(
-				clw::Access_ReadWrite, clw::Location_Device, 
-				clw::ImageFormat(clw::Order_R, clw::Type_Normalized_UInt8), 
+				clw::EAccess::ReadWrite, clw::EMemoryLocation::Device, 
+				clw::ImageFormat(clw::EChannelOrder::R, clw::EChannelType::Normalized_UInt8), 
 				imageWidth, imageHeight);
 		}
 

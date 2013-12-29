@@ -100,7 +100,7 @@ public:
 		if(!_mixtureDataBuffer.isNull())
 		{
 			// Wyzerowanie
-			void* ptr = _gpuComputeModule->queue().mapBuffer(_mixtureDataBuffer, clw::MapAccess_Write);
+			void* ptr = _gpuComputeModule->queue().mapBuffer(_mixtureDataBuffer, clw::EMapAccess::Write);
 			memset(ptr, 0, _mixtureDataBuffer.size());
 			_gpuComputeModule->queue().asyncUnmap(_mixtureDataBuffer, ptr);
 		}
@@ -119,11 +119,11 @@ public:
 		if(_mixtureParamsBuffer.isNull())
 		{
 			_mixtureParamsBuffer = _gpuComputeModule->context().createBuffer(
-				clw::Access_ReadOnly, clw::Location_Device, sizeof(MogParams));
+				clw::EAccess::ReadOnly, clw::EMemoryLocation::Device, sizeof(MogParams));
 		}
 
 		MogParams* ptr = (MogParams*) _gpuComputeModule->queue().mapBuffer(
-			_mixtureParamsBuffer, clw::MapAccess_Write);
+			_mixtureParamsBuffer, clw::EMapAccess::Write);
 		ptr->varThreshold = _varianceThreshold;
 		ptr->backgroundRatio = _backgroundRatio;
 		ptr->w0 = _initialWeight;
@@ -158,8 +158,8 @@ public:
 		{
 			// Obraz (w zasadzie maska) pierwszego planu
 			deviceDest = _gpuComputeModule->context().createImage2D(
-				clw::Access_ReadWrite, clw::Location_Device,
-				clw::ImageFormat(clw::Order_R, clw::Type_Normalized_UInt8),
+				clw::EAccess::ReadWrite, clw::EMemoryLocation::Device,
+				clw::ImageFormat(clw::EChannelOrder::R, clw::EChannelType::Normalized_UInt8),
 				srcWidth, srcHeight);
 		}
 
@@ -187,8 +187,8 @@ public:
 			{
 				// Obraz (w zasadzie maska) pierwszego planu
 				deviceDestBackground = _gpuComputeModule->context().createImage2D(
-					clw::Access_ReadWrite, clw::Location_Device,
-					clw::ImageFormat(clw::Order_R, clw::Type_Normalized_UInt8),
+					clw::EAccess::ReadWrite, clw::EMemoryLocation::Device,
+					clw::ImageFormat(clw::EChannelOrder::R, clw::EChannelType::Normalized_UInt8),
 					srcWidth, srcHeight);
 			}
 
@@ -244,10 +244,10 @@ private:
 			|| _mixtureDataBuffer.size() != mixtureDataSize)
 		{
 			_mixtureDataBuffer = _gpuComputeModule->context().createBuffer(
-				clw::Access_ReadWrite, clw::Location_Device, mixtureDataSize);
+				clw::EAccess::ReadWrite, clw::EMemoryLocation::Device, mixtureDataSize);
 
 			// Wyzerowanie
-			void* ptr = _gpuComputeModule->queue().mapBuffer(_mixtureDataBuffer, clw::MapAccess_Write);
+			void* ptr = _gpuComputeModule->queue().mapBuffer(_mixtureDataBuffer, clw::EMapAccess::Write);
 			memset(ptr, 0, mixtureDataSize);
 			_gpuComputeModule->queue().unmap(_mixtureDataBuffer, ptr);
 		}

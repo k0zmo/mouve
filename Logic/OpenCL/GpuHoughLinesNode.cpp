@@ -222,8 +222,8 @@ private:
 		if(deviceLines.isNull()
 		|| deviceLines.size() !=  maxLines * sizeof(cl_float2))
 		{
-			deviceLines = DeviceArray::create(_gpuComputeModule->context(), clw::Access_ReadWrite,
-				clw::Location_Device, 2, maxLines, EDataType::Float);
+			deviceLines = DeviceArray::create(_gpuComputeModule->context(), clw::EAccess::ReadWrite,
+				clw::EMemoryLocation::Device, 2, maxLines, EDataType::Float);
 		}
 
 		float theta = CL_M_PI_F/180.0f * _thetaResolution;
@@ -243,7 +243,7 @@ private:
 
 		// Read results
 		cl_uint linesCount;
-		cl_uint* linesCountPtr = (cl_uint*) _gpuComputeModule->queue().mapBuffer(_deviceCounterLines, clw::MapAccess_Read);
+		cl_uint* linesCountPtr = (cl_uint*) _gpuComputeModule->queue().mapBuffer(_deviceCounterLines, clw::EMapAccess::Read);
 		linesCount = *linesCountPtr;
 		_gpuComputeModule->queue().asyncUnmap(_deviceCounterLines, linesCountPtr);
 
@@ -272,7 +272,7 @@ private:
 		if(buffer.isNull() || buffer.size() != size)
 		{
 			buffer = _gpuComputeModule->context().createBuffer(
-				clw::Access_ReadWrite, clw::Location_Device, size);
+				clw::EAccess::ReadWrite, clw::EMemoryLocation::Device, size);
 		}
 	}
 
@@ -283,8 +283,8 @@ private:
 			|| image.height() != height)
 		{
 			image = _gpuComputeModule->context().createImage2D(
-				clw::Access_ReadWrite, clw::Location_Device,
-				clw::ImageFormat(clw::Order_R, clw::Type_Normalized_UInt8),
+				clw::EAccess::ReadWrite, clw::EMemoryLocation::Device,
+				clw::ImageFormat(clw::EChannelOrder::R, clw::EChannelType::Normalized_UInt8),
 				width, height);
 		}
 	}
