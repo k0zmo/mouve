@@ -110,25 +110,25 @@ public:
 	{
 		switch(propId)
 		{
-		case ID_HessianThreshold:
+		case pid::HessianThreshold:
 			_hessianThreshold = newValue.toDouble();
 			return true;
-		case ID_NumOctaves:
+		case pid::NumOctaves:
 			_nOctaves = newValue.toInt();
 			return true;
-		case ID_NumScales:
+		case pid::NumScales:
 			_nScales = newValue.toInt();
 			return true;
-		case ID_InitSampling:
+		case pid::InitSampling:
 			_initSampling = newValue.toInt();
 			return true;
-		case ID_MSurfDescriptor:
+		case pid::MSurfDescriptor:
 			_msurf = newValue.toBool();
 			return true;
-		case ID_Upright:
+		case pid::Upright:
 			_upright = newValue.toBool();
 			return true;
-		case ID_DownloadDescriptors:
+		case pid::DownloadDescriptors:
 			_downloadDescriptors = newValue.toBool();
 			return true;
 		}
@@ -140,13 +140,13 @@ public:
 	{
 		switch(propId)
 		{
-		case ID_HessianThreshold: return _hessianThreshold;
-		case ID_NumOctaves: return _nOctaves;
-		case ID_NumScales: return _nScales;
-		case ID_InitSampling: return _initSampling;
-		case ID_MSurfDescriptor: return _msurf;
-		case ID_Upright: return _upright;
-		case ID_DownloadDescriptors: return _downloadDescriptors;
+		case pid::HessianThreshold: return _hessianThreshold;
+		case pid::NumOctaves: return _nOctaves;
+		case pid::NumScales: return _nScales;
+		case pid::InitSampling: return _initSampling;
+		case pid::MSurfDescriptor: return _msurf;
+		case pid::Upright: return _upright;
+		case pid::DownloadDescriptors: return _downloadDescriptors;
 		}
 
 		return NodeProperty();
@@ -703,15 +703,15 @@ protected:
 	}
 
 protected:
-	enum EPropertyID
+	enum class pid
 	{
-		ID_HessianThreshold,
-		ID_NumOctaves,
-		ID_NumScales,
-		ID_InitSampling,
-		ID_MSurfDescriptor,
-		ID_Upright,
-		ID_DownloadDescriptors
+		HessianThreshold,
+		NumOctaves,
+		NumScales,
+		InitSampling,
+		MSurfDescriptor,
+		Upright,
+		DownloadDescriptors
 	};
 
 	double _hessianThreshold;

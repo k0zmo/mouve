@@ -45,10 +45,10 @@ public:
 	{
 		switch(propId)
 		{
-		case ID_History:
+		case pid::History:
 			_history = newValue.toInt();
 			return true;
-		case ID_NMixtures:
+		case pid::NMixtures:
 			{
 				_nmixtures = newValue.toInt();
 
@@ -62,13 +62,13 @@ public:
 
 				return true;
 			}
-		case ID_BackgroundRatio:
+		case pid::BackgroundRatio:
 			_backgroundRatio = newValue.toFloat();
 			return true;
-		case ID_LearningRate:
+		case pid::LearningRate:
 			_learningRate = newValue.toFloat();
 			return true;
-		case ID_ShowBackground:
+		case pid::ShowBackground:
 			_showBackground = newValue.toBool();
 			return true;
 		}
@@ -80,11 +80,11 @@ public:
 	{
 		switch(propId)
 		{
-		case ID_History: return _history;
-		case ID_NMixtures: return _nmixtures;
-		case ID_BackgroundRatio: return _backgroundRatio;
-		case ID_LearningRate: return _learningRate;
-		case ID_ShowBackground: return _showBackground;
+		case pid::History: return _history;
+		case pid::NMixtures: return _nmixtures;
+		case pid::BackgroundRatio: return _backgroundRatio;
+		case pid::LearningRate: return _learningRate;
+		case pid::ShowBackground: return _showBackground;
 		}
 
 		return NodeProperty();
@@ -254,13 +254,13 @@ private:
 	}
 
 private:
-	enum EPropertyID
+	enum class pid
 	{
-		ID_History,
-		ID_NMixtures,
-		ID_BackgroundRatio,
-		ID_LearningRate,
-		ID_ShowBackground
+		History,
+		NMixtures,
+		BackgroundRatio,
+		LearningRate,
+		ShowBackground
 	};
 
 	clw::Buffer _mixtureDataBuffer;

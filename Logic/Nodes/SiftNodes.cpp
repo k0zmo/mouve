@@ -19,19 +19,19 @@ public:
 	{
 		switch(propId)
 		{
-		case ID_NumFeatures: 
+		case pid::NumFeatures: 
 			_nFeatures = newValue.toInt();
 			return true;
-		case ID_NumOctaveLayers:  
+		case pid::NumOctaveLayers:  
 			_nOctaveLayers = newValue.toInt();
 			return true;
-		case ID_ContrastThreshold:
+		case pid::ContrastThreshold:
 			_contrastThreshold = newValue.toDouble();
 			return true;
-		case ID_EdgeThreshold:
+		case pid::EdgeThreshold:
 			_edgeThreshold = newValue.toDouble();
 			return true;
-		case ID_Sigma:
+		case pid::Sigma:
 			_sigma = newValue.toDouble();
 			return true;
 		}
@@ -42,11 +42,11 @@ public:
 	{
 		switch(propId)
 		{
-		case ID_NumFeatures: return _nFeatures;
-		case ID_NumOctaveLayers: return _nOctaveLayers;
-		case ID_ContrastThreshold: return _contrastThreshold;
-		case ID_EdgeThreshold: return _edgeThreshold;
-		case ID_Sigma: return _sigma;
+		case pid::NumFeatures: return _nFeatures;
+		case pid::NumOctaveLayers: return _nOctaveLayers;
+		case pid::ContrastThreshold: return _contrastThreshold;
+		case pid::EdgeThreshold: return _edgeThreshold;
+		case pid::Sigma: return _sigma;
 		}
 
 		return NodeProperty();
@@ -99,13 +99,13 @@ public:
 	}
 
 protected:
-	enum EPropertyID
+	enum class pid
 	{
-		ID_NumFeatures,
-		ID_NumOctaveLayers,
-		ID_ContrastThreshold,
-		ID_EdgeThreshold,
-		ID_Sigma
+		NumFeatures,
+		NumOctaveLayers,
+		ContrastThreshold,
+		EdgeThreshold,
+		Sigma
 	};
 
 	int _nFeatures;

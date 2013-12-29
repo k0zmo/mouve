@@ -15,8 +15,9 @@ public:
 
 	bool setProperty(PropertyID propId, const NodeProperty& newValue) override
 	{
-		if(propId == ID_KernelSize)
+		switch(propId)
 		{
+		case pid::KernelSize:
 			_kernelSize = newValue.toInt();
 			return true;
 		}
@@ -26,8 +27,11 @@ public:
 
 	NodeProperty property(PropertyID propId) const override
 	{
-		if(propId == ID_KernelSize)
-			return _kernelSize;
+		switch(propId)
+		{
+		case pid::KernelSize: return _kernelSize;
+		}
+
 		return NodeProperty();
 	}
 
@@ -71,7 +75,7 @@ public:
 	}
 
 private:
-	enum EPropertyID { ID_KernelSize };
+	enum class pid { KernelSize };
 	int _kernelSize;
 };
 
@@ -89,13 +93,13 @@ public:
 	{
 		switch(propId)
 		{
-		case ID_Diameter:
+		case pid::Diameter:
 			_diameter = newValue.toInt();
 			return true;
-		case ID_SigmaColor:
+		case pid::SigmaColor:
 			_sigmaColor = newValue.toDouble();
 			return true;
-		case ID_SigmaSpace:
+		case pid::SigmaSpace:
 			_sigmaSpace = newValue.toDouble();
 			return true;
 		default: return false;
@@ -106,9 +110,9 @@ public:
 	{
 		switch(propId)
 		{
-		case ID_Diameter: return _diameter;
-		case ID_SigmaColor: return _sigmaColor;
-		case ID_SigmaSpace: return _sigmaSpace;
+		case pid::Diameter: return _diameter;
+		case pid::SigmaColor: return _sigmaColor;
+		case pid::SigmaSpace: return _sigmaSpace;
 		}
 		return NodeProperty();
 	}
@@ -154,7 +158,7 @@ public:
 	}
 
 private:
-	enum EPropertyID { ID_Diameter, ID_SigmaColor, ID_SigmaSpace };
+	enum class pid { Diameter, SigmaColor, SigmaSpace };
 	int _diameter;
 	double _sigmaColor;
 	double _sigmaSpace;
@@ -172,7 +176,7 @@ public:
 	{
 		switch(propId)
 		{
-		case ID_Sigma:
+		case pid::Sigma:
 			_sigma = newValue.toDouble();
 			return true;
 		}
@@ -184,7 +188,7 @@ public:
 	{
 		switch(propId)
 		{
-		case ID_Sigma: return _sigma;
+		case pid::Sigma: return _sigma;
 		}
 
 		return NodeProperty();
@@ -229,9 +233,9 @@ public:
 	}
 
 private:
-	enum EPropertyID
+	enum class pid
 	{
-		ID_Sigma
+		Sigma
 	};
 
 	double _sigma;
@@ -247,8 +251,9 @@ public:
 
 	bool setProperty(PropertyID propId, const NodeProperty& newValue) override
 	{
-		if(propId == ID_ApertureSize)
+		switch(propId)
 		{
+		case pid::ApertureSize:
 			if((newValue.toInt() % 2) != 0)
 			{
 				_apertureSize = newValue.toInt();
@@ -261,8 +266,11 @@ public:
 
 	NodeProperty property(PropertyID propId) const override
 	{
-		if(propId == ID_ApertureSize)
-			return _apertureSize;
+		switch(propId)
+		{
+		case pid::ApertureSize: return _apertureSize;
+		}
+
 		return NodeProperty();
 	}
 
@@ -304,7 +312,7 @@ public:
 	}
 
 private:
-	enum EPropertyID { ID_ApertureSize };
+	enum class pid { ApertureSize };
 	int _apertureSize;
 };
 
@@ -318,7 +326,9 @@ public:
 
 	bool setProperty(PropertyID propId, const NodeProperty& newValue) override
 	{
-		if(propId == ID_ApertureSize)
+		switch(propId)
+		{
+		case pid::ApertureSize:
 		{
 			int v = newValue.toInt();
 			if((v % 2) != 0 && v <= 31 && v >= 1)
@@ -327,14 +337,18 @@ public:
 				return true;
 			}
 		}
+		}
 
 		return false;
 	}
 
 	NodeProperty property(PropertyID propId) const override
 	{
-		if(propId == ID_ApertureSize)
-			return _apertureSize;
+		switch(propId)
+		{
+		case pid::ApertureSize: return _apertureSize;
+		}
+
 		return NodeProperty();
 	}
 
@@ -376,7 +390,7 @@ public:
 	}
 
 private:
-	enum EPropertyID { ID_ApertureSize };
+	enum class pid { ApertureSize };
 	int _apertureSize;
 };
 
@@ -393,7 +407,7 @@ public:
 	{
 		switch(propId)
 		{
-		case ID_ApertureSize:
+		case pid::ApertureSize:
 			{
 				int v = newValue.toInt();
 				if((v % 2) != 0 && v <= 7 && v >= 1)
@@ -403,7 +417,7 @@ public:
 				}
 			}
 			break;
-		case ID_Order:
+		case pid::Order:
 			_order = newValue.toInt();
 			return true;
 		}
@@ -415,8 +429,8 @@ public:
 	{
 		switch(propId)
 		{
-		case ID_ApertureSize: return _apertureSize;
-		case ID_Order: return _order;
+		case pid::ApertureSize: return _apertureSize;
+		case pid::Order: return _order;
 		}
 		return NodeProperty();
 	}
@@ -469,7 +483,7 @@ public:
 	}
 
 private:
-	enum EPropertyID { ID_ApertureSize, ID_Order };
+	enum class pid { ApertureSize, Order };
 	int _apertureSize;
 	int _order;
 };
@@ -616,10 +630,10 @@ public:
 	{
 		switch(propId)
 		{
-		case ID_Coefficients:
+		case pid::Coefficients:
 			_coeffs = newValue.toMatrix3x3();
 			return true;
-		case ID_ScaleAbs:
+		case pid::ScaleAbs:
 			_scaleAbs = newValue.toBool();
 			return true;
 		}
@@ -631,8 +645,8 @@ public:
 	{
 		switch(propId)
 		{
-		case ID_Coefficients: return _coeffs;
-		case ID_ScaleAbs: return _scaleAbs;
+		case pid::Coefficients: return _coeffs;
+		case pid::ScaleAbs: return _scaleAbs;
 		}
 
 		return NodeProperty();
@@ -684,10 +698,10 @@ public:
 	}
 
 private:
-	enum EPropertyID
+	enum class pid
 	{
-		ID_Coefficients,
-		ID_ScaleAbs
+		Coefficients,
+		ScaleAbs
 	};
 
 	Matrix3x3 _coeffs;

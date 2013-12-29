@@ -16,7 +16,7 @@ public:
 	{
 		switch(propId)
 		{
-		case ID_ReprojThreshold:
+		case pid::ReprojThreshold:
 			_reprojThreshold = newValue.toDouble();
 			return true;
 		}
@@ -28,7 +28,7 @@ public:
 	{
 		switch(propId)
 		{
-		case ID_ReprojThreshold: return _reprojThreshold;
+		case pid::ReprojThreshold: return _reprojThreshold;
 		}
 
 		return NodeProperty();
@@ -137,9 +137,9 @@ public:
 	}
 
 private:
-	enum EPropertyID
+	enum class pid
 	{
-		ID_ReprojThreshold
+		ReprojThreshold
 	};
 
 	double _reprojThreshold;
@@ -158,10 +158,10 @@ public:
 	{
 		switch(propId)
 		{
-		case ID_HomographyPath:
+		case pid::HomographyPath:
 			_homographyPath = newValue.toFilepath();
 			return true;
-		case ID_ReprojThreshold:
+		case pid::ReprojThreshold:
 			_reprojThreshold = newValue.toDouble();
 			return true;
 		}
@@ -173,8 +173,8 @@ public:
 	{
 		switch(propId)
 		{
-		case ID_HomographyPath: return _homographyPath;
-		case ID_ReprojThreshold: return _reprojThreshold;
+		case pid::HomographyPath: return _homographyPath;
+		case pid::ReprojThreshold: return _reprojThreshold;
 		}
 
 		return NodeProperty();
@@ -276,10 +276,10 @@ public:
 	}
 
 private:
-	enum EPropertyID
+	enum class pid
 	{
-		ID_HomographyPath,
-		ID_ReprojThreshold
+		HomographyPath,
+		ReprojThreshold
 	};
 
 	Filepath _homographyPath;

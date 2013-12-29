@@ -16,10 +16,10 @@ public:
 	{
 		switch(propId)
 		{
-		case ID_Threshold:
+		case pid::Threshold:
 			_threshold = newValue.toInt();
 			return true;
-		case ID_Invert:
+		case pid::Invert:
 			_inv = newValue.toBool();
 			return true;
 		}
@@ -31,8 +31,8 @@ public:
 	{
 		switch(propId)
 		{
-		case ID_Threshold: return _threshold;
-		case ID_Invert: return _inv;
+		case pid::Threshold: return _threshold;
+		case pid::Invert: return _inv;
 		}
 
 		return NodeProperty();
@@ -81,10 +81,10 @@ public:
 	}
 
 private:
-	enum EPropertyID
+	enum class pid
 	{
-		ID_Threshold,
-		ID_Invert
+		Threshold,
+		Invert
 	};
 
 	int _threshold;

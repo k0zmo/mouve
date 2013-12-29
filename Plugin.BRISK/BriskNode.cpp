@@ -16,10 +16,10 @@ public:
 	{
 		switch(propId)
 		{
-		case ID_Threshold:
+		case pid::Threshold:
 			_thresh = newValue.toInt();
 			return true;
-		case ID_NumOctaves:
+		case pid::NumOctaves:
 			_nOctaves = newValue.toInt();
 			return true;
 		}
@@ -31,8 +31,8 @@ public:
 	{
 		switch(propId)
 		{
-		case ID_Threshold: return _thresh;
-		case ID_NumOctaves: return _nOctaves;
+		case pid::Threshold: return _thresh;
+		case pid::NumOctaves: return _nOctaves;
 		}
 
 		return NodeProperty();
@@ -80,10 +80,10 @@ public:
 	}
 
 private:
-	enum EPropertyID
+	enum class pid
 	{
-		ID_Threshold,
-		ID_NumOctaves
+		Threshold,
+		NumOctaves
 	};
 
 	int _thresh;
@@ -103,18 +103,19 @@ public:
 
 	bool setProperty(PropertyID propId, const NodeProperty& newValue) override
 	{
-		if(propId > ID_PatternScale || propId < ID_RotationInvariant)
+		if(propId > static_cast<int>(pid::PatternScale) || 
+			propId < static_cast<int>(pid::RotationInvariant))
 			return false;
 
 		switch(propId)
 		{
-		case ID_RotationInvariant:
+		case pid::RotationInvariant:
 			_rotationInvariant = newValue.toBool();
 			break;
-		case ID_ScaleInvariant:
+		case pid::ScaleInvariant:
 			_scaleInvariant = newValue.toBool();
 			break;
-		case ID_PatternScale:
+		case pid::PatternScale:
 			_patternScale  = newValue.toFloat();
 			break;
 		}
@@ -130,9 +131,9 @@ public:
 	{
 		switch(propId)
 		{
-		case ID_RotationInvariant: return _rotationInvariant;
-		case ID_ScaleInvariant: return _scaleInvariant;
-		case ID_PatternScale: return _patternScale;
+		case pid::RotationInvariant: return _rotationInvariant;
+		case pid::ScaleInvariant: return _scaleInvariant;
+		case pid::PatternScale: return _patternScale;
 		}
 
 		return NodeProperty();
@@ -182,11 +183,11 @@ public:
 	}
 
 private:
-	enum EPropertyID
+	enum class pid
 	{
-		ID_RotationInvariant,
-		ID_ScaleInvariant,
-		ID_PatternScale
+		RotationInvariant,
+		ScaleInvariant,
+		PatternScale
 	};
 
 	bool _rotationInvariant;
@@ -215,26 +216,27 @@ public:
 	{
 		switch(propId)
 		{
-		case ID_Threshold:
+		case pid::Threshold:
 			_thresh = newValue.toInt();
 			return true;
-		case ID_NumOctaves:
+		case pid::NumOctaves:
 			_nOctaves = newValue.toInt();
 			return true;
 		}
 
-		if(propId > ID_PatternScale || propId < ID_RotationInvariant)
+		if(propId > static_cast<int>(pid::PatternScale) || 
+			propId < static_cast<int>(pid::RotationInvariant))
 			return false;
 
 		switch(propId)
 		{
-		case ID_RotationInvariant:
+		case pid::RotationInvariant:
 			_rotationInvariant = newValue.toBool();
 			break;
-		case ID_ScaleInvariant:
+		case pid::ScaleInvariant:
 			_scaleInvariant = newValue.toBool();
 			break;
-		case ID_PatternScale:
+		case pid::PatternScale:
 			_patternScale  = newValue.toFloat();
 			break;
 		}
@@ -250,11 +252,11 @@ public:
 	{
 		switch(propId)
 		{
-		case ID_Threshold: return _thresh;
-		case ID_NumOctaves: return _nOctaves;
-		case ID_RotationInvariant: return _rotationInvariant;
-		case ID_ScaleInvariant: return _scaleInvariant;
-		case ID_PatternScale: return _patternScale;
+		case pid::Threshold: return _thresh;
+		case pid::NumOctaves: return _nOctaves;
+		case pid::RotationInvariant: return _rotationInvariant;
+		case pid::ScaleInvariant: return _scaleInvariant;
+		case pid::PatternScale: return _patternScale;
 		}
 
 		return NodeProperty();
@@ -308,13 +310,13 @@ public:
 	}
 
 private:
-	enum EPropertyID
+	enum class pid
 	{
-		ID_Threshold,
-		ID_NumOctaves,
-		ID_RotationInvariant,
-		ID_ScaleInvariant,
-		ID_PatternScale
+		Threshold,
+		NumOctaves,
+		RotationInvariant,
+		ScaleInvariant,
+		PatternScale
 	};
 
 	int _thresh;

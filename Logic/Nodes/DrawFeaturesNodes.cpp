@@ -66,13 +66,13 @@ public:
 	{
 		switch(propId)
 		{
-		case ID_LineColor:
+		case pid::LineColor:
 			_color = getColor(newValue.toEnum().cast<EColor>());
 			return true;
-		case ID_LineThickness:
+		case pid::LineThickness:
 			_thickness = newValue.toInt();
 			return true;
-		case ID_LineType:
+		case pid::LineType:
 			_type = lineType(newValue.toEnum().data());
 			return true;
 		}
@@ -84,9 +84,9 @@ public:
 	{
 		switch(propId)
 		{
-		case ID_LineColor: return getColor(_color);
-		case ID_LineThickness: return _thickness;
-		case ID_LineType: return Enum(lineTypeIndex(_type));
+		case pid::LineColor: return getColor(_color);
+		case pid::LineThickness: return _thickness;
+		case pid::LineType: return Enum(lineTypeIndex(_type));
 		}
 
 		return NodeProperty();
@@ -135,11 +135,11 @@ public:
 	}
 
 protected:
-	enum EPropertyID
+	enum class pid
 	{
-		ID_LineColor,
-		ID_LineThickness,
-		ID_LineType
+		LineColor,
+		LineThickness,
+		LineType
 	};
 
 	enum class ELineType
@@ -247,10 +247,10 @@ public:
 	{
 		switch(propId)
 		{
-		case ID_Color:
+		case pid::Color:
 			_color = getColor(newValue.toEnum().cast<EColor>());
 			return true;
-		case ID_RichKeypoints:
+		case pid::RichKeypoints:
 			_richKeypoints = newValue.toBool();
 			return true;
 		}
@@ -262,8 +262,8 @@ public:
 	{
 		switch(propId)
 		{
-		case ID_Color: return getColor(_color);
-		case ID_RichKeypoints: return _richKeypoints;		
+		case pid::Color: return getColor(_color);
+		case pid::RichKeypoints: return _richKeypoints;		
 		}
 
 		return NodeProperty();
@@ -386,10 +386,10 @@ private:
 	}
 
 private:
-	enum EPropertyID
+	enum class pid
 	{
-		ID_Color,
-		ID_RichKeypoints
+		Color,
+		RichKeypoints
 	};
 
 	cv::Scalar _color;
@@ -409,7 +409,7 @@ public:
 	{
 		switch(propId)
 		{
-		case ID_Color:
+		case pid::Color:
 			_color = getColor(newValue.toEnum().cast<EColor>());
 			_kpColor = getAltColor(newValue.toEnum().cast<EColor>());
 			return true;
@@ -422,7 +422,7 @@ public:
 	{
 		switch(propId)
 		{
-		case ID_Color: return getColor(_color);
+		case pid::Color: return getColor(_color);
 		}
 
 		return NodeProperty();
@@ -521,9 +521,9 @@ private:
 	}
 
 private:
-	enum EPropertyID
+	enum class pid
 	{
-		ID_Color
+		Color
 	};
 
 	cv::Scalar _color;
@@ -597,7 +597,7 @@ public:
 	{
 		switch(propId)
 		{
-		case ID_Color:
+		case pid::Color:
 			_color = getColor(newValue.toEnum().cast<EColor>());
 			return true;
 		}
@@ -609,7 +609,7 @@ public:
 	{
 		switch(propId)
 		{
-		case ID_Color: return getColor(_color);
+		case pid::Color: return getColor(_color);
 		}
 
 		return NodeProperty();
@@ -680,9 +680,9 @@ public:
 		nodeConfig.pProperties = prop_config;
 	}
 private:
-	enum EPropertyID
+	enum class pid
 	{
-		ID_Color
+		Color
 	};
 
 	cv::Scalar _color;

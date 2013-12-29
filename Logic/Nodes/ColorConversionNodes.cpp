@@ -166,16 +166,16 @@ public:
 	{
 		switch(propId)
 		{
-		case ID_BayerFormat:
+		case pid::BayerFormat:
 			_BayerCode = newValue.toEnum().cast<cvu::EBayerCode>();
 			return true;
-		case ID_RedGain:
+		case pid::RedGain:
 			_redGain = newValue.toDouble();
 			return true;
-		case ID_GreenGain:
+		case pid::GreenGain:
 			_greenGain = newValue.toDouble();
 			return true;
-		case ID_BlueGain:
+		case pid::BlueGain:
 			_blueGain = newValue.toDouble();
 			return true;
 		}
@@ -187,10 +187,10 @@ public:
 	{
 		switch(propId)
 		{
-		case ID_BayerFormat: return _BayerCode;
-		case ID_RedGain: return _redGain;
-		case ID_GreenGain: return _greenGain;
-		case ID_BlueGain: return _blueGain;
+		case pid::BayerFormat: return _BayerCode;
+		case pid::RedGain: return _redGain;
+		case pid::GreenGain: return _greenGain;
+		case pid::BlueGain: return _blueGain;
 		}
 
 		return NodeProperty();
@@ -258,12 +258,12 @@ public:
 	}
 
 private:
-	enum EPropertyID
+	enum class pid
 	{
-		ID_BayerFormat,
-		ID_RedGain,
-		ID_GreenGain,
-		ID_BlueGain,
+		BayerFormat,
+		RedGain,
+		GreenGain,
+		BlueGain,
 	};
 
 	double _redGain;
@@ -285,10 +285,10 @@ public:
 	{
 		switch(propId)
 		{
-		case ID_Gain:
+		case pid::Gain:
 			_gain = newValue.toDouble();
 			return true;
-		case ID_Bias:
+		case pid::Bias:
 			_bias = newValue.toInt();
 			return true;
 		}
@@ -300,8 +300,8 @@ public:
 	{
 		switch(propId)
 		{
-		case ID_Gain: return _gain;
-		case ID_Bias: return _bias;
+		case pid::Gain: return _gain;
+		case pid::Bias: return _bias;
 		}
 
 		return NodeProperty();
@@ -367,10 +367,10 @@ public:
 
 
 protected:
-	enum EPropertyID
+	enum class pid
 	{
-		ID_Gain,
-		ID_Bias
+		Gain,
+		Bias
 	};
 
 	double _gain;

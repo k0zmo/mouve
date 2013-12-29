@@ -17,13 +17,13 @@ public:
 	{
 		switch(propId)
 		{
-		case ID_MaxCorners:
+		case pid::MaxCorners:
 			_maxCorners = newValue.toInt();
 			return true;
-		case ID_QualityLevel:
+		case pid::QualityLevel:
 			_qualityLevel = newValue.toDouble();
 			return true;
-		case ID_MinDistance:
+		case pid::MinDistance:
 			_minDistance = newValue.toDouble();
 			return true;
 		}
@@ -35,9 +35,9 @@ public:
 	{
 		switch(propId)
 		{
-		case ID_MaxCorners: return _maxCorners;
-		case ID_QualityLevel: return _qualityLevel;
-		case ID_MinDistance: return _minDistance;
+		case pid::MaxCorners: return _maxCorners;
+		case pid::QualityLevel: return _qualityLevel;
+		case pid::MinDistance: return _minDistance;
 		}
 
 		return NodeProperty();
@@ -94,11 +94,11 @@ public:
 	}
 
 private:
-	enum EPropertyID
+	enum class pid
 	{
-		ID_MaxCorners,
-		ID_QualityLevel,
-		ID_MinDistance
+		MaxCorners,
+		QualityLevel,
+		MinDistance
 	};
 
 	int _maxCorners;

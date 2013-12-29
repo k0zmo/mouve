@@ -61,10 +61,10 @@ public:
 	{
 		switch(propId)
 		{
-		case ID_DistanceRatio:
+		case pid::DistanceRatio:
 			_distanceRatio = newValue.toFloat();
 			return true;
-		case ID_SymmetryTest:
+		case pid::SymmetryTest:
 			_symmetryTest = newValue.toBool();
 			return true;
 		}
@@ -76,8 +76,8 @@ public:
 	{
 		switch(propId)
 		{
-		case ID_DistanceRatio: return _distanceRatio;
-		case ID_SymmetryTest: return _symmetryTest;
+		case pid::DistanceRatio: return _distanceRatio;
+		case pid::SymmetryTest: return _symmetryTest;
 		}
 
 		return NodeProperty();
@@ -109,10 +109,10 @@ public:
 	}
 
 protected:
-	enum EPropertyID
+	enum class pid
 	{
-		ID_DistanceRatio,
-		ID_SymmetryTest,
+		DistanceRatio,
+		SymmetryTest,
 	};
 
 	float _distanceRatio;
@@ -353,7 +353,7 @@ public:
 	{
 		switch(propId)
 		{
-		case ID_MaxDistance:
+		case pid::MaxDistance:
 			_maxDistance = newValue.toFloat();
 			return true;
 		}
@@ -365,7 +365,7 @@ public:
 	{
 		switch(propId)
 		{
-		case ID_MaxDistance: return _maxDistance;
+		case pid::MaxDistance: return _maxDistance;
 		}
 
 		return NodeProperty();
@@ -456,9 +456,9 @@ public:
 		nodeConfig.pProperties = prop_config;
 	}
 private:
-	enum EPropertyID
+	enum class pid
 	{
-		ID_MaxDistance
+		MaxDistance
 	};
 
 	float _maxDistance;

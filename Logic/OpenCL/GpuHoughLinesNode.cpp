@@ -19,19 +19,19 @@ public:
 	{
 		switch(propId)
 		{
-		case ID_Threshold:
+		case pid::Threshold:
 			_threshold = newValue.toInt();
 			return true;
-		case ID_ShowHoughSpace:
+		case pid::ShowHoughSpace:
 			_showHoughSpace = newValue.toBool();
 			return true;
-		case ID_RhoResolution:
+		case pid::RhoResolution:
 			_rhoResolution = newValue.toFloat();
 			return true;
-		case ID_ThetaResolution:
+		case pid::ThetaResolution:
 			_thetaResolution = newValue.toFloat();
 			return true;
-		case ID_HoughSpaceScale:
+		case pid::HoughSpaceScale:
 			_houghSpaceScale = newValue.toFloat();
 			return true;
 		}
@@ -43,11 +43,11 @@ public:
 	{
 		switch(propId)
 		{
-		case ID_Threshold: return _threshold;
-		case ID_ShowHoughSpace: return _showHoughSpace;
-		case ID_RhoResolution: return _rhoResolution;
-		case ID_ThetaResolution: return _thetaResolution;
-		case ID_HoughSpaceScale: return _houghSpaceScale;
+		case pid::Threshold: return _threshold;
+		case pid::ShowHoughSpace: return _showHoughSpace;
+		case pid::RhoResolution: return _rhoResolution;
+		case pid::ThetaResolution: return _thetaResolution;
+		case pid::HoughSpaceScale: return _houghSpaceScale;
 		}
 
 		return NodeProperty();
@@ -289,13 +289,13 @@ private:
 	}
 
 private:
-	enum EPropertyID
+	enum class pid
 	{
-		ID_Threshold,
-		ID_ShowHoughSpace,
-		ID_RhoResolution,
-		ID_ThetaResolution,
-		ID_HoughSpaceScale
+		Threshold,
+		ShowHoughSpace,
+		RhoResolution,
+		ThetaResolution,
+		HoughSpaceScale
 	};
 
 	int _threshold;

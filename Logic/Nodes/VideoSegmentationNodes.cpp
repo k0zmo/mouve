@@ -20,16 +20,16 @@ public:
 	{
 		switch(propId)
 		{
-		case ID_History:
+		case pid::History:
 			_history = newValue.toInt();
 			return true;
-		case ID_NMixtures:
+		case pid::NMixtures:
 			_nmixtures = newValue.toInt();
 			return true;
-		case ID_BackgroundRatio:
+		case pid::BackgroundRatio:
 			_backgroundRatio = newValue.toDouble();
 			return true;
-		case ID_LearningRate:
+		case pid::LearningRate:
 			_learningRate = newValue.toDouble();
 			return true;
 		}
@@ -41,10 +41,10 @@ public:
 	{
 		switch(propId)
 		{
-		case ID_History: return _history;
-		case ID_NMixtures: return _nmixtures;
-		case ID_BackgroundRatio: return _backgroundRatio;
-		case ID_LearningRate: return _learningRate;
+		case pid::History: return _history;
+		case pid::NMixtures: return _nmixtures;
+		case pid::BackgroundRatio: return _backgroundRatio;
+		case pid::LearningRate: return _learningRate;
 		}
 
 		return NodeProperty();
@@ -100,12 +100,12 @@ public:
 	}
 
 private:
-	enum EPropertyID
+	enum class pid
 	{
-		ID_History,
-		ID_NMixtures,
-		ID_BackgroundRatio,
-		ID_LearningRate
+		History,
+		NMixtures,
+		BackgroundRatio,
+		LearningRate
 	};
 
 	cv::BackgroundSubtractorMOG _mog;
@@ -130,16 +130,16 @@ public:
 	{
 		switch(propId)
 		{
-		case ID_History:
+		case pid::History:
 			_history = newValue.toInt();
 			return true;
-		case ID_VarianceThreshold:
+		case pid::VarianceThreshold:
 			_varThreshold = newValue.toFloat();
 			return true;
-		case ID_ShadowDetection:
+		case pid::ShadowDetection:
 			_shadowDetection = newValue.toBool();
 			return true;
-		case ID_LearningRate:
+		case pid::LearningRate:
 			_learningRate = newValue.toDouble();
 			return true;
 		}
@@ -151,10 +151,10 @@ public:
 	{
 		switch(propId)
 		{
-		case ID_History: return _history;
-		case ID_VarianceThreshold: return _varThreshold;
-		case ID_ShadowDetection: return _shadowDetection;
-		case ID_LearningRate: return _learningRate;
+		case pid::History: return _history;
+		case pid::VarianceThreshold: return _varThreshold;
+		case pid::ShadowDetection: return _shadowDetection;
+		case pid::LearningRate: return _learningRate;
 		}
 
 		return NodeProperty();
@@ -210,12 +210,12 @@ public:
 	}
 
 private:
-	enum EPropertyID
+	enum class pid
 	{
-		ID_History,
-		ID_VarianceThreshold,
-		ID_ShadowDetection,
-		ID_LearningRate
+		History,
+		VarianceThreshold,
+		ShadowDetection,
+		LearningRate
 	};
 
 	double _learningRate;
@@ -237,7 +237,7 @@ public:
 	{
 		switch(propId)
 		{
-		case ID_LearningRate:
+		case pid::LearningRate:
 			_learningRate = newValue.toDouble();
 			return true;
 		}
@@ -249,7 +249,7 @@ public:
 	{
 		switch(propId)
 		{
-		case ID_LearningRate: return _learningRate;
+		case pid::LearningRate: return _learningRate;
 		}
 
 		return NodeProperty();
@@ -302,7 +302,7 @@ public:
 	}
 
 private:
-	enum EPropertyID { ID_LearningRate };
+	enum class pid { LearningRate };
 
 	double _learningRate;
 	cv::BackgroundSubtractorGMG _gmg;
@@ -321,10 +321,10 @@ public:
 	{
 		switch(propId)
 		{
-		case ID_Alpha:
+		case pid::Alpha:
 			_alpha = newValue.toFloat();
 			return true;
-		case ID_ThresholdCoeff:
+		case pid::ThresholdCoeff:
 			_threshCoeff = newValue.toFloat();
 			return true;
 		}
@@ -336,8 +336,8 @@ public:
 	{
 		switch(propId)
 		{
-		case ID_Alpha: return _alpha;
-		case ID_ThresholdCoeff: return _threshCoeff;
+		case pid::Alpha: return _alpha;
+		case pid::ThresholdCoeff: return _threshCoeff;
 		}
 		return NodeProperty();
 	}
@@ -448,10 +448,10 @@ public:
 	}
 
 private:
-	enum EPropertyID
+	enum class pid
 	{
-		ID_Alpha,
-		ID_ThresholdCoeff
+		Alpha,
+		ThresholdCoeff
 	};
 
 	cv::Mat _frameN1; // I_{n-1}

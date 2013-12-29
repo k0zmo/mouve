@@ -17,8 +17,8 @@ public:
 	{
 		switch(propId)
 		{
-		case ID_Threshold: return _threshold;
-		case ID_Ratio: return _ratio;
+		case pid::Threshold: return _threshold;
+		case pid::Ratio: return _ratio;
 		}
 
 		return NodeProperty();
@@ -28,10 +28,10 @@ public:
 	{
 		switch(propId)
 		{
-		case ID_Threshold:
+		case pid::Threshold:
 			_threshold = newValue.toDouble();
 			return true;
-		case ID_Ratio:
+		case pid::Ratio:
 			_ratio = newValue.toDouble();
 			return true;
 		}
@@ -76,10 +76,10 @@ public:
 	}
 
 private:
-	enum EPropertyID
+	enum class pid
 	{
-		ID_Threshold,
-		ID_Ratio,
+		Threshold,
+		Ratio,
 	};
 
 	double _threshold;
@@ -100,15 +100,15 @@ public:
 	{
 		switch(propId)
 		{
-		case ID_Threshold:
+		case pid::Threshold:
 			_threshold = newValue.toInt();
 			return true;
-		case ID_RhoResolution:
+		case pid::RhoResolution:
 			if(newValue.toFloat() <= 0)
 				return false;
 			_rhoResolution = newValue.toFloat();
 			return true;
-		case ID_ThetaResolution:
+		case pid::ThetaResolution:
 			if(newValue.toFloat() <= 0)
 				return false;
 			_thetaResolution = newValue.toFloat();
@@ -122,9 +122,9 @@ public:
 	{
 		switch(propId)
 		{
-		case ID_Threshold: return _threshold;
-		case ID_RhoResolution: return _rhoResolution;
-		case ID_ThetaResolution: return _thetaResolution;
+		case pid::Threshold: return _threshold;
+		case pid::RhoResolution: return _rhoResolution;
+		case pid::ThetaResolution: return _thetaResolution;
 		}
 
 		return NodeProperty();
@@ -182,11 +182,11 @@ public:
 	}
 
 private:
-	enum EPropertyID
+	enum class pid
 	{
-		ID_Threshold,
-		ID_RhoResolution,
-		ID_ThetaResolution,
+		Threshold,
+		RhoResolution,
+		ThetaResolution,
 	};
 
 	int _threshold;
@@ -210,23 +210,23 @@ public:
 	{
 		switch(propId)
 		{
-		case ID_AccResolution:
+		case pid::AccResolution:
 			_dp = newValue.toDouble();
 			return true;
-		case ID_CannyThreshold:
+		case pid::CannyThreshold:
 			if(newValue.toDouble() <= 0)
 				return false;
 			_cannyThreshold = newValue.toDouble();
 			return true;
-		case ID_CircleCenterThreshold:
+		case pid::CircleCenterThreshold:
 			if(newValue.toDouble() <= 0)
 				return false;
 			_accThreshold = newValue.toDouble();
 			return true;
-		case ID_MinRadius:
+		case pid::MinRadius:
 			_minRadius = newValue.toInt();
 			return true;
-		case ID_MaxRadius:
+		case pid::MaxRadius:
 			_maxRadius = newValue.toInt();
 			return true;
 		}
@@ -238,11 +238,11 @@ public:
 	{
 		switch(propId)
 		{
-		case ID_AccResolution: return _dp;
-		case ID_CannyThreshold: return _cannyThreshold;
-		case ID_CircleCenterThreshold: return _accThreshold;
-		case ID_MinRadius: return _minRadius;
-		case ID_MaxRadius: return _maxRadius;
+		case pid::AccResolution: return _dp;
+		case pid::CannyThreshold: return _cannyThreshold;
+		case pid::CircleCenterThreshold: return _accThreshold;
+		case pid::MinRadius: return _minRadius;
+		case pid::MaxRadius: return _maxRadius;
 		}
 
 		return NodeProperty();
@@ -293,13 +293,13 @@ public:
 	}
 
 private:
-	enum EPropertyID
+	enum class pid
 	{
-		ID_AccResolution,
-		ID_CannyThreshold,
-		ID_CircleCenterThreshold,
-		ID_MinRadius,
-		ID_MaxRadius
+		AccResolution,
+		CannyThreshold,
+		CircleCenterThreshold,
+		MinRadius,
+		MaxRadius
 	};
 
 	double _dp;

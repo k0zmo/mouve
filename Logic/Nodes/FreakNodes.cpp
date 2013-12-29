@@ -18,16 +18,16 @@ public:
 	{
 		switch(propId)
 		{
-		case ID_OrientationNormalized:
+		case pid::OrientationNormalized:
 			_orientationNormalized = newValue.toBool();
 			return true;
-		case ID_ScaleNormalized:
+		case pid::ScaleNormalized:
 			_scaleNormalized = newValue.toBool();
 			return true;
-		case ID_PatternScale:
+		case pid::PatternScale:
 			_patternScale = newValue.toFloat();
 			return true;
-		case ID_NumOctaves:
+		case pid::NumOctaves:
 			_nOctaves = newValue.toInt();
 			return true;
 		}
@@ -39,10 +39,10 @@ public:
 	{
 		switch(propId)
 		{
-		case ID_OrientationNormalized: return _orientationNormalized;
-		case ID_ScaleNormalized: return _scaleNormalized;
-		case ID_PatternScale: return _patternScale;
-		case ID_NumOctaves: return _nOctaves;
+		case pid::OrientationNormalized: return _orientationNormalized;
+		case pid::ScaleNormalized: return _scaleNormalized;
+		case pid::PatternScale: return _patternScale;
+		case pid::NumOctaves: return _nOctaves;
 		}
 
 		return NodeProperty();
@@ -95,12 +95,12 @@ public:
 	}
 
 private:
-	enum EPropertyID
+	enum class pid
 	{
-		ID_OrientationNormalized,
-		ID_ScaleNormalized,
-		ID_PatternScale,
-		ID_NumOctaves,
+		OrientationNormalized,
+		ScaleNormalized,
+		PatternScale,
+		NumOctaves,
 	};
 
 	bool _orientationNormalized;

@@ -14,7 +14,7 @@ public:
 	{
 		switch(propId)
 		{
-		case ID_Property:
+		case pid::Property:
 			_property = newValue.toBool();
 			return true;
 		}
@@ -26,7 +26,7 @@ public:
 	{
 		switch(propId)
 		{
-		case ID_Property: return _property;
+		case pid::Property: return _property;
 		}
 
 		return NodeProperty();
@@ -74,9 +74,9 @@ public:
 	}
 
 private:
-	enum EPropertyID
+	enum class pid
 	{
-		ID_Property,
+		Property,
 	};
 
 	bool _property;

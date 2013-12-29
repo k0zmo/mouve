@@ -15,7 +15,7 @@ public:
 	{
 		switch(propId)
 		{
-		case ID_Angle: 
+		case pid::Angle: 
 			_angle = newValue.toDouble();
 			return true;
 		}
@@ -26,7 +26,7 @@ public:
 	{
 		switch(propId)
 		{
-		case ID_Angle: return _angle;
+		case pid::Angle: return _angle;
 		}
 
 		return NodeProperty();
@@ -74,9 +74,9 @@ public:
 	}
 
 private:
-	enum EPropertyID
+	enum class pid
 	{
-		ID_Angle
+		Angle
 	};
 
 	double _angle;
@@ -95,10 +95,10 @@ public:
 	{
 		switch(propId)
 		{
-		case ID_Scale: 
+		case pid::Scale: 
 			_scale = newValue.toDouble();
 			return true;
-		case ID_IntepolationMethod:
+		case pid::IntepolationMethod:
 			_inter = newValue.toEnum().cast<EInterpolationMethod>();
 			return true;
 		}
@@ -109,8 +109,8 @@ public:
 	{
 		switch(propId)
 		{
-		case ID_Scale: return _scale;
-		case ID_IntepolationMethod: return _inter;
+		case pid::Scale: return _scale;
+		case pid::IntepolationMethod: return _inter;
 		}
 
 		return NodeProperty();
@@ -161,10 +161,10 @@ public:
 	}
 
 private:
-	enum EPropertyID
+	enum class pid
 	{
-		ID_Scale,
-		ID_IntepolationMethod
+		Scale,
+		IntepolationMethod
 	};
 
 	enum class EInterpolationMethod

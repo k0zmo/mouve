@@ -18,16 +18,16 @@ public:
 	{
 		switch(propId)
 		{
-		case ID_NumFeatures:
+		case pid::NumFeatures:
 			_nfeatures = newValue.toInt();
 			return true;
-		case ID_ScaleFactor:
+		case pid::ScaleFactor:
 			_scaleFactor = newValue.toFloat();
 			return true;
-		case ID_NumLevels:
+		case pid::NumLevels:
 			_nlevels = newValue.toInt();
 			return true;
-		case ID_EdgeThreshold:
+		case pid::EdgeThreshold:
 			_edgeThreshold = newValue.toInt();
 			return true;
 		}
@@ -39,10 +39,10 @@ public:
 	{
 		switch(propId)
 		{
-		case ID_NumFeatures: return _nfeatures;
-		case ID_ScaleFactor: return _scaleFactor;
-		case ID_NumLevels: return _nlevels;
-		case ID_EdgeThreshold: return _edgeThreshold;
+		case pid::NumFeatures: return _nfeatures;
+		case pid::ScaleFactor: return _scaleFactor;
+		case pid::NumLevels: return _nlevels;
+		case pid::EdgeThreshold: return _edgeThreshold;
 		}
 
 		return NodeProperty();
@@ -93,12 +93,12 @@ public:
 	}
 
 protected:
-	enum EPropertyID
+	enum class pid
 	{
-		ID_NumFeatures,
-		ID_ScaleFactor,
-		ID_NumLevels,
-		ID_EdgeThreshold
+		NumFeatures,
+		ScaleFactor,
+		NumLevels,
+		EdgeThreshold
 	};
 
 	int _nfeatures;

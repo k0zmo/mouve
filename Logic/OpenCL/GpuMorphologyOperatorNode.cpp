@@ -27,7 +27,7 @@ public:
 	{
 		switch(propId)
 		{
-		case ID_Operation:
+		case pid::Operation:
 			if(newValue.toEnum().data() < Enum(EMorphologyOperation::Gradient).data())
 			{
 				_op = newValue.toEnum().cast<EMorphologyOperation>();
@@ -42,7 +42,7 @@ public:
 	{
 		switch(propId)
 		{
-		case ID_Operation: return _op;
+		case pid::Operation: return _op;
 		}
 
 		return NodeProperty();
@@ -275,9 +275,9 @@ private:
 		BlackHat
 	};
 
-	enum EPropertyID
+	enum class pid
 	{
-		ID_Operation
+		Operation
 	};
 
 	EMorphologyOperation _op;

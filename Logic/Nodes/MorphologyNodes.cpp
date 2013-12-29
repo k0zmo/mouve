@@ -21,16 +21,16 @@ public:
 	{
 		switch(propId)
 		{
-		case ID_StructuringElementType:
+		case pid::StructuringElementType:
 			_se = newValue.toEnum().cast<cvu::EStructuringElementType>();
 			return true;
-		case ID_XRadius:
+		case pid::XRadius:
 			_xradius = newValue.toInt();
 			return true;
-		case ID_YRadius:
+		case pid::YRadius:
 			_yradius = newValue.toInt();
 			return true;
-		case ID_Rotation:
+		case pid::Rotation:
 			_rotation = newValue.toInt();
 			return true;
 		}
@@ -42,10 +42,10 @@ public:
 	{
 		switch(propId)
 		{
-		case ID_StructuringElementType: return _se;
-		case ID_XRadius: return _xradius;
-		case ID_YRadius: return _yradius;
-		case ID_Rotation: return _rotation;
+		case pid::StructuringElementType: return _se;
+		case pid::XRadius: return _xradius;
+		case pid::YRadius: return _yradius;
+		case pid::Rotation: return _rotation;
 		}
 
 		return NodeProperty();
@@ -85,12 +85,12 @@ public:
 	}
 
 private:
-	enum EPropertyID
+	enum class pid
 	{
-		ID_StructuringElementType,
-		ID_XRadius,
-		ID_YRadius,
-		ID_Rotation
+		StructuringElementType,
+		XRadius,
+		YRadius,
+		Rotation
 	};
 
 	cvu::EStructuringElementType _se;
@@ -111,7 +111,7 @@ public:
 	{
 		switch(propId)
 		{
-		case ID_Operation:
+		case pid::Operation:
 			_op = newValue.toEnum().cast<EMorphologyOperation>();
 			return true;
 		}
@@ -123,7 +123,7 @@ public:
 	{
 		switch(propId)
 		{
-		case ID_Operation: return _op;
+		case pid::Operation: return _op;
 		}
 
 		return NodeProperty();
@@ -183,9 +183,9 @@ private:
 		BlackHat = cv::MORPH_BLACKHAT
 	};
 
-	enum EPropertyID
+	enum class pid
 	{
-		ID_Operation
+		Operation
 	};
 
 	EMorphologyOperation _op;
@@ -217,7 +217,7 @@ public:
 	{
 		switch(propId)
 		{
-		case ID_Operation:
+		case pid::Operation:
 			_op = newValue.toEnum().cast<EHitMissOperation>();
 			return true;
 		}
@@ -229,7 +229,7 @@ public:
 	{
 		switch(propId)
 		{
-		case ID_Operation: return _op;
+		case pid::Operation: return _op;
 		}
 
 		return NodeProperty();
@@ -750,9 +750,9 @@ private:
 		SkeletonZhang
 	};
 
-	enum EPropertyID
+	enum class pid
 	{
-		ID_Operation
+		Operation
 	};
 
 	EHitMissOperation _op;

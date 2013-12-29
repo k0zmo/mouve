@@ -17,13 +17,13 @@ public:
 	{
 		switch(propId)
 		{
-		case ID_HessianThreshold:
+		case pid::HessianThreshold:
 			_hessianThreshold = newValue.toDouble();
 			return true;
-		case ID_NumOctaves:
+		case pid::NumOctaves:
 			_nOctaves = newValue.toInt();
 			return true;
-		case ID_NumOctaveLayers:
+		case pid::NumOctaveLayers:
 			_nOctaveLayers = newValue.toInt();
 			return true;
 		}
@@ -35,9 +35,9 @@ public:
 	{
 		switch(propId)
 		{
-		case ID_HessianThreshold: return _hessianThreshold;
-		case ID_NumOctaves: return _nOctaves;
-		case ID_NumOctaveLayers: return _nOctaveLayers;
+		case pid::HessianThreshold: return _hessianThreshold;
+		case pid::NumOctaves: return _nOctaves;
+		case pid::NumOctaveLayers: return _nOctaveLayers;
 		}
 
 		return NodeProperty();
@@ -87,11 +87,11 @@ public:
 	}
 
 private:
-	enum EPropertyID
+	enum class pid
 	{
-		ID_HessianThreshold,
-		ID_NumOctaves,
-		ID_NumOctaveLayers
+		HessianThreshold,
+		NumOctaves,
+		NumOctaveLayers
 	};
 
 	double _hessianThreshold;
@@ -112,10 +112,10 @@ public:
 	{
 		switch(propId)
 		{
-		case ID_Extended:
+		case pid::Extended:
 			_extended = newValue.toBool();
 			return true;
-		case ID_Upright:
+		case pid::Upright:
 			_upright = newValue.toBool();
 			return true;
 		}
@@ -127,8 +127,8 @@ public:
 	{
 		switch(propId)
 		{
-		case ID_Extended: return _extended;
-		case ID_Upright: return _upright;
+		case pid::Extended: return _extended;
+		case pid::Upright: return _upright;
 		}
 
 		return NodeProperty();
@@ -179,10 +179,10 @@ public:
 	}
 
 private:
-	enum EPropertyID
+	enum class pid
 	{
-		ID_Extended,
-		ID_Upright
+		Extended,
+		Upright
 	};
 
 	bool _extended;
@@ -205,19 +205,19 @@ public:
 	{
 		switch(propId)
 		{
-		case ID_HessianThreshold:
+		case pid::HessianThreshold:
 			_hessianThreshold = newValue.toDouble();
 			return true;
-		case ID_NumOctaves:
+		case pid::NumOctaves:
 			_nOctaves = newValue.toInt();
 			return true;
-		case ID_NumOctaveLayers:
+		case pid::NumOctaveLayers:
 			_nOctaveLayers = newValue.toInt();
 			return true;
-		case ID_Extended:
+		case pid::Extended:
 			_extended = newValue.toBool();
 			return true;
-		case ID_Upright:
+		case pid::Upright:
 			_upright = newValue.toBool();
 			return true;
 		}
@@ -229,11 +229,11 @@ public:
 	{
 		switch(propId)
 		{
-		case ID_HessianThreshold: return _hessianThreshold;
-		case ID_NumOctaves: return _nOctaves;
-		case ID_NumOctaveLayers: return _nOctaveLayers;
-		case ID_Extended: return _extended;
-		case ID_Upright: return _upright;
+		case pid::HessianThreshold: return _hessianThreshold;
+		case pid::NumOctaves: return _nOctaves;
+		case pid::NumOctaveLayers: return _nOctaveLayers;
+		case pid::Extended: return _extended;
+		case pid::Upright: return _upright;
 		}
 
 		return NodeProperty();
@@ -288,13 +288,13 @@ public:
 	}
 
 private:
-	enum EPropertyID
+	enum class pid
 	{
-		ID_HessianThreshold,
-		ID_NumOctaves,
-		ID_NumOctaveLayers,
-		ID_Extended,
-		ID_Upright
+		HessianThreshold,
+		NumOctaves,
+		NumOctaveLayers,
+		Extended,
+		Upright
 	};
 
 	double _hessianThreshold;

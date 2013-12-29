@@ -50,10 +50,10 @@ public:
 	{
 		switch(propId)
 		{
-		case ID_ClipLimit:
+		case pid::ClipLimit:
 			_clipLimit = newValue.toDouble();
 			return true;
-		case ID_TilesGridSize:
+		case pid::TilesGridSize:
 			_tilesGridSize = newValue.toInt();
 			return true;
 		}
@@ -65,8 +65,8 @@ public:
 	{
 		switch(propId)
 		{
-		case ID_ClipLimit: return _clipLimit;
-		case ID_TilesGridSize: return _tilesGridSize;
+		case pid::ClipLimit: return _clipLimit;
+		case pid::TilesGridSize: return _tilesGridSize;
 		}
 
 		return NodeProperty();
@@ -109,10 +109,10 @@ public:
 	}
 
 private:
-	enum EPropertyID
+	enum class pid
 	{
-		ID_ClipLimit,
-		ID_TilesGridSize
+		ClipLimit,
+		TilesGridSize
 	};
 
 	double _clipLimit;

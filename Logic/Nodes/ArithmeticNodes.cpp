@@ -16,10 +16,10 @@ public:
 	{
 		switch(propId)
 		{
-		case ID_Alpha:
+		case pid::Alpha:
 			_alpha = newValue.toDouble();
 			return true;
-		case ID_Beta:
+		case pid::Beta:
 			_beta = newValue.toDouble();
 			return true;
 		}
@@ -31,8 +31,8 @@ public:
 	{
 		switch(propId)
 		{
-		case ID_Alpha: return _alpha;
-		case ID_Beta: return _beta;
+		case pid::Alpha: return _alpha;
+		case pid::Beta: return _beta;
 		}
 
 		return NodeProperty();
@@ -82,10 +82,10 @@ public:
 	}
 
 private:
-	enum EPropertyID
+	enum class pid
 	{
-		ID_Alpha,
-		ID_Beta
+		Alpha,
+		Beta
 	};
 
 	double _alpha;

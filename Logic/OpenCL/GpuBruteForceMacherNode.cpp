@@ -45,10 +45,10 @@ public:
 	{
 		switch(propId)
 		{
-		case ID_DistanceRatio:
+		case pid::DistanceRatio:
 			_distanceRatio = newValue.toDouble();
 			return true;
-		case ID_SymmetryTest:
+		case pid::SymmetryTest:
 			_symmetryTest = newValue.toBool();
 			return true;
 		}
@@ -60,8 +60,8 @@ public:
 	{
 		switch(propId)
 		{
-		case ID_DistanceRatio: return _distanceRatio;
-		case ID_SymmetryTest: return _symmetryTest;
+		case pid::DistanceRatio: return _distanceRatio;
+		case pid::SymmetryTest: return _symmetryTest;
 		}
 
 		return NodeProperty();
@@ -279,10 +279,10 @@ private:
 	}
 
 private:
-	enum EPropertyID
+	enum class pid
 	{
-		ID_DistanceRatio,
-		ID_SymmetryTest
+		DistanceRatio,
+		SymmetryTest
 	};
 
 	double _distanceRatio;

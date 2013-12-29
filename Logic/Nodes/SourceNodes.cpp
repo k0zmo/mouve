@@ -28,16 +28,16 @@ public:
 	{
 		switch(propId)
 		{
-		case ID_VideoPath:
+		case pid::VideoPath:
 			_videoPath = newValue.toFilepath();
 			return true;
-		case ID_StartFrame:
+		case pid::StartFrame:
 			_startFrame = newValue.toInt();
 			return true;
-		case ID_EndFrame:
+		case pid::EndFrame:
 			_endFrame = newValue.toInt();
 			return true;
-		case ID_IgnoreFps:
+		case pid::IgnoreFps:
 			_ignoreFps = newValue.toBool();
 			return true;
 		}
@@ -49,10 +49,10 @@ public:
 	{
 		switch(propId)
 		{
-		case ID_VideoPath: return _videoPath;
-		case ID_StartFrame: return int(_startFrame);
-		case ID_EndFrame: return int(_endFrame);
-		case ID_IgnoreFps: return _ignoreFps;
+		case pid::VideoPath: return _videoPath;
+		case pid::StartFrame: return int(_startFrame);
+		case pid::EndFrame: return int(_endFrame);
+		case pid::IgnoreFps: return _ignoreFps;
 		}
 
 		return NodeProperty();
@@ -166,12 +166,12 @@ public:
 	}
 
 private:
-	enum EPropertyID
+	enum class pid
 	{
-		ID_VideoPath,
-		ID_StartFrame,
-		ID_EndFrame,
-		ID_IgnoreFps,
+		VideoPath,
+		StartFrame,
+		EndFrame,
+		IgnoreFps,
 	};
 
 	Filepath _videoPath;
@@ -303,7 +303,7 @@ public:
 	{
 		switch(propId)
 		{
-		case ID_DeviceId:
+		case pid::DeviceId:
 			_deviceId = newValue.toInt();
 			return true;
 		}
@@ -315,7 +315,7 @@ public:
 	{
 		switch(propId)
 		{
-		case ID_DeviceId: return _deviceId;
+		case pid::DeviceId: return _deviceId;
 		}
 
 		return NodeProperty();
@@ -371,9 +371,9 @@ public:
 	}
 
 private:
-	enum EPropertyID
+	enum class pid
 	{
-		ID_DeviceId
+		DeviceId
 	};
 
 	int _deviceId;

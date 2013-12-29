@@ -18,18 +18,19 @@ public:
 
 	bool setProperty(PropertyID propId, const NodeProperty& newValue) override
 	{
-		if(propId > ID_PatternScale || propId < ID_Threshold)
+		if(propId > static_cast<int>(pid::PatternScale) || 
+			propId < static_cast<int>(pid::Threshold))
 			return false;
 
 		switch(propId)
 		{
-		case ID_Threshold:
+		case pid::Threshold:
 			_thresh = newValue.toInt();
 			break;
-		case ID_NumOctaves:
+		case pid::NumOctaves:
 			_nOctaves = newValue.toInt();
 			break;
-		case ID_PatternScale:
+		case pid::PatternScale:
 			_patternScale  = newValue.toFloat();
 			break;
 		}
@@ -44,9 +45,9 @@ public:
 	{
 		switch(propId)
 		{
-		case ID_Threshold: return _thresh;
-		case ID_NumOctaves: return _nOctaves;
-		case ID_PatternScale: return _patternScale;
+		case pid::Threshold: return _thresh;
+		case pid::NumOctaves: return _nOctaves;
+		case pid::PatternScale: return _patternScale;
 		}
 
 		return NodeProperty();
@@ -94,11 +95,11 @@ public:
 	}
 
 protected:
-	enum EPropertyID
+	enum class pid
 	{
-		ID_Threshold,
-		ID_NumOctaves,
-		ID_PatternScale
+		Threshold,
+		NumOctaves,
+		PatternScale
 	};
 
 	int _thresh;
