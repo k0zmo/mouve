@@ -19,6 +19,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="EnumFlags.h" />
     <ClInclude Include="Hash.h" />
     <ClInclude Include="konfig.h" />
     <ClInclude Include="HighResolutionClock.h" />
@@ -26,6 +27,7 @@
     <ClInclude Include="SharedLibrary.h" />
     <ClInclude Include="Singleton.h" />
     <ClInclude Include="StlUtils.h" />
+    <ClInclude Include="TypeTraits.h" />
     <ClInclude Include="Utils.h" />
   </ItemGroup>
   <ItemGroup>

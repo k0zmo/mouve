@@ -35,6 +35,12 @@
     <ClInclude Include="SharedLibrary.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="TypeTraits.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="EnumFlags.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="HighResolutionClock.cpp">
