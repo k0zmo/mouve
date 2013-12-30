@@ -75,5 +75,6 @@
     <ClCompile Include="BriskNode.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="UnityBuild.cpp" />
   </ItemGroup>
 </Project>

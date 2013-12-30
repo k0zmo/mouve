@@ -9,6 +9,14 @@
       <Configuration>Debug</Configuration>
       <Platform>x64</Platform>
     </ProjectConfiguration>
+    <ProjectConfiguration Include="ReleaseUnity|Win32">
+      <Configuration>ReleaseUnity</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="ReleaseUnity|x64">
+      <Configuration>ReleaseUnity</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
     <ProjectConfiguration Include="Release|Win32">
       <Configuration>Release</Configuration>
       <Platform>Win32</Platform>
@@ -28,18 +36,60 @@
     <ClInclude Include="brisk.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="agast\agast5_8.cc" />
-    <ClCompile Include="agast\agast5_8_nms.cc" />
-    <ClCompile Include="agast\agast7_12d.cc" />
-    <ClCompile Include="agast\agast7_12d_nms.cc" />
-    <ClCompile Include="agast\agast7_12s.cc" />
-    <ClCompile Include="agast\agast7_12s_nms.cc" />
-    <ClCompile Include="agast\AstDetector.cc" />
-    <ClCompile Include="agast\nonMaximumSuppression.cc" />
-    <ClCompile Include="agast\oast9_16.cc" />
-    <ClCompile Include="agast\oast9_16_nms.cc" />
-    <ClCompile Include="brisk.cpp" />
-    <ClCompile Include="BriskNode.cpp" />
+    <ClCompile Include="agast\agast5_8.cc">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="agast\agast5_8_nms.cc">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="agast\agast7_12d.cc">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="agast\agast7_12d_nms.cc">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="agast\agast7_12s.cc">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="agast\agast7_12s_nms.cc">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="agast\AstDetector.cc">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="agast\nonMaximumSuppression.cc">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="agast\oast9_16.cc">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="agast\oast9_16_nms.cc">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="brisk.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="BriskNode.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="UnityBuild.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{23AC99B5-9E00-48A5-89F5-3B03B375B284}</ProjectGuid>
@@ -67,7 +117,21 @@
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|Win32'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v110</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v110</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|x64'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <PlatformToolset>v110</PlatformToolset>
@@ -98,7 +162,21 @@
     <Import Project="..\Boost.props" />
     <Import Project="..\OpenCV.Modules.Release.props" />
   </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="..\Mouve.Kommon.props" />
+    <Import Project="..\Mouve.Logic.props" />
+    <Import Project="..\Boost.props" />
+    <Import Project="..\OpenCV.Modules.Release.props" />
+  </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="..\Mouve.Kommon.props" />
+    <Import Project="..\Mouve.Logic.props" />
+    <Import Project="..\Boost.props" />
+    <Import Project="..\OpenCV.Modules.Release.x64.props" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|x64'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
     <Import Project="..\Mouve.Kommon.props" />
     <Import Project="..\Mouve.Logic.props" />
@@ -118,7 +196,15 @@
     <LinkIncremental>false</LinkIncremental>
     <OutDir>$(SolutionDir)$(Platform)\$(Configuration)\plugins\</OutDir>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|Win32'">
+    <LinkIncremental>false</LinkIncremental>
+    <OutDir>$(SolutionDir)$(Platform)\$(Configuration)\plugins\</OutDir>
+  </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <LinkIncremental>false</LinkIncremental>
+    <OutDir>$(SolutionDir)$(Platform)\$(Configuration)\plugins\</OutDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|x64'">
     <LinkIncremental>false</LinkIncremental>
     <OutDir>$(SolutionDir)$(Platform)\$(Configuration)\plugins\</OutDir>
   </PropertyGroup>
@@ -168,7 +254,43 @@
       <OptimizeReferences>true</OptimizeReferences>
     </Link>
   </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <SDLCheck>true</SDLCheck>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+    </Link>
+  </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <SDLCheck>true</SDLCheck>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|x64'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <PrecompiledHeader>

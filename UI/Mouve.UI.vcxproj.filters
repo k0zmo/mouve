@@ -191,6 +191,7 @@
     <ClCompile Include="NodeEditor\NodeView.cpp">
       <Filter>Source Files\NodeEditor</Filter>
     </ClCompile>
+    <ClCompile Include="UnityBuild.cpp" />
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="Controller.h">

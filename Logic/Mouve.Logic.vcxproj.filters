@@ -169,6 +169,7 @@
     <ClCompile Include="NodeProperty.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="UnityBuild.cpp" />
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="Node.h">

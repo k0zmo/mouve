@@ -9,6 +9,14 @@
       <Configuration>Debug</Configuration>
       <Platform>x64</Platform>
     </ProjectConfiguration>
+    <ProjectConfiguration Include="ReleaseUnity|Win32">
+      <Configuration>ReleaseUnity</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="ReleaseUnity|x64">
+      <Configuration>ReleaseUnity</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
     <ProjectConfiguration Include="Release|Win32">
       <Configuration>Release</Configuration>
       <Platform>Win32</Platform>
@@ -36,17 +44,31 @@
       </AdditionalInputs>
       <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
       </Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|Win32'">
+      </Command>
       <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
       </Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|x64'">
+      </Command>
       <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Performing Custom Build Tools</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|Win32'">Performing Custom Build Tools</Message>
       <Message Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Performing Custom Build Tools</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|x64'">Performing Custom Build Tools</Message>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|Win32'">
       </Outputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
       </Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|x64'">
+      </Outputs>
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
       </AdditionalInputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|Win32'">
+      </AdditionalInputs>
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </AdditionalInputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|x64'">
       </AdditionalInputs>
     </CustomBuild>
     <CustomBuild Include="NodeFactory.h">
@@ -66,17 +88,31 @@
       </AdditionalInputs>
       <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
       </Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|Win32'">
+      </Command>
       <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
       </Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|x64'">
+      </Command>
       <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Performing Custom Build Tools</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|Win32'">Performing Custom Build Tools</Message>
       <Message Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Performing Custom Build Tools</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|x64'">Performing Custom Build Tools</Message>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|Win32'">
       </Outputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
       </Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|x64'">
+      </Outputs>
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
       </AdditionalInputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|Win32'">
+      </AdditionalInputs>
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </AdditionalInputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|x64'">
       </AdditionalInputs>
     </CustomBuild>
     <CustomBuild Include="NodeLink.h">
@@ -96,17 +132,31 @@
       </AdditionalInputs>
       <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
       </Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|Win32'">
+      </Command>
       <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
       </Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|x64'">
+      </Command>
       <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Performing Custom Build Tools</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|Win32'">Performing Custom Build Tools</Message>
       <Message Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Performing Custom Build Tools</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|x64'">Performing Custom Build Tools</Message>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|Win32'">
       </Outputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
       </Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|x64'">
+      </Outputs>
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
       </AdditionalInputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|Win32'">
+      </AdditionalInputs>
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </AdditionalInputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|x64'">
       </AdditionalInputs>
     </CustomBuild>
     <CustomBuild Include="NodeSystem.h">
@@ -126,17 +176,31 @@
       </AdditionalInputs>
       <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
       </Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|Win32'">
+      </Command>
       <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
       </Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|x64'">
+      </Command>
       <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Performing Custom Build Tools</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|Win32'">Performing Custom Build Tools</Message>
       <Message Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Performing Custom Build Tools</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|x64'">Performing Custom Build Tools</Message>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|Win32'">
       </Outputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
       </Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|x64'">
+      </Outputs>
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
       </AdditionalInputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|Win32'">
+      </AdditionalInputs>
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </AdditionalInputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|x64'">
       </AdditionalInputs>
     </CustomBuild>
     <CustomBuild Include="NodeTree.h">
@@ -156,17 +220,31 @@
       </AdditionalInputs>
       <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
       </Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|Win32'">
+      </Command>
       <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
       </Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|x64'">
+      </Command>
       <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Performing Custom Build Tools</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|Win32'">Performing Custom Build Tools</Message>
       <Message Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Performing Custom Build Tools</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|x64'">Performing Custom Build Tools</Message>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|Win32'">
       </Outputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
       </Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|x64'">
+      </Outputs>
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
       </AdditionalInputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|Win32'">
+      </AdditionalInputs>
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </AdditionalInputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|x64'">
       </AdditionalInputs>
     </CustomBuild>
     <CustomBuild Include="NodeType.h">
@@ -186,17 +264,31 @@
       </AdditionalInputs>
       <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
       </Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|Win32'">
+      </Command>
       <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
       </Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|x64'">
+      </Command>
       <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Performing Custom Build Tools</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|Win32'">Performing Custom Build Tools</Message>
       <Message Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Performing Custom Build Tools</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|x64'">Performing Custom Build Tools</Message>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|Win32'">
       </Outputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
       </Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|x64'">
+      </Outputs>
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
       </AdditionalInputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|Win32'">
+      </AdditionalInputs>
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </AdditionalInputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|x64'">
       </AdditionalInputs>
     </CustomBuild>
     <CustomBuild Include="Precomp.h">
@@ -216,17 +308,31 @@
       </AdditionalInputs>
       <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
       </Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|Win32'">
+      </Command>
       <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
       </Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|x64'">
+      </Command>
       <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Performing Custom Build Tools</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|Win32'">Performing Custom Build Tools</Message>
       <Message Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Performing Custom Build Tools</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|x64'">Performing Custom Build Tools</Message>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|Win32'">
       </Outputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
       </Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|x64'">
+      </Outputs>
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
       </AdditionalInputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|Win32'">
+      </AdditionalInputs>
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </AdditionalInputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|x64'">
       </AdditionalInputs>
     </CustomBuild>
     <CustomBuild Include="Prerequisites.h">
@@ -246,72 +352,232 @@
       </AdditionalInputs>
       <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
       </Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|Win32'">
+      </Command>
       <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
       </Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|x64'">
+      </Command>
       <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Performing Custom Build Tools</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|Win32'">Performing Custom Build Tools</Message>
       <Message Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Performing Custom Build Tools</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|x64'">Performing Custom Build Tools</Message>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|Win32'">
       </Outputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
       </Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|x64'">
+      </Outputs>
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
       </AdditionalInputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|Win32'">
+      </AdditionalInputs>
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </AdditionalInputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|x64'">
       </AdditionalInputs>
     </CustomBuild>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Jai\JaiCameraNodes.cpp" />
-    <ClCompile Include="Jai\JaiNodeModule.cpp" />
-    <ClCompile Include="Node.cpp" />
-    <ClCompile Include="NodeFactory.cpp" />
-    <ClCompile Include="NodeFlowData.cpp" />
-    <ClCompile Include="NodeLink.cpp" />
-    <ClCompile Include="NodePlugin.cpp" />
-    <ClCompile Include="NodeProperty.cpp" />
-    <ClCompile Include="NodeSystem.cpp" />
-    <ClCompile Include="Nodes\ArithmeticNodes.cpp" />
-    <ClCompile Include="Nodes\BriskNodes.cpp" />
-    <ClCompile Include="Nodes\FeaturesNodes.cpp" />
-    <ClCompile Include="Nodes\HistogramNodes.cpp" />
-    <ClCompile Include="Nodes\ColorConversionNodes.cpp" />
-    <ClCompile Include="Nodes\CV.cpp" />
-    <ClCompile Include="Nodes\DrawFeaturesNodes.cpp" />
-    <ClCompile Include="Nodes\FeatureDetectorsNodes.cpp" />
-    <ClCompile Include="Nodes\KeypointsNodes.cpp" />
-    <ClCompile Include="Nodes\FiltersNodes.cpp" />
-    <ClCompile Include="Nodes\FreakNodes.cpp" />
-    <ClCompile Include="Nodes\HomographyNodes.cpp" />
-    <ClCompile Include="Nodes\SegmentationNodes.cpp" />
-    <ClCompile Include="Nodes\TransformationNodes.cpp" />
-    <ClCompile Include="Nodes\ksurf.cpp" />
-    <ClCompile Include="Nodes\kSurfNodes.cpp" />
-    <ClCompile Include="Nodes\MatcherNodes.cpp" />
-    <ClCompile Include="Nodes\MorphologyNodes.cpp" />
-    <ClCompile Include="Nodes\MosaicingNodes.cpp" />
-    <ClCompile Include="Nodes\OrbNodes.cpp" />
-    <ClCompile Include="Nodes\SiftNodes.cpp" />
-    <ClCompile Include="Nodes\SourceNodes.cpp" />
-    <ClCompile Include="Nodes\SurfNodes.cpp" />
-    <ClCompile Include="Nodes\VideoSegmentationNodes.cpp" />
-    <ClCompile Include="NodeTree.cpp" />
-    <ClCompile Include="NodeTreeSerializer.cpp" />
-    <ClCompile Include="NodeType.cpp" />
-    <ClCompile Include="OpenCL\DeviceArray.cpp" />
-    <ClCompile Include="OpenCL\GpuBasicNodes.cpp" />
-    <ClCompile Include="OpenCL\GpuBruteForceMacherNode.cpp" />
-    <ClCompile Include="OpenCL\GpuColorConversionNodes.cpp" />
-    <ClCompile Include="OpenCL\GpuHoughLinesNode.cpp" />
-    <ClCompile Include="OpenCL\GpuKernelLibrary.cpp" />
-    <ClCompile Include="OpenCL\GpuMixtureOfGaussians.cpp" />
-    <ClCompile Include="OpenCL\GpuNodeModule.cpp" />
-    <ClCompile Include="OpenCL\GpuMorphologyOperatorNode.cpp" />
-    <ClCompile Include="OpenCL\GpuSurfNode.cpp" />
+    <ClCompile Include="Jai\JaiCameraNodes.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="Jai\JaiNodeModule.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="UnityBuild.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="Node.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="NodeFactory.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="NodeFlowData.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="NodeLink.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="NodePlugin.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="NodeProperty.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="NodeSystem.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="Nodes\ArithmeticNodes.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="Nodes\BriskNodes.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="Nodes\FeaturesNodes.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="Nodes\HistogramNodes.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="Nodes\ColorConversionNodes.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="Nodes\CV.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="Nodes\DrawFeaturesNodes.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="Nodes\FeatureDetectorsNodes.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="Nodes\KeypointsNodes.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="Nodes\FiltersNodes.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="Nodes\FreakNodes.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="Nodes\HomographyNodes.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="Nodes\SegmentationNodes.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="Nodes\TransformationNodes.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="Nodes\ksurf.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="Nodes\kSurfNodes.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="Nodes\MatcherNodes.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="Nodes\MorphologyNodes.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="Nodes\MosaicingNodes.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="Nodes\OrbNodes.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="Nodes\SiftNodes.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="Nodes\SourceNodes.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="Nodes\SurfNodes.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="Nodes\VideoSegmentationNodes.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="NodeTree.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="NodeTreeSerializer.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="NodeType.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="OpenCL\DeviceArray.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="OpenCL\GpuBasicNodes.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="OpenCL\GpuBruteForceMacherNode.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="OpenCL\GpuColorConversionNodes.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="OpenCL\GpuHoughLinesNode.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="OpenCL\GpuKernelLibrary.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="OpenCL\GpuMixtureOfGaussians.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="OpenCL\GpuNodeModule.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="OpenCL\GpuMorphologyOperatorNode.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="OpenCL\GpuSurfNode.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|x64'">true</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="Precomp.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|x64'">Create</PrecompiledHeader>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -336,10 +602,10 @@
   <ItemGroup>
     <CustomBuild Include="clw.reference">
       <FileType>Document</FileType>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">copy /Y  $(SolutionDir)external\clw\bin\clw.dll  $(TargetDir)clw.dll &gt; NUL</Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">copy /Y  $(SolutionDir)external\clw\bin\clw_d.dll  $(TargetDir)clw_d.dll &gt; NUL</Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">copy /Y  $(SolutionDir)external\clw\bin\clw_d.dll  $(TargetDir)clw_d.dll &gt; NUL</Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">copy /Y  $(SolutionDir)external\clw\bin64\clw.dll  $(TargetDir)clw.dll &gt; NUL</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">copy /Y  "$(SolutionDir)external\clw\bin\clw.dll"  "$(TargetDir)clw.dll" &gt; NUL</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">copy /Y  "$(SolutionDir)external\clw\bin\clw_d.dll"  "$(TargetDir)clw_d.dll" &gt; NUL</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">copy /Y  "$(SolutionDir)external\clw\bin\clw_d.dll"  "$(TargetDir)clw_d.dll" &gt; NUL</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">copy /Y  "$(SolutionDir)external\clw\bin\clw.dll"  "$(TargetDir)clw.dll" &gt; NUL</Command>
       <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Copying clw dependencies into target directory</Message>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(TargetDir)clw.dll</Outputs>
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Copying clw dependencies into target directory</Message>
@@ -348,141 +614,201 @@
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(TargetDir)clw_d.dll</Outputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(TargetDir)clw_d.dll</Outputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(TargetDir)clw.dll</Outputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|Win32'">copy /Y  "$(SolutionDir)external\clw\bin\clw.dll"  "$(TargetDir)clw.dll" &gt; NUL</Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|Win32'">Copying clw dependencies into target directory</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|Win32'">$(TargetDir)clw.dll</Outputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|x64'">copy /Y  "$(SolutionDir)external\clw\bin\clw.dll"  "$(TargetDir)clw.dll" &gt; NUL</Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|x64'">Copying clw dependencies into target directory</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|x64'">$(TargetDir)clw.dll</Outputs>
     </CustomBuild>
     <CustomBuild Include="OpenCL\kernels\bayer.cl">
       <FileType>Document</FileType>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">copy /Y OpenCL\kernels\%(Filename).cl  $(TargetDir)kernels\%(Filename).cl &gt; NUL</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">copy /Y OpenCL\kernels\%(Filename).cl  "$(TargetDir)kernels\%(Filename).cl" &gt; NUL</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|Win32'">copy /Y OpenCL\kernels\%(Filename).cl  "$(TargetDir)kernels\%(Filename).cl" &gt; NUL</Command>
       <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Copying %(Filename).cl kernel to target kernels directory</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|Win32'">Copying %(Filename).cl kernel to target kernels directory</Message>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(TargetDir)kernels\%(Filename).cl</Outputs>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">copy /Y OpenCL\kernels\%(Filename).cl  $(TargetDir)kernels\%(Filename).cl &gt; NUL</Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">copy /Y OpenCL\kernels\%(Filename).cl  $(TargetDir)kernels\%(Filename).cl &gt; NUL</Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">copy /Y OpenCL\kernels\%(Filename).cl  $(TargetDir)kernels\%(Filename).cl &gt; NUL</Command>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|Win32'">$(TargetDir)kernels\%(Filename).cl</Outputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">copy /Y OpenCL\kernels\%(Filename).cl  "$(TargetDir)kernels\%(Filename).cl" &gt; NUL</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">copy /Y OpenCL\kernels\%(Filename).cl  "$(TargetDir)kernels\%(Filename).cl" &gt; NUL</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">copy /Y OpenCL\kernels\%(Filename).cl  "$(TargetDir)kernels\%(Filename).cl" &gt; NUL</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|x64'">copy /Y OpenCL\kernels\%(Filename).cl  "$(TargetDir)kernels\%(Filename).cl" &gt; NUL</Command>
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Copying %(Filename).cl kernel to target kernels directory</Message>
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Copying %(Filename).cl kernel to target kernels directory</Message>
       <Message Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Copying %(Filename).cl kernel to target kernels directory</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|x64'">Copying %(Filename).cl kernel to target kernels directory</Message>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(TargetDir)kernels\%(Filename).cl</Outputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(TargetDir)kernels\%(Filename).cl</Outputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(TargetDir)kernels\%(Filename).cl</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|x64'">$(TargetDir)kernels\%(Filename).cl</Outputs>
     </CustomBuild>
     <CustomBuild Include="OpenCL\kernels\bfmatcher.cl">
       <FileType>Document</FileType>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">copy /Y OpenCL\kernels\%(Filename).cl  $(TargetDir)kernels\%(Filename).cl &gt; NUL</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">copy /Y OpenCL\kernels\%(Filename).cl  "$(TargetDir)kernels\%(Filename).cl" &gt; NUL</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|Win32'">copy /Y OpenCL\kernels\%(Filename).cl  "$(TargetDir)kernels\%(Filename).cl" &gt; NUL</Command>
       <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Copying %(Filename).cl kernel to target kernels directory</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|Win32'">Copying %(Filename).cl kernel to target kernels directory</Message>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(TargetDir)kernels\%(Filename).cl</Outputs>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">copy /Y OpenCL\kernels\%(Filename).cl  $(TargetDir)kernels\%(Filename).cl &gt; NUL</Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">copy /Y OpenCL\kernels\%(Filename).cl  $(TargetDir)kernels\%(Filename).cl &gt; NUL</Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">copy /Y OpenCL\kernels\%(Filename).cl  $(TargetDir)kernels\%(Filename).cl &gt; NUL</Command>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|Win32'">$(TargetDir)kernels\%(Filename).cl</Outputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">copy /Y OpenCL\kernels\%(Filename).cl  "$(TargetDir)kernels\%(Filename).cl" &gt; NUL</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">copy /Y OpenCL\kernels\%(Filename).cl  "$(TargetDir)kernels\%(Filename).cl" &gt; NUL</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">copy /Y OpenCL\kernels\%(Filename).cl  "$(TargetDir)kernels\%(Filename).cl" &gt; NUL</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|x64'">copy /Y OpenCL\kernels\%(Filename).cl  "$(TargetDir)kernels\%(Filename).cl" &gt; NUL</Command>
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Copying %(Filename).cl kernel to target kernels directory</Message>
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Copying %(Filename).cl kernel to target kernels directory</Message>
       <Message Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Copying %(Filename).cl kernel to target kernels directory</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|x64'">Copying %(Filename).cl kernel to target kernels directory</Message>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(TargetDir)kernels\%(Filename).cl</Outputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(TargetDir)kernels\%(Filename).cl</Outputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(TargetDir)kernels\%(Filename).cl</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|x64'">$(TargetDir)kernels\%(Filename).cl</Outputs>
     </CustomBuild>
     <CustomBuild Include="OpenCL\kernels\bfmatcher_macros.cl">
       <FileType>Document</FileType>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">copy /Y OpenCL\kernels\%(Filename).cl  $(TargetDir)kernels\%(Filename).cl &gt; NUL</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">copy /Y OpenCL\kernels\%(Filename).cl  "$(TargetDir)kernels\%(Filename).cl" &gt; NUL</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|Win32'">copy /Y OpenCL\kernels\%(Filename).cl  "$(TargetDir)kernels\%(Filename).cl" &gt; NUL</Command>
       <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Copying %(Filename).cl kernel to target kernels directory</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|Win32'">Copying %(Filename).cl kernel to target kernels directory</Message>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(TargetDir)kernels\%(Filename).cl</Outputs>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">copy /Y OpenCL\kernels\%(Filename).cl  $(TargetDir)kernels\%(Filename).cl &gt; NUL</Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">copy /Y OpenCL\kernels\%(Filename).cl  $(TargetDir)kernels\%(Filename).cl &gt; NUL</Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">copy /Y OpenCL\kernels\%(Filename).cl  $(TargetDir)kernels\%(Filename).cl &gt; NUL</Command>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|Win32'">$(TargetDir)kernels\%(Filename).cl</Outputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">copy /Y OpenCL\kernels\%(Filename).cl  "$(TargetDir)kernels\%(Filename).cl" &gt; NUL</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">copy /Y OpenCL\kernels\%(Filename).cl  "$(TargetDir)kernels\%(Filename).cl" &gt; NUL</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">copy /Y OpenCL\kernels\%(Filename).cl  "$(TargetDir)kernels\%(Filename).cl" &gt; NUL</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|x64'">copy /Y OpenCL\kernels\%(Filename).cl  "$(TargetDir)kernels\%(Filename).cl" &gt; NUL</Command>
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Copying %(Filename).cl kernel to target kernels directory</Message>
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Copying %(Filename).cl kernel to target kernels directory</Message>
       <Message Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Copying %(Filename).cl kernel to target kernels directory</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|x64'">Copying %(Filename).cl kernel to target kernels directory</Message>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(TargetDir)kernels\%(Filename).cl</Outputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(TargetDir)kernels\%(Filename).cl</Outputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(TargetDir)kernels\%(Filename).cl</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|x64'">$(TargetDir)kernels\%(Filename).cl</Outputs>
     </CustomBuild>
     <CustomBuild Include="OpenCL\kernels\fill.cl">
       <FileType>Document</FileType>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">copy /Y OpenCL\kernels\%(Filename).cl  $(TargetDir)kernels\%(Filename).cl &gt; NUL</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">copy /Y OpenCL\kernels\%(Filename).cl  "$(TargetDir)kernels\%(Filename).cl" &gt; NUL</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|Win32'">copy /Y OpenCL\kernels\%(Filename).cl  "$(TargetDir)kernels\%(Filename).cl" &gt; NUL</Command>
       <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Copying %(Filename).cl kernel to target kernels directory</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|Win32'">Copying %(Filename).cl kernel to target kernels directory</Message>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(TargetDir)kernels\%(Filename).cl</Outputs>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">copy /Y OpenCL\kernels\%(Filename).cl  $(TargetDir)kernels\%(Filename).cl &gt; NUL</Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">copy /Y OpenCL\kernels\%(Filename).cl  $(TargetDir)kernels\%(Filename).cl &gt; NUL</Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">copy /Y OpenCL\kernels\%(Filename).cl  $(TargetDir)kernels\%(Filename).cl &gt; NUL</Command>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|Win32'">$(TargetDir)kernels\%(Filename).cl</Outputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">copy /Y OpenCL\kernels\%(Filename).cl  "$(TargetDir)kernels\%(Filename).cl" &gt; NUL</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">copy /Y OpenCL\kernels\%(Filename).cl  "$(TargetDir)kernels\%(Filename).cl" &gt; NUL</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">copy /Y OpenCL\kernels\%(Filename).cl  "$(TargetDir)kernels\%(Filename).cl" &gt; NUL</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|x64'">copy /Y OpenCL\kernels\%(Filename).cl  "$(TargetDir)kernels\%(Filename).cl" &gt; NUL</Command>
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Copying %(Filename).cl kernel to target kernels directory</Message>
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Copying %(Filename).cl kernel to target kernels directory</Message>
       <Message Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Copying %(Filename).cl kernel to target kernels directory</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|x64'">Copying %(Filename).cl kernel to target kernels directory</Message>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(TargetDir)kernels\%(Filename).cl</Outputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(TargetDir)kernels\%(Filename).cl</Outputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(TargetDir)kernels\%(Filename).cl</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|x64'">$(TargetDir)kernels\%(Filename).cl</Outputs>
     </CustomBuild>
     <CustomBuild Include="OpenCL\kernels\hough.cl">
       <FileType>Document</FileType>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">copy /Y OpenCL\kernels\%(Filename).cl  $(TargetDir)kernels\%(Filename).cl &gt; NUL</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">copy /Y OpenCL\kernels\%(Filename).cl  "$(TargetDir)kernels\%(Filename).cl" &gt; NUL</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|Win32'">copy /Y OpenCL\kernels\%(Filename).cl  "$(TargetDir)kernels\%(Filename).cl" &gt; NUL</Command>
       <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Copying %(Filename).cl kernel to target kernels directory</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|Win32'">Copying %(Filename).cl kernel to target kernels directory</Message>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(TargetDir)kernels\%(Filename).cl</Outputs>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">copy /Y OpenCL\kernels\%(Filename).cl  $(TargetDir)kernels\%(Filename).cl &gt; NUL</Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">copy /Y OpenCL\kernels\%(Filename).cl  $(TargetDir)kernels\%(Filename).cl &gt; NUL</Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">copy /Y OpenCL\kernels\%(Filename).cl  $(TargetDir)kernels\%(Filename).cl &gt; NUL</Command>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|Win32'">$(TargetDir)kernels\%(Filename).cl</Outputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">copy /Y OpenCL\kernels\%(Filename).cl  "$(TargetDir)kernels\%(Filename).cl" &gt; NUL</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">copy /Y OpenCL\kernels\%(Filename).cl  "$(TargetDir)kernels\%(Filename).cl" &gt; NUL</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">copy /Y OpenCL\kernels\%(Filename).cl  "$(TargetDir)kernels\%(Filename).cl" &gt; NUL</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|x64'">copy /Y OpenCL\kernels\%(Filename).cl  "$(TargetDir)kernels\%(Filename).cl" &gt; NUL</Command>
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Copying %(Filename).cl kernel to target kernels directory</Message>
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Copying %(Filename).cl kernel to target kernels directory</Message>
       <Message Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Copying %(Filename).cl kernel to target kernels directory</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|x64'">Copying %(Filename).cl kernel to target kernels directory</Message>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(TargetDir)kernels\%(Filename).cl</Outputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(TargetDir)kernels\%(Filename).cl</Outputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(TargetDir)kernels\%(Filename).cl</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|x64'">$(TargetDir)kernels\%(Filename).cl</Outputs>
     </CustomBuild>
     <CustomBuild Include="OpenCL\kernels\integral.cl">
       <FileType>Document</FileType>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">copy /Y OpenCL\kernels\%(Filename).cl  $(TargetDir)kernels\%(Filename).cl &gt; NUL</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">copy /Y OpenCL\kernels\%(Filename).cl  "$(TargetDir)kernels\%(Filename).cl" &gt; NUL</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|Win32'">copy /Y OpenCL\kernels\%(Filename).cl  "$(TargetDir)kernels\%(Filename).cl" &gt; NUL</Command>
       <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Copying %(Filename).cl kernel to target kernels directory</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|Win32'">Copying %(Filename).cl kernel to target kernels directory</Message>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(TargetDir)kernels\%(Filename).cl</Outputs>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">copy /Y OpenCL\kernels\%(Filename).cl  $(TargetDir)kernels\%(Filename).cl &gt; NUL</Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">copy /Y OpenCL\kernels\%(Filename).cl  $(TargetDir)kernels\%(Filename).cl &gt; NUL</Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">copy /Y OpenCL\kernels\%(Filename).cl  $(TargetDir)kernels\%(Filename).cl &gt; NUL</Command>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|Win32'">$(TargetDir)kernels\%(Filename).cl</Outputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">copy /Y OpenCL\kernels\%(Filename).cl  "$(TargetDir)kernels\%(Filename).cl" &gt; NUL</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">copy /Y OpenCL\kernels\%(Filename).cl  "$(TargetDir)kernels\%(Filename).cl" &gt; NUL</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">copy /Y OpenCL\kernels\%(Filename).cl  "$(TargetDir)kernels\%(Filename).cl" &gt; NUL</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|x64'">copy /Y OpenCL\kernels\%(Filename).cl  "$(TargetDir)kernels\%(Filename).cl" &gt; NUL</Command>
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Copying %(Filename).cl kernel to target kernels directory</Message>
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Copying %(Filename).cl kernel to target kernels directory</Message>
       <Message Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Copying %(Filename).cl kernel to target kernels directory</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|x64'">Copying %(Filename).cl kernel to target kernels directory</Message>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(TargetDir)kernels\%(Filename).cl</Outputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(TargetDir)kernels\%(Filename).cl</Outputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(TargetDir)kernels\%(Filename).cl</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|x64'">$(TargetDir)kernels\%(Filename).cl</Outputs>
     </CustomBuild>
     <CustomBuild Include="OpenCL\kernels\mog.cl">
       <FileType>Document</FileType>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">copy /Y OpenCL\kernels\%(Filename).cl  $(TargetDir)kernels\%(Filename).cl &gt; NUL</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">copy /Y OpenCL\kernels\%(Filename).cl  "$(TargetDir)kernels\%(Filename).cl" &gt; NUL</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|Win32'">copy /Y OpenCL\kernels\%(Filename).cl  "$(TargetDir)kernels\%(Filename).cl" &gt; NUL</Command>
       <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Copying %(Filename).cl kernel to target kernels directory</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|Win32'">Copying %(Filename).cl kernel to target kernels directory</Message>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(TargetDir)kernels\%(Filename).cl</Outputs>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">copy /Y OpenCL\kernels\%(Filename).cl  $(TargetDir)kernels\%(Filename).cl &gt; NUL</Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">copy /Y OpenCL\kernels\%(Filename).cl  $(TargetDir)kernels\%(Filename).cl &gt; NUL</Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">copy /Y OpenCL\kernels\%(Filename).cl  $(TargetDir)kernels\%(Filename).cl &gt; NUL</Command>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|Win32'">$(TargetDir)kernels\%(Filename).cl</Outputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">copy /Y OpenCL\kernels\%(Filename).cl  "$(TargetDir)kernels\%(Filename).cl" &gt; NUL</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">copy /Y OpenCL\kernels\%(Filename).cl  "$(TargetDir)kernels\%(Filename).cl" &gt; NUL</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">copy /Y OpenCL\kernels\%(Filename).cl  "$(TargetDir)kernels\%(Filename).cl" &gt; NUL</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|x64'">copy /Y OpenCL\kernels\%(Filename).cl  "$(TargetDir)kernels\%(Filename).cl" &gt; NUL</Command>
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Copying %(Filename).cl kernel to target kernels directory</Message>
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Copying %(Filename).cl kernel to target kernels directory</Message>
       <Message Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Copying %(Filename).cl kernel to target kernels directory</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|x64'">Copying %(Filename).cl kernel to target kernels directory</Message>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(TargetDir)kernels\%(Filename).cl</Outputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(TargetDir)kernels\%(Filename).cl</Outputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(TargetDir)kernels\%(Filename).cl</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|x64'">$(TargetDir)kernels\%(Filename).cl</Outputs>
     </CustomBuild>
     <CustomBuild Include="OpenCL\kernels\morphOp.cl">
       <FileType>Document</FileType>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">copy /Y OpenCL\kernels\%(Filename).cl  $(TargetDir)kernels\%(Filename).cl &gt; NUL</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">copy /Y OpenCL\kernels\%(Filename).cl  "$(TargetDir)kernels\%(Filename).cl" &gt; NUL</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|Win32'">copy /Y OpenCL\kernels\%(Filename).cl  "$(TargetDir)kernels\%(Filename).cl" &gt; NUL</Command>
       <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Copying %(Filename).cl kernel to target kernels directory</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|Win32'">Copying %(Filename).cl kernel to target kernels directory</Message>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(TargetDir)kernels\%(Filename).cl</Outputs>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">copy /Y OpenCL\kernels\%(Filename).cl  $(TargetDir)kernels\%(Filename).cl &gt; NUL</Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">copy /Y OpenCL\kernels\%(Filename).cl  $(TargetDir)kernels\%(Filename).cl &gt; NUL</Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">copy /Y OpenCL\kernels\%(Filename).cl  $(TargetDir)kernels\%(Filename).cl &gt; NUL</Command>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|Win32'">$(TargetDir)kernels\%(Filename).cl</Outputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">copy /Y OpenCL\kernels\%(Filename).cl  "$(TargetDir)kernels\%(Filename).cl" &gt; NUL</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">copy /Y OpenCL\kernels\%(Filename).cl  "$(TargetDir)kernels\%(Filename).cl" &gt; NUL</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">copy /Y OpenCL\kernels\%(Filename).cl  "$(TargetDir)kernels\%(Filename).cl" &gt; NUL</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|x64'">copy /Y OpenCL\kernels\%(Filename).cl  "$(TargetDir)kernels\%(Filename).cl" &gt; NUL</Command>
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Copying %(Filename).cl kernel to target kernels directory</Message>
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Copying %(Filename).cl kernel to target kernels directory</Message>
       <Message Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Copying %(Filename).cl kernel to target kernels directory</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|x64'">Copying %(Filename).cl kernel to target kernels directory</Message>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(TargetDir)kernels\%(Filename).cl</Outputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(TargetDir)kernels\%(Filename).cl</Outputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(TargetDir)kernels\%(Filename).cl</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|x64'">$(TargetDir)kernels\%(Filename).cl</Outputs>
     </CustomBuild>
     <CustomBuild Include="OpenCL\kernels\surf.cl">
       <FileType>Document</FileType>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">copy /Y OpenCL\kernels\%(Filename).cl  $(TargetDir)kernels\%(Filename).cl &gt; NUL</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">copy /Y OpenCL\kernels\%(Filename).cl  "$(TargetDir)kernels\%(Filename).cl" &gt; NUL</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|Win32'">copy /Y OpenCL\kernels\%(Filename).cl  "$(TargetDir)kernels\%(Filename).cl" &gt; NUL</Command>
       <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Copying %(Filename).cl kernel to target kernels directory</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|Win32'">Copying %(Filename).cl kernel to target kernels directory</Message>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(TargetDir)kernels\%(Filename).cl</Outputs>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">copy /Y OpenCL\kernels\%(Filename).cl  $(TargetDir)kernels\%(Filename).cl &gt; NUL</Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">copy /Y OpenCL\kernels\%(Filename).cl  $(TargetDir)kernels\%(Filename).cl &gt; NUL</Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">copy /Y OpenCL\kernels\%(Filename).cl  $(TargetDir)kernels\%(Filename).cl &gt; NUL</Command>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|Win32'">$(TargetDir)kernels\%(Filename).cl</Outputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">copy /Y OpenCL\kernels\%(Filename).cl  "$(TargetDir)kernels\%(Filename).cl" &gt; NUL</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">copy /Y OpenCL\kernels\%(Filename).cl  "$(TargetDir)kernels\%(Filename).cl" &gt; NUL</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">copy /Y OpenCL\kernels\%(Filename).cl  "$(TargetDir)kernels\%(Filename).cl" &gt; NUL</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|x64'">copy /Y OpenCL\kernels\%(Filename).cl  "$(TargetDir)kernels\%(Filename).cl" &gt; NUL</Command>
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Copying %(Filename).cl kernel to target kernels directory</Message>
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Copying %(Filename).cl kernel to target kernels directory</Message>
       <Message Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Copying %(Filename).cl kernel to target kernels directory</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|x64'">Copying %(Filename).cl kernel to target kernels directory</Message>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(TargetDir)kernels\%(Filename).cl</Outputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(TargetDir)kernels\%(Filename).cl</Outputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(TargetDir)kernels\%(Filename).cl</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|x64'">$(TargetDir)kernels\%(Filename).cl</Outputs>
     </CustomBuild>
   </ItemGroup>
   <PropertyGroup Label="Globals">
@@ -507,7 +833,19 @@
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|Win32'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <PlatformToolset>v110</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <PlatformToolset>v110</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|x64'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <PlatformToolset>v110</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
@@ -540,7 +878,23 @@
     <Import Project="..\tbb.Release.props" />
     <Import Project="..\clw.Release.props" />
   </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="..\Mouve.Kommon.props" />
+    <Import Project="..\OpenCV.Modules.Release.props" />
+    <Import Project="..\Boost.props" />
+    <Import Project="..\tbb.Release.props" />
+    <Import Project="..\clw.Release.props" />
+  </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="..\Mouve.Kommon.props" />
+    <Import Project="..\OpenCV.Modules.Release.x64.props" />
+    <Import Project="..\Boost.props" />
+    <Import Project="..\tbb.Release.x64.props" />
+    <Import Project="..\clw.Release.x64.props" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|x64'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
     <Import Project="..\Mouve.Kommon.props" />
     <Import Project="..\OpenCV.Modules.Release.x64.props" />
@@ -558,15 +912,23 @@
     <CodeAnalysisRuleAssemblies Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" />
     <CodeAnalysisRuleAssemblies Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" />
     <CodeAnalysisRuleSet Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">AllRules.ruleset</CodeAnalysisRuleSet>
+    <CodeAnalysisRuleSet Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|Win32'">AllRules.ruleset</CodeAnalysisRuleSet>
     <CodeAnalysisRuleSet Condition="'$(Configuration)|$(Platform)'=='Release|x64'">AllRules.ruleset</CodeAnalysisRuleSet>
+    <CodeAnalysisRuleSet Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|x64'">AllRules.ruleset</CodeAnalysisRuleSet>
     <CodeAnalysisRules Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" />
+    <CodeAnalysisRules Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|Win32'" />
     <CodeAnalysisRules Condition="'$(Configuration)|$(Platform)'=='Release|x64'" />
+    <CodeAnalysisRules Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|x64'" />
     <CodeAnalysisRuleAssemblies Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" />
+    <CodeAnalysisRuleAssemblies Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|Win32'" />
     <CodeAnalysisRuleAssemblies Condition="'$(Configuration)|$(Platform)'=='Release|x64'" />
+    <CodeAnalysisRuleAssemblies Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|x64'" />
     <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(SolutionDir)$(Platform)\$(Configuration)\</OutDir>
     <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(SolutionDir)$(Platform)\$(Configuration)\</OutDir>
     <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(SolutionDir)$(Platform)\$(Configuration)\</OutDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|Win32'">$(SolutionDir)$(Platform)\$(Configuration)\</OutDir>
     <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(SolutionDir)$(Platform)\$(Configuration)\</OutDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|x64'">$(SolutionDir)$(Platform)\$(Configuration)\</OutDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -644,7 +1006,55 @@
       </Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|Win32'">
+    <ClCompile>
+      <PreprocessorDefinitions>UNICODE;WIN32;QT_LARGEFILE_SUPPORT;QT_DLL;QT_NO_DEBUG;NDEBUG;QT_CORE_LIB;LOGIC_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>.\GeneratedFiles;.;$(QTDIR)\include;.\GeneratedFiles\$(ConfigurationName);$(QTDIR)\include\QtCore;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <TreatWChar_tAsBuiltInType>false</TreatWChar_tAsBuiltInType>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>Precomp.h</PrecompiledHeaderFile>
+      <PrecompiledHeaderOutputFile>$(IntDir)$(TargetName).pch</PrecompiledHeaderOutputFile>
+      <ForcedIncludeFiles>Precomp.h</ForcedIncludeFiles>
+      <WholeProgramOptimization>true</WholeProgramOptimization>
+      <WarningLevel>Level3</WarningLevel>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <AdditionalLibraryDirectories>$(QTDIR)\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <GenerateDebugInformation>false</GenerateDebugInformation>
+      <AdditionalDependencies>Qt5Core.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <ImageHasSafeExceptionHandlers>false</ImageHasSafeExceptionHandlers>
+    </Link>
+    <PostBuildEvent>
+      <Command>
+      </Command>
+    </PostBuildEvent>
+  </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <PreprocessorDefinitions>UNICODE;WIN32;QT_LARGEFILE_SUPPORT;QT_DLL;QT_NO_DEBUG;NDEBUG;QT_CORE_LIB;LOGIC_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>.\GeneratedFiles;.;$(QTDIR)\include;.\GeneratedFiles\$(ConfigurationName);$(QTDIR)\include\QtCore;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <TreatWChar_tAsBuiltInType>false</TreatWChar_tAsBuiltInType>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>Precomp.h</PrecompiledHeaderFile>
+      <PrecompiledHeaderOutputFile>$(IntDir)$(TargetName).pch</PrecompiledHeaderOutputFile>
+      <ForcedIncludeFiles>Precomp.h</ForcedIncludeFiles>
+      <WarningLevel>Level3</WarningLevel>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <AdditionalLibraryDirectories>$(QTDIR)\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <GenerateDebugInformation>false</GenerateDebugInformation>
+      <AdditionalDependencies>Qt5Core.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+    <PostBuildEvent>
+      <Command>
+      </Command>
+    </PostBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|x64'">
     <ClCompile>
       <PreprocessorDefinitions>UNICODE;WIN32;QT_LARGEFILE_SUPPORT;QT_DLL;QT_NO_DEBUG;NDEBUG;QT_CORE_LIB;LOGIC_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>.\GeneratedFiles;.;$(QTDIR)\include;.\GeneratedFiles\$(ConfigurationName);$(QTDIR)\include\QtCore;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>

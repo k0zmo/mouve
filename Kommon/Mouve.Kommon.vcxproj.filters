@@ -52,5 +52,6 @@
     <ClCompile Include="SharedLibrary.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="UnityBuild.cpp" />
   </ItemGroup>
 </Project>

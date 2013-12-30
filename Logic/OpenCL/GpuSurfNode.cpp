@@ -13,11 +13,11 @@ using namespace std;
 // Use exactly the same filters sizes as H. Bay in his paper
 #define FILTER_SIZE_BAY 1
 
-//static const int KEYPOINTS_MAX = 16384;
-static const int KEYPOINTS_MAX = 65535;
+//static const int kKeypointsMax = 16384;
+static const int kKeypointsMax = 65535;
 // Size of a 1st box filter in 1st octave (9x9 is default)
-static const int FILTER_SIZE_BASE = 9;
-static const int FILTER_SIZE_BASE_INCREASE = 6;
+static const int kFilterSizeBase = 9;
+static const int kFilterSizeBaseIncrease = 6;
 
 struct ScaleSpaceLayer_cl
 {
@@ -83,7 +83,7 @@ public:
 		_kidMultiScan_vert = _gpuComputeModule->registerKernel("multiscan_vert_image", "integral.cl", opts);
 
 		ostringstream strm;
-		strm << " -DKEYPOINT_MAX=" << KEYPOINTS_MAX;
+		strm << " -DKEYPOINT_MAX=" << kKeypointsMax;
 		opts += strm.str();
 
 		_kidBuildScaleSpace = _gpuComputeModule->registerKernel("buildScaleSpace", "surf.cl", opts);
@@ -222,7 +222,7 @@ public:
 		intPtr = (int*) _gpuComputeModule->queue().mapBuffer(_pinnedKeypointsCount_cl, clw::EMapAccess::Read);
 		if(!intPtr)
 			return ExecutionStatus(EStatus::Error, "Couldn't mapped keypoints counter buffer to host address space");
-		int keypointsCount = min(intPtr[0], KEYPOINTS_MAX);
+		int keypointsCount = min(intPtr[0], kKeypointsMax);
 		_gpuComputeModule->queue().asyncUnmap(_pinnedKeypointsCount_cl, intPtr);
 
 		_gpuComputeModule->endPerfMarker();
@@ -358,12 +358,12 @@ protected:
 
 	void ensureKeypointsBufferIsEnough()
 	{
-		if(_keypoints_cl.isNull() || _keypoints_cl.size() != KEYPOINTS_MAX*sizeof(KeyPoint))
+		if(_keypoints_cl.isNull() || _keypoints_cl.size() != kKeypointsMax*sizeof(KeyPoint))
 		{
 			_keypoints_cl = _gpuComputeModule->context().createBuffer(
-				clw::EAccess::ReadWrite, clw::EMemoryLocation::Device, KEYPOINTS_MAX*sizeof(KeyPoint));
+				clw::EAccess::ReadWrite, clw::EMemoryLocation::Device, kKeypointsMax*sizeof(KeyPoint));
 			_pinnedKeypoints_cl = _gpuComputeModule->context().createBuffer(
-				clw::EAccess::ReadWrite, clw::EMemoryLocation::AllocHostMemory, KEYPOINTS_MAX*sizeof(KeyPoint));
+				clw::EAccess::ReadWrite, clw::EMemoryLocation::AllocHostMemory, kKeypointsMax*sizeof(KeyPoint));
 		}
 
 		if(_keypointsCount_cl.isNull())
@@ -443,7 +443,7 @@ protected:
 			_scaleLayers.resize(nTotalLayers);
 		}
 
-		int scaleBaseFilterSize = FILTER_SIZE_BASE;
+		int scaleBaseFilterSize = kFilterSizeBase;
 
 		// Initialize scale space layers with their properties
 		for(int octave = 0; octave < _nOctaves; ++octave)
@@ -456,15 +456,15 @@ protected:
 				layer.height = imageHeight >> octave;
 				layer.sampleStep = _initSampling << octave;
 #if FILTER_SIZE_BAY == 1
-				layer.filterSize = scaleBaseFilterSize + (scale * FILTER_SIZE_BASE_INCREASE << octave);
+				layer.filterSize = scaleBaseFilterSize + (scale * kFilterSizeBaseIncrease << octave);
 #else
-				layer.filterSize = (FILTER_SIZE_BASE + FILTER_SIZE_BASE_INCREASE*scale) << octave;
+				layer.filterSize = (kFilterSizeBase + kFilterSizeBaseIncrease*scale) << octave;
 #endif
 				// Allocate required memory for scale layers
 				ensureHessianAndLaplacianBufferIsEnough(layer);
 			}
 
-			scaleBaseFilterSize += FILTER_SIZE_BASE_INCREASE << octave;
+			scaleBaseFilterSize += kFilterSizeBaseIncrease << octave;
 		}
 
 		_nTotalLayers = nTotalLayers;
@@ -673,27 +673,27 @@ protected:
 		if(!ptrBase)
 			return kps;
 
-		float* ptr = ptrBase + KEYPOINTS_MAX * 0;
+		float* ptr = ptrBase + kKeypointsMax * 0;
 		for(int i = 0; i < keypointsCount; ++i)
 			kps[i].x = *ptr++;
 
-		ptr = ptrBase + KEYPOINTS_MAX * 1;
+		ptr = ptrBase + kKeypointsMax * 1;
 		for(int i = 0; i < keypointsCount; ++i)
 			kps[i].y = *ptr++;
 
-		ptr = ptrBase + KEYPOINTS_MAX * 2;
+		ptr = ptrBase + kKeypointsMax * 2;
 		for(int i = 0; i < keypointsCount; ++i)
 			kps[i].scale = *ptr++;
 
-		ptr = ptrBase + KEYPOINTS_MAX * 3;
+		ptr = ptrBase + kKeypointsMax * 3;
 		for(int i = 0; i < keypointsCount; ++i)
 			kps[i].response = *ptr++;
 
-		int* iptr = (int*) (ptrBase + KEYPOINTS_MAX * 4);
+		int* iptr = (int*) (ptrBase + kKeypointsMax * 4);
 		for(int i = 0; i < keypointsCount; ++i)
 			kps[i].laplacian = *iptr++;
 
-		ptr = ptrBase + KEYPOINTS_MAX * 5;
+		ptr = ptrBase + kKeypointsMax * 5;
 		for(int i = 0; i < keypointsCount; ++i)
 			kps[i].orientation = *ptr++;
 
@@ -765,7 +765,7 @@ public:
 			ostringstream strm;
 			if(_gpuComputeModule->device().supportsExtension("cl_ext_atomic_counters_32"))
 				strm << " -DUSE_ATOMIC_COUNTERS";
-			strm << " -DKEYPOINT_MAX=" << KEYPOINTS_MAX;
+			strm << " -DKEYPOINT_MAX=" << kKeypointsMax;
 			string opts = warpSizeDefine(_gpuComputeModule) + strm.str();
 
 			_kidBuildScaleSpace = _gpuComputeModule->registerKernel("buildScaleSpace_buffer", "surf.cl", opts);
