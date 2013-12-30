@@ -40,6 +40,12 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Plugin.Template", "Plugin.T
 		{201C0F8F-4B5D-4CA2-A267-1EBED6CD8460} = {201C0F8F-4B5D-4CA2-A267-1EBED6CD8460}
 	EndProjectSection
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Plugin.Kuwahara", "Plugin.Kuwahara\Plugin.Kuwahara.vcxproj", "{3CF5CC6E-B212-44BA-8F1C-5E4DBAE616F8}"
+	ProjectSection(ProjectDependencies) = postProject
+		{DC17726C-68F2-4136-BBC4-25765372976A} = {DC17726C-68F2-4136-BBC4-25765372976A}
+		{201C0F8F-4B5D-4CA2-A267-1EBED6CD8460} = {201C0F8F-4B5D-4CA2-A267-1EBED6CD8460}
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -134,6 +140,18 @@ Global
 		{F5743DBA-49B7-4F75-8521-81A1FB7B1621}.ReleaseUnity|Win32.Build.0 = ReleaseUnity|Win32
 		{F5743DBA-49B7-4F75-8521-81A1FB7B1621}.ReleaseUnity|x64.ActiveCfg = ReleaseUnity|x64
 		{F5743DBA-49B7-4F75-8521-81A1FB7B1621}.ReleaseUnity|x64.Build.0 = ReleaseUnity|x64
+		{3CF5CC6E-B212-44BA-8F1C-5E4DBAE616F8}.Debug|Win32.ActiveCfg = Debug|Win32
+		{3CF5CC6E-B212-44BA-8F1C-5E4DBAE616F8}.Debug|Win32.Build.0 = Debug|Win32
+		{3CF5CC6E-B212-44BA-8F1C-5E4DBAE616F8}.Debug|x64.ActiveCfg = Debug|x64
+		{3CF5CC6E-B212-44BA-8F1C-5E4DBAE616F8}.Debug|x64.Build.0 = Debug|x64
+		{3CF5CC6E-B212-44BA-8F1C-5E4DBAE616F8}.Release|Win32.ActiveCfg = Release|Win32
+		{3CF5CC6E-B212-44BA-8F1C-5E4DBAE616F8}.Release|Win32.Build.0 = Release|Win32
+		{3CF5CC6E-B212-44BA-8F1C-5E4DBAE616F8}.Release|x64.ActiveCfg = Release|x64
+		{3CF5CC6E-B212-44BA-8F1C-5E4DBAE616F8}.Release|x64.Build.0 = Release|x64
+		{3CF5CC6E-B212-44BA-8F1C-5E4DBAE616F8}.ReleaseUnity|Win32.ActiveCfg = ReleaseUnity|Win32
+		{3CF5CC6E-B212-44BA-8F1C-5E4DBAE616F8}.ReleaseUnity|Win32.Build.0 = ReleaseUnity|Win32
+		{3CF5CC6E-B212-44BA-8F1C-5E4DBAE616F8}.ReleaseUnity|x64.ActiveCfg = ReleaseUnity|x64
+		{3CF5CC6E-B212-44BA-8F1C-5E4DBAE616F8}.ReleaseUnity|x64.Build.0 = ReleaseUnity|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -142,6 +160,7 @@ Global
 		{23AC99B5-9E00-48A5-89F5-3B03B375B284} = {DA6F30AB-37D4-4393-8721-E8C615CAD98F}
 		{6472E3A0-3991-4095-8DA0-A7CBA2E007A0} = {DA6F30AB-37D4-4393-8721-E8C615CAD98F}
 		{F5743DBA-49B7-4F75-8521-81A1FB7B1621} = {DA6F30AB-37D4-4393-8721-E8C615CAD98F}
+		{3CF5CC6E-B212-44BA-8F1C-5E4DBAE616F8} = {DA6F30AB-37D4-4393-8721-E8C615CAD98F}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		Qt5Version = $(DefaultQtVersion)
