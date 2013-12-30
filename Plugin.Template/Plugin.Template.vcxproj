@@ -29,7 +29,7 @@
   <PropertyGroup Label="Globals">
     <ProjectGuid>{F5743DBA-49B7-4F75-8521-81A1FB7B1621}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
-    <RootNamespace>TemplatePlugin</RootNamespace>
+    <RootNamespace>PluginTemplate</RootNamespace>
     <ProjectName>Plugin.Template</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
