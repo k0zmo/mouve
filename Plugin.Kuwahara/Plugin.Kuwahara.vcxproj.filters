@@ -38,8 +38,8 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="kernels\kuwahara.cl">
+    <CustomBuild Include="kernels\kuwahara.cl">
       <Filter>Source Files\Kernels</Filter>
-    </None>
+    </CustomBuild>
   </ItemGroup>
 </Project>

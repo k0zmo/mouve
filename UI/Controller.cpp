@@ -84,6 +84,7 @@ Controller::Controller(QWidget* parent, Qt::WindowFlags flags)
 
 	// Lookup for plugins in ./plugins directory
 	pluginLookUp();
+	qDebug() << "Number of available nodes: " << _nodeSystem->numRegisteredNodeTypes();
 
 	setupNodeTypesUi();
 	populateAddNodeContextMenu();

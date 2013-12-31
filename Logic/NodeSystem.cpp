@@ -138,6 +138,11 @@ void NodeSystem::registerAutoTypes()
 	}
 }
 
+int NodeSystem::numRegisteredNodeTypes() const
+{
+	return _registeredNodeTypes.size();
+}
+
 // -----------------------------------------------------------------------------
 
 NodeSystem::NodeTypeInfo::~NodeTypeInfo()

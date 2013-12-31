@@ -17,5 +17,5 @@ for root, sub_folders, files in os.walk(root_dir):
 
 # write include list to a file
 f = open(output_name, 'wb')
-f.write("\n".join(file_list))
+f.write("\r\n".join(file_list))
 f.close()

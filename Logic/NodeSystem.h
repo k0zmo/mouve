@@ -29,6 +29,8 @@ public:
 
 	void loadPlugin(const std::string& pluginName);
 
+	int numRegisteredNodeTypes() const;
+
 private:
 	// That is all that NodeSystem needs for handling registered node types
 	class NodeTypeInfo
