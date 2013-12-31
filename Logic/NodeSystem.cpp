@@ -188,7 +188,14 @@ void NodeSystem::loadPlugin(const std::string& pluginName)
 	if(_plugins.find(pluginName) == _plugins.end())
 	{
 		auto plugin = std::unique_ptr<NodePlugin>(new NodePlugin(pluginName));
-		/// TODO: Check if logic version == logic version of a plugin
+		if(plugin->logicVersion() != LOGIC_VERSION)
+		{
+			std::ostringstream strm;
+			strm << "logic (" << LOGIC_VERSION;
+			strm << ") and plugin (" << plugin->logicVersion();
+			strm << ") version mismatch";
+			throw std::runtime_error(strm.str());
+		}
 		plugin->registerPlugin(this);
 		_plugins.emplace(pluginName, std::move(plugin));
 	}

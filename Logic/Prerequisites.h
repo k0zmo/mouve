@@ -8,6 +8,8 @@
 #  define LOGIC_EXPORT K_DECL_IMPORT
 #endif
 
+#define LOGIC_VERSION 1
+
 // CRT
 #include <cstdio>
 #include <cstdint>

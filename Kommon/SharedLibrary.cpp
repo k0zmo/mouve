@@ -8,7 +8,7 @@ LibraryHandle loadLibrary(const char* path)
 {
 	HMODULE moduleHandle = ::LoadLibraryA(path);
 	if(!moduleHandle)
-		throw std::runtime_error("Could not load given module");
+		throw std::runtime_error(std::string("Could not load given module: ") + path);
 	return moduleHandle;
 }
 
@@ -25,7 +25,7 @@ LibraryHandle loadLibrary(const char* path)
 {
 	void* sharedObject = ::dlopen(path, RTLD_NOW);
 	if(!sharedObject)
-		throw std::runtime_error("Could not load given shared object");
+		throw std::runtime_error(std::string("Could not load given shared object: ") + path);
 	return sharedObject;
 }
 

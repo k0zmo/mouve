@@ -108,7 +108,7 @@ private:
 
 extern "C" K_DECL_EXPORT int logicVersion()
 {
-	return 1;
+	return LOGIC_VERSION;
 }
 
 extern "C" K_DECL_EXPORT int pluginVersion()

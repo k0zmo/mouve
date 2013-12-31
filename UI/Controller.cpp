@@ -2472,15 +2472,17 @@ void Controller::pluginLookUp()
 
 	for(const auto& pluginName : list)
 	{
+		QString pluginBaseName = pluginName.completeBaseName();
+		QString pluginPath = pluginName.absoluteFilePath();
 		try
 		{
-			_nodeSystem->loadPlugin(pluginName.absoluteFilePath().toStdString());
-			qDebug() << "Plugin" << pluginName.completeBaseName() << "loaded successfully";
+			_nodeSystem->loadPlugin(pluginPath.toStdString());
+			qDebug() << "Plugin" << pluginBaseName << "loaded successfully";
 		}
-		catch (std::exception&)
+		catch (std::exception& ex)
 		{
 			// Silent error
-			qCritical() << "Couldn't load plugin" << pluginName.completeBaseName();
+			qCritical() << "Couldn't load plugin" << pluginBaseName << "- details:" << ex.what();
 		}
 	}
 }

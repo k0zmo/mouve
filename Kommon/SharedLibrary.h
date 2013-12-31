@@ -2,6 +2,7 @@
 
 #include "konfig.h"
 #include <stdexcept>
+#include <string>
 
 #if K_SYSTEM == K_SYSTEM_WINDOWS
 #  define WIN32_LEAN_AND_MEAN
@@ -27,7 +28,7 @@ template<class Signature>
 #if K_SYSTEM == K_SYSTEM_WINDOWS
 		FARPROC functionAddress = ::GetProcAddress(sharedLibraryHandle, functionName);
 		if(!functionAddress)
-			throw std::runtime_error("Could not find exported function");
+			throw std::runtime_error(std::string("Could not find exported function: ") + functionName);
 		return reinterpret_cast<Signature*>(functionAddress);
 #elif K_SYSTEM == K_SYSTEM_LINUX
 		::dlerror(); // clear error value
@@ -35,7 +36,7 @@ template<class Signature>
 		void* functionAddress = ::dlsym(sharedLibraryHandle, functionName);
 		const char* error = ::dlerror(); // check for error
 		if(error)
-			throw std::runtime_error("Could not find exported function");
+			throw std::runtime_error(std::string("Could not find exported function: ") + functionName);
 		return reinterpret_cast<Signature*>(functionAddress);
 #endif
 	}
