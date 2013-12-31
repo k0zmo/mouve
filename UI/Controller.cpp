@@ -639,13 +639,8 @@ void Controller::setupUiAbout()
 	connect(actionAboutApplication, &QAction::triggered, [=] {
 		QString translatedTextAboutCaption = QString(
 			"<h3>About %1</h3>").arg(QApplication::applicationName());
-#ifdef Q_OS_LINUX
-		// Causes linker error in msvc2012
-		QString translatedTextAboutText = QString::fromWCharArray(
-#else
 		// Doesn't work on gcc 4.7.4
-		QString translatedTextAboutText = QString::fromUtf16(
-#endif
+		QString translatedTextAboutText = QString::fromWCharArray(
 			L"<p>Author: Kajetan Świerk</p>"
 			L"<p>This program uses icon set 'Super Mono Stickers' created by Double-J "
 			L"designs <a href=\"http://www.doublejdesign.co.uk/\">www.doublejdesign.co.uk</a>, "
