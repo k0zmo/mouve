@@ -13,12 +13,21 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="Source Files\Kernels">
+      <UniqueIdentifier>{0772d277-a466-4393-b4d7-ef08d3fdff74}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="cvu.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="cvu.cpp">
+    <ClCompile Include="KuwaharaFilterNodeType.h">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="GpuKuwaharaFilterNodeType.h">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -26,5 +35,10 @@
     <ClInclude Include="cvu.h">
       <Filter>Source Files</Filter>
     </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="kernels\kuwahara.cl">
+      <Filter>Source Files\Kernels</Filter>
+    </None>
   </ItemGroup>
 </Project>
