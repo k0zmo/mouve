@@ -30,6 +30,7 @@
     <ClCompile Include="GpuKuwaharaFilterNodeType.h">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="UnityBuild.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="cvu.h">
