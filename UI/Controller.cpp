@@ -11,8 +11,8 @@
 // Modules
 #include "Logic/OpenCL/IGpuNodeModule.h"
 #include "Logic/OpenCL/GpuException.h"
-#include "GpuModuleUI.h"
 #include "Logic/Jai/IJaiNodeModule.h"
+#include "GpuChoiceDialog.h"
 
 // Node editor
 #include "NodeEditor/NodeView.h"

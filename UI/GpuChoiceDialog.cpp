@@ -1,4 +1,6 @@
-#include "GpuModuleUI.h"
+#include "GpuChoiceDialog.h"
+#include "Logic/OpenCL/IGpuNodeModule.h"
+
 #include <QMessageBox>
 
 static const int SPECIFIC_INDEX = 3;

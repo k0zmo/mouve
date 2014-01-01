@@ -2,7 +2,7 @@
 
 #include "Logic/NodeModule.h"
 
-enum class EDeviceType
+enum class EDeviceType : int
 {
 	None     = 0,
 	Default  = K_BIT(0),

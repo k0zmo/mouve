@@ -140,7 +140,7 @@ void NodeSystem::registerAutoTypes()
 
 int NodeSystem::numRegisteredNodeTypes() const
 {
-	return _registeredNodeTypes.size();
+	return static_cast<int>(_registeredNodeTypes.size());
 }
 
 // -----------------------------------------------------------------------------

@@ -137,15 +137,6 @@
     <ClCompile Include="GeneratedFiles\Release\moc_LogView.cpp">
       <Filter>Generated Files\Release</Filter>
     </ClCompile>
-    <ClCompile Include="GpuModuleUI.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="GeneratedFiles\Debug\moc_GpuModuleUI.cpp">
-      <Filter>Generated Files\Debug</Filter>
-    </ClCompile>
-    <ClCompile Include="GeneratedFiles\Release\moc_GpuModuleUI.cpp">
-      <Filter>Generated Files\Release</Filter>
-    </ClCompile>
     <ClCompile Include="GeneratedFiles\Debug\moc_NodeConnectorView.cpp">
       <Filter>Generated Files\Debug</Filter>
     </ClCompile>
@@ -192,6 +183,15 @@
       <Filter>Source Files\NodeEditor</Filter>
     </ClCompile>
     <ClCompile Include="UnityBuild.cpp" />
+    <ClCompile Include="GeneratedFiles\Debug\moc_GpuChoiceDialog.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Release\moc_GpuChoiceDialog.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
+    <ClCompile Include="GpuChoiceDialog.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="Controller.h">
@@ -245,9 +245,6 @@
     <CustomBuild Include="GpuChoice.ui">
       <Filter>Form Files</Filter>
     </CustomBuild>
-    <CustomBuild Include="GpuModuleUI.h">
-      <Filter>Header Files</Filter>
-    </CustomBuild>
     <CustomBuild Include="NodeEditor\NodeConnectorView.h">
       <Filter>Header Files\NodeEditor</Filter>
     </CustomBuild>
@@ -259,6 +256,9 @@
     </CustomBuild>
     <CustomBuild Include="NodeEditor\NodeView.h">
       <Filter>Header Files\NodeEditor</Filter>
+    </CustomBuild>
+    <CustomBuild Include="GpuChoiceDialog.h">
+      <Filter>Header Files</Filter>
     </CustomBuild>
   </ItemGroup>
   <ItemGroup>

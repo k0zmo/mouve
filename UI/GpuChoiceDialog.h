@@ -1,7 +1,9 @@
 #pragma once
 
 #include "ui_GpuChoice.h"
-#include "Logic/OpenCL/IGpuNodeModule.h"
+
+struct GpuPlatform;
+enum class EDeviceType : int;
 
 class GpuChoiceDialog : public QDialog, private Ui::GpuChoiceDialog
 {
