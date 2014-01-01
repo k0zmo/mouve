@@ -1,13 +1,15 @@
 TEMPLATE = subdirs
+SUBDIRS = Kommon Logic Console UI \
+    Plugin.BRISK \
+    Plugin.ShiTomasi \
+    Plugin.Template \
+    Plugin.Kuwahara
 CONFIG += ordered
-SUBDIRS += \
-	Kommon \
-	Logic \
-	UI \
-    ShiTomasi.Plugin \
-    BRISK.Plugin
 
 Logic.depends = Kommon
+Console.depends = Logic
 UI.depends = Logic
-ShiTomasi.Plugin.depends = Logic
-BRISK.Plugin.depends = Logic
+Plugin.BRISK.depends = Logic
+Plugin.ShiTomasi.depends = Logic
+Plugin.Template.depends = Logic
+Plugin.Kuwahara.depends = Logic

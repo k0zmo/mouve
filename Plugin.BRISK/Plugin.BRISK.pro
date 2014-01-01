@@ -1,25 +1,14 @@
-QT       -= gui
-TARGET    = Plugin.BRISK
 TEMPLATE  = lib
+TARGET    = Plugin.BRISK
+QT       -= gui
 
 include(../mouve.pri)
-include(../clw.pri)
+include(../boost.pri)
+include(../opencv.pri)
+include(../plugin.pri)
 
-CONFIG(release, debug|release): {
-    OBJECTS_DIR=$$OUT_PWD/../obj/$$TARGET/release
-    contains(DEFINES, QT_MOC) {
-        DESTDIR=$$OBJECTS_DIR
-    } else {
-        DESTDIR=$$OUT_PWD/../bin/release/plugins
-    }
-} else {
-    OBJECTS_DIR=$$OUT_PWD/../obj/$$TARGET/debug
-    contains(DEFINES, QT_MOC) {
-        DESTDIR=$$OBJECTS_DIR
-    } else {
-        DESTDIR=$$OUT_PWD/../bin/debug/plugins
-    }
-}
+LIBS += -lMouve.Logic -lMouve.Kommon
+unix: QMAKE_CXXFLAGS += -mssse3
 
 SOURCES += brisk.cpp \
     BriskNode.cpp \
@@ -41,12 +30,3 @@ HEADERS += brisk.h \
     agast\AstDetector.h \
     agast\cvWrapper.h \
     agast\oast9_16.h
-
-INCLUDEPATH += ../Logic
-
-LIBS += -lMouve.Logic -lMouve.Kommon
-unix {
-    LIBS += -lopencv_core -lopencv_imgproc -lopencv_features2d
-    QMAKE_CXXFLAGS += -mssse3
-}
-

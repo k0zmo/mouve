@@ -4,7 +4,16 @@ QT += widgets opengl
 CONFIG += precompile_header
 
 include(../mouve.pri)
+include(../boost.pri)
+include(../opencv.pri)
+# Below project includes are optional and can be commented out
 include(../clw.pri)
+
+PRECOMPILED_HEADER = Precomp.h
+INCLUDEPATH += .
+LIBS += -lMouve.Logic -lMouve.Kommon
+unix: QMAKE_LFLAGS += -Wl,--rpath=.
+win32: RC_FILE = Mouve.UI.rc
 
 HEADERS += \
     Controller.h \
@@ -57,11 +66,3 @@ FORMS += \
     
 RESOURCES += \
     Editor.qrc
-
-PRECOMPILED_HEADER = Precomp.h
-
-LIBS += -lMouve.Logic -lMouve.Kommon
-unix {
-    QMAKE_LFLAGS += -Wl,--rpath=.
-    LIBS += -lopencv_core
-}

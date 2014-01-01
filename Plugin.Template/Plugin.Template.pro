@@ -1,33 +1,14 @@
-QT       -= gui
-TARGET    = Plugin.Template
 TEMPLATE  = lib
+TARGET    = Plugin.Template
+QT       -= gui
 
 include(../mouve.pri)
-include(../clw.pri)
-
-CONFIG(release, debug|release): {
-    OBJECTS_DIR=$$OUT_PWD/../obj/$$TARGET/release
-    contains(DEFINES, QT_MOC) {
-        DESTDIR=$$OBJECTS_DIR
-    } else {
-        DESTDIR=$$OUT_PWD/../bin/release/plugins
-    }
-} else {
-    OBJECTS_DIR=$$OUT_PWD/../obj/$$TARGET/debug
-    contains(DEFINES, QT_MOC) {
-        DESTDIR=$$OBJECTS_DIR
-    } else {
-        DESTDIR=$$OUT_PWD/../bin/debug/plugins
-    }
-}
-
-SOURCES += main.cpp
-HEADERS += 
-INCLUDEPATH += ../Logic
+include(../boost.pri)
+include(../opencv.pri)
+include(../plugin.pri)
 
 LIBS += -lMouve.Logic -lMouve.Kommon
-unix {
-    LIBS += -lopencv_core
-    QMAKE_CXXFLAGS += -mssse3
-}
 
+SOURCES += main.cpp
+
+HEADERS +=
