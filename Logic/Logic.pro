@@ -4,7 +4,18 @@ QT -= gui
 CONFIG += precompile_header
 
 include(../mouve.pri)
+include(../boost.pri)
+include(../opencv.pri)
+
+# Below project includes are optional and can be commented out
 include(../clw.pri)
+include(../tbb.pri)
+
+PRECOMPILED_HEADER = Precomp.h
+DEFINES += LOGIC_LIB
+LIBS += -lMouve.Kommon
+INCLUDEPATH += .
+unix: QMAKE_LFLAGS += -Wl,--rpath=.
 
 HEADERS += \
     Node.h \
@@ -13,13 +24,15 @@ HEADERS += \
     NodeFlowData.h \
     NodeLink.h \
     NodeModule.h \
+    NodePlugin.h \
+    NodeProperty.h \
     NodeSystem.h \
     NodeTree.h \
-    NodeType.h \
-    NodePlugin.h \
     NodeTreeSerializer.h \
-    Prerequisites.h \
+    NodeType.h \
     Precomp.h \
+    Prerequisites.h \
+    Jai/IJaiNodeModule.h \
     Jai/JaiException.h \
     Jai/JaiNodeModule.h \
     Nodes/CV.h \
@@ -36,11 +49,12 @@ SOURCES += \
     NodeFactory.cpp \
     NodeFlowData.cpp \
     NodeLink.cpp \
+    NodePlugin.cpp \
+    NodeProperty.cpp \
     NodeSystem.cpp \
     NodeTree.cpp \
-    NodeType.cpp \
-    NodePlugin.cpp \
     NodeTreeSerializer.cpp \
+    NodeType.cpp \    
     Jai/JaiCameraNodes.cpp \
     Jai/JaiNodeModule.cpp \
     Nodes/ArithmeticNodes.cpp \
@@ -89,34 +103,48 @@ OTHER_FILES += \
     OpenCL/kernels/morphOp.cl \
     OpenCL/kernels/surf.cl
 
-PRECOMPILED_HEADER = Precomp.h
-DEFINES += LOGIC_LIB
-LIBS += -lMouve.Kommon
-INCLUDEPATH += .
-unix {
-    QMAKE_LFLAGS += -Wl,--rpath=.
-
+win32 {
+    # Create kernel DESTDIR/kernels directory if necessary
     !exists($$quote($$DESTDIR/kernels)) {
         QMAKE_POST_LINK += mkdir $$quote($$DESTDIR/kernels) $$escape_expand(\n\t)
     }
 
     # Copy kernel files to DESTDIR/kernels/ directory
     for(FILE, OTHER_FILES) {
-        QMAKE_POST_LINK += $$QMAKE_COPY $$quote($$PWD/$${FILE}) $$quote($$DESTDIR/kernels/) $$escape_expand(\n\t)
+        SRC_PATH = $$quote($$PWD/$${FILE})
+        # Convert back slashes to forward slashes
+        SRC_PATH  ~= s,/,\\,g
+        DST_PATH = $$quote($$DESTDIR/kernels/)
+        DST_PATH ~= s,/,\\,g
+        QMAKE_POST_LINK += $$QMAKE_COPY $$SRC_PATH $$DST_PATH $$escape_expand(\n\t)
     }
 
     # Copy clw to DESTDIR/ directory
-    CONFIG(release, debug|release): {
-        QMAKE_PRE_LINK += $$QMAKE_COPY $$quote($$PWD/../external/clw/bin64/libclw.so) $$quote($$DESTDIR/)
-    } else {
-        QMAKE_PRE_LINK += $$QMAKE_COPY $$quote($$PWD/../external/clw/bin64/libclw_d.so) $$quote($$DESTDIR/)
-    }
-    # OpenCV
-    LIBS += -lopencv_core -lopencv_imgproc -lopencv_highgui -lopencv_video -lopencv_flann -lopencv_calib3d -lopencv_features2d -lopencv_nonfree
-
-    # Intel TBB
-    DEFINES += HAVE_TBB
-    LIBS += -ltbb
-
-    # Boost should be in common path (like /usr/include
+    CONFIG(release, debug|release): CLW_SRC_PATH = $$quote($$PWD/../external/clw/$$CLW_ARCH/clw.dll)
+    else: CLW_SRC_PATH = $$quote($$PWD/../external/clw/$$CLW_ARCH/clw_d.dll)
+    CLW_SRC_PATH  ~= s,/,\\,g
+    CLW_DST_PATH = $$quote($$DESTDIR/)
+    CLW_DST_PATH ~= s,/,\\,g
+    QMAKE_POST_LINK += $$QMAKE_COPY $$CLW_SRC_PATH $$CLW_DST_PATH
 }
+
+unix {
+    # Create kernel DESTDIR/kernels directory if necessary
+    !exists($$quote($$DESTDIR/kernels)) {
+        QMAKE_POST_LINK += mkdir $$quote($$DESTDIR/kernels) $$escape_expand(\n\t)
+    }
+
+    # Copy kernel files to DESTDIR/kernels/ directory
+    for(FILE, OTHER_FILES) {
+        SRC_PATH = $$quote($$PWD/$${FILE})
+        DST_PATH = $$quote($$DESTDIR/kernels/)
+        QMAKE_POST_LINK += $$QMAKE_COPY $$SRC_PATH $$DST_PATH $$escape_expand(\n\t)
+    }
+
+    # Copy clw to DESTDIR/ directory
+    CONFIG(release, debug|release): CLW_SRC_PATH = $$quote($$PWD/../external/clw/$$CLW_ARCH/libclw.so)
+    else: CLW_SRC_PATH = $$quote($$PWD/../external/clw/$$CLW_ARCH/libclw_d.so)
+    CLW_DST_PATH = $$quote($$DESTDIR/)
+    QMAKE_POST_LINK += $$QMAKE_COPY $$CLW_SRC_PATH $$CLW_DST_PATH
+}
+
