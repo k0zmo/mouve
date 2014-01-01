@@ -59,7 +59,7 @@ public:
 
 	bool setProperty(PropertyID propId, const NodeProperty& newValue) override
 	{
-		switch(propId)
+		switch(static_cast<pid>(propId))
 		{
 		case pid::DistanceRatio:
 			_distanceRatio = newValue.toFloat();
@@ -74,7 +74,7 @@ public:
 
 	NodeProperty property(PropertyID propId) const override
 	{
-		switch(propId)
+		switch(static_cast<pid>(propId))
 		{
 		case pid::DistanceRatio: return _distanceRatio;
 		case pid::SymmetryTest: return _symmetryTest;
@@ -351,7 +351,7 @@ public:
 
 	bool setProperty(PropertyID propId, const NodeProperty& newValue) override
 	{
-		switch(propId)
+		switch(static_cast<pid>(propId))
 		{
 		case pid::MaxDistance:
 			_maxDistance = newValue.toFloat();
@@ -363,7 +363,7 @@ public:
 
 	NodeProperty property(PropertyID propId) const override
 	{
-		switch(propId)
+		switch(static_cast<pid>(propId))
 		{
 		case pid::MaxDistance: return _maxDistance;
 		}

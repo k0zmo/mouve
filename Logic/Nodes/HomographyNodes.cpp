@@ -14,7 +14,7 @@ public:
 
 	bool setProperty(PropertyID propId, const NodeProperty& newValue) override
 	{
-		switch(propId)
+		switch(static_cast<pid>(propId))
 		{
 		case pid::ReprojThreshold:
 			_reprojThreshold = newValue.toDouble();
@@ -26,7 +26,7 @@ public:
 
 	NodeProperty property(PropertyID propId) const override
 	{
-		switch(propId)
+		switch(static_cast<pid>(propId))
 		{
 		case pid::ReprojThreshold: return _reprojThreshold;
 		}
@@ -156,7 +156,7 @@ public:
 
 	bool setProperty(PropertyID propId, const NodeProperty& newValue) override
 	{
-		switch(propId)
+		switch(static_cast<pid>(propId))
 		{
 		case pid::HomographyPath:
 			_homographyPath = newValue.toFilepath();
@@ -171,7 +171,7 @@ public:
 
 	NodeProperty property(PropertyID propId) const override
 	{
-		switch(propId)
+		switch(static_cast<pid>(propId))
 		{
 		case pid::HomographyPath: return _homographyPath;
 		case pid::ReprojThreshold: return _reprojThreshold;

@@ -13,7 +13,7 @@ public:
 
 	bool setProperty(PropertyID propId, const NodeProperty& newValue) override
 	{
-		switch(propId)
+		switch(static_cast<pid>(propId))
 		{
 		case pid::Angle: 
 			_angle = newValue.toDouble();
@@ -24,7 +24,7 @@ public:
 
 	NodeProperty property(PropertyID propId) const override
 	{
-		switch(propId)
+		switch(static_cast<pid>(propId))
 		{
 		case pid::Angle: return _angle;
 		}
@@ -93,7 +93,7 @@ public:
 
 	bool setProperty(PropertyID propId, const NodeProperty& newValue) override
 	{
-		switch(propId)
+		switch(static_cast<pid>(propId))
 		{
 		case pid::Scale: 
 			_scale = newValue.toDouble();
@@ -107,7 +107,7 @@ public:
 
 	NodeProperty property(PropertyID propId) const override
 	{
-		switch(propId)
+		switch(static_cast<pid>(propId))
 		{
 		case pid::Scale: return _scale;
 		case pid::IntepolationMethod: return _inter;

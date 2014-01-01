@@ -18,7 +18,7 @@ public:
 
 	bool setProperty(PropertyID propId, const NodeProperty& newValue) override
 	{
-		switch(propId)
+		switch(static_cast<pid>(propId))
 		{
 		case pid::BayerFormat:
 			_BayerCode = newValue.toEnum().cast<cvu::EBayerCode>();
@@ -39,7 +39,7 @@ public:
 
 	NodeProperty property(PropertyID propId) const override
 	{
-		switch(propId)
+		switch(static_cast<pid>(propId))
 		{
 		case pid::BayerFormat: return _BayerCode;
 		case pid::RedGain: return _redGain;

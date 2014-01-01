@@ -16,7 +16,7 @@ public:
 
 	bool setProperty(PropertyID propId, const NodeProperty& newValue) override
 	{
-		switch(propId)
+		switch(static_cast<pid>(propId))
 		{
 		case pid::OrientationNormalized:
 			_orientationNormalized = newValue.toBool();
@@ -37,7 +37,7 @@ public:
 
 	NodeProperty property(PropertyID propId) const override
 	{
-		switch(propId)
+		switch(static_cast<pid>(propId))
 		{
 		case pid::OrientationNormalized: return _orientationNormalized;
 		case pid::ScaleNormalized: return _scaleNormalized;

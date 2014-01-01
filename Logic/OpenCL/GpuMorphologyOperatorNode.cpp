@@ -25,7 +25,7 @@ public:
 
 	bool setProperty(PropertyID propId, const NodeProperty& newValue) override
 	{
-		switch(propId)
+		switch(static_cast<pid>(propId))
 		{
 		case pid::Operation:
 			if(newValue.toEnum().data() < Enum(EMorphologyOperation::Gradient).data())
@@ -40,7 +40,7 @@ public:
 
 	NodeProperty property(PropertyID propId) const override
 	{
-		switch(propId)
+		switch(static_cast<pid>(propId))
 		{
 		case pid::Operation: return _op;
 		}

@@ -19,7 +19,7 @@ public:
 
 	bool setProperty(PropertyID propId, const NodeProperty& newValue) override
 	{
-		switch(propId)
+		switch(static_cast<pid>(propId))
 		{
 		case pid::StructuringElementType:
 			_se = newValue.toEnum().cast<cvu::EStructuringElementType>();
@@ -40,7 +40,7 @@ public:
 
 	NodeProperty property(PropertyID propId) const override
 	{
-		switch(propId)
+		switch(static_cast<pid>(propId))
 		{
 		case pid::StructuringElementType: return _se;
 		case pid::XRadius: return _xradius;
@@ -109,7 +109,7 @@ public:
 
 	bool setProperty(PropertyID propId, const NodeProperty& newValue) override
 	{
-		switch(propId)
+		switch(static_cast<pid>(propId))
 		{
 		case pid::Operation:
 			_op = newValue.toEnum().cast<EMorphologyOperation>();
@@ -121,7 +121,7 @@ public:
 
 	NodeProperty property(PropertyID propId) const override
 	{
-		switch(propId)
+		switch(static_cast<pid>(propId))
 		{
 		case pid::Operation: return _op;
 		}
@@ -215,7 +215,7 @@ public:
 
 	bool setProperty(PropertyID propId, const NodeProperty& newValue) override
 	{
-		switch(propId)
+		switch(static_cast<pid>(propId))
 		{
 		case pid::Operation:
 			_op = newValue.toEnum().cast<EHitMissOperation>();
@@ -227,7 +227,7 @@ public:
 
 	NodeProperty property(PropertyID propId) const override
 	{
-		switch(propId)
+		switch(static_cast<pid>(propId))
 		{
 		case pid::Operation: return _op;
 		}

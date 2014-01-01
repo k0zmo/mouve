@@ -108,7 +108,7 @@ public:
 
 	bool setProperty(PropertyID propId, const NodeProperty& newValue) override
 	{
-		switch(propId)
+		switch(static_cast<pid>(propId))
 		{
 		case pid::HessianThreshold:
 			_hessianThreshold = newValue.toDouble();
@@ -138,7 +138,7 @@ public:
 
 	NodeProperty property(PropertyID propId) const override
 	{
-		switch(propId)
+		switch(static_cast<pid>(propId))
 		{
 		case pid::HessianThreshold: return _hessianThreshold;
 		case pid::NumOctaves: return _nOctaves;

@@ -43,7 +43,7 @@ public:
 
 	bool setProperty(PropertyID propId, const NodeProperty& newValue) override
 	{
-		switch(propId)
+		switch(static_cast<pid>(propId))
 		{
 		case pid::DistanceRatio:
 			_distanceRatio = newValue.toDouble();
@@ -58,7 +58,7 @@ public:
 
 	NodeProperty property(PropertyID propId) const override
 	{
-		switch(propId)
+		switch(static_cast<pid>(propId))
 		{
 		case pid::DistanceRatio: return _distanceRatio;
 		case pid::SymmetryTest: return _symmetryTest;

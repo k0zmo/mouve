@@ -15,7 +15,7 @@ public:
 
 	bool setProperty(PropertyID propId, const NodeProperty& newValue) override
 	{
-		switch(propId)
+		switch(static_cast<pid>(propId))
 		{
 		case pid::KernelSize:
 			_kernelSize = newValue.toInt();
@@ -27,7 +27,7 @@ public:
 
 	NodeProperty property(PropertyID propId) const override
 	{
-		switch(propId)
+		switch(static_cast<pid>(propId))
 		{
 		case pid::KernelSize: return _kernelSize;
 		}
@@ -91,7 +91,7 @@ public:
 
 	bool setProperty(PropertyID propId, const NodeProperty& newValue) override
 	{
-		switch(propId)
+		switch(static_cast<pid>(propId))
 		{
 		case pid::Diameter:
 			_diameter = newValue.toInt();
@@ -108,7 +108,7 @@ public:
 
 	NodeProperty property(PropertyID propId) const override
 	{
-		switch(propId)
+		switch(static_cast<pid>(propId))
 		{
 		case pid::Diameter: return _diameter;
 		case pid::SigmaColor: return _sigmaColor;
@@ -174,7 +174,7 @@ public:
 
 	bool setProperty(PropertyID propId, const NodeProperty& newValue) override
 	{
-		switch(propId)
+		switch(static_cast<pid>(propId))
 		{
 		case pid::Sigma:
 			_sigma = newValue.toDouble();
@@ -186,7 +186,7 @@ public:
 
 	NodeProperty property(PropertyID propId) const override
 	{
-		switch(propId)
+		switch(static_cast<pid>(propId))
 		{
 		case pid::Sigma: return _sigma;
 		}
@@ -251,7 +251,7 @@ public:
 
 	bool setProperty(PropertyID propId, const NodeProperty& newValue) override
 	{
-		switch(propId)
+		switch(static_cast<pid>(propId))
 		{
 		case pid::ApertureSize:
 			if((newValue.toInt() % 2) != 0)
@@ -266,7 +266,7 @@ public:
 
 	NodeProperty property(PropertyID propId) const override
 	{
-		switch(propId)
+		switch(static_cast<pid>(propId))
 		{
 		case pid::ApertureSize: return _apertureSize;
 		}
@@ -326,7 +326,7 @@ public:
 
 	bool setProperty(PropertyID propId, const NodeProperty& newValue) override
 	{
-		switch(propId)
+		switch(static_cast<pid>(propId))
 		{
 		case pid::ApertureSize:
 		{
@@ -344,7 +344,7 @@ public:
 
 	NodeProperty property(PropertyID propId) const override
 	{
-		switch(propId)
+		switch(static_cast<pid>(propId))
 		{
 		case pid::ApertureSize: return _apertureSize;
 		}
@@ -405,7 +405,7 @@ public:
 
 	bool setProperty(PropertyID propId, const NodeProperty& newValue) override
 	{
-		switch(propId)
+		switch(static_cast<pid>(propId))
 		{
 		case pid::ApertureSize:
 			{
@@ -427,7 +427,7 @@ public:
 
 	NodeProperty property(PropertyID propId) const override
 	{
-		switch(propId)
+		switch(static_cast<pid>(propId))
 		{
 		case pid::ApertureSize: return _apertureSize;
 		case pid::Order: return _order;
@@ -628,7 +628,7 @@ public:
 
 	bool setProperty(PropertyID propId, const NodeProperty& newValue) override
 	{
-		switch(propId)
+		switch(static_cast<pid>(propId))
 		{
 		case pid::Coefficients:
 			_coeffs = newValue.toMatrix3x3();
@@ -643,7 +643,7 @@ public:
 
 	NodeProperty property(PropertyID propId) const override
 	{
-		switch(propId)
+		switch(static_cast<pid>(propId))
 		{
 		case pid::Coefficients: return _coeffs;
 		case pid::ScaleAbs: return _scaleAbs;

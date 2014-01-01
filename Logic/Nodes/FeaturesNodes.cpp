@@ -15,7 +15,7 @@ public:
 
 	NodeProperty property(PropertyID propId) const override
 	{
-		switch(propId)
+		switch(static_cast<pid>(propId))
 		{
 		case pid::Threshold: return _threshold;
 		case pid::Ratio: return _ratio;
@@ -26,7 +26,7 @@ public:
 
 	bool setProperty(PropertyID propId, const NodeProperty& newValue) override
 	{
-		switch(propId)
+		switch(static_cast<pid>(propId))
 		{
 		case pid::Threshold:
 			_threshold = newValue.toDouble();
@@ -98,7 +98,7 @@ public:
 
 	bool setProperty(PropertyID propId, const NodeProperty& newValue) override
 	{
-		switch(propId)
+		switch(static_cast<pid>(propId))
 		{
 		case pid::Threshold:
 			_threshold = newValue.toInt();
@@ -120,7 +120,7 @@ public:
 
 	NodeProperty property(PropertyID propId) const override
 	{
-		switch(propId)
+		switch(static_cast<pid>(propId))
 		{
 		case pid::Threshold: return _threshold;
 		case pid::RhoResolution: return _rhoResolution;
@@ -208,7 +208,7 @@ public:
 
 	bool setProperty(PropertyID propId, const NodeProperty& newValue) override
 	{
-		switch(propId)
+		switch(static_cast<pid>(propId))
 		{
 		case pid::AccResolution:
 			_dp = newValue.toDouble();
@@ -236,7 +236,7 @@ public:
 
 	NodeProperty property(PropertyID propId) const override
 	{
-		switch(propId)
+		switch(static_cast<pid>(propId))
 		{
 		case pid::AccResolution: return _dp;
 		case pid::CannyThreshold: return _cannyThreshold;

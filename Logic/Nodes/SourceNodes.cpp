@@ -26,7 +26,7 @@ public:
 
 	bool setProperty(PropertyID propId, const NodeProperty& newValue) override
 	{
-		switch(propId)
+		switch(static_cast<pid>(propId))
 		{
 		case pid::VideoPath:
 			_videoPath = newValue.toFilepath();
@@ -47,7 +47,7 @@ public:
 
 	NodeProperty property(PropertyID propId) const override
 	{
-		switch(propId)
+		switch(static_cast<pid>(propId))
 		{
 		case pid::VideoPath: return _videoPath;
 		case pid::StartFrame: return int(_startFrame);
@@ -301,7 +301,7 @@ public:
 
 	bool setProperty(PropertyID propId, const NodeProperty& newValue) override
 	{
-		switch(propId)
+		switch(static_cast<pid>(propId))
 		{
 		case pid::DeviceId:
 			_deviceId = newValue.toInt();
@@ -313,7 +313,7 @@ public:
 
 	NodeProperty property(PropertyID propId) const override
 	{
-		switch(propId)
+		switch(static_cast<pid>(propId))
 		{
 		case pid::DeviceId: return _deviceId;
 		}

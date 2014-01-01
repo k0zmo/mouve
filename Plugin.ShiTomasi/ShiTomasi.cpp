@@ -15,7 +15,7 @@ public:
 	
 	bool setProperty(PropertyID propId, const NodeProperty& newValue) override
 	{
-		switch(propId)
+		switch(static_cast<pid>(propId))
 		{
 		case pid::MaxCorners:
 			_maxCorners = newValue.toInt();
@@ -33,7 +33,7 @@ public:
 
 	NodeProperty property(PropertyID propId) const override
 	{
-		switch(propId)
+		switch(static_cast<pid>(propId))
 		{
 		case pid::MaxCorners: return _maxCorners;
 		case pid::QualityLevel: return _qualityLevel;

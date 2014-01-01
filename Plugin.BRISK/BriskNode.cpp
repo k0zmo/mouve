@@ -14,7 +14,7 @@ public:
 
 	bool setProperty(PropertyID propId, const NodeProperty& newValue) override
 	{
-		switch(propId)
+		switch(static_cast<pid>(propId))
 		{
 		case pid::Threshold:
 			_thresh = newValue.toInt();
@@ -29,7 +29,7 @@ public:
 
 	NodeProperty property(PropertyID propId) const override
 	{
-		switch(propId)
+		switch(static_cast<pid>(propId))
 		{
 		case pid::Threshold: return _thresh;
 		case pid::NumOctaves: return _nOctaves;
@@ -107,7 +107,7 @@ public:
 			propId < underlying_cast(pid::RotationInvariant))
 			return false;
 
-		switch(propId)
+		switch(static_cast<pid>(propId))
 		{
 		case pid::RotationInvariant:
 			_rotationInvariant = newValue.toBool();
@@ -129,7 +129,7 @@ public:
 
 	NodeProperty property(PropertyID propId) const override
 	{
-		switch(propId)
+		switch(static_cast<pid>(propId))
 		{
 		case pid::RotationInvariant: return _rotationInvariant;
 		case pid::ScaleInvariant: return _scaleInvariant;
@@ -214,7 +214,7 @@ public:
 
 	bool setProperty(PropertyID propId, const NodeProperty& newValue) override
 	{
-		switch(propId)
+		switch(static_cast<pid>(propId))
 		{
 		case pid::Threshold:
 			_thresh = newValue.toInt();
@@ -228,7 +228,7 @@ public:
 			propId < underlying_cast(pid::RotationInvariant))
 			return false;
 
-		switch(propId)
+		switch(static_cast<pid>(propId))
 		{
 		case pid::RotationInvariant:
 			_rotationInvariant = newValue.toBool();
@@ -250,7 +250,7 @@ public:
 
 	NodeProperty property(PropertyID propId) const override
 	{
-		switch(propId)
+		switch(static_cast<pid>(propId))
 		{
 		case pid::Threshold: return _thresh;
 		case pid::NumOctaves: return _nOctaves;

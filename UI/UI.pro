@@ -18,7 +18,7 @@ win32: RC_FILE = Mouve.UI.rc
 HEADERS += \
     Controller.h \
     GLWidget.h \
-    GpuModuleUI.h \
+    GpuChoiceDialog.h \
     LogView.h \
     NodeEditor/NodeConnectorView.h \
     NodeEditor/NodeEditorView.h \
@@ -41,7 +41,7 @@ SOURCES += \
     Application.cpp \
     Controller.cpp \
     GLWidget.cpp \
-    GpuModuleUI.cpp \
+    GpuChoiceDialog.cpp \
     LogView.cpp \
     NodeEditor/NodeConnectorView.cpp \
     NodeEditor/NodeEditorView.cpp \

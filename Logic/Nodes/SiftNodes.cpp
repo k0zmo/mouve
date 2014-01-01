@@ -17,7 +17,7 @@ public:
 
 	bool setProperty(PropertyID propId, const NodeProperty& newValue) override
 	{
-		switch(propId)
+		switch(static_cast<pid>(propId))
 		{
 		case pid::NumFeatures: 
 			_nFeatures = newValue.toInt();
@@ -40,7 +40,7 @@ public:
 
 	NodeProperty property(PropertyID propId) const override
 	{
-		switch(propId)
+		switch(static_cast<pid>(propId))
 		{
 		case pid::NumFeatures: return _nFeatures;
 		case pid::NumOctaveLayers: return _nOctaveLayers;

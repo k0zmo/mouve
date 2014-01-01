@@ -17,7 +17,7 @@ public:
 
 	bool setProperty(PropertyID propId, const NodeProperty& newValue)
 	{
-		switch(propId)
+		switch(static_cast<pid>(propId))
 		{
 		case pid::Threshold:
 			_threshold = newValue.toInt();
@@ -41,7 +41,7 @@ public:
 
 	NodeProperty property(PropertyID propId) const
 	{
-		switch(propId)
+		switch(static_cast<pid>(propId))
 		{
 		case pid::Threshold: return _threshold;
 		case pid::ShowHoughSpace: return _showHoughSpace;

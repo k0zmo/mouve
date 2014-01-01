@@ -22,7 +22,7 @@ public:
 			propId < underlying_cast(pid::Threshold))
 			return false;
 
-		switch(propId)
+		switch(static_cast<pid>(propId))
 		{
 		case pid::Threshold:
 			_thresh = newValue.toInt();
@@ -43,7 +43,7 @@ public:
 
 	NodeProperty property(PropertyID propId) const override
 	{
-		switch(propId)
+		switch(static_cast<pid>(propId))
 		{
 		case pid::Threshold: return _thresh;
 		case pid::NumOctaves: return _nOctaves;

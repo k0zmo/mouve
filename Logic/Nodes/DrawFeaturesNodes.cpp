@@ -64,7 +64,7 @@ public:
 
 	bool setProperty(PropertyID propId, const NodeProperty& newValue) override
 	{
-		switch(propId)
+		switch(static_cast<pid>(propId))
 		{
 		case pid::LineColor:
 			_color = getColor(newValue.toEnum().cast<EColor>());
@@ -82,7 +82,7 @@ public:
 
 	NodeProperty property(PropertyID propId) const override
 	{
-		switch(propId)
+		switch(static_cast<pid>(propId))
 		{
 		case pid::LineColor: return getColor(_color);
 		case pid::LineThickness: return _thickness;
@@ -245,7 +245,7 @@ public:
 
 	bool setProperty(PropertyID propId, const NodeProperty& newValue) override
 	{
-		switch(propId)
+		switch(static_cast<pid>(propId))
 		{
 		case pid::Color:
 			_color = getColor(newValue.toEnum().cast<EColor>());
@@ -260,7 +260,7 @@ public:
 
 	NodeProperty property(PropertyID propId) const override
 	{
-		switch(propId)
+		switch(static_cast<pid>(propId))
 		{
 		case pid::Color: return getColor(_color);
 		case pid::RichKeypoints: return _richKeypoints;		
@@ -407,7 +407,7 @@ public:
 
 	bool setProperty(PropertyID propId, const NodeProperty& newValue) override
 	{
-		switch(propId)
+		switch(static_cast<pid>(propId))
 		{
 		case pid::Color:
 			_color = getColor(newValue.toEnum().cast<EColor>());
@@ -420,7 +420,7 @@ public:
 
 	NodeProperty property(PropertyID propId) const override
 	{
-		switch(propId)
+		switch(static_cast<pid>(propId))
 		{
 		case pid::Color: return getColor(_color);
 		}
@@ -595,7 +595,7 @@ public:
 
 	bool setProperty(PropertyID propId, const NodeProperty& newValue) override
 	{
-		switch(propId)
+		switch(static_cast<pid>(propId))
 		{
 		case pid::Color:
 			_color = getColor(newValue.toEnum().cast<EColor>());
@@ -607,7 +607,7 @@ public:
 
 	NodeProperty property(PropertyID propId) const override
 	{
-		switch(propId)
+		switch(static_cast<pid>(propId))
 		{
 		case pid::Color: return getColor(_color);
 		}

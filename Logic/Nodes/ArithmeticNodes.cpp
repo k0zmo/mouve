@@ -14,7 +14,7 @@ public:
 
 	bool setProperty(PropertyID propId, const NodeProperty& newValue) override
 	{
-		switch(propId)
+		switch(static_cast<pid>(propId))
 		{
 		case pid::Alpha:
 			_alpha = newValue.toDouble();
@@ -29,7 +29,7 @@ public:
 
 	NodeProperty property(PropertyID propId) const override
 	{
-		switch(propId)
+		switch(static_cast<pid>(propId))
 		{
 		case pid::Alpha: return _alpha;
 		case pid::Beta: return _beta;
