@@ -132,6 +132,14 @@ public:
 	NodeProperty(const Filepath& value);
 	NodeProperty(const std::string& value);
 
+#if K_COMPILER != K_COMPILER_MSVC
+	template <typename EnumType>
+	NodeProperty(EnumType v, typename std::enable_if<std::is_enum<EnumType>::value>::type* = 0)
+		: NodeProperty{{v}}
+	{
+	}
+#endif
+
 	~NodeProperty();
 
 	bool toBool() const;
