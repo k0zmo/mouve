@@ -1506,6 +1506,8 @@ void Controller::nodeEditorKeyPressed(QKeyEvent* event)
 		if(_actionRecentFiles[0]->isVisible())
 			_actionRecentFiles[0]->trigger();
 	}
+#else
+	Q_UNUSED(event);
 #endif
 }
 

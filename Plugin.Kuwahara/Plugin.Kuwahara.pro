@@ -21,7 +21,7 @@ HEADERS += \
     KuwaharaFilterNodeType.h
 
 OTHER_FILES += \
-    kernels\kuwahara.cl
+    kernels/kuwahara.cl
 
 win32 {
     # Copy kernel files to DESTDIR/kernels/ directory

@@ -50,10 +50,10 @@ struct Matrix3x3
 class Enum
 {
 public:
-	typedef std::uint32_t enum_data;
+	typedef std::int32_t enum_data;
 
 	Enum()
-		: _v(0xffffffff)
+		: _v(-1)
 	{
 	}
 
@@ -133,9 +133,10 @@ public:
 	NodeProperty(const std::string& value);
 
 #if K_COMPILER != K_COMPILER_MSVC
+	// MSVC2012 allows to make chained user-defined conversion
 	template <typename EnumType>
 	NodeProperty(EnumType v, typename std::enable_if<std::is_enum<EnumType>::value>::type* = 0)
-		: NodeProperty{{v}}
+		: NodeProperty{v}
 	{
 	}
 #endif

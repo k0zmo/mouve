@@ -55,7 +55,6 @@ public:
 
 		int width = deviceSrc.width();
 		int height = deviceSrc.height();
-		auto format = deviceSrc.format();
 
 		// Prepare destination image and structuring element on a device
 		ensureSizeIsEnough(deviceDest, width, height);

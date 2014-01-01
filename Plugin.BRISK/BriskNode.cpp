@@ -222,14 +222,6 @@ public:
 		case pid::NumOctaves:
 			_nOctaves = newValue.toInt();
 			return true;
-		}
-
-		if(propId > underlying_cast(pid::PatternScale) || 
-			propId < underlying_cast(pid::RotationInvariant))
-			return false;
-
-		switch(static_cast<pid>(propId))
-		{
 		case pid::RotationInvariant:
 			_rotationInvariant = newValue.toBool();
 			break;

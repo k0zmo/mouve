@@ -84,9 +84,9 @@ QVariant PropertyManager::nodePropertyToVariant(const NodeProperty& propValue)
 		return QVariant::fromValue<Filepath>(propValue.toFilepath());
 	case EPropertyType::String:
 		return QString::fromStdString(propValue.toString());
+	default:
+		return QVariant();
 	}
-
-	return QVariant();
 }
 
 NodeProperty PropertyManager::variantToNodeProperty(const QVariant& value)
