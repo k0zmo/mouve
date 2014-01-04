@@ -1,5 +1,5 @@
-#include "NodeType.h"
-#include "NodeFactory.h"
+#include "Logic/NodeType.h"
+#include "Logic/NodeFactory.h"
 
 #include <fstream>
 #include <opencv2/calib3d/calib3d.hpp>

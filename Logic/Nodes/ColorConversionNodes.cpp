@@ -1,5 +1,5 @@
-#include "NodeType.h"
-#include "NodeFactory.h"
+#include "Logic/NodeType.h"
+#include "Logic/NodeFactory.h"
 #include "Kommon/Utils.h"
 
 #include <opencv2/core/core.hpp>

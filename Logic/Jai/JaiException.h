@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Prerequisites.h"
+#include "../Prerequisites.h"
 
 /// TODO: Querying error message
 struct JaiException : public std::exception

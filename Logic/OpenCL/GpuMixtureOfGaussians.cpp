@@ -1,7 +1,7 @@
 #if defined(HAVE_OPENCL)
 
 #include "GpuNode.h"
-#include "NodeFactory.h"
+#include "Logic/NodeFactory.h"
 
 // Define as 1 to use more accurate calcuations
 #define ACCURATE_CALCULATIONS 0

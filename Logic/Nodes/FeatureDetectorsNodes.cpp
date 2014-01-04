@@ -1,5 +1,5 @@
-#include "NodeType.h"
-#include "NodeFactory.h"
+#include "Logic/NodeType.h"
+#include "Logic/NodeFactory.h"
 
 #include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/features2d/features2d.hpp>

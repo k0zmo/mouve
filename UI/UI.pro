@@ -10,7 +10,6 @@ include(../opencv-basic.pri)
 include(../clw.pri)
 
 PRECOMPILED_HEADER = Precomp.h
-INCLUDEPATH += .
 LIBS += -lMouve.Logic -lMouve.Kommon
 unix: QMAKE_LFLAGS += -Wl,--rpath=.
 win32: RC_FILE = Mouve.UI.rc

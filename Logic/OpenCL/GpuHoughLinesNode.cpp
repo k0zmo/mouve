@@ -1,7 +1,7 @@
 #if defined(HAVE_OPENCL)
 
 #include "GpuNode.h"
-#include "NodeFactory.h"
+#include "Logic/NodeFactory.h"
 
 class GpuHoughLinesNodeType : public GpuNodeType
 {

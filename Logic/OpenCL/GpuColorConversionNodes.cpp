@@ -1,7 +1,7 @@
 #if defined(HAVE_OPENCL)
 
 #include "GpuNode.h"
-#include "NodeFactory.h"
+#include "Logic/NodeFactory.h"
 
 #include "Logic/Nodes/CV.h"
 

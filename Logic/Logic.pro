@@ -14,7 +14,6 @@ include(../tbb.pri)
 PRECOMPILED_HEADER = Precomp.h
 DEFINES += LOGIC_LIB
 LIBS += -lMouve.Kommon
-INCLUDEPATH += .
 unix: QMAKE_LFLAGS += -Wl,--rpath=.
 
 HEADERS += \
