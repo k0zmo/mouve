@@ -5,7 +5,7 @@ CONFIG += precompile_header
 
 include(../mouve.pri)
 include(../boost.pri)
-include(../opencv.pri)
+include(../opencv-basic.pri)
 # Below project includes are optional and can be commented out
 include(../clw.pri)
 
