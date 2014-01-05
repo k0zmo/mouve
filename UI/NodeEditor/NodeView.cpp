@@ -19,12 +19,19 @@ private:
 	QPainterPath _path;
 };
 
+void setGraphicsTextItemTextWidth(QGraphicsTextItem* item, const QFont& font, 
+								  const QString& text, int maxWidth)
+{
+	int textWidth = QFontMetrics(font).width(text);
+	item->setTextWidth(textWidth > maxWidth ? maxWidth : -1);
+}
+
 NodeView::NodeView(const QString& title, 
 				   const QString& typeName,
 				   QGraphicsItem* parent)
 	: QGraphicsWidget(parent)
-	, mLabel(new QGraphicsSimpleTextItem(this))
-	, mTypeLabel(new QGraphicsSimpleTextItem(this))
+	, mLabel(new QGraphicsTextItem(this))
+	, mTypeLabel(new QGraphicsTextItem(this))
 	, mTimeInfo(new QGraphicsSimpleTextItem(this))
 	, mStateMark(new StateMarkGraphicsItem(this))
 	, mDropShadowEffect(new QGraphicsDropShadowEffect(this))
@@ -39,14 +46,16 @@ NodeView::NodeView(const QString& title,
 	setZValue(NodeStyle::ZValueNode);
 
 	// Node title
-	mLabel->setText(title);
+	mLabel->setHtml(QString("<center>%1</center>").arg(title));
 	mLabel->setFont(NodeStyle::NodeTitleFont);
-	mLabel->setBrush(NodeStyle::NodeTitleFontBrush);
+	mLabel->setDefaultTextColor(NodeStyle::NodeTitleFontColor);
+	setGraphicsTextItemTextWidth(mTypeLabel, NodeStyle::NodeTitleFont, title, 150);
 
 	// Node type name
-	mTypeLabel->setText(typeName);
+	mTypeLabel->setHtml(QString("<center>%1</center>").arg(typeName));
 	mTypeLabel->setFont(NodeStyle::NodeTypeNameFont);
-	mTypeLabel->setBrush(NodeStyle::NodeTypeNameFontBrush);
+	mTypeLabel->setDefaultTextColor(NodeStyle::NodeTypeNameFontColor);
+	setGraphicsTextItemTextWidth(mTypeLabel, NodeStyle::NodeTypeNameFont, typeName, 175);
 
 	// Additional visual effect
 	mDropShadowEffect->setOffset(5.0, 5.0);
@@ -235,7 +244,7 @@ void NodeView::updateLayout()
 	qreal heightPadding = 2 * NodeStyle::NodeTitleSize;
 
 	qreal titleWidth = mLabel->boundingRect().width();
-	qreal titleHeight = mLabel->boundingRect().bottom() + heightPadding;
+	qreal titleHeight = mLabel->boundingRect().bottom();
 
 	qreal typeNameWidth = mTypeLabel->boundingRect().width();
 	qreal typeNameHeight = mTypeLabel->boundingRect().bottom() + heightPadding;
@@ -374,7 +383,8 @@ void NodeView::setTimeInfoVisible(bool visible)
 
 void NodeView::setNodeViewName(const QString& newName)
 {
-	mLabel->setText(newName);
+	mLabel->setHtml(QString("<center>%1</center>").arg(newName));
+	setGraphicsTextItemTextWidth(mLabel, NodeStyle::NodeTitleFont, newName, 150);
 	updateLayout();
 }
 

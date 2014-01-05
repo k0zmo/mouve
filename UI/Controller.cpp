@@ -1781,7 +1781,7 @@ void Controller::tagSelected()
 
 void Controller::updatePreview(bool res)
 {
-	// Workerer reported something gone wrong
+	// Worker reported something gone wrong
 	if(!res)
 	{
 		_processing = false;

@@ -49,8 +49,8 @@ protected:
 	virtual void mouseDoubleClickEvent(QGraphicsSceneMouseEvent* event);
 
 private:
-	QGraphicsSimpleTextItem* mLabel;
-	QGraphicsSimpleTextItem* mTypeLabel;
+	QGraphicsTextItem* mLabel;
+	QGraphicsTextItem* mTypeLabel;
 	QGraphicsSimpleTextItem* mTimeInfo;
 	QGraphicsItem* mStateMark;
 	QGraphicsDropShadowEffect* mDropShadowEffect;
