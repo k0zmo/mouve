@@ -2,18 +2,6 @@
 
 #include <type_traits>
 
-template<bool cond, typename T, typename U>
-struct if_
-{
-	typedef U type;
-};
-
-template<typename T, typename U>
-struct if_<true, T, U>
-{
-	typedef T type;
-};
-
 template<typename T>
 struct not_
 	: public std::integral_constant<bool,
