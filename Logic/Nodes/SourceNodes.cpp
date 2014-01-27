@@ -1,6 +1,7 @@
 #include "Logic/NodeType.h"
 #include "Logic/NodeFactory.h"
 #include "Kommon/HighResolutionClock.h"
+#include "Kommon/StringUtils.h"
 
 #include <chrono>
 #include <thread>
@@ -98,7 +99,7 @@ public:
 		if(_endFrame > 0 && _currentFrame >= _endFrame)
 		{
 			// No more data (for us)
-			return ExecutionStatus(EStatus::Ok, formatMessage("Frame image width: %d\nFrame image height: %d\nFrame size in kbytes: %d\nFrame: %d/%d",
+			return ExecutionStatus(EStatus::Ok, string_format("Frame image width: %d\nFrame image height: %d\nFrame size in kbytes: %d\nFrame: %d/%d",
 				buffer.cols, buffer.rows, buffer.cols * buffer.rows * sizeof(uchar) * buffer.channels() / 1024, _currentFrame - 1, _maxFrames));
 		}
 
@@ -135,7 +136,7 @@ public:
 			double elapsed = (stop - start) * 1e3;
 
 			return ExecutionStatus(EStatus::Tag, elapsed,
-				formatMessage("Frame image width: %d\nFrame image height: %d\nFrame size in kbytes: %d\nFrame: %d/%d",
+				string_format("Frame image width: %d\nFrame image height: %d\nFrame size in kbytes: %d\nFrame: %d/%d",
 					output.cols, output.rows, output.cols * output.rows * sizeof(uchar) * output.channels() / 1024, _currentFrame, _maxFrames));
 		}
 		else
@@ -227,7 +228,7 @@ public:
 		if(output.empty())
 			return ExecutionStatus(EStatus::Error, "File not found");
 		return ExecutionStatus(EStatus::Ok, 
-			formatMessage("Image image width: %d\nImage image height: %d\nImage size in kbytes: %d",
+			string_format("Image image width: %d\nImage image height: %d\nImage size in kbytes: %d",
 				output.cols, output.rows, output.cols * output.rows * sizeof(uchar) * output.channels() / 1024));
 	}
 
@@ -277,7 +278,7 @@ public:
 		output = _img;
 
 		return ExecutionStatus(EStatus::Tag, 
-			formatMessage("Image image width: %d\nImage image height: %d\nImage size in kbytes: %d",
+			string_format("Image image width: %d\nImage image height: %d\nImage size in kbytes: %d",
 			output.cols, output.rows, output.cols * output.rows * sizeof(uchar) * output.channels() / 1024));
 	}
 
@@ -343,7 +344,7 @@ public:
 			cvtColor(tmp, output, CV_BGR2GRAY);
 
 		return ExecutionStatus(EStatus::Tag, 
-			formatMessage("Frame image width: %d\nFrame image height: %d\nFrame size in kbytes: %d",
+			string_format("Frame image width: %d\nFrame image height: %d\nFrame size in kbytes: %d",
 				output.cols, output.rows, output.cols * output.rows * sizeof(uchar) * output.channels() / 1024));
 	}
 

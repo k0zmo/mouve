@@ -2,6 +2,7 @@
 
 #include "GpuNode.h"
 #include "Logic/NodeFactory.h"
+#include "Kommon/StringUtils.h"
 
 // Define as 1 to use more accurate calcuations
 #define ACCURATE_CALCULATIONS 0
@@ -30,7 +31,7 @@ public:
 
 	bool postInit() override
 	{
-		std::string opts = formatMessage("-DNMIXTURES=%d -DACCURATE_CALCULATIONS=%d",
+		std::string opts = string_format("-DNMIXTURES=%d -DACCURATE_CALCULATIONS=%d",
 			_nmixtures, ACCURATE_CALCULATIONS);
 
 		_kidGaussMix = _gpuComputeModule->registerKernel(
@@ -52,7 +53,7 @@ public:
 			{
 				_nmixtures = newValue.toInt();
 
-				std::string opts = formatMessage("-DNMIXTURES=%d -DACCURATE_CALCULATIONS=%d",
+				std::string opts = string_format("-DNMIXTURES=%d -DACCURATE_CALCULATIONS=%d",
 					_nmixtures, ACCURATE_CALCULATIONS);
 
 				_kidGaussMix = _gpuComputeModule->registerKernel(

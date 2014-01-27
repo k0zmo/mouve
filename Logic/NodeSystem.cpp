@@ -3,6 +3,7 @@
 #include "NodeTree.h"
 #include "NodeModule.h"
 #include "NodePlugin.h"
+#include "Kommon/StringUtils.h"
 
 /// TODO: Change this to some neat logging system
 #include <iostream>
@@ -190,11 +191,9 @@ void NodeSystem::loadPlugin(const std::string& pluginName)
 		auto plugin = std::unique_ptr<NodePlugin>(new NodePlugin(pluginName));
 		if(plugin->logicVersion() != LOGIC_VERSION)
 		{
-			std::ostringstream strm;
-			strm << "logic (" << LOGIC_VERSION;
-			strm << ") and plugin (" << plugin->logicVersion();
-			strm << ") version mismatch";
-			throw std::runtime_error(strm.str());
+			throw std::runtime_error(string_format(
+				"Logic (%d) and plugin %s (%d) version mismatch",
+					LOGIC_VERSION, pluginName.c_str(), plugin->logicVersion()));
 		}
 		plugin->registerPlugin(this);
 		_plugins.emplace(pluginName, std::move(plugin));

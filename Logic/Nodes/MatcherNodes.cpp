@@ -1,6 +1,7 @@
 #include "Logic/NodeType.h"
 #include "Logic/NodeFactory.h"
 #include "Kommon/Utils.h"
+#include "Kommon/StringUtils.h"
 
 #include <opencv2/features2d/features2d.hpp>
 
@@ -175,7 +176,7 @@ public:
 		}
 
 		return ExecutionStatus(EStatus::Ok, 
-			formatMessage("Matches found: %d", (int) mt.queryPoints.size()));
+			string_format("Matches found: %d", (int) mt.queryPoints.size()));
 	}
 
 private:
@@ -336,7 +337,7 @@ public:
 		mt.trainImage = trainKp.image;
 
 		return ExecutionStatus(EStatus::Ok, 
-			formatMessage("Matches found: %d", (int) mt.queryPoints.size()));
+			string_format("Matches found: %d", (int) mt.queryPoints.size()));
 	}
 };
 
@@ -429,7 +430,7 @@ public:
 		mt.trainImage = trainKp.image;
 
 		return ExecutionStatus(EStatus::Ok, 
-			formatMessage("Matches found: %d", (int) mt.queryPoints.size()));
+			string_format("Matches found: %d", (int) mt.queryPoints.size()));
 	}
 
 	void configuration(NodeConfig& nodeConfig) const override

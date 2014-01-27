@@ -1,5 +1,6 @@
 #include "Logic/NodeType.h"
 #include "Logic/NodeFactory.h"
+#include "Kommon/StringUtils.h"
 
 #include <opencv2/core/core.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
@@ -155,7 +156,7 @@ public:
 		}
 
 		return ExecutionStatus(EStatus::Ok,
-			formatMessage("Lines detected: %d", (int) linesVector.size()));
+			string_format("Lines detected: %d", (int) linesVector.size()));
 	}
 
 	void configuration(NodeConfig& nodeConfig) const override
@@ -264,7 +265,7 @@ public:
 			src.rows/8, _cannyThreshold, _accThreshold, _minRadius, _maxRadius);
 
 		return ExecutionStatus(EStatus::Ok, 
-			formatMessage("Circles detected: %d", circles.cols));
+			string_format("Circles detected: %d", circles.cols));
 	}
 
 	void configuration(NodeConfig& nodeConfig) const override

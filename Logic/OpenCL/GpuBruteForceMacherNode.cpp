@@ -2,6 +2,7 @@
 
 #include "GpuNode.h"
 #include "Logic/NodeFactory.h"
+#include "Kommon/StringUtils.h"
 
 struct DMatch
 {
@@ -156,7 +157,7 @@ public:
 		mt.trainImage = trainKp.image;
 
 		return ExecutionStatus(EStatus::Ok, 
-			formatMessage("Matches found: %d", (int) mt.queryPoints.size()));
+			string_format("Matches found: %d", (int) mt.queryPoints.size()));
 	}
 
 	void configuration(NodeConfig& nodeConfig) const override

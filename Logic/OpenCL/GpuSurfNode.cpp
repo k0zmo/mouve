@@ -2,6 +2,7 @@
 
 #include "GpuNode.h"
 #include "Logic/NodeFactory.h"
+#include "Kommon/StringUtils.h"
 
 #include <sstream>
 #include <opencv2/imgproc/imgproc.hpp>
@@ -82,10 +83,7 @@ public:
 		_kidMultiScan_horiz = _gpuComputeModule->registerKernel("multiscan_horiz_image", "integral.cl", opts);
 		_kidMultiScan_vert = _gpuComputeModule->registerKernel("multiscan_vert_image", "integral.cl", opts);
 
-		ostringstream strm;
-		strm << " -DKEYPOINT_MAX=" << kKeypointsMax;
-		opts += strm.str();
-
+		opts += string_format(" -DKEYPOINT_MAX=%d", kKeypointsMax);
 		_kidBuildScaleSpace = _gpuComputeModule->registerKernel("buildScaleSpace", "surf.cl", opts);
 		_kidFindScaleSpaceMaxima = _gpuComputeModule->registerKernel("findScaleSpaceMaxima", "surf.cl", opts);
 		_kidUprightKeypointOrientation = _gpuComputeModule->registerKernel("uprightKeypointOrientation", "surf.cl", opts);
@@ -281,7 +279,7 @@ public:
 		}
 
 		return ExecutionStatus(EStatus::Ok, 
-			formatMessage("Keypoints detected: %d", (int) kp.kpoints.size()));
+			string_format("Keypoints detected: %d", (int) kp.kpoints.size()));
 	}
 
 	void configuration(NodeConfig& nodeConfig) const override

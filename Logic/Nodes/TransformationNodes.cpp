@@ -1,5 +1,6 @@
 #include "Logic/NodeType.h"
 #include "Logic/NodeFactory.h"
+#include "Kommon/StringUtils.h"
 
 #include <opencv2/imgproc/imgproc.hpp>
 
@@ -132,7 +133,7 @@ public:
 		cv::resize(input, output, dstSize, 0, 0, int(_inter));
 
 		return ExecutionStatus(EStatus::Ok, 
-			formatMessage("Output image width: %d\nOutput image height: %d",
+			string_format("Output image width: %d\nOutput image height: %d",
 				output.cols, output.rows));
 	}
 
@@ -198,7 +199,7 @@ public:
 		cv::pyrDown(src, dst, cv::Size(src.cols/2, src.rows/2));
 
 		return ExecutionStatus(EStatus::Ok, 
-			formatMessage("Image size: %dx%d\n", dst.cols, dst.rows));
+			string_format("Image size: %dx%d\n", dst.cols, dst.rows));
 	}
 
 	void configuration(NodeConfig& nodeConfig) const override
@@ -236,7 +237,7 @@ public:
 		cv::pyrUp(src, dst, cv::Size(src.cols*2, src.rows*2));
 
 		return ExecutionStatus(EStatus::Ok, 
-			formatMessage("Image size: %dx%d\n", dst.cols, dst.rows));
+			string_format("Image size: %dx%d\n", dst.cols, dst.rows));
 	}
 
 	void configuration(NodeConfig& nodeConfig) const override

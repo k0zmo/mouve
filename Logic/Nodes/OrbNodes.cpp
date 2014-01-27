@@ -1,5 +1,6 @@
 #include "Logic/NodeType.h"
 #include "Logic/NodeFactory.h"
+#include "Kommon/StringUtils.h"
 
 #include <opencv2/features2d/features2d.hpp>
 
@@ -65,7 +66,7 @@ public:
 		kp.image = src;
 
 		return ExecutionStatus(EStatus::Ok, 
-			formatMessage("Keypoints detected: %d", (int) kp.kpoints.size()));
+			string_format("Keypoints detected: %d", (int) kp.kpoints.size()));
 	}
 
 	void configuration(NodeConfig& nodeConfig) const override
@@ -171,7 +172,7 @@ public:
 		kp.image = src;
 
 		return ExecutionStatus(EStatus::Ok, 
-			formatMessage("Keypoints detected: %d", (int) kp.kpoints.size()));
+			string_format("Keypoints detected: %d", (int) kp.kpoints.size()));
 	}
 
 	void configuration(NodeConfig& nodeConfig) const override

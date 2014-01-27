@@ -12,9 +12,13 @@ HEADERS += \
     MacroUtils.h \
     Singleton.h \
     Hash.h \
-    SharedLibrary.h
+    SharedLibrary.h \
+    EnumFlags.h \
+    TypeTraits.h \
+    StringUtils.h
 
 SOURCES += \
     HighResolutionClock.cpp \
     Hash.cpp \
-    SharedLibrary.cpp
+    SharedLibrary.cpp \
+    StringUtils.cpp

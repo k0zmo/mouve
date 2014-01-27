@@ -1,9 +1,9 @@
 #pragma once
 
 #include "../Prerequisites.h"
+#include "Kommon/StringUtils.h"
 
 #include <exception>
-#include <sstream>
 
 struct GpuNodeException : public std::exception
 {
@@ -57,8 +57,6 @@ private:
 			logMessage.append("\n...");
 		}
 
-		std::ostringstream strm;
-		strm << "Building program failed: \n" << logMessage;
-		formatted = strm.str();
+		formatted = string_format("Building program failed: \n%s", logMessage.c_str());
 	}
 };

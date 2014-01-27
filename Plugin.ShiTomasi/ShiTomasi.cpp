@@ -1,5 +1,6 @@
 #include "Logic/NodePlugin.h"
 #include "Logic/NodeSystem.h"
+#include "Kommon/StringUtils.h"
 
 #include <opencv2/imgproc/imgproc.hpp>
 
@@ -67,7 +68,7 @@ public:
 		kp.image = src;
 
 		return ExecutionStatus(EStatus::Ok, 
-			formatMessage("Corners detected: %d", (int) kp.kpoints.size()));
+			string_format("Corners detected: %d", (int) kp.kpoints.size()));
 	}
 
 	void configuration(NodeConfig& nodeConfig) const override

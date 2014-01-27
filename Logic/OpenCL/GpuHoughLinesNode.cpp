@@ -2,6 +2,7 @@
 
 #include "GpuNode.h"
 #include "Logic/NodeFactory.h"
+#include "Kommon/StringUtils.h"
 
 class GpuHoughLinesNodeType : public GpuNodeType
 {
@@ -121,7 +122,7 @@ public:
 			deviceAccumImage = clw::Image2D();
 
 		return ExecutionStatus(EStatus::Ok, 
-			formatMessage("Detected lines: %d (max: %d)", linesCount, maxLines));
+			string_format("Detected lines: %d (max: %d)", linesCount, maxLines));
 	}
 
 	void configuration(NodeConfig& nodeConfig) const override

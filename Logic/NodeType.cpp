@@ -70,25 +70,3 @@ NodeFlowData& NodeSocketWriter::acquireSocket(SocketID socketID)
 
 	return _outputs->at(socketID);
 }
-
-std::string NodeType::formatMessage(const char* msg, ...)
-{
-	va_list args;
-	va_start(args, msg);
-
-	const int big = 2048;
-	static char output[big + 1] = {};
-
-#if K_COMPILER == K_COMPILER_MSVC
-	int len = vsnprintf_s(output, big, msg, args);
-#else
-	int len = vsnprintf(output, big, msg, args);
-#endif
-	if (len < 0 || len > big)
-		len = big;
-	output[len] = '\0';
-
-	va_end(args);
-
-	return std::string(output);
-}

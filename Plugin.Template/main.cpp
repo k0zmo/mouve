@@ -1,6 +1,7 @@
 #include "Logic/NodePlugin.h"
 #include "Logic/NodeSystem.h"
 #include "Logic/NodeType.h"
+#include "Kommon/StringUtils.h"
 
 class TemplateNodeType : public NodeType
 {
@@ -49,7 +50,7 @@ public:
 		}
 
 		return ExecutionStatus(EStatus::Ok, 
-			formatMessage("Property value: %s", _property ? "true" : "false"));
+			string_format("Property value: %s", _property ? "true" : "false"));
 	}
 
 	void configuration(NodeConfig& nodeConfig) const override

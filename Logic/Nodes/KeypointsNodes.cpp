@@ -1,5 +1,6 @@
 #include "Logic/NodeType.h"
 #include "Logic/NodeFactory.h"
+#include "Kommon/StringUtils.h"
 
 class RetainBestFeaturesNodeType : public NodeType
 {
@@ -48,7 +49,7 @@ public:
 		cv::KeyPointsFilter::retainBest(dst.kpoints, _n);
 
 		return ExecutionStatus(EStatus::Ok, 
-			formatMessage("Keypoints retained: %d", (int) dst.kpoints.size()));
+			string_format("Keypoints retained: %d", (int) dst.kpoints.size()));
 	}
 
 	void configuration(NodeConfig& nodeConfig) const override
