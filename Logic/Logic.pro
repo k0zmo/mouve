@@ -102,48 +102,49 @@ OTHER_FILES += \
     OpenCL/kernels/morphOp.cl \
     OpenCL/kernels/surf.cl
 
-win32 {
-    # Create kernel DESTDIR/kernels directory if necessary
-    !exists($$quote($$DESTDIR/kernels)) {
-        QMAKE_POST_LINK += mkdir $$quote($$DESTDIR/kernels) $$escape_expand(\n\t)
+!isEmpty(HAVE_CLW) {
+    win32 {
+        # Create kernel DESTDIR/kernels directory if necessary
+        !exists($$quote($$DESTDIR/kernels)) {
+            QMAKE_POST_LINK += mkdir $$quote($$DESTDIR/kernels) $$escape_expand(\n\t)
+        }
+
+        # Copy kernel files to DESTDIR/kernels/ directory
+        for(FILE, OTHER_FILES) {
+            SRC_PATH = $$quote($$PWD/$${FILE})
+            # Convert back slashes to forward slashes
+            SRC_PATH  ~= s,/,\\,g
+            DST_PATH = $$quote($$DESTDIR/kernels/)
+            DST_PATH ~= s,/,\\,g
+            QMAKE_POST_LINK += $$QMAKE_COPY $$SRC_PATH $$DST_PATH $$escape_expand(\n\t)
+        }
+
+        # Copy clw to DESTDIR/ directory
+        CONFIG(release, debug|release): CLW_SRC_PATH = $$quote($$PWD/../external/clw/$$CLW_ARCH/clw.dll)
+        else: CLW_SRC_PATH = $$quote($$PWD/../external/clw/$$CLW_ARCH/clw_d.dll)
+        CLW_SRC_PATH  ~= s,/,\\,g
+        CLW_DST_PATH = $$quote($$DESTDIR/)
+        CLW_DST_PATH ~= s,/,\\,g
+        QMAKE_POST_LINK += $$QMAKE_COPY $$CLW_SRC_PATH $$CLW_DST_PATH
     }
 
-    # Copy kernel files to DESTDIR/kernels/ directory
-    for(FILE, OTHER_FILES) {
-        SRC_PATH = $$quote($$PWD/$${FILE})
-        # Convert back slashes to forward slashes
-        SRC_PATH  ~= s,/,\\,g
-        DST_PATH = $$quote($$DESTDIR/kernels/)
-        DST_PATH ~= s,/,\\,g
-        QMAKE_POST_LINK += $$QMAKE_COPY $$SRC_PATH $$DST_PATH $$escape_expand(\n\t)
-    }
+    unix {
+        # Create kernel DESTDIR/kernels directory if necessary
+        !exists($$quote($$DESTDIR/kernels)) {
+            QMAKE_POST_LINK += mkdir $$quote($$DESTDIR/kernels) $$escape_expand(\n\t)
+        }
 
-    # Copy clw to DESTDIR/ directory
-    CONFIG(release, debug|release): CLW_SRC_PATH = $$quote($$PWD/../external/clw/$$CLW_ARCH/clw.dll)
-    else: CLW_SRC_PATH = $$quote($$PWD/../external/clw/$$CLW_ARCH/clw_d.dll)
-    CLW_SRC_PATH  ~= s,/,\\,g
-    CLW_DST_PATH = $$quote($$DESTDIR/)
-    CLW_DST_PATH ~= s,/,\\,g
-    QMAKE_POST_LINK += $$QMAKE_COPY $$CLW_SRC_PATH $$CLW_DST_PATH
+        # Copy kernel files to DESTDIR/kernels/ directory
+        for(FILE, OTHER_FILES) {
+            SRC_PATH = $$quote($$PWD/$${FILE})
+            DST_PATH = $$quote($$DESTDIR/kernels/)
+            QMAKE_POST_LINK += $$QMAKE_COPY $$SRC_PATH $$DST_PATH $$escape_expand(\n\t)
+        }
+
+        # Copy clw to DESTDIR/ directory
+        CONFIG(release, debug|release): CLW_SRC_PATH = $$quote($$PWD/../external/clw/$$CLW_ARCH/libclw.so)
+        else: CLW_SRC_PATH = $$quote($$PWD/../external/clw/$$CLW_ARCH/libclw_d.so)
+        CLW_DST_PATH = $$quote($$DESTDIR/)
+        QMAKE_POST_LINK += $$QMAKE_COPY $$CLW_SRC_PATH $$CLW_DST_PATH
+    }
 }
-
-unix {
-    # Create kernel DESTDIR/kernels directory if necessary
-    !exists($$quote($$DESTDIR/kernels)) {
-        QMAKE_POST_LINK += mkdir $$quote($$DESTDIR/kernels) $$escape_expand(\n\t)
-    }
-
-    # Copy kernel files to DESTDIR/kernels/ directory
-    for(FILE, OTHER_FILES) {
-        SRC_PATH = $$quote($$PWD/$${FILE})
-        DST_PATH = $$quote($$DESTDIR/kernels/)
-        QMAKE_POST_LINK += $$QMAKE_COPY $$SRC_PATH $$DST_PATH $$escape_expand(\n\t)
-    }
-
-    # Copy clw to DESTDIR/ directory
-    CONFIG(release, debug|release): CLW_SRC_PATH = $$quote($$PWD/../external/clw/$$CLW_ARCH/libclw.so)
-    else: CLW_SRC_PATH = $$quote($$PWD/../external/clw/$$CLW_ARCH/libclw_d.so)
-    CLW_DST_PATH = $$quote($$DESTDIR/)
-    QMAKE_POST_LINK += $$QMAKE_COPY $$CLW_SRC_PATH $$CLW_DST_PATH
-}
-
