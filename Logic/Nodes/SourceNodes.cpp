@@ -381,6 +381,86 @@ private:
 	cv::VideoCapture _capture;
 };
 
+class SolidImageNodeType : public NodeType
+{
+public: 
+	SolidImageNodeType()
+		: _width(512)
+		, _height(512)
+		, _gray(0)
+	{
+	}
+
+	bool setProperty(PropertyID propId, const NodeProperty& newValue) override
+	{
+		switch(static_cast<pid>(propId))
+		{
+		case pid::Width:
+			_width = newValue.toInt();
+			return true;
+		case pid::Height:
+			_height = newValue.toInt();
+			return true;
+		case pid::Gray:
+			_gray = newValue.toInt();
+			return true;
+		}
+
+		return false;
+	}
+
+	NodeProperty property(PropertyID propId) const override
+	{
+		switch(static_cast<pid>(propId))
+		{
+		case pid::Width: return _width;
+		case pid::Height: return _height;
+		case pid::Gray: return _gray;
+		}
+
+		return NodeProperty();
+	}
+
+	ExecutionStatus execute(NodeSocketReader&, NodeSocketWriter& writer) override
+	{
+		cv::Mat& output = writer.acquireSocket(0).getImage();
+		if(_width * _height > 0)
+			output = cv::Mat(_height, _width, CV_8UC1, cv::Scalar(_gray));
+		return ExecutionStatus(EStatus::Ok);
+	}
+
+	void configuration(NodeConfig& nodeConfig) const override
+	{
+		static const OutputSocketConfig out_config[] = {
+			{ ENodeFlowDataType::Image, "output", "Output", "" },
+			{ ENodeFlowDataType::Invalid, "", "", "" }
+		};
+		static const PropertyConfig prop_config[] = {
+			{ EPropertyType::Integer, "Width", "min:1, max:4096" },
+			{ EPropertyType::Integer, "Height", "min:1, max:4096" },
+			{ EPropertyType::Integer, "Gray", "min:0, max:255" },
+			{ EPropertyType::Unknown, "", "" }
+		};
+
+		nodeConfig.description = "Creates solid one-color (grayscale) image";
+		nodeConfig.pOutputSockets = out_config;
+		nodeConfig.pProperties = prop_config;
+	}
+
+private:
+	enum class pid
+	{
+		Width,
+		Height,
+		Gray
+	};
+
+	int _width;
+	int _height;
+	int _gray;
+};
+
+REGISTER_NODE("Sources/Solid image", SolidImageNodeType)
 REGISTER_NODE("Sources/Image from file stream", ImageFromFileStreamNodeType)
 REGISTER_NODE("Sources/Camera capture", CameraCaptureNodeType)
 REGISTER_NODE("Sources/Video from file", VideoFromFileNodeType)
