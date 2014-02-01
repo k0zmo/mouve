@@ -34,4 +34,4 @@ inline int NodePlugin::pluginVersion() const
 { return _pluginVersionFunc(); }
 
 inline void NodePlugin::registerPlugin(NodeSystem* nodeSystem)
-{ return _registerPluginFunc(nodeSystem); }
+{ _registerPluginFunc(nodeSystem); }

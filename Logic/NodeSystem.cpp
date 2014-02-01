@@ -49,11 +49,15 @@ NodeTypeID NodeSystem::registerNodeType(const std::string& nodeTypeName,
 		/// TODO: return invalid typeID or just override previous one?
 		NodeTypeID nodeTypeID = iter->second;
 
-		std::cout << "NodeSystem::registerNodeType: Type '" << nodeTypeName << "' Id='"
+		std::cerr << "NodeSystem::registerNodeType: Type '" << nodeTypeName << "' Id='"
 			<< int(nodeTypeID) << "' is already registed, overriding with a new factory\n";
 
 		// Override previous factory with a new one
+		if(_registeredNodeTypes[nodeTypeID].automaticallyRegistered)
+			// Stops unique_ptr from deleting something that was allocated on a stack
+			(void) _registeredNodeTypes[nodeTypeID].nodeFactory.release();
 		_registeredNodeTypes[nodeTypeID].nodeFactory = std::move(nodeFactory);
+		_registeredNodeTypes[nodeTypeID].automaticallyRegistered = false;
 
 		return nodeTypeID;
 	}

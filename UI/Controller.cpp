@@ -2483,6 +2483,3 @@ void Controller::pluginLookUp()
 		}
 	}
 }
-
-
-
