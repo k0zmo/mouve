@@ -6,7 +6,7 @@
 
 std::string string_format(std::string fmt, ...)
 {
-	int n = fmt.size() * 2;
+	int n = static_cast<int>(fmt.size() * 2);
 	std::unique_ptr<char[]> formatted;
 	va_list ap;
 
