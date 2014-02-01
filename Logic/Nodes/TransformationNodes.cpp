@@ -257,6 +257,49 @@ public:
 	}
 };
 
+class MaskedImageNodeType : public NodeType
+{
+public:
+	ExecutionStatus execute(NodeSocketReader& reader, NodeSocketWriter& writer) override
+	{
+		// Read input sockets
+		const cv::Mat& src = reader.readSocket(0).getImage();
+		const cv::Mat& mask = reader.readSocket(1).getImage();
+		// Acquire output sockets
+		cv::Mat& dst = writer.acquireSocket(0).getImage();
+
+		// Validate inputs
+		if(src.empty() || mask.empty())
+			return ExecutionStatus(EStatus::Ok);
+		if(src.size() != mask.size())
+			return ExecutionStatus(EStatus::Error, "Source");
+
+		// Do stuff
+		dst = cv::Mat(dst.size(), CV_8UC1, cv::Scalar(0));
+		src.copyTo(dst, mask);
+
+		return ExecutionStatus(EStatus::Ok);
+	}
+
+	void configuration(NodeConfig& nodeConfig) const override
+	{
+		static const InputSocketConfig in_config[] = {
+			{ ENodeFlowDataType::Image, "image", "Image", "" },
+			{ ENodeFlowDataType::Image, "mask", "Mask", "" },
+			{ ENodeFlowDataType::Invalid, "", "", "" }
+		};
+		static const OutputSocketConfig out_config[] = {
+			{ ENodeFlowDataType::Image, "output", "Output", "" },
+			{ ENodeFlowDataType::Invalid, "", "", "" }
+		};
+
+		nodeConfig.description = "";
+		nodeConfig.pInputSockets = in_config;
+		nodeConfig.pOutputSockets = out_config;
+	}
+};
+
+REGISTER_NODE("Transformations/Masked image", MaskedImageNodeType)
 REGISTER_NODE("Transformations/Upsample", UpsampleNodeType)
 REGISTER_NODE("Transformations/Downsample", DownsampleNodeType)
 REGISTER_NODE("Transformations/Rotate", RotateImageNodeType)
