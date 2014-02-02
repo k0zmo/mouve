@@ -244,9 +244,9 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="ImageFromFileRgbNodeType.cpp" />
+    <ClCompile Include="ImageFromFileRgbNode.cpp" />
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="VideoFromFileRgbNodeType.cpp" />
+    <ClCompile Include="VideoFromFileRgbNode.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

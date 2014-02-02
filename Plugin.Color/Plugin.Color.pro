@@ -11,5 +11,5 @@ LIBS += -lMouve.Logic -lMouve.Kommon
 
 SOURCES += \
     main.cpp \
-    ImageFromFileRgbNodeType.cpp \
-    VideoFromFileRgbNodeType.cpp
+    ImageFromFileRgbNode.cpp \
+    VideoFromFileRgbNode.cpp

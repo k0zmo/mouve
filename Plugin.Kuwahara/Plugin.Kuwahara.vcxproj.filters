@@ -9,11 +9,10 @@
       <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
       <Extensions>h;hpp;hxx;hm;inl;inc;xsd</Extensions>
     </Filter>
-    <Filter Include="Resource Files">
-      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
-      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    <Filter Include="Nodes">
+      <UniqueIdentifier>{5d6e648c-16d8-4ec8-8a50-ab7635a0be48}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\Kernels">
+    <Filter Include="Nodes\Kernels">
       <UniqueIdentifier>{0772d277-a466-4393-b4d7-ef08d3fdff74}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
@@ -25,16 +24,16 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="UnityBuild.cpp" />
-    <ClCompile Include="GpuKuwaharaFilterNodeType.h">
-      <Filter>Header Files</Filter>
+    <ClCompile Include="GpuKuwaharaFilterNode.cpp">
+      <Filter>Nodes</Filter>
     </ClCompile>
-    <ClCompile Include="KuwaharaFilterNodeType.h">
-      <Filter>Header Files</Filter>
+    <ClCompile Include="KuwaharaFilterNode.cpp">
+      <Filter>Nodes</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="kernels\kuwahara.cl">
-      <Filter>Source Files\Kernels</Filter>
+      <Filter>Nodes\Kernels</Filter>
     </CustomBuild>
   </ItemGroup>
   <ItemGroup>

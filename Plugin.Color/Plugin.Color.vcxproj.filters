@@ -18,10 +18,10 @@
     <ClCompile Include="main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="ImageFromFileRgbNodeType.cpp">
+    <ClCompile Include="ImageFromFileRgbNode.cpp">
       <Filter>Nodes</Filter>
     </ClCompile>
-    <ClCompile Include="VideoFromFileRgbNodeType.cpp">
+    <ClCompile Include="VideoFromFileRgbNode.cpp">
       <Filter>Nodes</Filter>
     </ClCompile>
   </ItemGroup>

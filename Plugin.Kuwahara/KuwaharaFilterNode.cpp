@@ -1,6 +1,6 @@
-#pragma once
-
 #include "Logic/NodeType.h"
+#include "Logic/NodeSystem.h"
+
 #include "cvu.h"
 
 class KuwaharaFilterNodeType : public NodeType
@@ -115,3 +115,14 @@ public:
 		nodeConfig.pOutputSockets = out_config;
 	}
 };
+
+void registerKuwaharaFilter(NodeSystem* nodeSystem)
+{
+	typedef DefaultNodeFactory<KuwaharaFilterNodeType> KuwaharaFilterFactory;
+	typedef DefaultNodeFactory<KuwaharaFilterRgbNodeType> KuwaharaFilterRgbFactory;
+
+	nodeSystem->registerNodeType("Filters/Kuwahara filter", 
+		std::unique_ptr<NodeFactory>(new KuwaharaFilterFactory()));
+	nodeSystem->registerNodeType("Filters/Kuwahara RGB filter",
+		std::unique_ptr<NodeFactory>(new KuwaharaFilterRgbFactory()));
+}

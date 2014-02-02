@@ -9,6 +9,8 @@ include(../plugin.pri)
 
 LIBS += -lMouve.Logic -lMouve.Kommon
 
-SOURCES += main.cpp
+SOURCES += \
+    main.cpp \
+    TemplateNode.cpp
 
 HEADERS +=

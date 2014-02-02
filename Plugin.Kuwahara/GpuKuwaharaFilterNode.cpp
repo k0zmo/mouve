@@ -1,5 +1,3 @@
-#pragma once
-
 #if defined(HAVE_OPENCL)
 
 #include "Logic/NodePlugin.h"
@@ -117,3 +115,12 @@ private:
 };
 
 #endif
+
+void registerGpuKuwaharaFilter(NodeSystem* nodeSystem)
+{
+#if defined(HAVE_OPENCL)
+	typedef DefaultNodeFactory<GpuKuwaharaFilterNodeType> GpuKuwaharaFilterFactory;
+	nodeSystem->registerNodeType("OpenCL/Filters/Kuwahara filter", 
+		std::unique_ptr<NodeFactory>(new GpuKuwaharaFilterFactory()));
+#endif
+}
