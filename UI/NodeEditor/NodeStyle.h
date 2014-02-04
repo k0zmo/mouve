@@ -57,6 +57,8 @@ struct NodeStyle
 	static QColor SocketGradientStop4;
 	static QColor SocketGradientStart5;
 	static QColor SocketGradientStop5;
+	static QColor SocketGradientStart6;
+	static QColor SocketGradientStop6;
 
 	static QFont SocketAnnotationFont;
 	static QBrush SocketAnnotationBrush;

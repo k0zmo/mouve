@@ -4,23 +4,20 @@
 
 NodeFlowData::NodeFlowData()
 	: _type(ENodeFlowDataType::Invalid)
-	, _width(0)
-	, _height(0)
-	, _elemSize(0)
 	, _data()
 {
 }
 
 NodeFlowData::NodeFlowData(ENodeFlowDataType dataType)
 	: _type(dataType)
-	, _width(0)
-	, _height(0)
-	, _elemSize(0)
 	, _data()
 {
 	switch(dataType)
 	{
 	case ENodeFlowDataType::Image:
+		_data = cv::Mat();
+		break;
+	case ENodeFlowDataType::ImageMono:
 		_data = cv::Mat();
 		break;
 	case ENodeFlowDataType::ImageRgb:
@@ -49,16 +46,6 @@ NodeFlowData::NodeFlowData(ENodeFlowDataType dataType)
 	}
 }
 
-//NodeFlowData::NodeFlowData(ENodeFlowDataType type, const cv::Mat& image)
-//	: _type(type)
-//	, _width(image.cols)
-//	, _height(image.rows)
-//	, _elemSize(image.elemSize())
-//	, _data(image)
-//{
-//	/// TODO: There's no run-time checks
-//}
-
 NodeFlowData::~NodeFlowData()
 {
 }
@@ -66,6 +53,7 @@ NodeFlowData::~NodeFlowData()
 void NodeFlowData::saveToDisk(const std::string& filename) const
 {
 	if(_type == ENodeFlowDataType::Image
+		|| _type == ENodeFlowDataType::ImageMono
 		|| _type == ENodeFlowDataType::ImageRgb)
 	{
 		const cv::Mat& img = boost::get<cv::Mat>(_data);
@@ -77,6 +65,7 @@ void NodeFlowData::saveToDisk(const std::string& filename) const
 bool NodeFlowData::isValidImage() const
 {
 	if(_type == ENodeFlowDataType::Image
+		|| _type == ENodeFlowDataType::ImageMono
 		|| _type == ENodeFlowDataType::ImageRgb)
 	{
 		const cv::Mat& img = boost::get<cv::Mat>(_data);
@@ -86,114 +75,138 @@ bool NodeFlowData::isValidImage() const
 	return false;
 }
 
-cv::Mat& NodeFlowData::getImage()
+bool NodeFlowData::isConvertible(ENodeFlowDataType from, 
+								 ENodeFlowDataType to) const
 {
-	if(_type != ENodeFlowDataType::Image)
-		throw boost::bad_get();
+	if(from == to)
+		return true;
 
-	return boost::get<cv::Mat>(_data);
+	switch(from)
+	{
+	case ENodeFlowDataType::Image:
+		if(to == ENodeFlowDataType::ImageMono)
+			return boost::get<cv::Mat>(_data).channels() == 1;
+		else if(to == ENodeFlowDataType::ImageRgb)
+			return boost::get<cv::Mat>(_data).channels() == 3;
+		break;
+	case ENodeFlowDataType::ImageMono:
+		if(to == ENodeFlowDataType::Image)
+			return boost::get<cv::Mat>(_data).channels() == 1;
+		break;
+	case ENodeFlowDataType::ImageRgb:
+		if(to == ENodeFlowDataType::Image)
+			return boost::get<cv::Mat>(_data).channels() == 3;
+		break;
+	case ENodeFlowDataType::Invalid:
+	case ENodeFlowDataType::Array:
+	case ENodeFlowDataType::Keypoints:
+	case ENodeFlowDataType::Matches:
+#if defined(HAVE_OPENCL)
+	case ENodeFlowDataType::DeviceImage:
+	case ENodeFlowDataType::DeviceArray:
+#endif
+		break;
+	}
+
+	return false;
 }
 
-const cv::Mat& NodeFlowData::getImage() const
-{
-	if(_type != ENodeFlowDataType::Image)
-		throw boost::bad_get();
+cv::Mat& NodeFlowData::getImage()
+{ 
+	return getType<ENodeFlowDataType::Image, cv::Mat>();
+}
 
-	return boost::get<cv::Mat>(_data);
+const cv::Mat& NodeFlowData::getImage() const 
+{ 
+	return getType<ENodeFlowDataType::Image, cv::Mat>();
+}
+
+cv::Mat& NodeFlowData::getImageMono()
+{
+	return getType<ENodeFlowDataType::ImageMono, cv::Mat>();
+}
+
+const cv::Mat& NodeFlowData::getImageMono() const
+{
+	return getType<ENodeFlowDataType::ImageMono, cv::Mat>();
 }
 
 cv::Mat& NodeFlowData::getImageRgb()
 {
-	if(_type != ENodeFlowDataType::ImageRgb)
-		throw boost::bad_get();
-
-	return boost::get<cv::Mat>(_data);
+	return getType<ENodeFlowDataType::ImageRgb, cv::Mat>();
 }
 
 const cv::Mat& NodeFlowData::getImageRgb() const
 {
-	if(_type != ENodeFlowDataType::ImageRgb)
-		throw boost::bad_get();
-
-	return boost::get<cv::Mat>(_data);
+	return getType<ENodeFlowDataType::ImageRgb, cv::Mat>();
 }
 
 KeyPoints& NodeFlowData::getKeypoints()
 {
-	if(_type != ENodeFlowDataType::Keypoints)
-		throw boost::bad_get();
-
-	return boost::get<KeyPoints>(_data);
+	return getType<ENodeFlowDataType::Keypoints, KeyPoints>();
 }
 
 const KeyPoints& NodeFlowData::getKeypoints() const
 {
-	if(_type != ENodeFlowDataType::Keypoints)
-		throw boost::bad_get();
-
-	return boost::get<KeyPoints>(_data);
+	return getType<ENodeFlowDataType::Keypoints, KeyPoints>();
 }
 
 Matches& NodeFlowData::getMatches()
 {
-	if(_type != ENodeFlowDataType::Matches)
-		throw boost::bad_get();
-
-	return boost::get<Matches>(_data);
+	return getType<ENodeFlowDataType::Matches, Matches>();
 }
 
 const Matches& NodeFlowData::getMatches() const
 {
-	if(_type != ENodeFlowDataType::Matches)
-		throw boost::bad_get();
-
-	return boost::get<Matches>(_data);
+	return getType<ENodeFlowDataType::Matches, Matches>();
 }
 
 cv::Mat& NodeFlowData::getArray()
 {
-	if(_type != ENodeFlowDataType::Array)
-		throw boost::bad_get();
-
-	return boost::get<cv::Mat>(_data);
+	return getType<ENodeFlowDataType::Array, cv::Mat>();
 }
 
 const cv::Mat& NodeFlowData::getArray() const
 {
-	if(_type != ENodeFlowDataType::Array)
-		throw boost::bad_get();
-
-	return boost::get<cv::Mat>(_data);
+	return getType<ENodeFlowDataType::Array, cv::Mat>();
 }
 
 #if defined(HAVE_OPENCL)
 
 clw::Image2D& NodeFlowData::getDeviceImage()
 {
-	auto& image = const_cast<const NodeFlowData*>(this)->getDeviceImage();
-	return const_cast<clw::Image2D&>(image);
+	return getType<ENodeFlowDataType::DeviceImage, clw::Image2D>();
 }
 
 const clw::Image2D& NodeFlowData::getDeviceImage() const
 {
-	if(_type != ENodeFlowDataType::DeviceImage)
-		throw boost::bad_get();
-
-	return boost::get<clw::Image2D>(_data);
+	return getType<ENodeFlowDataType::DeviceImage, clw::Image2D>();
 }
 
 DeviceArray& NodeFlowData::getDeviceArray()
 {
-	auto& data = const_cast<const NodeFlowData*>(this)->getDeviceArray();
-	return const_cast<DeviceArray&>(data);
+	return getType<ENodeFlowDataType::DeviceArray, DeviceArray>();
 }
 
 const DeviceArray& NodeFlowData::getDeviceArray() const
 {
-	if(_type != ENodeFlowDataType::DeviceArray)
-		throw boost::bad_get();
-
-	return boost::get<DeviceArray>(_data);
+	return getType<ENodeFlowDataType::DeviceArray, DeviceArray>();
 }
 
 #endif
+
+template<ENodeFlowDataType RequestedType, class Type>
+Type& NodeFlowData::getType()
+{
+	if(!isConvertible(_type, RequestedType))
+		throw boost::bad_get();
+	return boost::get<Type>(_data);
+}
+
+template<ENodeFlowDataType RequestedType, class Type> 
+const Type& NodeFlowData::getType() const
+{
+	if(!isConvertible(_type, RequestedType))
+		throw boost::bad_get();
+	return boost::get<Type>(_data);
+}

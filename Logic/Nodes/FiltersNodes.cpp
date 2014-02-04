@@ -47,7 +47,7 @@ public:
 			return ExecutionStatus(EStatus::Ok);
 
 		// Do stuff
-		cv::boxFilter(input, output, CV_8UC1, 
+		cv::boxFilter(input, output, CV_8U, 
 			cv::Size(_kernelSize, _kernelSize),
 			cv::Point(-1,1), true, cv::BORDER_REFLECT_101);
 		return ExecutionStatus(EStatus::Ok);
@@ -364,7 +364,7 @@ public:
 			return ExecutionStatus(EStatus::Ok);
 
 		// Do stuff
-		cv::Laplacian(input, output, CV_8UC1, _apertureSize);
+		cv::Laplacian(input, output, CV_8U, _apertureSize);
 		return ExecutionStatus(EStatus::Ok);
 	}
 

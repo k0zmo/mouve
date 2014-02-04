@@ -43,7 +43,7 @@ public:
 	ExecutionStatus execute(NodeSocketReader& reader, NodeSocketWriter& writer) override
 	{
 		const cv::Mat& input = reader.readSocket(0).getImage();
-		cv::Mat& output = writer.acquireSocket(0).getImage();
+		cv::Mat& output = writer.acquireSocket(0).getImageMono();
 
 		if(input.rows == 0 || input.cols == 0)
 			return ExecutionStatus(EStatus::Ok);;
@@ -61,7 +61,7 @@ public:
 			{ ENodeFlowDataType::Invalid, "", "", "" }
 		};
 		static const OutputSocketConfig out_config[] = {
-			{ ENodeFlowDataType::Image, "output", "Output", "" },
+			{ ENodeFlowDataType::ImageMono, "output", "Output", "" },
 			{ ENodeFlowDataType::Invalid, "", "", "" }
 		};
 		static const PropertyConfig prop_config[] = {
@@ -134,7 +134,7 @@ public:
 	ExecutionStatus execute(NodeSocketReader& reader, NodeSocketWriter& writer) override
 	{
 		// Read input sockets
-		const cv::Mat& src = reader.readSocket(0).getImage();
+		const cv::Mat& src = reader.readSocket(0).getImageMono();
 		// Acquire output sockets
 		cv::Mat& lines = writer.acquireSocket(0).getArray();
 
@@ -162,7 +162,7 @@ public:
 	void configuration(NodeConfig& nodeConfig) const override
 	{
 		static const InputSocketConfig in_config[] = {
-			{ ENodeFlowDataType::Image, "image", "Image", "" },
+			{ ENodeFlowDataType::ImageMono, "image", "Image", "" },
 			{ ENodeFlowDataType::Invalid, "", "", "" }
 		};
 		static const OutputSocketConfig out_config[] = {
@@ -252,7 +252,7 @@ public:
 	ExecutionStatus execute(NodeSocketReader& reader, NodeSocketWriter& writer) override
 	{
 		// Read input sockets
-		const cv::Mat& src = reader.readSocket(0).getImage();
+		const cv::Mat& src = reader.readSocket(0).getImageMono();
 		// Acquire output sockets
 		cv::Mat& circles = writer.acquireSocket(0).getArray();
 
@@ -271,11 +271,11 @@ public:
 	void configuration(NodeConfig& nodeConfig) const override
 	{
 		static const InputSocketConfig in_config[] = {
-			{ ENodeFlowDataType::Image, "image", "Image", "" },
+			{ ENodeFlowDataType::ImageMono, "image", "Image", "" },
 			{ ENodeFlowDataType::Invalid, "", "", "" }
 		};
 		static const OutputSocketConfig out_config[] = {
-			{ ENodeFlowDataType::Array, "lines", "Lines", "" },
+			{ ENodeFlowDataType::Array, "circles", "Circles", "" },
 			{ ENodeFlowDataType::Invalid, "", "", "" }
 		};
 		static const PropertyConfig prop_config[] = {

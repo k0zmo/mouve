@@ -48,7 +48,7 @@ public:
 	ExecutionStatus execute(NodeSocketReader& reader, NodeSocketWriter& writer) override
 	{
 		// Read input sockets
-		const cv::Mat& src = reader.readSocket(0).getImage();
+		const cv::Mat& src = reader.readSocket(0).getImageMono();
 		// Acquire output sockets
 		KeyPoints& kp = writer.acquireSocket(0).getKeypoints();
 
@@ -67,7 +67,7 @@ public:
 	void configuration(NodeConfig& nodeConfig) const override
 	{
 		static const InputSocketConfig in_config[] = {
-			{ ENodeFlowDataType::Image, "image", "Image", "" },
+			{ ENodeFlowDataType::ImageMono, "image", "Image", "" },
 			{ ENodeFlowDataType::Invalid, "", "", "" }
 		};
 		static const OutputSocketConfig out_config[] = {
@@ -99,7 +99,7 @@ public:
 	ExecutionStatus execute(NodeSocketReader& reader, NodeSocketWriter& writer) override
 	{
 		// Read input sockets
-		const cv::Mat& src = reader.readSocket(0).getImage();
+		const cv::Mat& src = reader.readSocket(0).getImageMono();
 		// Acquire output sockets
 		cv::Mat& img = writer.acquireSocket(0).getImageRgb();
 
@@ -128,7 +128,7 @@ public:
 	void configuration(NodeConfig& nodeConfig) const override
 	{
 		static const InputSocketConfig in_config[] = {
-			{ ENodeFlowDataType::Image, "image", "Image", "" },
+			{ ENodeFlowDataType::ImageMono, "image", "Image", "" },
 			{ ENodeFlowDataType::Invalid, "", "", "" }
 		};
 		static const OutputSocketConfig out_config[] = {
@@ -148,7 +148,7 @@ public:
 	ExecutionStatus execute(NodeSocketReader& reader, NodeSocketWriter& writer) override
 	{
 		// Read input sockets
-		const cv::Mat& src = reader.readSocket(0).getImage();
+		const cv::Mat& src = reader.readSocket(0).getImageMono();
 		// Acquire output sockets
 		KeyPoints& kp = writer.acquireSocket(0).getKeypoints();
 
@@ -168,7 +168,7 @@ public:
 	void configuration(NodeConfig& nodeConfig) const override
 	{
 		static const InputSocketConfig in_config[] = {
-			{ ENodeFlowDataType::Image, "image", "Image", "" },
+			{ ENodeFlowDataType::ImageMono, "image", "Image", "" },
 			{ ENodeFlowDataType::Invalid, "", "", "" }
 		};
 		static const OutputSocketConfig out_config[] = {

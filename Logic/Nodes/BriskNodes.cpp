@@ -1,6 +1,9 @@
+// OpenCV BRISK uses different agast score - worse results
 #if 0
-#include "NodeType.h"
-#include "NodeFactory.h"
+#include "Logic/NodeType.h"
+#include "Logic/NodeFactory.h"
+
+#include "Kommon/StringUtils.h"
 
 #include <opencv2/features2d/features2d.hpp>
 using std::unique_ptr;
@@ -56,7 +59,7 @@ public:
 	ExecutionStatus execute(NodeSocketReader& reader, NodeSocketWriter& writer) override
 	{
 		// Read input sockets
-		const cv::Mat& src = reader.readSocket(0).getImage();
+		const cv::Mat& src = reader.readSocket(0).getImageMono();
 		// Acquire output sockets
 		KeyPoints& kp = writer.acquireSocket(0).getKeypoints();
 
@@ -68,13 +71,13 @@ public:
 		kp.image = src;
 
 		return ExecutionStatus(EStatus::Ok, 
-			formatMessage("Keypoints detected: %d", (int) kp.kpoints.size()));
+			string_format("Keypoints detected: %d", (int) kp.kpoints.size()));
 	}
 
 	void configuration(NodeConfig& nodeConfig) const override
 	{
 		static const InputSocketConfig in_config[] = {
-			{ ENodeFlowDataType::Image, "image", "Image", "" },
+			{ ENodeFlowDataType::ImageMono, "image", "Image", "" },
 			{ ENodeFlowDataType::Invalid, "", "", "" }
 		};
 		static const OutputSocketConfig out_config[] = {
@@ -165,7 +168,7 @@ public:
 	ExecutionStatus execute(NodeSocketReader& reader, NodeSocketWriter& writer) override
 	{
 		// Read input sockets
-		const cv::Mat& src = reader.readSocket(0).getImage();
+		const cv::Mat& src = reader.readSocket(0).getImageMono();
 		// ouputs
 		KeyPoints& kp = writer.acquireSocket(0).getKeypoints();
 		cv::Mat& descriptors = writer.acquireSocket(1).getArray();
@@ -178,7 +181,7 @@ public:
 		kp.image = src;
 
 		return ExecutionStatus(EStatus::Ok, 
-			formatMessage("Keypoints detected: %d", (int) kp.kpoints.size()));
+			string_format("Keypoints detected: %d", (int) kp.kpoints.size()));
 	}
 
 	void configuration(NodeConfig& nodeConfig) const override

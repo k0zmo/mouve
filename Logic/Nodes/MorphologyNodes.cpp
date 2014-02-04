@@ -53,7 +53,7 @@ public:
 
 	ExecutionStatus execute(NodeSocketReader&, NodeSocketWriter& writer) override
 	{
-		cv::Mat& kernel = writer.acquireSocket(0).getImage();
+		cv::Mat& kernel = writer.acquireSocket(0).getImageMono();
 
 		if(_xradius == 0 || _yradius == 0)
 			return ExecutionStatus(EStatus::Ok);
@@ -67,7 +67,7 @@ public:
 	void configuration(NodeConfig& nodeConfig) const override
 	{
 		static const OutputSocketConfig out_config[] = {
-			{ ENodeFlowDataType::Image, "structuringElement", "Structuring element", "" },
+			{ ENodeFlowDataType::ImageMono, "structuringElement", "Structuring element", "" },
 			{ ENodeFlowDataType::Invalid, "", "", "" }
 		};
 		static const PropertyConfig prop_config[] = {
@@ -133,7 +133,7 @@ public:
 	{
 		// Read input sockets
 		const cv::Mat& src = reader.readSocket(0).getImage();
-		const cv::Mat& se = reader.readSocket(1).getImage();
+		const cv::Mat& se = reader.readSocket(1).getImageMono();
 		// Acquire output sockets
 		cv::Mat& dst = writer.acquireSocket(0).getImage();
 
@@ -151,7 +151,7 @@ public:
 	{
 		static const InputSocketConfig in_config[] = {
 			{ ENodeFlowDataType::Image, "source", "Source", "" },
-			{ ENodeFlowDataType::Image, "source", "Structuring element", "" },
+			{ ENodeFlowDataType::ImageMono, "source", "Structuring element", "" },
 			{ ENodeFlowDataType::Invalid, "", "", "" }
 		};
 		static const OutputSocketConfig out_config[] = {
@@ -238,9 +238,9 @@ public:
 	ExecutionStatus execute(NodeSocketReader& reader, NodeSocketWriter& writer) override
 	{
 		// Read input sockets
-		const cv::Mat& src = reader.readSocket(0).getImage();
+		const cv::Mat& src = reader.readSocket(0).getImageMono();
 		// Acquire output sockets
-		cv::Mat& dst = writer.acquireSocket(0).getImage();
+		cv::Mat& dst = writer.acquireSocket(0).getImageMono();
 
 		// Validate inputs
 		if(src.empty())
@@ -266,11 +266,11 @@ public:
 	void configuration(NodeConfig& nodeConfig) const override
 	{
 		static const InputSocketConfig in_config[] = {
-			{ ENodeFlowDataType::Image, "source", "Source", "" },
+			{ ENodeFlowDataType::ImageMono, "source", "Source", "" },
 			{ ENodeFlowDataType::Invalid, "", "", "" }
 		};
 		static const OutputSocketConfig out_config[] = {
-			{ ENodeFlowDataType::Image, "output", "Output", "" },
+			{ ENodeFlowDataType::ImageMono, "output", "Output", "" },
 			{ ENodeFlowDataType::Invalid, "", "", "" }
 		};
 		static const PropertyConfig prop_config[] = {

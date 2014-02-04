@@ -41,9 +41,9 @@ public:
 	ExecutionStatus execute(NodeSocketReader& reader, NodeSocketWriter& writer) override
 	{
 		// Read input sockets
-		const cv::Mat& src = reader.readSocket(0).getImage();
+		const cv::Mat& src = reader.readSocket(0).getImageMono();
 		// Acquire output sockets
-		cv::Mat& dst = writer.acquireSocket(0).getImage();
+		cv::Mat& dst = writer.acquireSocket(0).getImageMono();
 
 		// Validate inputs
 		if(src.empty())
@@ -61,11 +61,11 @@ public:
 	void configuration(NodeConfig& nodeConfig) const override
 	{
 		static const InputSocketConfig in_config[] = {
-			{ ENodeFlowDataType::Image, "source", "Source", "" },
+			{ ENodeFlowDataType::ImageMono, "source", "Source", "" },
 			{ ENodeFlowDataType::Invalid, "", "", "" }
 		};
 		static const OutputSocketConfig out_config[] = {
-			{ ENodeFlowDataType::Image, "output", "Output", "" },
+			{ ENodeFlowDataType::ImageMono, "output", "Output", "" },
 			{ ENodeFlowDataType::Invalid, "", "", "" }
 		};
 		static const PropertyConfig prop_config[] = {
@@ -97,9 +97,9 @@ public:
 	ExecutionStatus execute(NodeSocketReader& reader, NodeSocketWriter& writer) override
 	{
 		// Read input sockets
-		const cv::Mat& src = reader.readSocket(0).getImage();
+		const cv::Mat& src = reader.readSocket(0).getImageMono();
 		// Acquire output sockets
-		cv::Mat& dst = writer.acquireSocket(0).getImage();
+		cv::Mat& dst = writer.acquireSocket(0).getImageMono();
 
 		// Validate inputs
 		if(src.empty() || src.type() != CV_8U)
@@ -114,11 +114,11 @@ public:
 	void configuration(NodeConfig& nodeConfig) const override
 	{
 		static const InputSocketConfig in_config[] = {
-			{ ENodeFlowDataType::Image, "source", "Source", "" },
+			{ ENodeFlowDataType::ImageMono, "source", "Source", "" },
 			{ ENodeFlowDataType::Invalid, "", "", "" }
 		};
 		static const OutputSocketConfig out_config[] = {
-			{ ENodeFlowDataType::Image, "output", "Output", "" },
+			{ ENodeFlowDataType::ImageMono, "output", "Output", "" },
 			{ ENodeFlowDataType::Invalid, "", "", "" }
 		};
 

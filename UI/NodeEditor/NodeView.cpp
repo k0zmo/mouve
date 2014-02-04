@@ -135,9 +135,14 @@ NodeSocketView* NodeView::addSocketView(SocketID socketKey,
 		switch(dataType)
 		{
 		case ENodeFlowDataType::Image:
+			socketView->setConnectorBrushGradient(NodeStyle::SocketGradientStart6,
+				NodeStyle::SocketGradientStop6);
+			socketView->setConnectorToolTip("[ImageMono or ImageRgb]");
+			break;
+		case ENodeFlowDataType::ImageMono:
 			socketView->setConnectorBrushGradient(NodeStyle::SocketGradientStart1,
 				NodeStyle::SocketGradientStop1);
-			socketView->setConnectorToolTip("[Image]");
+			socketView->setConnectorToolTip("[ImageMono]");
 			break;
 		case ENodeFlowDataType::ImageRgb:
 			socketView->setConnectorBrushGradient(NodeStyle::SocketGradientStart2,

@@ -54,6 +54,8 @@ QColor NodeStyle::SocketGradientStart4 = QColor(82, 165, 98);
 QColor NodeStyle::SocketGradientStop4 = QColor(40, 81, 47);
 QColor NodeStyle::SocketGradientStart5 = QColor(142, 84, 123);
 QColor NodeStyle::SocketGradientStop5 = QColor(84, 50, 73);
+QColor NodeStyle::SocketGradientStart6 = QColor(19, 126, 130);
+QColor NodeStyle::SocketGradientStop6 = QColor(8, 54, 56);
 
 QFont NodeStyle::SocketAnnotationFont = QFont("Segoe UI", 8, QFont::Light);
 QBrush NodeStyle::SocketAnnotationBrush = QBrush(QColor(244, 244, 224));

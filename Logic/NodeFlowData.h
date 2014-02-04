@@ -35,7 +35,12 @@ struct Matches
 enum class ENodeFlowDataType : int
 {
 	Invalid,
+	/// Image - 1 or 3 channels
+	/// Node with such sockets supports both formats
 	Image,
+	/// Image with only 1 channel (monochromatic)
+	ImageMono,
+	/// Image with 3 channels (RGB)
 	ImageRgb,
 	Array,
 	Keypoints,
@@ -79,6 +84,9 @@ public:
 	cv::Mat& getImage();
 	const cv::Mat& getImage() const;
 
+	cv::Mat& getImageMono();
+	const cv::Mat& getImageMono() const;
+
 	cv::Mat& getImageRgb();
 	const cv::Mat& getImageRgb() const;
 
@@ -105,15 +113,15 @@ public:
 
 	ENodeFlowDataType type() const;
 
-	size_t memoryConsumption() const;
-
 private:
 	ENodeFlowDataType _type;
-	/// TODO: These are always 0 for now
-	int _width;
-	int _height;
-	int _elemSize;
 	flow_data _data;
+
+	bool isConvertible(ENodeFlowDataType from, 
+		ENodeFlowDataType to) const;
+
+	template<ENodeFlowDataType RequestedType, class Type> Type& getType();
+	template<ENodeFlowDataType RequestedType, class Type> const Type& getType() const;
 };
 
 inline bool NodeFlowData::isValid() const
@@ -125,6 +133,4 @@ inline bool NodeFlowData::canReturn(ENodeFlowDataType type) const
 inline ENodeFlowDataType NodeFlowData::type() const
 { return _type; }
 
-inline size_t NodeFlowData::memoryConsumption() const
-{ return _width * _height * _elemSize; }
 

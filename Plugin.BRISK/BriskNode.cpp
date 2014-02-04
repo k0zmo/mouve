@@ -42,7 +42,7 @@ public:
 	ExecutionStatus execute(NodeSocketReader& reader, NodeSocketWriter& writer) override
 	{
 		// inputs
-		const cv::Mat& src = reader.readSocket(0).getImage();
+		const cv::Mat& src = reader.readSocket(0).getImageMono();
 		// outputs
 		KeyPoints& kp = writer.acquireSocket(0).getKeypoints();
 
@@ -61,7 +61,7 @@ public:
 	void configuration(NodeConfig& nodeConfig) const override
 	{
 		static const InputSocketConfig in_config[] = {
-			{ ENodeFlowDataType::Image, "image", "Image", "" },
+			{ ENodeFlowDataType::ImageMono, "image", "Image", "" },
 			{ ENodeFlowDataType::Invalid, "", "", "" }
 		};
 		static const OutputSocketConfig out_config[] = {
@@ -98,7 +98,7 @@ public:
 		: _rotationInvariant(true)
 		, _scaleInvariant(true)
 		, _patternScale(1.0f)
-		, _brisk(new cv::BriskDescriptorExtractor(_rotationInvariant, _scaleInvariant, _patternScale))
+		, _brisk(nullptr)
 	{
 	}
 
@@ -121,10 +121,8 @@ public:
 			break;
 		}
 
-		// That's a bit cheating here - creating BRISK object takes time (approx. 200ms for PAL)
-		// which if done per frame makes it slowish (more than SIFT actually)
-		_brisk = std::unique_ptr<cv::BriskDescriptorExtractor>(new cv::BriskDescriptorExtractor(
-			_rotationInvariant, _scaleInvariant, _patternScale));
+		_brisk = nullptr;
+
 		return true;
 	}
 
@@ -148,6 +146,12 @@ public:
 		// validate inputs
 		if(kp.kpoints.empty() || kp.image.empty())
 			return ExecutionStatus(EStatus::Ok);
+
+		if(!_brisk)
+		{
+			_brisk = std::unique_ptr<cv::BriskDescriptorExtractor>(new cv::BriskDescriptorExtractor(
+				_rotationInvariant, _scaleInvariant, _patternScale));
+		}
 
 		// outputs
 		KeyPoints& outKp = writer.acquireSocket(0).getKeypoints();
@@ -209,7 +213,7 @@ public:
 		, _rotationInvariant(true)
 		, _scaleInvariant(true)
 		, _patternScale(1.0f)
-		, _brisk(new cv::BriskDescriptorExtractor(_rotationInvariant, _scaleInvariant, _patternScale))
+		, _brisk(nullptr)
 	{
 	}
 
@@ -234,10 +238,8 @@ public:
 			break;
 		}
 
-		// That's a bit cheating here - creating BRISK object takes time (approx. 200ms for PAL)
-		// which if done per frame makes it slowish (more than SIFT actually)
-		_brisk = std::unique_ptr<cv::BriskDescriptorExtractor>(new cv::BriskDescriptorExtractor(
-			_rotationInvariant, _scaleInvariant, _patternScale));
+		_brisk = nullptr;
+
 		return true;
 	}
 
@@ -258,7 +260,7 @@ public:
 	ExecutionStatus execute(NodeSocketReader& reader, NodeSocketWriter& writer) override
 	{
 		// inputs
-		const cv::Mat& src = reader.readSocket(0).getImage();
+		const cv::Mat& src = reader.readSocket(0).getImageMono();
 		// ouputs
 		KeyPoints& kp = writer.acquireSocket(0).getKeypoints();
 		cv::Mat& descriptors = writer.acquireSocket(1).getArray();
@@ -266,6 +268,12 @@ public:
 		// validate inputs
 		if(src.empty())
 			return ExecutionStatus(EStatus::Ok);
+
+		if(!_brisk)
+		{
+			_brisk = std::unique_ptr<cv::BriskDescriptorExtractor>(new cv::BriskDescriptorExtractor(
+				_rotationInvariant, _scaleInvariant, _patternScale));
+		}
 
 		cv::BriskFeatureDetector _briskFeatureDetector(_thresh, _nOctaves);
 		_briskFeatureDetector.detect(src, kp.kpoints);
@@ -279,7 +287,7 @@ public:
 	void configuration(NodeConfig& nodeConfig) const override
 	{
 		static const InputSocketConfig in_config[] = {
-			{ ENodeFlowDataType::Image, "image", "Image", "" },
+			{ ENodeFlowDataType::ImageMono, "image", "Image", "" },
 			{ ENodeFlowDataType::Invalid, "", "", "" }
 		};
 		static const OutputSocketConfig out_config[] = {

@@ -12,7 +12,7 @@ public:
 		const cv::Mat& homography = reader.readSocket(0).getArray();
 		const Matches& mt = reader.readSocket(1).getMatches();
 		// output
-		cv::Mat& mosaic = writer.acquireSocket(0).getImage();
+		cv::Mat& mosaic = writer.acquireSocket(0).getImageRgb();
 
 		// Validate inputs
 		if(mt.queryImage.empty() || mt.trainImage.empty() || homography.empty())
@@ -46,7 +46,7 @@ public:
 			{ ENodeFlowDataType::Invalid, "", "", "" }
 		};
 		static const OutputSocketConfig out_config[] = {
-			{ ENodeFlowDataType::Image, "output", "Output", "" },
+			{ ENodeFlowDataType::ImageRgb, "output", "Output", "" },
 			{ ENodeFlowDataType::Invalid, "", "", "" }
 		};
 

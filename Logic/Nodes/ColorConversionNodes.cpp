@@ -20,8 +20,18 @@ public:
 		if(input.empty())
 			return ExecutionStatus(EStatus::Ok);
 
-		// Do stuff
-		cv::cvtColor(input, output, CV_GRAY2BGR);
+		if(input.channels() == 3)
+		{
+			// no-op
+			output = input;
+		}
+		else
+		{
+			if(input.data == output.data)
+				output = cv::Mat();
+			// Do stuff
+			cv::cvtColor(input, output, CV_GRAY2BGR);
+		}
 
 		return ExecutionStatus(EStatus::Ok);
 	}
@@ -49,16 +59,26 @@ public:
 	ExecutionStatus execute(NodeSocketReader& reader, NodeSocketWriter& writer) override
 	{
 		// Read input sockets
-		const cv::Mat& input = reader.readSocket(0).getImageRgb();
+		const cv::Mat& input = reader.readSocket(0).getImage();
 		// Acquire output sockets
-		cv::Mat& output = writer.acquireSocket(0).getImage();
+		cv::Mat& output = writer.acquireSocket(0).getImageMono();
 
 		// Validate inputs
 		if(input.empty())
 			return ExecutionStatus(EStatus::Ok);
 
-		// Do stuff
-		cv::cvtColor(input, output, CV_BGR2GRAY);
+		if(input.channels() == 1)
+		{
+			//no-op
+			output = input;
+		}
+		else
+		{
+			if(input.data == output.data)
+				output = cv::Mat();
+			// Do stuff
+			cv::cvtColor(input, output, CV_BGR2GRAY);
+		}
 
 		return ExecutionStatus(EStatus::Ok);
 	}
@@ -66,11 +86,11 @@ public:
 	void configuration(NodeConfig& nodeConfig) const override
 	{
 		static const InputSocketConfig in_config[] = {
-			{ ENodeFlowDataType::ImageRgb, "input", "Color", "" },
+			{ ENodeFlowDataType::Image, "input", "Color", "" },
 			{ ENodeFlowDataType::Invalid, "", "", "" }
 		};
 		static const OutputSocketConfig out_config[] = {
-			{ ENodeFlowDataType::Image, "output", "Gray", "" },
+			{ ENodeFlowDataType::ImageMono, "output", "Gray", "" },
 			{ ENodeFlowDataType::Invalid, "", "", "" }
 		};
 
@@ -113,9 +133,9 @@ public:
 	ExecutionStatus execute(NodeSocketReader& reader, NodeSocketWriter& writer) override
 	{
 		// Read input sockets
-		const cv::Mat& input = reader.readSocket(0).getImage();
+		const cv::Mat& input = reader.readSocket(0).getImageMono();
 		// Acquire output sockets
-		cv::Mat& output = writer.acquireSocket(0).getImage();
+		cv::Mat& output = writer.acquireSocket(0).getImageMono();
 
 		if(input.empty())
 			return ExecutionStatus(EStatus::Ok);
@@ -129,11 +149,11 @@ public:
 	void configuration(NodeConfig& nodeConfig) const override
 	{
 		static const InputSocketConfig in_config[] = {
-			{ ENodeFlowDataType::Image, "input", "Input", "" },
+			{ ENodeFlowDataType::ImageMono, "input", "Input", "" },
 			{ ENodeFlowDataType::Invalid, "", "", "" }
 		};
 		static const OutputSocketConfig out_config[] = {
-			{ ENodeFlowDataType::Image, "output", "Output", "" },
+			{ ENodeFlowDataType::ImageMono, "output", "Output", "" },
 			{ ENodeFlowDataType::Invalid, "", "", "" }
 		};
 		static const PropertyConfig prop_config[] = {
@@ -199,7 +219,7 @@ public:
 	ExecutionStatus execute(NodeSocketReader& reader, NodeSocketWriter& writer) override
 	{
 		// Read input sockets
-		const cv::Mat& input = reader.readSocket(0).getImage();
+		const cv::Mat& input = reader.readSocket(0).getImageMono();
 		// Acquire output sockets
 		cv::Mat& output = writer.acquireSocket(0).getImageRgb();
 
@@ -236,7 +256,7 @@ public:
 	void configuration(NodeConfig& nodeConfig) const override
 	{
 		static const InputSocketConfig in_config[] = {
-			{ ENodeFlowDataType::Image, "input", "Input", "" },
+			{ ENodeFlowDataType::ImageMono, "input", "Input", "" },
 			{ ENodeFlowDataType::Invalid, "", "", "" }
 		};
 		static const OutputSocketConfig out_config[] = {
@@ -321,23 +341,43 @@ public:
 		// Do stuff
 		if(!fcmp(_gain, 1.0) || _bias != 0)
 		{
-			output.create(input.size(), CV_8UC1);
+			output = cv::Mat(input.size(), input.type());
 
-			cvu::parallel_for(cv::Range(0, output.rows), [&](const cv::Range& range)
+			if(input.channels() == 1)
 			{
-				for(int y = range.start; y < range.end; ++y)
+				cvu::parallel_for(cv::Range(0, output.rows), [&](const cv::Range& range)
 				{
-					for(int x = 0; x < output.cols; ++x)
+					for(int y = range.start; y < range.end; ++y)
 					{
-						output.at<uchar>(y, x) = cv::saturate_cast<uchar>(
-							_gain * input.at<uchar>(y, x) + _bias);
+						for(int x = 0; x < output.cols; ++x)
+						{
+							output.at<uchar>(y, x) = cv::saturate_cast<uchar>(
+								_gain * input.at<uchar>(y, x) + _bias);
+						}
 					}
-				}
-			});
+				});
+			}
+			else if(input.channels() == 3)
+			{
+				cvu::parallel_for(cv::Range(0, output.rows), [&](const cv::Range& range)
+				{
+					for(int y = range.start; y < range.end; ++y)
+					{
+						for(int x = 0; x < output.cols; ++x)
+						{
+							cv::Vec3b rgb = input.at<cv::Vec3b>(y, x);
+							rgb[0] = cv::saturate_cast<uchar>(_gain * rgb[0] + _bias);
+							rgb[1] = cv::saturate_cast<uchar>(_gain * rgb[1] + _bias);
+							rgb[2] = cv::saturate_cast<uchar>(_gain * rgb[2] + _bias);
+							output.at<cv::Vec3b>(y, x) = rgb;
+						}
+					}
+				});
+			}
 		}
 		else
 		{
-			output = input.clone();
+			output = input;
 		}
 
 		return ExecutionStatus(EStatus::Ok);
@@ -359,7 +399,7 @@ public:
 			{ EPropertyType::Unknown, "", "" }
 		};
 
-		nodeConfig.description = "Adjusts contrast and brightness of input gray image.";
+		nodeConfig.description = "Adjusts contrast and brightness of input image.";
 		nodeConfig.pInputSockets = in_config;
 		nodeConfig.pOutputSockets = out_config;
 		nodeConfig.pProperties = prop_config;	
@@ -377,74 +417,8 @@ protected:
 	int _bias;
 };
 
-class ContrastAndBrightnessRgbNodeType : public ContrastAndBrightnessNodeType
-{
-public:
-	ContrastAndBrightnessRgbNodeType()
-	{
-	}
-
-	ExecutionStatus execute(NodeSocketReader& reader, NodeSocketWriter& writer) override
-	{
-		// Read input sockets
-		const cv::Mat& input = reader.readSocket(0).getImageRgb();
-		// Acquire output sockets
-		cv::Mat& output = writer.acquireSocket(0).getImageRgb();
-
-		// Validate inputs
-		if(input.empty())
-			return ExecutionStatus(EStatus::Ok);
-
-		// Do stuff
-		if(!fcmp(_gain, 1.0) || _bias != 0)
-		{
-			output.create(input.size(), CV_8UC3);
-
-			cvu::parallel_for(cv::Range(0, output.rows), [&](const cv::Range& range)
-			{
-				for(int y = range.start; y < range.end; ++y)
-				{
-					for(int x = 0; x < output.cols; ++x)
-					{
-						cv::Vec3b rgb = input.at<cv::Vec3b>(y, x);
-						rgb[0] = cv::saturate_cast<uchar>(_gain * rgb[0] + _bias);
-						rgb[1] = cv::saturate_cast<uchar>(_gain * rgb[1] + _bias);
-						rgb[2] = cv::saturate_cast<uchar>(_gain * rgb[2] + _bias);
-						output.at<cv::Vec3b>(y, x) = rgb;
-					}
-				}
-			});
-		}
-		else
-		{
-			output = input.clone();
-		}
-
-		return ExecutionStatus(EStatus::Ok);
-	}
-
-	void configuration(NodeConfig& nodeConfig) const override
-	{
-		ContrastAndBrightnessNodeType::configuration(nodeConfig);
-
-		static const InputSocketConfig in_config[] = {
-			{ ENodeFlowDataType::ImageRgb, "input", "Input", "" },
-			{ ENodeFlowDataType::Invalid, "", "", "" }
-		};
-		static const OutputSocketConfig out_config[] = {
-			{ ENodeFlowDataType::ImageRgb, "output", "Output", "" },
-			{ ENodeFlowDataType::Invalid, "", "", "" }
-		};
-
-		nodeConfig.description = "Adjusts contrast and brightness of input color image.";
-		nodeConfig.pInputSockets = in_config;
-		nodeConfig.pOutputSockets = out_config;
-	}
-};
-
-REGISTER_NODE("Format conversion/Contrast & brightness RGB", ContrastAndBrightnessRgbNodeType)
 REGISTER_NODE("Format conversion/Contrast & brightness", ContrastAndBrightnessNodeType)
 REGISTER_NODE("Format conversion/Gray de-bayer", BayerToGrayNodeType)
 REGISTER_NODE("Format conversion/RGB de-bayer", BayerToRgbNodeType)
-REGISTER_NODE("Format conversion/RGB to gray", RgbToGrayNodeType)
 REGISTER_NODE("Format conversion/Gray to RGB", GrayToRgbNodeType)
+REGISTER_NODE("Format conversion/RGB to gray", RgbToGrayNodeType)

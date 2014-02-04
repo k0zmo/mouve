@@ -127,7 +127,7 @@ public:
 			{ ENodeFlowDataType::Invalid, "", "", "" }
 		};
 		static const PropertyConfig prop_config[] = {
-			{ EPropertyType::Integer, "Reprojection error threshold", "min:1.0, max:50.0" },
+			{ EPropertyType::Double, "Reprojection error threshold", "min:1.0, max:50.0" },
 			{ EPropertyType::Unknown, "", "" }
 		};
 

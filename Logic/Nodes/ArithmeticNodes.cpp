@@ -223,8 +223,10 @@ public:
 		cv::Mat& dst = writer.acquireSocket(0).getImage();
 
 		// Do stuff
-		if(dst.type() == CV_8U)
-			dst = 255 - src;
+		if(src.type() == CV_8UC1)
+			dst = cv::Scalar(255) - src;
+		else if(src.type() == CV_8UC3)
+			dst = cv::Scalar(255, 255, 255, 0) - src;
 
 		return ExecutionStatus(EStatus::Ok);
 	}
@@ -252,7 +254,7 @@ public:
 	ExecutionStatus execute(NodeSocketReader& reader, NodeSocketWriter&) override
 	{
 		// Read input sockets
-		const cv::Mat& src = reader.readSocket(0).getImage();
+		const cv::Mat& src = reader.readSocket(0).getImageMono();
 
 		// Do stuff
 		int n = cv::countNonZero(src);
@@ -263,7 +265,7 @@ public:
 	void configuration(NodeConfig& nodeConfig) const override
 	{
 		static const InputSocketConfig in_config[] = {
-			{ ENodeFlowDataType::Image, "source", "Source", "" },
+			{ ENodeFlowDataType::ImageMono, "source", "Source", "" },
 			{ ENodeFlowDataType::Invalid, "", "", "" }
 		};
 
@@ -276,5 +278,5 @@ REGISTER_NODE("Arithmetic/Count non-zero", CountNonZeroNodeType)
 REGISTER_NODE("Arithmetic/Negate", NegateNodeType)
 REGISTER_NODE("Arithmetic/Absolute diff.", AbsoluteDifferenceNodeType)
 REGISTER_NODE("Arithmetic/Subtract", SubtractNodeType)
-REGISTER_NODE("Arithmetic/Absolute", AbsoluteNodeType)
+//REGISTER_NODE("Arithmetic/Absolute", AbsoluteNodeType)
 REGISTER_NODE("Arithmetic/Add", AddNodeType)

@@ -963,9 +963,14 @@ void Controller::updatePreviewImpl()
 					_previewWidget->show(outputData.getImage());
 					return;
 
+				case ENodeFlowDataType::ImageMono:
+					_previewWidget->show(outputData.getImageMono());
+					return;
+
 				case ENodeFlowDataType::ImageRgb:
 					_previewWidget->show(outputData.getImageRgb());
 					return;
+
 				default:
 					break;
 				}

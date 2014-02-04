@@ -264,7 +264,7 @@ public:
 	{
 		// Read input sockets
 		const cv::Mat& src = reader.readSocket(0).getImage();
-		const cv::Mat& mask = reader.readSocket(1).getImage();
+		const cv::Mat& mask = reader.readSocket(1).getImageMono();
 		// Acquire output sockets
 		cv::Mat& dst = writer.acquireSocket(0).getImage();
 
@@ -275,7 +275,7 @@ public:
 			return ExecutionStatus(EStatus::Error, "Source");
 
 		// Do stuff
-		dst = cv::Mat(dst.size(), CV_8UC1, cv::Scalar(0));
+		dst = cv::Mat(dst.size(), src.type(), cv::Scalar(0));
 		src.copyTo(dst, mask);
 
 		return ExecutionStatus(EStatus::Ok);
@@ -285,7 +285,7 @@ public:
 	{
 		static const InputSocketConfig in_config[] = {
 			{ ENodeFlowDataType::Image, "image", "Image", "" },
-			{ ENodeFlowDataType::Image, "mask", "Mask", "" },
+			{ ENodeFlowDataType::ImageMono, "mask", "Mask", "" },
 			{ ENodeFlowDataType::Invalid, "", "", "" }
 		};
 		static const OutputSocketConfig out_config[] = {

@@ -22,6 +22,7 @@ public:
 		, _endFrame(0)
 		, _frameInterval(0)
 		, _ignoreFps(false)
+		, _forceGrayscale(false)
 	{
 	}
 
@@ -41,6 +42,9 @@ public:
 		case pid::IgnoreFps:
 			_ignoreFps = newValue.toBool();
 			return true;
+		case pid::ForceGrayscale:
+			_forceGrayscale = newValue.toBool();
+			return true;
 		}
 
 		return false;
@@ -54,6 +58,7 @@ public:
 		case pid::StartFrame: return int(_startFrame);
 		case pid::EndFrame: return int(_endFrame);
 		case pid::IgnoreFps: return _ignoreFps;
+		case pid::ForceGrayscale: return _forceGrayscale;
 		}
 
 		return NodeProperty();
@@ -92,16 +97,25 @@ public:
 		if(!_capture.isOpened())
 			return ExecutionStatus(EStatus::Ok);
 
-		// We need this so we won't replace previous good frame with current bad (for instance - end of video)
-		cv::Mat buffer; 
-		++_currentFrame;
+		cv::Mat& output = writer.acquireSocket(0).getImage();
+
+		++_currentFrame;        
 
 		if(_endFrame > 0 && _currentFrame >= _endFrame)
 		{
 			// No more data (for us)
-			return ExecutionStatus(EStatus::Ok, string_format("Frame image width: %d\nFrame image height: %d\nFrame size in kbytes: %d\nFrame: %d/%d",
-				buffer.cols, buffer.rows, buffer.cols * buffer.rows * sizeof(uchar) * buffer.channels() / 1024, _currentFrame - 1, _maxFrames));
+			return ExecutionStatus(EStatus::Ok,
+				string_format("Frame image width: %d\nFrame image height: %d\nFrame channels count: %d\nFrame size in kbytes: %d\nFrame: %d/%d",
+					output.cols, 
+					output.rows,
+					output.channels(),
+					output.cols * output.rows * sizeof(uchar) * output.channels() / 1024, 
+					_currentFrame - 1,
+					_maxFrames));
 		}
+
+		// We need this so we won't replace previous good frame with current bad (for instance - end of video)
+		cv::Mat buffer; 
 
 		if(_frameInterval == 0)
 		{
@@ -127,17 +141,24 @@ public:
 			_timeStamp = std::chrono::high_resolution_clock::now();
 		}
 
-		cv::Mat& output = writer.acquireSocket(0).getImage();
-
 		if(!buffer.empty())
 		{
-			cv::cvtColor(buffer, output, CV_BGR2GRAY);
+			if(_forceGrayscale && buffer.channels() > 1)
+				cv::cvtColor(buffer, output, CV_BGR2GRAY);
+			else
+				output = buffer;
+
 			double stop = _clock.currentTimeInSeconds();
 			double elapsed = (stop - start) * 1e3;
 
 			return ExecutionStatus(EStatus::Tag, elapsed,
-				string_format("Frame image width: %d\nFrame image height: %d\nFrame size in kbytes: %d\nFrame: %d/%d",
-					output.cols, output.rows, output.cols * output.rows * sizeof(uchar) * output.channels() / 1024, _currentFrame, _maxFrames));
+				string_format("Frame image width: %d\nFrame image height: %d\nFrame channels count: %d\nFrame size in kbytes: %d\nFrame: %d/%d",
+					output.cols,
+					output.rows,
+					output.channels(),
+					output.cols * output.rows * sizeof(uchar) * output.channels() / 1024,
+					_currentFrame,
+					_maxFrames));
 		}
 		else
 		{
@@ -157,6 +178,7 @@ public:
 			{ EPropertyType::Integer, "Start frame", "min:0" },
 			{ EPropertyType::Integer, "End frame", "min:0" },
 			{ EPropertyType::Boolean, "Ignore FPS", "" },
+			{ EPropertyType::Boolean, "Force grayscale", "" },
 			{ EPropertyType::Unknown, "", "" }
 		};
 
@@ -173,6 +195,7 @@ private:
 		StartFrame,
 		EndFrame,
 		IgnoreFps,
+		ForceGrayscale
 	};
 
 	Filepath _videoPath;
@@ -185,6 +208,7 @@ private:
 	std::chrono::high_resolution_clock::time_point _timeStamp;
 	static HighResolutionClock _clock;
 	bool _ignoreFps;
+	bool _forceGrayscale;
 };
 HighResolutionClock VideoFromFileNodeType::_clock;
 
@@ -197,14 +221,19 @@ public:
 #else
 		: _filePath("")
 #endif
+		, _forceGrayscale(false)
 	{
 	}
 
 	bool setProperty(PropertyID propId, const NodeProperty& newValue) override
 	{
-		if(propId == 0)
+		switch(static_cast<pid>(propId))
 		{
+		case pid::Filepath:
 			_filePath = newValue.toFilepath();
+			return true;
+		case pid::ForceGrayscale:
+			_forceGrayscale = newValue.toBool();
 			return true;
 		}
 
@@ -213,8 +242,11 @@ public:
 
 	NodeProperty property(PropertyID propId) const override
 	{
-		if(propId == 0)
-			return _filePath;
+		switch(static_cast<pid>(propId))
+		{
+		case pid::Filepath: return _filePath;
+		case pid::ForceGrayscale: return _forceGrayscale;
+		}
 
 		return NodeProperty();
 	}
@@ -223,13 +255,18 @@ public:
 	{
 		cv::Mat& output = writer.acquireSocket(0).getImage();
 
-		output = cv::imread(_filePath.data(), CV_LOAD_IMAGE_GRAYSCALE);
+		output = cv::imread(_filePath.data(), _forceGrayscale ? CV_LOAD_IMAGE_GRAYSCALE : CV_LOAD_IMAGE_UNCHANGED);
+		if(output.channels() == 4)
+			cv::cvtColor(output, output, CV_BGRA2BGR);
 
 		if(output.empty())
 			return ExecutionStatus(EStatus::Error, "File not found");
 		return ExecutionStatus(EStatus::Ok, 
-			string_format("Image image width: %d\nImage image height: %d\nImage size in kbytes: %d",
-				output.cols, output.rows, output.cols * output.rows * sizeof(uchar) * output.channels() / 1024));
+			string_format("Image image width: %d\nImage image height: %d\nImage channels count: %d\nImage size in kbytes: %d",
+				output.cols, 
+				output.rows,
+				output.channels(),
+				output.cols * output.rows * sizeof(uchar) * output.channels() / 1024));
 	}
 
 	void configuration(NodeConfig& nodeConfig) const override
@@ -249,6 +286,7 @@ public:
 			"Sun rasters (*.sr *.ras);;"
 			"TIFF files (*.tiff *.tif);;"
 			"All files (*.*)" },
+			{ EPropertyType::Boolean, "Force grayscale", "" },
 			{ EPropertyType::Unknown, "", "" }
 		};
 
@@ -258,7 +296,14 @@ public:
 	}
 
 protected:
+	enum class pid
+	{
+		Filepath,
+		ForceGrayscale
+	};
+
 	Filepath _filePath;
+	bool _forceGrayscale;
 };
 
 class ImageFromFileStreamNodeType : public ImageFromFileNodeType
@@ -266,7 +311,7 @@ class ImageFromFileStreamNodeType : public ImageFromFileNodeType
 public: 
 	bool restart() override
 	{ 
-		_img = cv::imread(_filePath.data(), CV_LOAD_IMAGE_GRAYSCALE);
+		_img = cv::imread(_filePath.data(), _forceGrayscale ? CV_LOAD_IMAGE_GRAYSCALE : CV_LOAD_IMAGE_UNCHANGED);
 
 		return !_img.empty();
 	}
@@ -278,8 +323,11 @@ public:
 		output = _img;
 
 		return ExecutionStatus(EStatus::Tag, 
-			string_format("Image image width: %d\nImage image height: %d\nImage size in kbytes: %d",
-			output.cols, output.rows, output.cols * output.rows * sizeof(uchar) * output.channels() / 1024));
+			string_format("Image image width: %d\nImage image height: %d\nImage channels count: %d\nImage size in kbytes: %d",
+				output.cols, 
+				output.rows,
+				output.channels(),
+				output.cols * output.rows * sizeof(uchar) * output.channels() / 1024));
 	}
 
 	void configuration(NodeConfig& nodeConfig) const override
@@ -297,6 +345,7 @@ class CameraCaptureNodeType : public NodeType
 public:
 	CameraCaptureNodeType()
 		: _deviceId(0)
+		, _forceGrayscale(false)
 	{
 	}
 
@@ -306,6 +355,9 @@ public:
 		{
 		case pid::DeviceId:
 			_deviceId = newValue.toInt();
+			return true;
+		case pid::ForceGrayscale:
+			_forceGrayscale = newValue.toBool();
 			return true;
 		}
 
@@ -317,6 +369,7 @@ public:
 		switch(static_cast<pid>(propId))
 		{
 		case pid::DeviceId: return _deviceId;
+		case pid::ForceGrayscale: return _forceGrayscale;
 		}
 
 		return NodeProperty();
@@ -340,12 +393,18 @@ public:
 
 		if(tmp.empty())
 			return ExecutionStatus(EStatus::Ok);
-		if(tmp.channels() > 1)
-			cvtColor(tmp, output, CV_BGR2GRAY);
+
+		if(_forceGrayscale && tmp.channels() > 1)
+			cv::cvtColor(tmp, output, CV_BGR2GRAY);
+		else
+			output = tmp;
 
 		return ExecutionStatus(EStatus::Tag, 
-			string_format("Frame image width: %d\nFrame image height: %d\nFrame size in kbytes: %d",
-				output.cols, output.rows, output.cols * output.rows * sizeof(uchar) * output.channels() / 1024));
+			string_format("Frame image width: %d\nFrame image height: %d\nFrame channels count: %d\nFrame size in kbytes: %d",
+				output.cols,
+				output.rows, 
+				output.channels(),
+				output.cols * output.rows * sizeof(uchar) * output.channels() / 1024));
 	}
 
 	void finish() override
@@ -362,6 +421,7 @@ public:
 		};
 		static const PropertyConfig prop_config[] = {
 			{ EPropertyType::Integer, "Device Id", "min:0" },
+			{ EPropertyType::Boolean, "Force grayscale", "" },
 			{ EPropertyType::Unknown, "", "" }
 		};
 
@@ -374,10 +434,12 @@ public:
 private:
 	enum class pid
 	{
-		DeviceId
+		DeviceId,
+		ForceGrayscale
 	};
 
 	int _deviceId;
+	bool _forceGrayscale;
 	cv::VideoCapture _capture;
 };
 
@@ -423,7 +485,7 @@ public:
 
 	ExecutionStatus execute(NodeSocketReader&, NodeSocketWriter& writer) override
 	{
-		cv::Mat& output = writer.acquireSocket(0).getImage();
+		cv::Mat& output = writer.acquireSocket(0).getImageMono();
 		if(_width * _height > 0)
 			output = cv::Mat(_height, _width, CV_8UC1, cv::Scalar(_gray));
 		return ExecutionStatus(EStatus::Ok);
@@ -432,7 +494,7 @@ public:
 	void configuration(NodeConfig& nodeConfig) const override
 	{
 		static const OutputSocketConfig out_config[] = {
-			{ ENodeFlowDataType::Image, "output", "Output", "" },
+			{ ENodeFlowDataType::ImageMono, "output", "Output", "" },
 			{ ENodeFlowDataType::Invalid, "", "", "" }
 		};
 		static const PropertyConfig prop_config[] = {
@@ -460,7 +522,103 @@ private:
 	int _gray;
 };
 
-REGISTER_NODE("Sources/Solid image", SolidImageNodeType)
+class SolidRgbImageNodeType : public NodeType
+{
+public: 
+	SolidRgbImageNodeType()
+		: _width(512)
+		, _height(512)
+		, _red(0)
+		, _green(0)
+		, _blue(0)
+	{
+	}
+
+	bool setProperty(PropertyID propId, const NodeProperty& newValue) override
+	{
+		switch(static_cast<pid>(propId))
+		{
+		case pid::Width:
+			_width = newValue.toInt();
+			return true;
+		case pid::Height:
+			_height = newValue.toInt();
+			return true;
+		case pid::Red:
+			_red = newValue.toInt();
+			return true;
+		case pid::Green:
+			_green = newValue.toInt();
+			return true;
+		case pid::Blue:
+			_blue = newValue.toInt();
+			return true;
+		}
+
+		return false;
+	}
+
+	NodeProperty property(PropertyID propId) const override
+	{
+		switch(static_cast<pid>(propId))
+		{
+		case pid::Width: return _width;
+		case pid::Height: return _height;
+		case pid::Red: return _red;
+		case pid::Green: return _green;
+		case pid::Blue: return _blue;
+		}
+
+		return NodeProperty();
+	}
+
+	ExecutionStatus execute(NodeSocketReader&, NodeSocketWriter& writer) override
+	{
+		cv::Mat& output = writer.acquireSocket(0).getImageRgb();
+		if(_width * _height > 0)
+			output = cv::Mat(_height, _width, CV_8UC3, cv::Scalar(_blue, _green, _red));
+		return ExecutionStatus(EStatus::Ok);
+	}
+
+	void configuration(NodeConfig& nodeConfig) const override
+	{
+		static const OutputSocketConfig out_config[] = {
+			{ ENodeFlowDataType::ImageRgb, "output", "Output", "" },
+			{ ENodeFlowDataType::Invalid, "", "", "" }
+		};
+		static const PropertyConfig prop_config[] = {
+			{ EPropertyType::Integer, "Width", "min:1, max:4096" },
+			{ EPropertyType::Integer, "Height", "min:1, max:4096" },
+			{ EPropertyType::Integer, "Red", "min:0, max:255" },
+			{ EPropertyType::Integer, "Green", "min:0, max:255" },
+			{ EPropertyType::Integer, "Blue", "min:0, max:255" },
+			{ EPropertyType::Unknown, "", "" }
+		};
+
+		nodeConfig.description = "Creates solid RGB image";
+		nodeConfig.pOutputSockets = out_config;
+		nodeConfig.pProperties = prop_config;
+	}
+
+private:
+	enum class pid
+	{
+		Width,
+		Height,
+		Red,
+		Green,
+		Blue,
+	};
+
+	int _width;
+	int _height;
+	int _red;
+	int _green;
+	int _blue;
+};
+
+REGISTER_NODE("Sources/Solid image", SolidRgbImageNodeType)
+REGISTER_NODE("Sources/Solid gray image", SolidImageNodeType)
 REGISTER_NODE("Sources/Image from file stream", ImageFromFileStreamNodeType)
 REGISTER_NODE("Sources/Camera capture", CameraCaptureNodeType)
 REGISTER_NODE("Sources/Video from file", VideoFromFileNodeType)

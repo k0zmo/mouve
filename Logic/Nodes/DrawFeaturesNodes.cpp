@@ -105,7 +105,10 @@ public:
 			return ExecutionStatus(EStatus::Ok);
 
 		// Do stuff
-		cvtColor(imageSrc, imageDst, CV_GRAY2BGR);
+		if(imageSrc.channels() == 1)
+			cvtColor(imageSrc, imageDst, CV_GRAY2BGR);
+		else
+			imageDst = imageSrc.clone();
 
 		return executeImpl(circles, imageSrc, imageDst);
 	}
@@ -114,7 +117,7 @@ public:
 	{
 		static const InputSocketConfig in_config[] = {
 			{ ENodeFlowDataType::Image, "source", "Image", "" },
-			{ ENodeFlowDataType::Array, "lines", "Lines", "" },
+			{ ENodeFlowDataType::Array, "shapes", "Shapes", "" },
 			{ ENodeFlowDataType::Invalid, "", "", "" }
 		};
 		static const OutputSocketConfig out_config[] = {
@@ -618,8 +621,8 @@ public:
 	ExecutionStatus execute(NodeSocketReader& reader, NodeSocketWriter& writer) override
 	{
 		// Read input sockets
-		const cv::Mat& mask = reader.readSocket(0).getImage();
-		const cv::Mat& source = reader.readSocket(1).getImage();
+		const cv::Mat& mask = reader.readSocket(0).getImageMono();
+		const cv::Mat& source = reader.readSocket(1).getImageMono();
 		// Acquire output sockets
 		cv::Mat& imagePainted = writer.acquireSocket(0).getImageRgb();
 
@@ -661,8 +664,8 @@ public:
 	void configuration(NodeConfig& nodeConfig) const override
 	{
 		static const InputSocketConfig in_config[] = {
-			{ ENodeFlowDataType::Image, "mask", "Mask", "" },
-			{ ENodeFlowDataType::Image, "image", "Source", "" },
+			{ ENodeFlowDataType::ImageMono, "mask", "Mask", "" },
+			{ ENodeFlowDataType::ImageMono, "image", "Source", "" },
 			{ ENodeFlowDataType::Invalid, "", "", "" }
 		};
 		static const OutputSocketConfig out_config[] = {

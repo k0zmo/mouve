@@ -30,7 +30,7 @@ public:
 
 	ExecutionStatus execute(NodeSocketReader& reader, NodeSocketWriter& writer) override
 	{
-		const cv::Mat& hostImage = reader.readSocketImage(0);
+		const cv::Mat& hostImage = reader.readSocket(0).getImageMono();
 		clw::Image2D& deviceImage = writer.acquireSocket(0).getDeviceImage();
 
 		/// TODO: For now we assume it's always 1 channel image
@@ -79,7 +79,7 @@ public:
 	void configuration(NodeConfig& nodeConfig) const override
 	{
 		static const InputSocketConfig in_config[] = {
-			{ ENodeFlowDataType::Image, "input", "Host image", "" },
+			{ ENodeFlowDataType::ImageMono, "input", "Host image", "" },
 			{ ENodeFlowDataType::Invalid, "", "", "" }
 		};
 
@@ -134,7 +134,7 @@ public:
 	ExecutionStatus execute(NodeSocketReader& reader, NodeSocketWriter& writer) override
 	{
 		const clw::Image2D& deviceImage = reader.readSocket(0).getDeviceImage();
-		cv::Mat& hostImage = writer.acquireSocket(0).getImage();
+		cv::Mat& hostImage = writer.acquireSocket(0).getImageMono();
 
 		if(deviceImage.isNull() || deviceImage.size() == 0)
 			return ExecutionStatus(EStatus::Ok);
@@ -190,7 +190,7 @@ public:
 		};
 
 		static const OutputSocketConfig out_config[] = {
-			{ ENodeFlowDataType::Image, "output", "Host image", "" },
+			{ ENodeFlowDataType::ImageMono, "output", "Host image", "" },
 			{ ENodeFlowDataType::Invalid, "", "", "" }
 		};
 
