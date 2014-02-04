@@ -3,8 +3,7 @@ SUBDIRS = Kommon Logic Console UI \
     Plugin.BRISK \
     Plugin.ShiTomasi \
     Plugin.Template \
-    Plugin.Kuwahara \
-    Plugin.Color
+    Plugin.Kuwahara
 CONFIG += ordered
 
 Logic.depends = Kommon
