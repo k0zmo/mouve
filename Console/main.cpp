@@ -49,23 +49,12 @@ int main()
 		nodeTree->execute(true);
 
 		// Get output data
-		const auto& outData = nodeTree->outputSocket(outputNodeID, 0);
+		const NodeFlowData& outData = nodeTree->outputSocket(outputNodeID, 0);
 
 		// Show it if possible
-		if(outData.type() == ENodeFlowDataType::ImageRgb)
-		{
-			const auto& outMatRgb = outData.getImageRgb();
-			cv::namedWindow("output from node tree");
-			cv::imshow("output from node tree", outMatRgb);
-			cv::waitKey(-1);
-		}
-		else if(outData.type() == ENodeFlowDataType::Image)
-		{
-			const auto& outMat = outData.getImage();
-			cv::namedWindow("output from node tree");
-			cv::imshow("output from node tree", outMat);
-			cv::waitKey(-1);
-		}
+		cv::namedWindow("output from node tree");
+		cv::imshow("output from node tree", outData.getImage());
+		cv::waitKey(-1);
 	}
 	catch(std::exception& ex)
 	{
