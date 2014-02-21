@@ -4,7 +4,7 @@ win32 {
     DEFINES += HAVE_OPENCL
     HAVE_CLW = true
     INCLUDEPATH += ../external/clw
-    LIBS += -L$$PWD/external/clw/$$CLW_ARCH
+    LIBS += -L$$PWD/../external/clw/$$CLW_ARCH
 
     CONFIG(debug, debug|release) {
         LIBS += -lclw_d
@@ -20,7 +20,7 @@ unix {
     DEFINES += HAVE_OPENCL
     HAVE_CLW = true
     INCLUDEPATH += ../external/clw
-    LIBS += -L$$PWD/external/clw/$$CLW_ARCH
+    LIBS += -L$$PWD/../external/clw/$$CLW_ARCH
 
     CONFIG(debug, debug|release) {
         LIBS += -lclw_d
