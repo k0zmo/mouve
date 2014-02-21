@@ -3,13 +3,13 @@ TARGET = Mouve.Logic
 QT -= gui
 CONFIG += precompile_header
 
-include(../mouve.pri)
-include(../boost.pri)
-include(../opencv.pri)
+include(../Include/mouve.pri)
+include(../Include/boost.pri)
+include(../Include/opencv.pri)
 
 # Below project includes are optional and can be commented out
-include(../clw.pri)
-include(../tbb.pri)
+include(../Include/clw.pri)
+include(../Include/tbb.pri)
 
 PRECOMPILED_HEADER = Precomp.h
 DEFINES += LOGIC_LIB

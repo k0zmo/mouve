@@ -2,12 +2,12 @@ TEMPLATE  = lib
 TARGET    = Plugin.Kuwahara
 QT       -= gui
 
-include(../mouve.pri)
-include(../boost.pri)
-include(../opencv.pri)
-include(../plugin.pri)
+include(../Include/mouve.pri)
+include(../Include/boost.pri)
+include(../Include/opencv.pri)
+include(../Include/plugin.pri)
 # Below project includes are optional and can be commented out
-include(../clw.pri)
+include(../Include/clw.pri)
 
 LIBS += -lMouve.Logic -lMouve.Kommon
 

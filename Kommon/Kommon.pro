@@ -3,7 +3,7 @@ TARGET = Mouve.Kommon
 QT -= gui
 CONFIG += staticlib
 
-include(../mouve.pri)
+include(../Include/mouve.pri)
 
 HEADERS += \
     HighResolutionClock.h \

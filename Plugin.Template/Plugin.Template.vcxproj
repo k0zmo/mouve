@@ -78,45 +78,45 @@
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-    <Import Project="..\Mouve.Kommon.props" />
-    <Import Project="..\Mouve.Logic.props" />
-    <Import Project="..\Boost.props" />
-    <Import Project="..\OpenCV.Modules.Debug.props" />
+    <Import Project="..\Include\Mouve.Kommon.props" />
+    <Import Project="..\Include\Mouve.Logic.props" />
+    <Import Project="..\Include\Boost.props" />
+    <Import Project="..\Include\OpenCV.Modules.Debug.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-    <Import Project="..\Mouve.Kommon.props" />
-    <Import Project="..\Mouve.Logic.props" />
-    <Import Project="..\Boost.props" />
-    <Import Project="..\OpenCV.Modules.Debug.x64.props" />
+    <Import Project="..\Include\Mouve.Kommon.props" />
+    <Import Project="..\Include\Mouve.Logic.props" />
+    <Import Project="..\Include\Boost.props" />
+    <Import Project="..\Include\OpenCV.Modules.Debug.x64.props" />
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-    <Import Project="..\Mouve.Kommon.props" />
-    <Import Project="..\Mouve.Logic.props" />
-    <Import Project="..\Boost.props" />
-    <Import Project="..\OpenCV.Modules.Release.props" />
+    <Import Project="..\Include\Mouve.Kommon.props" />
+    <Import Project="..\Include\Mouve.Logic.props" />
+    <Import Project="..\Include\Boost.props" />
+    <Import Project="..\Include\OpenCV.Modules.Release.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|Win32'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-    <Import Project="..\Mouve.Kommon.props" />
-    <Import Project="..\Mouve.Logic.props" />
-    <Import Project="..\Boost.props" />
-    <Import Project="..\OpenCV.Modules.Release.props" />
+    <Import Project="..\Include\Mouve.Kommon.props" />
+    <Import Project="..\Include\Mouve.Logic.props" />
+    <Import Project="..\Include\Boost.props" />
+    <Import Project="..\Include\OpenCV.Modules.Release.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-    <Import Project="..\Mouve.Kommon.props" />
-    <Import Project="..\Mouve.Logic.props" />
-    <Import Project="..\Boost.props" />
-    <Import Project="..\OpenCV.Modules.Release.x64.props" />
+    <Import Project="..\Include\Mouve.Kommon.props" />
+    <Import Project="..\Include\Mouve.Logic.props" />
+    <Import Project="..\Include\Boost.props" />
+    <Import Project="..\Include\OpenCV.Modules.Release.x64.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|x64'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-    <Import Project="..\Mouve.Kommon.props" />
-    <Import Project="..\Mouve.Logic.props" />
-    <Import Project="..\Boost.props" />
-    <Import Project="..\OpenCV.Modules.Release.x64.props" />
+    <Import Project="..\Include\Mouve.Kommon.props" />
+    <Import Project="..\Include\Mouve.Logic.props" />
+    <Import Project="..\Include\Boost.props" />
+    <Import Project="..\Include\OpenCV.Modules.Release.x64.props" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">

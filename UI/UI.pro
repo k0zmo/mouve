@@ -3,11 +3,11 @@ TARGET = Mouve.UI
 QT += widgets opengl
 CONFIG += precompile_header
 
-include(../mouve.pri)
-include(../boost.pri)
-include(../opencv-basic.pri)
+include(../Include/mouve.pri)
+include(../Include/boost.pri)
+include(../Include/opencv-basic.pri)
 # Below project includes are optional and can be commented out
-include(../clw.pri)
+include(../Include/clw.pri)
 
 PRECOMPILED_HEADER = Precomp.h
 LIBS += -lMouve.Logic -lMouve.Kommon
