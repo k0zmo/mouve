@@ -180,6 +180,7 @@ public:
 private:
 	QFileInfo _fileInfo;
 	QString _filter;
+	bool _save;
 };
 
 // For now - its simple 3x3 matrix

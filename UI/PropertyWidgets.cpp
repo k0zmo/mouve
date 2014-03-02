@@ -73,6 +73,7 @@ FileRequester::FileRequester(QWidget* parent)
 	, _openButton(new QToolButton(this))
 	, _filter()
 	, _fsModel(new QFileSystemModel(this))
+	, _save(false)
 {
 	_openButton->setSizePolicy(QSizePolicy(QSizePolicy::Fixed, QSizePolicy::MinimumExpanding));;
 	_openButton->setText("");
@@ -140,7 +141,9 @@ void FileRequester::openFileDialog()
 		dir = fileInfo.absolutePath();
 
 	/// TODO: filemod - existing, existings, read, write, etc...
-	QString path = QFileDialog::getOpenFileName(this, "Choose a file", dir, _filter);
+	QString path = _save
+		? QFileDialog::getSaveFileName(this, "Choose a file for writing", dir, _filter) 
+		: QFileDialog::getOpenFileName(this, "Choose a file for reading", dir, _filter);
 
 	if(!path.isEmpty())
 	{
@@ -181,6 +184,11 @@ void FileRequester::setFilter(const QString& filter)
 	if(nameFilters.empty())
 		nameFilters.append("*.*");
 	_fsModel->setNameFilters(nameFilters);
+}
+
+void FileRequester::setMode(bool save)
+{
+	_save = save;
 }
 
 void FileRequester::_q_textChangedPrivate(const QString& text)

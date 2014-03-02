@@ -10,10 +10,25 @@ enum class EPropertyType : int
 {
 	Unknown,
 	Boolean,
+	/// Available UI hints: 
+	/// * min: minimum value that property can hold
+	/// * max: maximum value that property can hold
+	/// * step: step value used when spin box value is incremented/decremented
+	/// * wrap: is spin box circular (stepping up from max takes min and vice versa)
 	Integer,
+	/// Available UI hints: 
+	/// * min: minimum value that property can hold
+	/// * max: maximum value that property can hold
+	/// * step: step value used when spin box value is incremented/decremented
+	/// * decimals: precision of the spin box in decimals
 	Double,
+	/// Available UI hints:
+	/// * item: Human readable enum value name. Should occur n times (n - number of values that enum can take).
 	Enum,
 	Matrix,
+	/// Available UI hints:
+	/// * filter: Filter used when displaying files in file dialog
+	/// * save: if true file dialog will ask for new file, not existing
 	Filepath,
 	String,
 }; 

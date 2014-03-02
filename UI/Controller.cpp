@@ -1163,19 +1163,28 @@ bool Controller::saveTreeToFileImpl(const QString& filePath)
 		jsonScene.append(jsonSceneElem);
 	}
 
-	NodeTreeSerializer nodeTreeSerializer(QFileInfo(filePath).absolutePath().toStdString());
-	QJsonObject jsonTree = nodeTreeSerializer.serializeJson(_nodeTree);
-	jsonTree.insert(QStringLiteral("scene"), jsonScene);
+	try
+	{
+		NodeTreeSerializer nodeTreeSerializer(QFileInfo(filePath).absolutePath().toStdString());
+		QJsonObject jsonTree = nodeTreeSerializer.serializeJson(_nodeTree);
+		jsonTree.insert(QStringLiteral("scene"), jsonScene);
 
-	QJsonDocument doc(jsonTree);
-	QByteArray textJson = doc.toJson(QJsonDocument::Indented);
-	textJson.replace("    ", "  ");
+		QJsonDocument doc(jsonTree);
+		QByteArray textJson = doc.toJson(QJsonDocument::Indented);
+		textJson.replace("    ", "  ");
 
-	QFile file(filePath);
-	if(!file.open(QIODevice::WriteOnly | QIODevice::Text))
+		QFile file(filePath);
+		if(!file.open(QIODevice::WriteOnly | QIODevice::Text))
+			return false;
+		file.write(textJson);
+		return true;
+	}
+	catch(std::exception& ex)
+	{
+		showErrorMessage(QString("Error during serializing current node tree: %1")
+			.arg(QString::fromStdString(ex.what())));
 		return false;
-	file.write(textJson);
-	return true;
+	}
 }
 
 bool Controller::openTreeFromFile(const QString& filePath)
@@ -2424,6 +2433,7 @@ void Controller::showDeviceSettings()
 namespace {
 
 #if K_SYSTEM == K_SYSTEM_WINDOWS
+static const QString pluginExtensionName = QStringLiteral("*.dll");
 
 static HMODULE moduleHandle()
 {
@@ -2440,8 +2450,7 @@ static QString pluginDirectory()
 {
 	HMODULE hModule = moduleHandle();
 	char buffer[MAX_PATH];
-	/*DWORD dwSize = */GetModuleFileNameA(hModule, buffer, MAX_PATH);
-	//dwSize = GetModuleFileNameA(nullptr, buffer, MAX_PATH);
+	GetModuleFileNameA(hModule, buffer, MAX_PATH);
 	QFileInfo fi(QString::fromLatin1(buffer));
 	QDir dllDir = fi.absoluteDir();
 	if(!dllDir.cd("plugins"))
@@ -2453,6 +2462,7 @@ static QString pluginDirectory()
 }
 
 #elif K_SYSTEM == K_SYSTEM_LINUX
+static const QString pluginExtensionName = QStringLiteral("*.dll");
 
 static QString pluginDirectory()
 {
@@ -2465,12 +2475,7 @@ static QString pluginDirectory()
 void Controller::pluginLookUp()
 {
 	QDir pluginDir(pluginDirectory());
-
-#if K_SYSTEM == K_SYSTEM_WINDOWS
-	auto list = pluginDir.entryInfoList(QStringList("*.dll"), QDir::Files);
-#elif K_SYSTEM == K_SYSTEM_LINUX
-	auto list = pluginDir.entryInfoList(QStringList("*.so"), QDir::Files);
-#endif
+	auto list = pluginDir.entryInfoList(QStringList(pluginExtensionName), QDir::Files);
 
 	for(const auto& pluginName : list)
 	{

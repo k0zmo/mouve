@@ -428,6 +428,7 @@ FilePathProperty::FilePathProperty(const QString& name,
 	EPropertyType::Filepath, nullptr)
 	, _fileInfo(QString::fromStdString(initialPath.data()))
 	, _filter()
+	, _save(false)
 {
 }
 
@@ -440,9 +441,16 @@ QVariant FilePathProperty::value(int role) const
 	}
 	else
 	{
-		// For display role - returns just a file name
-		QString ret = _fileInfo.fileName();
-		return ret.isEmpty() ? filepathToString(_value.value<Filepath>()) : ret;
+		if(!_save)
+		{
+			// For display role - returns just a file name
+			QString ret = _fileInfo.fileName();
+			return ret.isEmpty() ? filepathToString(_value.value<Filepath>()) : ret;
+		}
+		else
+		{
+			return filepathToString(_value.value<Filepath>());
+		}
 	}
 }
 
@@ -452,17 +460,26 @@ bool FilePathProperty::setValue(const QVariant& value, int role)
 	{
 		if(value.type() == qMetaTypeId<QString>())
 		{
-			QFileInfo tmpInfo = QFileInfo(value.toString());
-			if(tmpInfo != _fileInfo 
-				&& tmpInfo.exists())
+			if(!_save)
 			{
-				_fileInfo = tmpInfo;
-				_value = stringToFilepathVariant(_fileInfo.filePath());
-				return true;
-			}
+				QFileInfo tmpInfo = QFileInfo(value.toString());
+				if(tmpInfo != _fileInfo 
+					&& tmpInfo.exists())
+				{
+					_fileInfo = tmpInfo;
+					_value = stringToFilepathVariant(_fileInfo.filePath());
+					return true;
+				}
 
-			QRegExp re("^(https?|ftp|file|rtsp)://.+$");
-			if(re.exactMatch(value.toString()))
+				QRegExp re("^(https?|ftp|file|rtsp)://.+$");
+				if(re.exactMatch(value.toString()))
+				{
+					_fileInfo = QFileInfo();
+					_value = stringToFilepathVariant(value.toString());
+					return true;
+				}
+			}
+			else
 			{
 				_fileInfo = QFileInfo();
 				_value = stringToFilepathVariant(value.toString());
@@ -478,6 +495,7 @@ QWidget* FilePathProperty::createEditor(QWidget* parent)
 {
 	FileRequester* editor = new FileRequester(parent);
 	editor->setFilter(_filter);
+	editor->setMode(_save);
 	return editor;
 }
 
@@ -517,6 +535,8 @@ void FilePathProperty::setUiHints(const PropertyHintList& list)
 		QString hintName = it->first;
 		if(hintName == QStringLiteral("filter"))
 			_filter = it->second;
+		if(hintName == QStringLiteral("save"))
+			tryConvert(it->second, _save);
 		++it;
 	}
 }

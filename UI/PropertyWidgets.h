@@ -95,6 +95,7 @@ public slots:
 	void openFileDialog();
 	void setText(const QString& text);
 	void setFilter(const QString& filter);
+	void setMode(bool save);
 
 private slots:
 	void _q_textChangedPrivate(const QString& text);
@@ -107,6 +108,7 @@ private:
 	QToolButton* _openButton;
 	QString _filter;
 	QFileSystemModel* _fsModel;
+	bool _save;
 };
 
 class PropertyMatrixButton : public QPushButton

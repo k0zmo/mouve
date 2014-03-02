@@ -99,7 +99,7 @@ public:
 
 		cv::Mat& output = writer.acquireSocket(0).getImage();
 
-		++_currentFrame;        
+		++_currentFrame;
 
 		if(_endFrame > 0 && _currentFrame >= _endFrame)
 		{
