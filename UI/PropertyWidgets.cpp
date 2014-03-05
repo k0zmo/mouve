@@ -202,16 +202,19 @@ PropertyMatrixButton::PropertyMatrixButton(QWidget* parent)
 	: QPushButton(parent)
 {
 	setText(tr("Choose"));
-	connect(this, SIGNAL(clicked()), this, SLOT(showDialog()));
-}
 
-void PropertyMatrixButton::showDialog()
-{
-	int ok;
-	Matrix3x3 tmpMatrix = PropertyMatrixDialog::getCoefficients(this, _matrix, &ok);
-
-	if(ok)
-		setMatrix(tmpMatrix);
+	connect(this, &QPushButton::clicked, [=] {
+		// calling exec() would lead to premature closeEditor signal from PropertyDelegate
+		// before PropertyMatrixButton gets a chance to commit data
+		PropertyMatrixDialog* dlg = new PropertyMatrixDialog(_matrix, this);
+		dlg->open();
+		dlg->setWindowModality(Qt::WindowModal);
+		dlg->setAttribute(Qt::WA_DeleteOnClose);
+		connect(dlg, &QDialog::finished, [=](int result) {
+			if(dlg->result() == QDialog::Accepted)
+				setMatrix(dlg->coefficients());
+		});
+	});
 }
 
 void PropertyMatrixButton::setMatrix(const Matrix3x3& mat)
@@ -292,14 +295,4 @@ Matrix3x3 PropertyMatrixDialog::coefficients() const
 		m.v[i++] = sb->value() * sum;
 
 	return m;
-}
-
-Matrix3x3 PropertyMatrixDialog::getCoefficients(QWidget* parent, const Matrix3x3& init, int* ok)
-{
-	PropertyMatrixDialog dlg(init, parent);
-	const int res = dlg.exec();
-	if(ok)
-		*ok = res;
-		
-	return res == QDialog::Accepted ? dlg.coefficients() : init;
 }

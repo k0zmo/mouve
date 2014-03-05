@@ -12,8 +12,7 @@ PropertyDelegate::PropertyDelegate(QObject* parent)
 	// not needed as base class already call it and we just override its eventFilter function
 	//installEventFilter(this);
 
-	auto signal = static_cast<void (QSignalMapper::*)(QWidget*)>(&QSignalMapper::mapped);
-	connect(_mapper, signal, this, &QStyledItemDelegate::commitData); 
+	connect(_mapper, SIGNAL(mapped(QWidget*)), this, SIGNAL(commitData(QWidget*)));
 }
 
 PropertyDelegate::~PropertyDelegate()
@@ -37,8 +36,7 @@ QWidget* PropertyDelegate::createEditor(QWidget* parent,
 				if(_immediateUpdate && 
 					editor->metaObject()->indexOfSignal("commitData()") >= 0)
 				{
-					connect(editor, SIGNAL(commitData()),
-						_mapper, SLOT(map()));
+					connect(editor, SIGNAL(commitData()), _mapper, SLOT(map()));
 					_mapper->setMapping(editor, editor);
 				}
 
@@ -136,5 +134,6 @@ bool PropertyDelegate::eventFilter(QObject* obj, QEvent* event)
 			}
 		}
 	}
+
 	return QStyledItemDelegate::eventFilter(obj, event);
 }

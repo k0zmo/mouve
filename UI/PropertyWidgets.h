@@ -120,9 +120,6 @@ public:
 	void setMatrix(const Matrix3x3& mat);
 	Matrix3x3 matrix() const;
 
-private slots:
-	void showDialog();
-
 signals:
 	void commitData();
 
@@ -135,9 +132,6 @@ class PropertyMatrixDialog : public QDialog
 public:
 	explicit PropertyMatrixDialog(const Matrix3x3& matrix, QWidget* parent = nullptr);
 	Matrix3x3 coefficients() const;
-
-	static Matrix3x3 getCoefficients(QWidget* parent, 
-		const Matrix3x3& init = Matrix3x3(), int* ok = nullptr);
 
 private:
 	QCheckBox* _normalizeCheckBox;

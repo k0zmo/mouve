@@ -222,7 +222,7 @@ bool EnumProperty::setValue(const QVariant& value, int role)
 			Enum index = value.value<Enum>();
 			
 			if(index.data() >= 0 
-				&& index.data() < (uint) _valueList.count())
+				&& index.data() < _valueList.count())
 			{
 				_value = QVariant::fromValue<Enum>(Enum(index));
 				return true;
@@ -582,7 +582,9 @@ bool MatrixProperty::setEditorData(QWidget* editor,
 	{
 		if(data.userType() == qMetaTypeId<Matrix3x3>())
 		{
+			bool prev = ed->blockSignals(true);
 			ed->setMatrix(data.value<Matrix3x3>());
+			ed->blockSignals(prev);
 			return true;
 		}
 	}
