@@ -1,4 +1,5 @@
 #include "cvu.h"
+#include "Logic/Nodes/CV.h"
 
 #undef min
 #undef max
@@ -8,6 +9,15 @@
 #include <limits>
 
 #include <opencv2/imgproc/imgproc.hpp>
+
+namespace std
+{
+template <typename T>
+T clamp(T value, T a, T b)
+{
+	return std::min(std::max(value, a), b);
+}
+}
 
 namespace cvu
 {
@@ -256,4 +266,572 @@ void KuwaharaFilter(cv::InputArray src_, cv::OutputArray dst_, int radius)
 	else
 		CV_Assert(false);
 }
+
+void makeSector(cv::OutputArray kernel_, int N, float smoothing)
+{
+	// Create sector map
+	const int kernelSize = 32;
+	const float sigma = 0.25f * (kernelSize - 1);
+
+	const float kernelRadius = kernelSize * 0.5f;
+	const float kernelRadiusSquared = kernelRadius * kernelRadius;
+	
+	const float pi = 3.14159274101257f;
+	const float piOverN = pi / N;
+
+	cv::Mat& kernel = kernel_.getMatRef();
+	kernel.create(kernelSize, kernelSize, CV_32FC1);
+	kernel = cv::Scalar(0.0f);
+
+	//cv::Mat kernel_(kernelSize, kernelSize, CV_32FC1, cv::Scalar(0.0f));
+
+	// Create simple kernel
+	for(int y = 0; y < kernel.rows; ++y)
+	{
+		// transform from [0..height] to [-kernelRadius..kernelRadius]
+		float yy = y - kernelRadius + 0.5f; // center of pixel is shifted by 0.5
+
+		for(int x = 0; x < kernel.cols; ++x)
+		{
+			// transform from [0..width] to [-kernelRadius..kernelRadius]
+			float xx = x - kernelRadius + 0.5f;
+
+			// if we're still inside the circle
+			if(xx*xx + yy*yy < kernelRadiusSquared)
+			{
+				// angle from the origin
+				float argx = std::atan2(yy, xx);
+
+				if(std::fabs(argx) <= piOverN)
+					kernel.at<float>(y, x) = 1.0f;
+			}
+		}
+	}
+
+	if(smoothing > 0.0f)
+	{
+		// Convolve with gaussian kernel
+		cv::GaussianBlur(kernel, kernel, cv::Size(0, 0), smoothing * sigma);
+	}
+
+	// Multiply with gaussian kernel of the same size (given decay effect from the origin)
+	cv::Mat gaussKernel = cv::getGaussianKernel(kernelSize, sigma, CV_32F);
+	gaussKernel = gaussKernel * gaussKernel.t();
+	kernel = kernel.mul(gaussKernel);
+}
+
+void generalizedKuwaharaFilter_gray(const cv::Mat& src, cv::Mat& dst,
+									int radius, int N, float q, 
+									const cv::Mat& kernel)
+{
+	const int radiusSquared = radius * radius;
+	const float pi = 3.14159274101257f;
+	const float piN = 2.0f * pi / float(N);
+	const float cosPI = std::cos(piN);
+	const float sinPI = std::sin(piN);
+
+	cvu::parallel_for(cv::Range(0, src.rows), 
+		[&](const cv::Range& range)
+		{
+			const int maxN = 8;
+
+			for(int y = range.start; y < range.end; ++y)
+			{
+				for(int x = 0; x < src.cols; ++x)
+				{
+					// mean, stddev and weight
+					float m[maxN] = {0}, s[maxN] = {0}, w[maxN] = {0};
+
+					for(int j = -radius; j <= radius; ++j)
+					{
+						for(int i = -radius; i <= radius; ++i)
+						{
+							// outside the circle (but inside the square)
+							if(i*i + j*j > radiusSquared)
+								continue;
+
+							// use half-identity circle coordinates
+							float v0 = 0.5f * i / float(radius);
+							float v1 = 0.5f * j / float(radius);
+
+							float c = src.at<uchar>(
+								std::clamp(y + j, 0, src.rows - 1),
+								std::clamp(x + i, 0, src.cols - 1));
+							float cc = c * c;
+
+							for(int k = 0; k < N; ++k)
+							{
+								// map coordinates from circle of radius=radius to kernel map of radius=kernelSize
+								int u = static_cast<int>((v0 + 0.5f) * (kernel.cols - 1));
+								int v = static_cast<int>((v1 + 0.5f) * (kernel.rows - 1));
+
+								float weight = kernel.at<float>(v, u);
+
+								w[k] += weight;
+								m[k] += c * weight;
+								s[k] += cc * weight;
+
+								// instead of using 8 sector maps we use one and rotate coordinates
+								float v0_ =  v0*cosPI + v1*sinPI;
+								float v1_ = -v0*sinPI + v1*cosPI;
+								v0 = v0_;
+								v1 = v1_;
+							}
+						}
+					}
+
+					float out = 0.0f;
+					float sumWeight = 0.0f;
+
+					for (int k = 0; k < N; ++k)
+					{
+						m[k] /= w[k];
+						s[k] = s[k] / w[k] - m[k] * m[k];
+
+						float weight = 1.0f / (1.0f + std::pow(std::abs(s[k]), 0.5f * q));
+
+						sumWeight += weight;
+						out += m[k] * weight;
+					}
+
+					dst.at<uchar>(y, x) = cv::saturate_cast<uchar>(out / sumWeight);
+				}
+			}
+		});
+}
+
+void generalizedKuwaharaFilter_bgr(const cv::Mat& src, cv::Mat& dst,
+								   int radius, int N, float q, 
+								   const cv::Mat& kernel)
+{
+	const int radiusSquared = radius * radius;
+	const float pi = 3.14159274101257f;
+	const float piN = 2.0f * pi / float(N);
+	const float cosPI = std::cos(piN);
+	const float sinPI = std::sin(piN);
+
+	cvu::parallel_for(cv::Range(0, src.rows), 
+		[&](const cv::Range& range)
+		{
+			const int maxN = 8;
+
+			for(int y = range.start; y < range.end; ++y)
+			{
+				for(int x = 0; x < src.cols; ++x)
+				{
+					// mean, stddev and weight
+					cv::Vec3f m[maxN], s[maxN];
+					float w[maxN];
+					memset(w, 0, sizeof(w));
+
+					for(int j = -radius; j <= radius; ++j)
+					{
+						for(int i = -radius; i <= radius; ++i)
+						{
+							// outside the circle (but inside the square)
+							if(i*i + j*j > radiusSquared)
+								continue;
+
+							// use half-identity circle coordinates
+							float v0 = 0.5f * i / float(radius);
+							float v1 = 0.5f * j / float(radius);
+
+							cv::Vec3f c = src.at<cv::Vec3b>(
+								std::clamp(y + j, 0, src.rows - 1),
+								std::clamp(x + i, 0, src.cols - 1));
+							cv::Vec3f cc = c.mul(c);
+
+							for(int k = 0; k < N; ++k)
+							{
+								// map coordinates from circle of radius=radius to kernel map of radius=kernelSize
+								int u = static_cast<int>((v0 + 0.5f) * (kernel.cols - 1));
+								int v = static_cast<int>((v1 + 0.5f) * (kernel.rows - 1));
+
+								float weight = kernel.at<float>(v, u);
+
+								w[k] += weight;
+								m[k] += c * weight;
+								s[k] += cc * weight;
+
+								// instead of using 8 sector maps we use one and rotate coordinates
+								float v0_ =  v0*cosPI + v1*sinPI;
+								float v1_ = -v0*sinPI + v1*cosPI;
+								v0 = v0_;
+								v1 = v1_;
+							}
+						}
+					}
+
+					cv::Vec3f out;
+					float sumWeight = 0.0f;
+
+					for (int k = 0; k < N; ++k)
+					{
+						m[k] /= w[k];
+						s[k] = s[k] / w[k] - m[k].mul(m[k]);
+
+						float sigmaSum = std::abs(s[k][0]) + std::abs(s[k][1]) + std::abs(s[k][2]);
+						float weight = 1.0f / (1.0f + std::pow(sigmaSum, 0.5f * q));
+
+						sumWeight += weight;
+						out += m[k] * weight;
+					}
+
+					dst.at<cv::Vec3b>(y, x) = out / sumWeight;
+				}
+			}
+		});
+}
+
+void generalizedKuwaharaFilter(cv::InputArray src_, cv::OutputArray dst_,
+							   int radius, int N, float smoothing)
+{
+	cv::Mat src  = src_.getMat();
+	const float q = 8.0f;
+	const int maxN = 8;
+
+	CV_Assert(src.depth() == CV_8U);
+	CV_Assert(src.channels() == 3 || src.channels() == 1);
+	CV_Assert(radius >= 1 && radius <= 20);
+	CV_Assert(smoothing <= 1.0f && smoothing >= 0.0f);
+	CV_Assert(N >= 3 && N <= maxN);
+
+	cv::Mat& dst = dst_.getMatRef();
+	dst.create(src.size(), src.type());
+
+	cv::Mat kernel;
+	makeSector(kernel, N, smoothing);
+
+	if(src.type() == CV_8UC1)
+		generalizedKuwaharaFilter_gray(src, dst, radius, N, q, kernel);
+	else if(src.type() == CV_8UC3)
+		generalizedKuwaharaFilter_bgr(src, dst, radius, N, q, kernel);
+	else
+		CV_Assert(false);
+}
+
+void calcTFM(const cv::Mat& sst, cv::Mat& tfm)
+{
+	cvu::parallel_for(cv::Range(0, sst.rows),
+		[&](const cv::Range& range)
+		{
+			for(int y = range.start; y < range.end; ++y)
+			{
+				for(int x = 0; x < sst.cols; ++x)
+				{
+					cv::Vec3f g = sst.at<cv::Vec3f>(y, x);
+
+					float tmp = g[0]-g[1];
+					float sqrt_ = sqrtf(tmp*tmp + 4*g[2]*g[2]);
+					float lambda1 = 0.5f * (g[0] + g[1] + sqrt_);
+					float lambda2 = 0.5f * (g[0] + g[1] - sqrt_);
+
+					float tx = lambda1 - g[0];
+					float ty = -g[2];
+
+					cv::Vec2f t(tx, ty);
+					if(tx*tx + ty*ty > 0)
+						t = cv::normalize(t);
+					else
+						t = cv::Vec2f(0.0, 1.0);
+
+					float phi = std::atan2(t[1], t[0]);
+					float A = (lambda1 + lambda2 > 0) ?
+						(lambda1 - lambda2) / (lambda1 + lambda2) : 0.0f;
+
+					tfm.at<cv::Vec4f>(y, x) = cv::Vec4f(t[0], t[1], phi, A);
+				}
+			}
+		});
+}
+
+void anisotropicKuwaharaFilter_gray(const cv::Mat& srcNorm, cv::Mat& dst,
+									int radius, int N, float q, 
+									float alpha, float sigmaSst,
+									const cv::Mat& kernel)
+{
+	const cv::Mat dx = cv::Mat((cv::Mat_<double>(3,3) << -1,0,1, -2,0,2, -1,0,1));
+	const cv::Mat dy = cv::Mat((cv::Mat_<double>(3,3) << -1,-2,-1, 0,0,0, 1,2,1));
+
+	cv::Mat tmpx, tmpy;
+	cv::filter2D(srcNorm, tmpx, CV_32F, dx);
+	cv::filter2D(srcNorm, tmpy, CV_32F, dy);
+
+	cv::Mat sst(srcNorm.size(), CV_32FC3);
+	cvu::parallel_for(cv::Range(0, sst.rows),
+		[&](const cv::Range& range)
+		{
+			for(int y = range.start; y < range.end; ++y)
+			{
+				for(int x = 0; x < sst.cols; ++x)
+				{
+					float x_color = tmpx.at<float>(y, x);
+					float y_color = tmpy.at<float>(y, x);
+
+					float fxfx = x_color * x_color;
+					float fyfy = y_color * y_color;
+					float fxfy = x_color * y_color;
+
+					sst.at<cv::Vec3f>(y, x) = cv::Vec3f(fxfx, fyfy, fxfy);
+				}
+			}
+		});
+
+	cv::GaussianBlur(sst, sst, cv::Size(0,0), sigmaSst);
+
+	cv::Mat tfm(srcNorm.size(), CV_32FC4);
+	calcTFM(sst, tfm);
+
+	const float pi = 3.14159274101257f;
+	const float piN = 2.0f * pi / float(N);
+	const float cosPI = std::cos(piN);
+	const float sinPI = std::sin(piN);
+
+	cvu::parallel_for(cv::Range(0, dst.rows), 
+		[&](const cv::Range& range)
+		{
+			const int N = 8;
+			for(int y = range.start; y < range.end; ++y)
+			{
+				for(int x = 0; x < dst.cols; ++x)
+				{
+					cv::Vec4f t = tfm.at<cv::Vec4f>(y, x);
+
+					float a = radius * std::clamp((alpha + t[3]) / alpha, 0.1f, 2.0f);
+					float b = radius * std::clamp(alpha / (alpha + t[3]), 0.1f, 2.0f);
+
+					float cos_phi = std::cos(t[2]);
+					float sin_phi = std::sin(t[2]);
+
+					float sr0 =  0.5f/a * cos_phi;
+					float sr1 =  0.5f/a * sin_phi;
+					float sr2 = -0.5f/b * sin_phi;
+					float sr3 =  0.5f/b * cos_phi;
+
+					int max_x = int(std::sqrt(a*a * cos_phi*cos_phi +
+											  b*b * sin_phi*sin_phi));
+					int max_y = int(std::sqrt(a*a * sin_phi*sin_phi +
+											  b*b * cos_phi*cos_phi));
+
+
+					float m[N] = {0}, s[N] = {0}, w[N] = {0};
+
+					for (int j = -max_y; j <= max_y; ++j)
+					{
+						for (int i = -max_x; i <= max_x; ++i)
+						{
+							float v0 = sr0*i + sr1*j;
+							float v1 = sr2*i + sr3*j;
+
+							if((v0*v0 + v1*v1) < 0.25f)
+							{
+								float c = srcNorm.at<float>(
+									std::clamp(y + j, 0, srcNorm.rows - 1),
+									std::clamp(x + i, 0, srcNorm.cols - 1));
+								float cc = c * c;
+
+								for (int k = 0; k < N; ++k)
+								{
+									int u = static_cast<int>((v0 + 0.5f) * (kernel.cols - 1));
+									int v = static_cast<int>((v1 + 0.5f) * (kernel.rows - 1));
+
+									float weight = kernel.at<float>(v, u);
+
+									w[k] += weight;
+									m[k] += c * weight;
+									s[k] += cc * weight;
+
+									float v0_ =  v0*cosPI + v1*sinPI;
+									float v1_ = -v0*sinPI + v1*cosPI;
+									v0 = v0_;
+									v1 = v1_;
+								}
+							}
+						}
+					}
+
+					float out = 0.0f;
+					float sumWeight = 0.0f;
+
+					for (int k = 0; k < N; ++k)
+					{
+						m[k] /= w[k];
+						s[k] = s[k] / w[k] - m[k] * m[k];
+
+						float weight = 1.0f / (1.0f + std::pow(255.0f * std::abs(s[k]), 0.5f * q));
+
+						sumWeight += weight;
+						out += m[k] * weight;
+					}
+
+					dst.at<float>(y, x) = out / sumWeight;
+				}
+			}
+		});
+
+	cv::normalize(dst, dst, 0, 255.0, cv::NORM_MINMAX, CV_8UC1);
+}
+
+void anisotropicKuwaharaFilter_bgr(const cv::Mat& srcNorm, cv::Mat& dst,
+								   int radius, int N, float q, 
+								   float alpha, float sigmaSst,
+								   const cv::Mat& kernel)
+{
+	const cv::Mat dx = cv::Mat((cv::Mat_<double>(3,3) << -1,0,1, -2,0,2, -1,0,1));
+	const cv::Mat dy = cv::Mat((cv::Mat_<double>(3,3) << -1,-2,-1, 0,0,0, 1,2,1));
+
+	cv::Mat tmpx, tmpy;
+	cv::filter2D(srcNorm, tmpx, CV_32F, dx);
+	cv::filter2D(srcNorm, tmpy, CV_32F, dy);
+
+	cv::Mat sst(srcNorm.size(), CV_32FC3);
+	cvu::parallel_for(cv::Range(0, sst.rows),
+		[&](const cv::Range& range)
+		{
+			for(int y = range.start; y < range.end; ++y)
+			{
+				for(int x = 0; x < sst.cols; ++x)
+				{
+					cv::Vec3f x_rgb = tmpx.at<cv::Vec3f>(y, x);
+					cv::Vec3f y_rgb = tmpy.at<cv::Vec3f>(y, x);
+
+					float fxfx = x_rgb.dot(x_rgb);
+					float fyfy = y_rgb.dot(y_rgb);
+					float fxfy = x_rgb.dot(y_rgb);
+
+					sst.at<cv::Vec3f>(y, x) = cv::Vec3f(fxfx, fyfy, fxfy);
+				}
+			}
+		});
+
+	cv::GaussianBlur(sst, sst, cv::Size(0,0), sigmaSst);
+
+	cv::Mat tfm(srcNorm.size(), CV_32FC4);
+	calcTFM(sst, tfm);
+	
+	const float pi = 3.14159274101257f;
+	const float piN = 2.0f * pi / float(N);
+	const float cosPI = std::cos(piN);
+	const float sinPI = std::sin(piN);
+
+	cvu::parallel_for(cv::Range(0, dst.rows), 
+		[&](const cv::Range& range)
+		{
+			const int N = 8;
+			for(int y = range.start; y < range.end; ++y)
+			{
+				for(int x = 0; x < dst.cols; ++x)
+				{
+					cv::Vec4f t = tfm.at<cv::Vec4f>(y, x);
+
+					float a = radius * std::clamp((alpha + t[3]) / alpha, 0.1f, 2.0f);
+					float b = radius * std::clamp(alpha / (alpha + t[3]), 0.1f, 2.0f);
+
+					float cos_phi = std::cos(t[2]);
+					float sin_phi = std::sin(t[2]);
+
+					float sr0 =  0.5f/a * cos_phi;
+					float sr1 =  0.5f/a * sin_phi;
+					float sr2 = -0.5f/b * sin_phi;
+					float sr3 =  0.5f/b * cos_phi;
+
+					int max_x = int(std::sqrt(a*a * cos_phi*cos_phi +
+											  b*b * sin_phi*sin_phi));
+					int max_y = int(std::sqrt(a*a * sin_phi*sin_phi +
+											  b*b * cos_phi*cos_phi));
+
+
+					cv::Vec3f m[N], s[N];
+					float w[N] = {0};
+
+					for (int j = -max_y; j <= max_y; ++j)
+					{
+						for (int i = -max_x; i <= max_x; ++i)
+						{
+							float v0 = sr0*i + sr1*j;
+							float v1 = sr2*i + sr3*j;
+
+							if((v0*v0 + v1*v1) < 0.25f)
+							{
+								cv::Vec3f c = srcNorm.at<cv::Vec3f>(
+									std::clamp(y + j, 0, srcNorm.rows - 1),
+									std::clamp(x + i, 0, srcNorm.cols - 1));
+								cv::Vec3f cc = c.mul(c);
+
+								for (int k = 0; k < N; ++k)
+								{
+									int u = static_cast<int>((v0 + 0.5f) * (kernel.cols - 1));
+									int v = static_cast<int>((v1 + 0.5f) * (kernel.rows - 1));
+
+									float weight = kernel.at<float>(v, u);
+
+									w[k] += weight;
+									m[k] += c * weight;
+									s[k] += cc * weight;
+
+									float v0_ =  v0*cosPI + v1*sinPI;
+									float v1_ = -v0*sinPI + v1*cosPI;
+									v0 = v0_;
+									v1 = v1_;
+								}
+							}
+						}
+					}
+
+					cv::Vec3f out;
+					float sumWeight = 0.0f;
+
+					for (int k = 0; k < N; ++k)
+					{
+						m[k] /= w[k];
+						s[k] = s[k] / w[k] - m[k].mul(m[k]);
+
+						float sigma2 = std::abs(s[k][0]) + std::abs(s[k][1]) + std::abs(s[k][2]);
+						float weight = 1.0f / (1.0f + std::pow(255.0f * sigma2, 0.5f * q));
+
+						sumWeight += weight;
+						out += m[k] * weight;
+					}
+
+					dst.at<cv::Vec3f>(y, x) = out / sumWeight;
+				}
+			}
+		});
+
+	cv::normalize(dst, dst, 0, 255.0, cv::NORM_MINMAX, CV_8UC3);
+}
+
+void anisotropicKuwaharaFilter(cv::InputArray src_, cv::OutputArray dst_,
+							   int radius, int N, float smoothing)
+{
+	cv::Mat src  = src_.getMat();
+	const float q = 8.0f;
+	const int maxN = 8;
+	const float sigmaSst = 2.0f;
+	const float alpha = 1.0f;
+
+	CV_Assert(src.depth() == CV_8U);
+	CV_Assert(src.channels() == 3 || src.channels() == 1);
+	CV_Assert(radius >= 1 && radius <= 20);
+	CV_Assert(smoothing <= 1.0f && smoothing >= 0.0f);
+	CV_Assert(N >= 3 && N <= maxN);
+
+	cv::Mat& dst = dst_.getMatRef();
+	// later it will be converted to CV_8U
+	dst.create(src.size(), CV_MAKETYPE(CV_32F, src.channels()));
+
+	cv::Mat kernel;
+	makeSector(kernel, N, smoothing);
+
+	cv::Mat srcNorm;
+	cv::normalize(src, srcNorm, 0, 1.0, cv::NORM_MINMAX, CV_MAKETYPE(CV_32F, src.channels()));
+
+	if(src.type() == CV_8UC1)
+		anisotropicKuwaharaFilter_gray(srcNorm, dst, radius, N, q, alpha, sigmaSst, kernel);
+	else if(src.type() == CV_8UC3)
+		anisotropicKuwaharaFilter_bgr(srcNorm, dst, radius, N, q, alpha, sigmaSst, kernel);
+	else
+		CV_Assert(false);
+}
+
 }
