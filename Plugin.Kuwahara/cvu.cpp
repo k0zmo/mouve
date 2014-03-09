@@ -26,7 +26,7 @@ struct ClampToEdgePolicy
 	static int clamp(int x, int size)
 	{
 		//return x < 0 ? 0 : x >= width ? width - 1: x;
-		return std::min(std::max(x, 0), size - 1);
+		return std::clamp(x, 0, size - 1);
 	}
 };
 
@@ -42,8 +42,8 @@ struct NoClampPolicy
 template<typename ClampPolicy>
 void KuwaharaFilter_gray_pix(int x, int y, const cv::Mat& src, cv::Mat& dst, int radius)
 {
-	float mean[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
-	float sqmean[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
+	float mean[4] = {0};
+	float sqmean[4] = {0};
 
 	const int height = src.rows;
 	const int width = src.cols;
@@ -118,9 +118,13 @@ void KuwaharaFilter_gray_pix(int x, int y, const cv::Mat& src, cv::Mat& dst, int
 void KuwaharaFilter_gray(const cv::Mat& src, cv::Mat& dst, int radius)
 {
 #if 1
-	for(int y = radius; y < src.rows - radius; ++y)
-		for(int x = radius; x < src.cols - radius; ++x)
-			KuwaharaFilter_gray_pix<cvu::NoClampPolicy>(x, y, src, dst, radius);
+	cvu::parallel_for(cv::Range(radius, src.rows - radius),
+		[&](const cv::Range& range)
+		{
+			for(int y = range.start; y < range.end; ++y)
+				for(int x = radius; x < src.cols - radius; ++x)
+					KuwaharaFilter_gray_pix<cvu::NoClampPolicy>(x, y, src, dst, radius);
+		});
 
 	for(int y = 0; y < radius; ++y)
 		for(int x = 0; x < src.cols; ++x)
@@ -135,17 +139,21 @@ void KuwaharaFilter_gray(const cv::Mat& src, cv::Mat& dst, int radius)
 		for(int x = src.cols - radius; x < src.cols; ++x)
 			KuwaharaFilter_gray_pix<ClampToEdgePolicy>(x, y, src, dst, radius);
 #else
-	for(int y = 0; y < src.rows; ++y)
-		for(int x = 0; x < src.cols; ++x)
-			KuwaharaFilter_gray_pix<ClampToEdgePolicy>(x, y, src, dst, radius);
+	cvu::parallel_for(cv::Range(0, src.rows), 
+		[&](const cv::Range& range)
+		{
+			for(int y = range.start; y < range.end; ++y)
+				for(int x = 0; x < src.cols; ++x)
+					KuwaharaFilter_gray_pix<ClampToEdgePolicy>(x, y, src, dst, radius);
+		});
 #endif
 }
 
 template<typename ClampPolicy>
 void KuwaharaFilter_bgr_pix(int x, int y, const cv::Mat& src, cv::Mat& dst, int radius)
 {
-	cv::Vec3f mean[4] = { 0 };
-	cv::Vec3f sqmean[4] = { 0 };
+	cv::Vec3f mean[4] = {0};
+	cv::Vec3f sqmean[4] = {0};
 
 	const int height = src.rows;
 	const int width = src.cols;
@@ -215,10 +223,7 @@ void KuwaharaFilter_bgr_pix(int x, int y, const cv::Mat& src, cv::Mat& dst, int 
 		if(sigma < min_sigma)
 		{
 			min_sigma = sigma;
-			dst.at<cv::Vec3b>(y, x) = cv::Vec3b(
-				cv::saturate_cast<uchar>(mean[k][0]),
-				cv::saturate_cast<uchar>(mean[k][1]),
-				cv::saturate_cast<uchar>(mean[k][2]));
+			dst.at<cv::Vec3b>(y, x) = mean[k];
 		}
 	}
 }
@@ -226,9 +231,13 @@ void KuwaharaFilter_bgr_pix(int x, int y, const cv::Mat& src, cv::Mat& dst, int 
 void KuwaharaFilter_bgr(const cv::Mat& src, cv::Mat& dst, int radius)
 {
 #if 1
-	for(int y = radius; y < src.rows - radius; ++y)
-		for(int x = radius; x < src.cols - radius; ++x)
-			KuwaharaFilter_bgr_pix<cvu::NoClampPolicy>(x, y, src, dst, radius);
+	cvu::parallel_for(cv::Range(radius, src.rows - radius), 
+		[&](const cv::Range& range)
+		{
+			for(int y = range.start; y < range.end; ++y)
+				for(int x = radius; x < src.cols - radius; ++x)
+					KuwaharaFilter_bgr_pix<cvu::NoClampPolicy>(x, y, src, dst, radius);
+		});
 
 	for(int y = 0; y < radius; ++y)
 		for(int x = 0; x < src.cols; ++x)
@@ -243,9 +252,13 @@ void KuwaharaFilter_bgr(const cv::Mat& src, cv::Mat& dst, int radius)
 		for(int x = src.cols - radius; x < src.cols; ++x)
 			KuwaharaFilter_bgr_pix<ClampToEdgePolicy>(x, y, src, dst, radius);
 #else
-	for(int y = 0; y < src.rows; ++y)
-		for(int x = 0; x < src.cols; ++x)
-			KuwaharaFilter_bgr_pix<ClampToEdgePolicy>(x, y, src, dst, radius);
+	cvu::parallel_for(cv::Range(0, src.rows),
+		[&](const cv::Range& range)
+		{
+			for(int y = range.start; y < range.end; ++y)
+				for(int x = 0; x < src.cols; ++x)
+					KuwaharaFilter_bgr_pix<ClampToEdgePolicy>(x, y, src, dst, radius);
+		});
 #endif
 }
 
@@ -283,8 +296,6 @@ void makeSector(cv::OutputArray kernel_, int N, float smoothing)
 	kernel.create(kernelSize, kernelSize, CV_32FC1);
 	kernel = cv::Scalar(0.0f);
 
-	//cv::Mat kernel_(kernelSize, kernelSize, CV_32FC1, cv::Scalar(0.0f));
-
 	// Create simple kernel
 	for(int y = 0; y < kernel.rows; ++y)
 	{
@@ -314,7 +325,7 @@ void makeSector(cv::OutputArray kernel_, int N, float smoothing)
 		cv::GaussianBlur(kernel, kernel, cv::Size(0, 0), smoothing * sigma);
 	}
 
-	// Multiply with gaussian kernel of the same size (given decay effect from the origin)
+	// Multiply with gaussian kernel of the same size (gives decay effect from the origin)
 	cv::Mat gaussKernel = cv::getGaussianKernel(kernelSize, sigma, CV_32F);
 	gaussKernel = gaussKernel * gaussKernel.t();
 	kernel = kernel.mul(gaussKernel);
@@ -340,7 +351,7 @@ void generalizedKuwaharaFilter_gray(const cv::Mat& src, cv::Mat& dst,
 				for(int x = 0; x < src.cols; ++x)
 				{
 					// mean, stddev and weight
-					float m[maxN] = {0}, s[maxN] = {0}, w[maxN] = {0};
+					float mean[maxN] = {0}, sqMean[maxN] = {0}, weight[maxN] = {0};
 
 					for(int j = -radius; j <= radius; ++j)
 					{
@@ -365,11 +376,11 @@ void generalizedKuwaharaFilter_gray(const cv::Mat& src, cv::Mat& dst,
 								int u = static_cast<int>((v0 + 0.5f) * (kernel.cols - 1));
 								int v = static_cast<int>((v1 + 0.5f) * (kernel.rows - 1));
 
-								float weight = kernel.at<float>(v, u);
+								float w = kernel.at<float>(v, u);
 
-								w[k] += weight;
-								m[k] += c * weight;
-								s[k] += cc * weight;
+								weight[k] += w;
+								mean[k]   += c * w;
+								sqMean[k] += cc * w;
 
 								// instead of using 8 sector maps we use one and rotate coordinates
 								float v0_ =  v0*cosPI + v1*sinPI;
@@ -385,13 +396,13 @@ void generalizedKuwaharaFilter_gray(const cv::Mat& src, cv::Mat& dst,
 
 					for (int k = 0; k < N; ++k)
 					{
-						m[k] /= w[k];
-						s[k] = s[k] / w[k] - m[k] * m[k];
+						mean[k] /= weight[k];
+						sqMean[k] = sqMean[k] / weight[k] - mean[k] * mean[k];
 
-						float weight = 1.0f / (1.0f + std::pow(std::abs(s[k]), 0.5f * q));
+						float w = 1.0f / (1.0f + std::pow(std::abs(sqMean[k]), 0.5f * q));
 
-						sumWeight += weight;
-						out += m[k] * weight;
+						sumWeight += w;
+						out += mean[k] * w;
 					}
 
 					dst.at<uchar>(y, x) = cv::saturate_cast<uchar>(out / sumWeight);
@@ -420,9 +431,8 @@ void generalizedKuwaharaFilter_bgr(const cv::Mat& src, cv::Mat& dst,
 				for(int x = 0; x < src.cols; ++x)
 				{
 					// mean, stddev and weight
-					cv::Vec3f m[maxN], s[maxN];
-					float w[maxN];
-					memset(w, 0, sizeof(w));
+					cv::Vec3f mean[maxN], sqMean[maxN];
+					float weight[maxN] = {0};
 
 					for(int j = -radius; j <= radius; ++j)
 					{
@@ -447,11 +457,11 @@ void generalizedKuwaharaFilter_bgr(const cv::Mat& src, cv::Mat& dst,
 								int u = static_cast<int>((v0 + 0.5f) * (kernel.cols - 1));
 								int v = static_cast<int>((v1 + 0.5f) * (kernel.rows - 1));
 
-								float weight = kernel.at<float>(v, u);
+								float w = kernel.at<float>(v, u);
 
-								w[k] += weight;
-								m[k] += c * weight;
-								s[k] += cc * weight;
+								weight[k] += w;
+								mean[k]   += c * w;
+								sqMean[k] += cc * w;
 
 								// instead of using 8 sector maps we use one and rotate coordinates
 								float v0_ =  v0*cosPI + v1*sinPI;
@@ -467,14 +477,14 @@ void generalizedKuwaharaFilter_bgr(const cv::Mat& src, cv::Mat& dst,
 
 					for (int k = 0; k < N; ++k)
 					{
-						m[k] /= w[k];
-						s[k] = s[k] / w[k] - m[k].mul(m[k]);
+						mean[k] /= weight[k];
+						sqMean[k] = sqMean[k] / weight[k] - mean[k].mul(mean[k]);
 
-						float sigmaSum = std::abs(s[k][0]) + std::abs(s[k][1]) + std::abs(s[k][2]);
-						float weight = 1.0f / (1.0f + std::pow(sigmaSum, 0.5f * q));
+						float sigmaSum = std::abs(sqMean[k][0]) + std::abs(sqMean[k][1]) + std::abs(sqMean[k][2]);
+						float w = 1.0f / (1.0f + std::pow(sigmaSum, 0.5f * q));
 
-						sumWeight += weight;
-						out += m[k] * weight;
+						sumWeight += w;
+						out += mean[k] * w;
 					}
 
 					dst.at<cv::Vec3b>(y, x) = out / sumWeight;
@@ -521,8 +531,8 @@ void calcTFM(const cv::Mat& sst, cv::Mat& tfm)
 				{
 					cv::Vec3f g = sst.at<cv::Vec3f>(y, x);
 
-					float tmp = g[0]-g[1];
-					float sqrt_ = sqrtf(tmp*tmp + 4*g[2]*g[2]);
+					float a = g[0]-g[1];
+					float sqrt_ = sqrtf(a*a + 4*g[2]*g[2]);
 					float lambda1 = 0.5f * (g[0] + g[1] + sqrt_);
 					float lambda2 = 0.5f * (g[0] + g[1] - sqrt_);
 
@@ -614,7 +624,7 @@ void anisotropicKuwaharaFilter_gray(const cv::Mat& srcNorm, cv::Mat& dst,
 											  b*b * cos_phi*cos_phi));
 
 
-					float m[N] = {0}, s[N] = {0}, w[N] = {0};
+					float mean[N] = {0}, sqMean[N] = {0}, weight[N] = {0};
 
 					for (int j = -max_y; j <= max_y; ++j)
 					{
@@ -635,11 +645,11 @@ void anisotropicKuwaharaFilter_gray(const cv::Mat& srcNorm, cv::Mat& dst,
 									int u = static_cast<int>((v0 + 0.5f) * (kernel.cols - 1));
 									int v = static_cast<int>((v1 + 0.5f) * (kernel.rows - 1));
 
-									float weight = kernel.at<float>(v, u);
+									float w = kernel.at<float>(v, u);
 
-									w[k] += weight;
-									m[k] += c * weight;
-									s[k] += cc * weight;
+									weight[k] += w;
+									mean[k]   += c * w;
+									sqMean[k] += cc * w;
 
 									float v0_ =  v0*cosPI + v1*sinPI;
 									float v1_ = -v0*sinPI + v1*cosPI;
@@ -655,13 +665,13 @@ void anisotropicKuwaharaFilter_gray(const cv::Mat& srcNorm, cv::Mat& dst,
 
 					for (int k = 0; k < N; ++k)
 					{
-						m[k] /= w[k];
-						s[k] = s[k] / w[k] - m[k] * m[k];
+						mean[k] /= weight[k];
+						sqMean[k] = sqMean[k] / weight[k] - mean[k] * mean[k];
 
-						float weight = 1.0f / (1.0f + std::pow(255.0f * std::abs(s[k]), 0.5f * q));
+						float w = 1.0f / (1.0f + std::pow(255.0f * std::abs(sqMean[k]), 0.5f * q));
 
-						sumWeight += weight;
-						out += m[k] * weight;
+						sumWeight += w;
+						out += mean[k] * w;
 					}
 
 					dst.at<float>(y, x) = out / sumWeight;
@@ -741,8 +751,8 @@ void anisotropicKuwaharaFilter_bgr(const cv::Mat& srcNorm, cv::Mat& dst,
 											  b*b * cos_phi*cos_phi));
 
 
-					cv::Vec3f m[N], s[N];
-					float w[N] = {0};
+					cv::Vec3f mean[N], sqMean[N];
+					float weight[N] = {0};
 
 					for (int j = -max_y; j <= max_y; ++j)
 					{
@@ -763,11 +773,11 @@ void anisotropicKuwaharaFilter_bgr(const cv::Mat& srcNorm, cv::Mat& dst,
 									int u = static_cast<int>((v0 + 0.5f) * (kernel.cols - 1));
 									int v = static_cast<int>((v1 + 0.5f) * (kernel.rows - 1));
 
-									float weight = kernel.at<float>(v, u);
+									float w = kernel.at<float>(v, u);
 
-									w[k] += weight;
-									m[k] += c * weight;
-									s[k] += cc * weight;
+									weight[k] += w;
+									mean[k]   += c * w;
+									sqMean[k] += cc * w;
 
 									float v0_ =  v0*cosPI + v1*sinPI;
 									float v1_ = -v0*sinPI + v1*cosPI;
@@ -783,14 +793,14 @@ void anisotropicKuwaharaFilter_bgr(const cv::Mat& srcNorm, cv::Mat& dst,
 
 					for (int k = 0; k < N; ++k)
 					{
-						m[k] /= w[k];
-						s[k] = s[k] / w[k] - m[k].mul(m[k]);
+						mean[k] /= weight[k];
+						sqMean[k] = sqMean[k] / weight[k] - mean[k].mul(mean[k]);
 
-						float sigma2 = std::abs(s[k][0]) + std::abs(s[k][1]) + std::abs(s[k][2]);
-						float weight = 1.0f / (1.0f + std::pow(255.0f * sigma2, 0.5f * q));
+						float sigma2 = std::abs(sqMean[k][0]) + std::abs(sqMean[k][1]) + std::abs(sqMean[k][2]);
+						float w = 1.0f / (1.0f + std::pow(255.0f * sigma2, 0.5f * q));
 
-						sumWeight += weight;
-						out += m[k] * weight;
+						sumWeight += w;
+						out += mean[k] * w;
 					}
 
 					dst.at<cv::Vec3f>(y, x) = out / sumWeight;
