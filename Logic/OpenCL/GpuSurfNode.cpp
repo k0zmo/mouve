@@ -152,7 +152,7 @@ public:
 
 	ExecutionStatus execute(NodeSocketReader& reader, NodeSocketWriter& writer) override
 	{
-		const clw::Image2D& deviceImage = reader.readSocket(0).getDeviceImage();
+		const clw::Image2D& deviceImage = reader.readSocket(0).getDeviceImageMono();
 		KeyPoints& kp = writer.acquireSocket(0).getKeypoints();
 		cv::Mat& descriptors = writer.acquireSocket(1).getArray();
 		DeviceArray& descriptors_dev = writer.acquireSocket(2).getDeviceArray();
@@ -285,7 +285,7 @@ public:
 	void configuration(NodeConfig& nodeConfig) const override
 	{
 		static const InputSocketConfig in_config[] = {
-			{ ENodeFlowDataType::DeviceImage, "image", "Image", "" },
+			{ ENodeFlowDataType::DeviceImageMono, "image", "Image", "" },
 			{ ENodeFlowDataType::Invalid, "", "", "" }
 		};
 		static const OutputSocketConfig out_config[] = {

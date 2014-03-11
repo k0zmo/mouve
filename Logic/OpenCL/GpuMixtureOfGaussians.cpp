@@ -137,8 +137,8 @@ public:
 
 	ExecutionStatus execute(NodeSocketReader& reader, NodeSocketWriter& writer) override
 	{
-		const clw::Image2D& deviceImage = reader.readSocket(0).getDeviceImage();
-		clw::Image2D& deviceDest = writer.acquireSocket(0).getDeviceImage();
+		const clw::Image2D& deviceImage = reader.readSocket(0).getDeviceImageMono();
+		clw::Image2D& deviceDest = writer.acquireSocket(0).getDeviceImageMono();
 
 		int srcWidth = deviceImage.width();
 		int srcHeight = deviceImage.height();
@@ -181,7 +181,7 @@ public:
 
 		if(_showBackground)
 		{
-			clw::Image2D& deviceDestBackground = writer.acquireSocket(1).getDeviceImage();
+			clw::Image2D& deviceDestBackground = writer.acquireSocket(1).getDeviceImageMono();
 			if(deviceDestBackground.isNull()
 				|| deviceDestBackground.width() != srcWidth
 				|| deviceDestBackground.height() != srcHeight)
@@ -210,12 +210,12 @@ public:
 	void configuration(NodeConfig& nodeConfig) const override
 	{
 		static const InputSocketConfig in_config[] = {
-			{ ENodeFlowDataType::DeviceImage, "input", "Image", "" },
+			{ ENodeFlowDataType::DeviceImageMono, "input", "Image", "" },
 			{ ENodeFlowDataType::Invalid, "", "", "" }
 		};
 		static const OutputSocketConfig out_config[] = {
-			{ ENodeFlowDataType::DeviceImage, "output", "Output", "" },
-			{ ENodeFlowDataType::DeviceImage, "background", "Background", "" },
+			{ ENodeFlowDataType::DeviceImageMono, "output", "Output", "" },
+			{ ENodeFlowDataType::DeviceImageMono, "background", "Background", "" },
 			{ ENodeFlowDataType::Invalid, "", "", "" }
 		};
 		static const PropertyConfig prop_config[] = {

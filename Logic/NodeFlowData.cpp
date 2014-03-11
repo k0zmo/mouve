@@ -15,11 +15,7 @@ NodeFlowData::NodeFlowData(ENodeFlowDataType dataType)
 	switch(dataType)
 	{
 	case ENodeFlowDataType::Image:
-		_data = cv::Mat();
-		break;
 	case ENodeFlowDataType::ImageMono:
-		_data = cv::Mat();
-		break;
 	case ENodeFlowDataType::ImageRgb:
 		_data = cv::Mat();
 		break;
@@ -34,6 +30,8 @@ NodeFlowData::NodeFlowData(ENodeFlowDataType dataType)
 		break;
 #if defined(HAVE_OPENCL)
 	case ENodeFlowDataType::DeviceImage:
+	case ENodeFlowDataType::DeviceImageMono:
+	case ENodeFlowDataType::DeviceImageRgb:
 		_data = clw::Image2D();
 		break;
 	case ENodeFlowDataType::DeviceArray:
@@ -103,6 +101,19 @@ bool NodeFlowData::isConvertible(ENodeFlowDataType from,
 	case ENodeFlowDataType::Matches:
 #if defined(HAVE_OPENCL)
 	case ENodeFlowDataType::DeviceImage:
+		if(to == ENodeFlowDataType::DeviceImageMono)
+			return boost::get<clw::Image2D>(_data).bytesPerElement() == 1;
+		else if(to == ENodeFlowDataType::DeviceImageRgb)
+			return boost::get<clw::Image2D>(_data).bytesPerElement() == 4;
+		break;
+	case ENodeFlowDataType::DeviceImageMono:
+		if(to == ENodeFlowDataType::DeviceImage)
+			return boost::get<clw::Image2D>(_data).bytesPerElement() == 1;
+		break;
+	case ENodeFlowDataType::DeviceImageRgb:
+		if(to == ENodeFlowDataType::DeviceImage)
+			return boost::get<clw::Image2D>(_data).bytesPerElement() == 4;
+		break;
 	case ENodeFlowDataType::DeviceArray:
 #endif
 		break;
@@ -181,6 +192,26 @@ clw::Image2D& NodeFlowData::getDeviceImage()
 const clw::Image2D& NodeFlowData::getDeviceImage() const
 {
 	return getType<ENodeFlowDataType::DeviceImage, clw::Image2D>();
+}
+
+clw::Image2D& NodeFlowData::getDeviceImageMono()
+{
+	return getType<ENodeFlowDataType::DeviceImageMono, clw::Image2D>();
+}
+
+const clw::Image2D& NodeFlowData::getDeviceImageMono() const
+{
+	return getType<ENodeFlowDataType::DeviceImageMono, clw::Image2D>();
+}
+
+clw::Image2D& NodeFlowData::getDeviceImageRgb()
+{
+	return getType<ENodeFlowDataType::DeviceImageRgb, clw::Image2D>();
+}
+
+const clw::Image2D& NodeFlowData::getDeviceImageRgb() const
+{
+	return getType<ENodeFlowDataType::DeviceImageRgb, clw::Image2D>();
 }
 
 DeviceArray& NodeFlowData::getDeviceArray()

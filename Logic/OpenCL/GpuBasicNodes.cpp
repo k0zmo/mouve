@@ -28,50 +28,98 @@ public:
 		return NodeProperty();
 	}
 
+	bool postInit() override
+	{
+		_kidConvertBufferRgbToImageRgba = _gpuComputeModule->registerKernel("convertBufferRgbToImageRgba", "color.cl");
+		return _kidConvertBufferRgbToImageRgba != InvalidKernelID;
+	}
+
 	ExecutionStatus execute(NodeSocketReader& reader, NodeSocketWriter& writer) override
 	{
-		const cv::Mat& hostImage = reader.readSocket(0).getImageMono();
+		const cv::Mat& hostImage = reader.readSocket(0).getImage();
 		clw::Image2D& deviceImage = writer.acquireSocket(0).getDeviceImage();
 
-		/// TODO: For now we assume it's always 1 channel image
-		if(hostImage.channels() > 1)
-			return ExecutionStatus(EStatus::Error, "Invalid number of channels (should be 1)");
+		if(hostImage.channels() != 1 && hostImage.channels() != 3)
+			return ExecutionStatus(EStatus::Error, "Invalid number of channels (should be 1 or 3)");
+
+		bool recreateImageBuffer = false;
 
 		if(deviceImage.isNull() 
 			|| deviceImage.width() != hostImage.cols
-			|| deviceImage.height() != hostImage.rows)
+			|| deviceImage.height() != hostImage.rows
+			|| deviceImage.bytesPerElement() != hostImage.channels())
 		{
+			clw::EChannelOrder channelOrder = hostImage.channels() == 1 
+				? clw::EChannelOrder::R 
+				: clw::EChannelOrder::RGBA;
 			deviceImage = _gpuComputeModule->context().createImage2D(
 				clw::EAccess::ReadOnly, clw::EMemoryLocation::Device,
-				clw::ImageFormat(clw::EChannelOrder::R, clw::EChannelType::Normalized_UInt8),
+				clw::ImageFormat(channelOrder, clw::EChannelType::Normalized_UInt8),
 				hostImage.cols, hostImage.rows);
-
-			_pinnedBuffer = _gpuComputeModule->context().createBuffer(clw::EAccess::ReadWrite,
-				clw::EMemoryLocation::AllocHostMemory, hostImage.cols * hostImage.rows * sizeof(uchar));
 		}
 
-		if(!_usePinnedMemory)
+		if(_usePinnedMemory)
 		{
-			bool res = _gpuComputeModule->queue().writeImage2D(deviceImage, hostImage.data, 
-				clw::Rect(0, 0, hostImage.cols, hostImage.rows), static_cast<int>(hostImage.step));
-			return ExecutionStatus(res ? EStatus::Ok : EStatus::Error);
-		}
-		else
-		{
-			void* ptr = _gpuComputeModule->queue().mapBuffer(_pinnedBuffer, clw::EMapAccess::Write);
-			if(!ptr)
-				return ExecutionStatus(EStatus::Error, "Couldn't mapped pinned memory for device image transfer");
-			if((int) hostImage.step != hostImage.cols)
+			size_t pinnedBufferSize = hostImage.cols * hostImage.rows * hostImage.channels() * sizeof(uchar);
+
+			if(_pinnedBuffer.isNull() || pinnedBufferSize != _pinnedBuffer.size())
 			{
-				for(int row = 0; row < hostImage.rows; ++row)
-					memcpy((uchar*)ptr + row*hostImage.step, (uchar*)hostImage.data + row*hostImage.step, hostImage.step);
+				_pinnedBuffer = _gpuComputeModule->context().createBuffer(clw::EAccess::ReadOnly,
+					clw::EMemoryLocation::AllocHostMemory, pinnedBufferSize);
+			}
+		}
+
+		if(hostImage.channels() == 1)
+		{
+			if(!_usePinnedMemory)
+			{
+				// Simple copy will suffice
+				bool result = _gpuComputeModule->queue().writeImage2D(deviceImage, hostImage.data, 
+					clw::Rect(0, 0, hostImage.cols, hostImage.rows), static_cast<int>(hostImage.step));
+				return ExecutionStatus(result ? EStatus::Ok : EStatus::Error);
 			}
 			else
 			{
-				memcpy(ptr, hostImage.data, hostImage.step * hostImage.rows);
+				if(!copyToPinnedBufferAsync(hostImage))
+					return ExecutionStatus(EStatus::Error, "Couldn't mapped pinned memory for device image transfer");
+				_gpuComputeModule->queue().asyncCopyBufferToImage(_pinnedBuffer, deviceImage);
+				return ExecutionStatus(EStatus::Ok);
 			}
-			_gpuComputeModule->queue().asyncUnmap(_pinnedBuffer, ptr);
-			_gpuComputeModule->queue().asyncCopyBufferToImage(_pinnedBuffer, deviceImage);
+		}
+		else
+		{
+			// Copy to intermediate buffer (BGR) and run kernel to convert it to RGBA image
+			clw::Kernel kernelConvertBufferRgbToImageRgba = _gpuComputeModule->acquireKernel(_kidConvertBufferRgbToImageRgba);
+			size_t intermediateBufferPitch = hostImage.cols * hostImage.channels() * sizeof(uchar);
+			size_t intermediateBufferSize = intermediateBufferPitch * hostImage.rows;
+
+			if(_intermediateBuffer.isNull() || _intermediateBuffer.size() != intermediateBufferSize)
+			{
+				_intermediateBuffer = _gpuComputeModule->context().createBuffer(clw::EAccess::ReadOnly,
+					clw::EMemoryLocation::Device, intermediateBufferSize);
+			}
+
+			if(!_usePinnedMemory)
+			{
+				_gpuComputeModule->queue().asyncWriteBuffer(_intermediateBuffer, hostImage.data);
+			}
+			else
+			{
+				if(!copyToPinnedBufferAsync(hostImage))
+					return ExecutionStatus(EStatus::Error, "Couldn't mapped pinned memory for device image transfer");
+				_gpuComputeModule->queue().asyncCopyBuffer(_pinnedBuffer, _intermediateBuffer);				
+			}			
+
+			kernelConvertBufferRgbToImageRgba.setLocalWorkSize(16, 16);
+			kernelConvertBufferRgbToImageRgba.setRoundedGlobalWorkSize(hostImage.cols, hostImage.rows);
+			kernelConvertBufferRgbToImageRgba.setArg(0, _intermediateBuffer);
+			kernelConvertBufferRgbToImageRgba.setArg(1, intermediateBufferPitch);
+			kernelConvertBufferRgbToImageRgba.setArg(2, deviceImage);
+
+			_gpuComputeModule->queue().asyncRunKernel(kernelConvertBufferRgbToImageRgba);
+			// FIXME: this causes stall and makes pinned memory pretty useless
+			_gpuComputeModule->queue().finish();
+
 			return ExecutionStatus(EStatus::Ok);
 		}
 	}
@@ -79,7 +127,7 @@ public:
 	void configuration(NodeConfig& nodeConfig) const override
 	{
 		static const InputSocketConfig in_config[] = {
-			{ ENodeFlowDataType::ImageMono, "input", "Host image", "" },
+			{ ENodeFlowDataType::Image, "input", "Host image", "" },
 			{ ENodeFlowDataType::Invalid, "", "", "" }
 		};
 
@@ -101,7 +149,29 @@ public:
 	}
 
 private:
+	bool copyToPinnedBufferAsync(const cv::Mat& hostImage)
+	{
+		void* ptr = _gpuComputeModule->queue().mapBuffer(_pinnedBuffer, clw::EMapAccess::Write);
+		if(!ptr) return false;
+
+		if((int) hostImage.step != hostImage.cols)
+		{
+			for(int row = 0; row < hostImage.rows; ++row)
+				memcpy((uchar*)ptr + row*hostImage.step, (uchar*)hostImage.data + row*hostImage.step, hostImage.step);
+		}
+		else
+		{
+			memcpy(ptr, hostImage.data, hostImage.step * hostImage.rows);
+		}
+
+		_gpuComputeModule->queue().asyncUnmap(_pinnedBuffer, ptr);
+		return true;
+	}
+
+private:
 	clw::Buffer _pinnedBuffer;
+	clw::Buffer _intermediateBuffer;
+	KernelID _kidConvertBufferRgbToImageRgba;
 	bool _usePinnedMemory;
 };
 
@@ -131,53 +201,94 @@ public:
 		return NodeProperty();
 	}
 
+	bool postInit() override
+	{
+		_kidConvertImageRgbaToBufferRgb = _gpuComputeModule->registerKernel("convertImageRgbaToBufferRgb", "color.cl");
+		return _kidConvertImageRgbaToBufferRgb != InvalidKernelID;
+	}
+
 	ExecutionStatus execute(NodeSocketReader& reader, NodeSocketWriter& writer) override
 	{
 		const clw::Image2D& deviceImage = reader.readSocket(0).getDeviceImage();
-		cv::Mat& hostImage = writer.acquireSocket(0).getImageMono();
+		cv::Mat& hostImage = writer.acquireSocket(0).getImage();
 
 		if(deviceImage.isNull() || deviceImage.size() == 0)
 			return ExecutionStatus(EStatus::Ok);
 
-		if(deviceImage.format().order != clw::EChannelOrder::R)
-			return ExecutionStatus(EStatus::Error, "Wrong data type (should be one channel device image)");
+		clw::ImageFormat imageFormat = deviceImage.format();
+
+		if(imageFormat.order != clw::EChannelOrder::R && imageFormat.order != clw::EChannelOrder::RGBA)
+			return ExecutionStatus(EStatus::Error, "Wrong data type (should be one or four channel device image)");
 
 		int width = deviceImage.width();
 		int height = deviceImage.height();
+		int channels = imageFormat.order == clw::EChannelOrder::R ? 1 : 3;
 
-		/// TODO: For now we assume it's always 1 channel image
-		hostImage.create(height, width, CV_8UC1);
+		hostImage.create(height, width, CV_MAKETYPE(CV_8U, channels));
 
-		if(!_usePinnedMemory)
+		if(_usePinnedMemory)
 		{
-			bool res = _gpuComputeModule->queue().readImage2D(deviceImage, hostImage.data, 
-				clw::Rect(0, 0, hostImage.cols, hostImage.rows), static_cast<int>(hostImage.step));
-			return ExecutionStatus(res ? EStatus::Ok : EStatus::Error);
-		}
-		else
-		{
-			if(_pinnedBuffer.isNull() || (width*height*sizeof(uchar) != _pinnedBuffer.size()))
+			size_t pinnedBufferSize = hostImage.cols * hostImage.rows * hostImage.channels() * sizeof(uchar);
+
+			if(_pinnedBuffer.isNull() || pinnedBufferSize != _pinnedBuffer.size())
 			{
-
-				_pinnedBuffer = _gpuComputeModule->context().createBuffer(clw::EAccess::ReadWrite,
-					clw::EMemoryLocation::AllocHostMemory, hostImage.cols * hostImage.rows * sizeof(uchar));
+				_pinnedBuffer = _gpuComputeModule->context().createBuffer(clw::EAccess::ReadOnly,
+					clw::EMemoryLocation::AllocHostMemory, pinnedBufferSize);
 			}
+		}
 
-			_gpuComputeModule->queue().asyncCopyImageToBuffer(deviceImage, _pinnedBuffer);
-			void* ptr = _gpuComputeModule->queue().mapBuffer(_pinnedBuffer, clw::EMapAccess::Read);
-			if(!ptr)
-				return ExecutionStatus(EStatus::Error, "Couldn't mapped pinned memory for device image transfer");
-			if((int) hostImage.step != hostImage.cols)
+		if(channels == 1)
+		{
+			if(!_usePinnedMemory)
 			{
-				for(int row = 0; row < hostImage.rows; ++row)
-					memcpy((uchar*)hostImage.data + row*hostImage.step, (uchar*)ptr + row*hostImage.step, hostImage.step);
+				// Simple copy will suffice
+				bool res = _gpuComputeModule->queue().readImage2D(deviceImage, hostImage.data, 
+					clw::Rect(0, 0, hostImage.cols, hostImage.rows), static_cast<int>(hostImage.step));
+				return ExecutionStatus(res ? EStatus::Ok : EStatus::Error);
 			}
 			else
 			{
-				memcpy(hostImage.data, ptr, hostImage.step * hostImage.rows);
+				_gpuComputeModule->queue().asyncCopyImageToBuffer(deviceImage, _pinnedBuffer);
+				if(!copyFromPinnedBufferAsync(hostImage))
+					return ExecutionStatus(EStatus::Error, "Couldn't mapped pinned memory for device image transfer");
+				return ExecutionStatus(EStatus::Ok);
 			}
-			// Unmapping device memory when reading is practically 'no-cost'
-			_gpuComputeModule->queue().asyncUnmap(_pinnedBuffer, ptr);
+		}
+		else
+		{
+			// Convert image RGBA to intermediate buffer (BGR) and copy it to host image
+			clw::Kernel kernelConvertImageRgbaToBufferRgb = _gpuComputeModule->acquireKernel(_kidConvertImageRgbaToBufferRgb);
+			size_t intermediateBufferPitch = hostImage.cols * hostImage.channels() * sizeof(uchar);
+			size_t intermediateBufferSize = intermediateBufferPitch * hostImage.rows;
+
+			if(_intermediateBuffer.isNull() || _intermediateBuffer.size() != intermediateBufferSize)
+			{
+				_intermediateBuffer = _gpuComputeModule->context().createBuffer(clw::EAccess::WriteOnly,
+					clw::EMemoryLocation::Device, intermediateBufferSize);
+			}
+
+			kernelConvertImageRgbaToBufferRgb.setLocalWorkSize(16, 16);
+			kernelConvertImageRgbaToBufferRgb.setRoundedGlobalWorkSize(hostImage.cols, hostImage.rows);
+			kernelConvertImageRgbaToBufferRgb.setArg(0, deviceImage);
+			kernelConvertImageRgbaToBufferRgb.setArg(1, _intermediateBuffer);
+			kernelConvertImageRgbaToBufferRgb.setArg(2, intermediateBufferPitch);
+
+			_gpuComputeModule->queue().asyncRunKernel(kernelConvertImageRgbaToBufferRgb);
+
+			if(!_usePinnedMemory)
+			{
+				_gpuComputeModule->queue().asyncReadBuffer(_intermediateBuffer, hostImage.data);
+			}
+			else
+			{
+				_gpuComputeModule->queue().asyncCopyBuffer(_intermediateBuffer, _pinnedBuffer);
+				if(!copyFromPinnedBufferAsync(hostImage))
+					return ExecutionStatus(EStatus::Error, "Couldn't mapped pinned memory for device image transfer");
+			}		
+
+			// FIXME: this causes stall and makes pinned memory pretty useless
+			_gpuComputeModule->queue().finish();
+
 			return ExecutionStatus(EStatus::Ok);
 		}
 	}
@@ -190,7 +301,7 @@ public:
 		};
 
 		static const OutputSocketConfig out_config[] = {
-			{ ENodeFlowDataType::ImageMono, "output", "Host image", "" },
+			{ ENodeFlowDataType::Image, "output", "Host image", "" },
 			{ ENodeFlowDataType::Invalid, "", "", "" }
 		};
 
@@ -207,7 +318,29 @@ public:
 	}
 
 private:
+	bool copyFromPinnedBufferAsync(cv::Mat& hostImage)
+	{
+		void* ptr = _gpuComputeModule->queue().mapBuffer(_pinnedBuffer, clw::EMapAccess::Read);
+		if(!ptr) return false;
+			
+		if((int) hostImage.step != hostImage.cols)
+		{
+			for(int row = 0; row < hostImage.rows; ++row)
+				memcpy((uchar*)hostImage.data + row*hostImage.step, (uchar*)ptr + row*hostImage.step, hostImage.step);
+		}
+		else
+		{
+			memcpy(hostImage.data, ptr, hostImage.step * hostImage.rows);
+		}
+		// Unmapping device memory when reading is practically 'no-cost'
+		_gpuComputeModule->queue().asyncUnmap(_pinnedBuffer, ptr);
+		return true;
+	}
+
+private:
 	clw::Buffer _pinnedBuffer;
+	clw::Buffer _intermediateBuffer;
+	KernelID _kidConvertImageRgbaToBufferRgb;
 	bool _usePinnedMemory;
 };
 

@@ -73,9 +73,9 @@ public:
 
 	ExecutionStatus execute(NodeSocketReader& reader, NodeSocketWriter& writer) override
 	{
-		const clw::Image2D& deviceImage = reader.readSocket(0).getDeviceImage();
+		const clw::Image2D& deviceImage = reader.readSocket(0).getDeviceImageMono();
 		DeviceArray& deviceLines = writer.acquireSocket(0).getDeviceArray();
-		clw::Image2D& deviceAccumImage = writer.acquireSocket(1).getDeviceImage();
+		clw::Image2D& deviceAccumImage = writer.acquireSocket(1).getDeviceImageMono();
 
 		int srcWidth = deviceImage.width();
 		int srcHeight = deviceImage.height();
@@ -128,12 +128,12 @@ public:
 	void configuration(NodeConfig& nodeConfig) const override
 	{
 		static const InputSocketConfig in_config[] = {
-			{ ENodeFlowDataType::DeviceImage, "input", "Binary image", "" },
+			{ ENodeFlowDataType::DeviceImageMono, "input", "Binary image", "" },
 			{ ENodeFlowDataType::Invalid, "", "", "" }
 		};
 		static const OutputSocketConfig out_config[] = {
 			{ ENodeFlowDataType::DeviceArray, "lines", "Lines", "" },
-			{ ENodeFlowDataType::DeviceImage, "houghSpace", "Hough space", "" },
+			{ ENodeFlowDataType::DeviceImageMono, "houghSpace", "Hough space", "" },
 			{ ENodeFlowDataType::Invalid, "", "", "" }
 		};
 		static const PropertyConfig prop_config[] = {

@@ -50,9 +50,9 @@ public:
 
 	ExecutionStatus execute(NodeSocketReader& reader, NodeSocketWriter& writer) override
 	{
-		const clw::Image2D& deviceSrc = reader.readSocket(0).getDeviceImage();
+		const clw::Image2D& deviceSrc = reader.readSocket(0).getDeviceImageMono();
 		const cv::Mat& sElem = reader.readSocket(1).getImage();
-		clw::Image2D& deviceDest = writer.acquireSocket(0).getDeviceImage();
+		clw::Image2D& deviceDest = writer.acquireSocket(0).getDeviceImageMono();
 
 		if(sElem.cols == 0 || sElem.rows == 0 || deviceSrc.width() == 0 || deviceSrc.height() == 0)
 			return ExecutionStatus(EStatus::Ok);
@@ -122,12 +122,12 @@ public:
 	void configuration(NodeConfig& nodeConfig) const override
 	{
 		static const InputSocketConfig in_config[] = {
-			{ ENodeFlowDataType::DeviceImage, "source", "Source", "" },
+			{ ENodeFlowDataType::DeviceImageMono, "source", "Source", "" },
 			{ ENodeFlowDataType::Image, "source", "Structuring element", "" },
 			{ ENodeFlowDataType::Invalid, "", "", "" }
 		};
 		static const OutputSocketConfig out_config[] = {
-			{ ENodeFlowDataType::DeviceImage, "output", "Output", "" },
+			{ ENodeFlowDataType::DeviceImageMono, "output", "Output", "" },
 			{ ENodeFlowDataType::Invalid, "", "", "" }
 		};
 		static const PropertyConfig prop_config[] = {

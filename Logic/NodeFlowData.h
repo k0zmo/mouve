@@ -50,6 +50,9 @@ enum class ENodeFlowDataType : int
 	/// TODO: Could merge this with above ones and add bool flag
 	///       indicating if it's in device or host memory
 	,DeviceImage,
+	DeviceImageMono,
+	// In fact, its RGBA (BGRA, ARGB), as RGB noone seems to support
+	DeviceImageRgb,
 	DeviceArray,
 #endif
 };
@@ -103,6 +106,12 @@ public:
 #if defined(HAVE_OPENCL)
 	clw::Image2D& getDeviceImage();
 	const clw::Image2D& getDeviceImage() const;
+
+	clw::Image2D& getDeviceImageMono();
+	const clw::Image2D& getDeviceImageMono() const;
+
+	clw::Image2D& getDeviceImageRgb();
+	const clw::Image2D& getDeviceImageRgb() const;
 
 	DeviceArray& getDeviceArray();
 	const DeviceArray& getDeviceArray() const;

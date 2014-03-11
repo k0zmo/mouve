@@ -812,6 +812,29 @@
       <Outputs Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|x64'">$(TargetDir)kernels\%(Filename).cl</Outputs>
     </CustomBuild>
   </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="OpenCL\kernels\color.cl">
+      <FileType>Document</FileType>
+      <Command Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|Win32'">copy /Y OpenCL\kernels\%(Filename).cl  "$(TargetDir)kernels\%(Filename).cl" &gt; NUL</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">copy /Y OpenCL\kernels\%(Filename).cl  "$(TargetDir)kernels\%(Filename).cl" &gt; NUL</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">copy /Y OpenCL\kernels\%(Filename).cl  "$(TargetDir)kernels\%(Filename).cl" &gt; NUL</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|x64'">copy /Y OpenCL\kernels\%(Filename).cl  "$(TargetDir)kernels\%(Filename).cl" &gt; NUL</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">copy /Y OpenCL\kernels\%(Filename).cl  "$(TargetDir)kernels\%(Filename).cl" &gt; NUL</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">copy /Y OpenCL\kernels\%(Filename).cl  "$(TargetDir)kernels\%(Filename).cl" &gt; NUL</Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|Win32'">Copying %(Filename).cl kernel to target kernels directory</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Copying %(Filename).cl kernel to target kernels directory</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Copying %(Filename).cl kernel to target kernels directory</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|x64'">Copying %(Filename).cl kernel to target kernels directory</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Copying %(Filename).cl kernel to target kernels directory</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Copying %(Filename).cl kernel to target kernels directory</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|Win32'">$(TargetDir)kernels\%(Filename).cl</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(TargetDir)kernels\%(Filename).cl</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(TargetDir)kernels\%(Filename).cl</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|x64'">$(TargetDir)kernels\%(Filename).cl</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(TargetDir)kernels\%(Filename).cl</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(TargetDir)kernels\%(Filename).cl</Outputs>
+    </CustomBuild>
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{DC17726C-68F2-4136-BBC4-25765372976A}</ProjectGuid>
     <Keyword>Qt4VSv1.0</Keyword>

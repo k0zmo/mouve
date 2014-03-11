@@ -166,9 +166,21 @@ NodeSocketView* NodeView::addSocketView(SocketID socketKey,
 			break;
 #if defined(HAVE_OPENCL)
 		case ENodeFlowDataType::DeviceImage:
+			socketView->setConnectorBrushGradient(NodeStyle::SocketGradientStart6,
+				NodeStyle::SocketGradientStop6);
+			socketView->setConnectorToolTip("[DeviceImage]");
+			socketView->setConnectorAnnotation(QStringLiteral("D"));
+			break;
+		case ENodeFlowDataType::DeviceImageMono:
 			socketView->setConnectorBrushGradient(NodeStyle::SocketGradientStart1,
 				NodeStyle::SocketGradientStop1);
-			socketView->setConnectorToolTip("[DeviceImage]");
+			socketView->setConnectorToolTip("[DeviceImageMono]");
+			socketView->setConnectorAnnotation(QStringLiteral("D"));
+			break;
+		case ENodeFlowDataType::DeviceImageRgb:
+			socketView->setConnectorBrushGradient(NodeStyle::SocketGradientStart2,
+				NodeStyle::SocketGradientStop2);
+			socketView->setConnectorToolTip("[DeviceImageRgb]");
 			socketView->setConnectorAnnotation(QStringLiteral("D"));
 			break;
 		case ENodeFlowDataType::DeviceArray:

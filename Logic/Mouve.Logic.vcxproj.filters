@@ -281,4 +281,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
+  <ItemGroup>
+    <None Include="OpenCL\kernels\color.cl">
+      <Filter>OpenCL\Kernels</Filter>
+    </None>
+  </ItemGroup>
 </Project>
