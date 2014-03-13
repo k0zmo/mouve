@@ -71,3 +71,78 @@ __kernel void kuwahara(__read_only image2d_t src,
         }
     }
 }
+
+__kernel void kuwaharaRgb(__read_only image2d_t src,
+                          __write_only image2d_t dst,
+                          const int radius)
+{
+    int gx = get_global_id(0);
+    int gy = get_global_id(1);
+
+    if(gx >= get_image_width(src) || gy >= get_image_height(src))
+        return;
+
+    __private float3 mean[4] = {0};
+    __private float3 sqmean[4] = {0};
+
+    // top-left
+    for(int j = -radius; j <= 0; ++j)
+    {
+        for(int i = -radius; i <= 0; ++i)
+        {
+            float3 pix = read_imagef(src, sampler, (int2)(gx + i, gy + j)).xyz;
+            mean[0] += pix;
+            sqmean[0] += pix * pix;
+        }
+    }
+
+    // top-right
+    for(int j = -radius; j <= 0; ++j)
+    {
+        for(int i = 0; i <= radius; ++i)
+        {
+            float3 pix = read_imagef(src, sampler, (int2)(gx + i, gy + j)).xyz;
+            mean[1] += pix;
+            sqmean[1] += pix * pix;
+        }
+    }
+
+    // bottom-right
+    for(int j = 0; j <= radius; ++j)
+    {
+        for(int i = 0; i <= radius; ++i)
+        {
+            float3 pix = read_imagef(src, sampler, (int2)(gx + i, gy + j)).xyz;
+            mean[2] += pix;
+            sqmean[2] += pix * pix;
+        }
+    }
+
+    // bottom-left
+    for(int j = 0; j <= radius; ++j)
+    {
+        for(int i = -radius; i <= 0; ++i)
+        {
+            float3 pix = read_imagef(src, sampler, (int2)(gx + i, gy + j)).xyz;
+            mean[3] += pix;
+            sqmean[3] += pix * pix;
+        }
+    }
+
+    float n = (float) ((radius + 1) * (radius + 1));
+    float min_sigma = 1e6;
+
+    for(int k = 0; k < 4; ++k)
+    {
+        mean[k] /= n;
+        sqmean[k] = fabs(sqmean[k] / n -  mean[k]*mean[k]);
+        // HSI model (Lightness is the average of the three components)
+        float sigma = fabs(sqmean[k].x) + fabs(sqmean[k].y) + fabs(sqmean[k].z);
+
+        if(sigma < min_sigma)
+        {
+            min_sigma = sigma;
+            write_imagef(dst, (int2)(gx, gy), (float4)(mean[k], 1.0f));
+        }
+    }
+}

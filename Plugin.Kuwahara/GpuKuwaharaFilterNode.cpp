@@ -15,7 +15,9 @@ public:
 	bool postInit() override
 	{
 		_kidKuwahara = _gpuComputeModule->registerKernel("kuwahara", "kuwahara.cl");
-		return _kidKuwahara != InvalidKernelID;
+		_kidKuwaharaRgb = _gpuComputeModule->registerKernel("kuwaharaRgb", "kuwahara.cl");
+		return _kidKuwahara != InvalidKernelID
+			&& _kidKuwaharaRgb != InvalidKernelID;
 	}
 	
 	bool setProperty(PropertyID propId, const NodeProperty& newValue) override
@@ -43,9 +45,9 @@ public:
 	ExecutionStatus execute(NodeSocketReader& reader, NodeSocketWriter& writer) override
 	{
 		// inputs
-		const clw::Image2D& deviceSrc = reader.readSocket(0).getDeviceImageMono();
+		const clw::Image2D& deviceSrc = reader.readSocket(0).getDeviceImage();
 		// outputs
-		clw::Image2D& deviceDest = writer.acquireSocket(0).getDeviceImageMono();
+		clw::Image2D& deviceDest = writer.acquireSocket(0).getDeviceImage();
 
 		// validate inputs
 		if(deviceSrc.width() == 0 || deviceSrc.height() == 0)
@@ -53,11 +55,13 @@ public:
 
 		int width = deviceSrc.width();
 		int height = deviceSrc.height();
+		clw::ImageFormat format = deviceSrc.format();
 
 		// Prepare destination image and structuring element on a device
-		ensureSizeIsEnough(deviceDest, width, height);
+		ensureSizeIsEnough(deviceDest, width, height, format);
 
-		clw::Kernel kernelKuwahara = _gpuComputeModule->acquireKernel(_kidKuwahara);
+		KernelID kid = format.order == clw::EChannelOrder::R ? _kidKuwahara : _kidKuwaharaRgb;
+		clw::Kernel kernelKuwahara = _gpuComputeModule->acquireKernel(kid);
 		kernelKuwahara.setLocalWorkSize(clw::Grid(16, 16));
 		kernelKuwahara.setRoundedGlobalWorkSize(clw::Grid(width, height));
 		kernelKuwahara.setArg(0, deviceSrc);
@@ -71,11 +75,11 @@ public:
 	void configuration(NodeConfig& nodeConfig) const override
 	{
 		static const InputSocketConfig in_config[] = {
-			{ ENodeFlowDataType::DeviceImageMono, "source", "Source", "" },
+			{ ENodeFlowDataType::DeviceImage, "source", "Source", "" },
 			{ ENodeFlowDataType::Invalid, "", "", "" }
 		};
 		static const OutputSocketConfig out_config[] = {
-			{ ENodeFlowDataType::DeviceImageMono, "output", "Output", "" },
+			{ ENodeFlowDataType::DeviceImage, "output", "Output", "" },
 			{ ENodeFlowDataType::Invalid, "", "", "" }
 		};
 		static const PropertyConfig prop_config[] = {
@@ -91,16 +95,17 @@ public:
 	}
 
 private:
-	void ensureSizeIsEnough(clw::Image2D& image, int width, int height)
+	void ensureSizeIsEnough(clw::Image2D& image, int width,
+		int height, const clw::ImageFormat& format)
 	{
 		if(image.isNull() || 
-			image.width() != width	|| 
-			image.height() != height)
+			image.width() != width || 
+			image.height() != height ||
+			image.format() != format)
 		{
 			image = _gpuComputeModule->context().createImage2D(
 				clw::EAccess::ReadWrite, clw::EMemoryLocation::Device,
-				clw::ImageFormat(clw::EChannelOrder::R, clw::EChannelType::Normalized_UInt8),
-				width, height);
+				format, width, height);
 		}
 	}
 
@@ -112,6 +117,9 @@ private:
 
 	int _radius;
 	KernelID _kidKuwahara;
+	KernelID _kidKuwaharaRgb;
+};
+
 };
 
 #endif
