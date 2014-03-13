@@ -1,5 +1,7 @@
 ﻿#include "Controller.h"
 
+#include "Kommon/Utils.h"
+
 // Model part
 #include "Logic/NodeSystem.h"
 #include "Logic/NodeTree.h"
@@ -638,7 +640,9 @@ void Controller::setupUiAbout()
 	actionAboutApplication->setToolTip(tr("Show information about ") + QApplication::applicationName());
 	connect(actionAboutApplication, &QAction::triggered, [=] {
 		QString translatedTextAboutCaption = QString(
-			"<h3>About %1</h3>").arg(QApplication::applicationName());
+			"<h3>About %1 (%2)</h3>")
+			.arg(QApplication::applicationName())
+			.arg(is64Bit() ? "x64" : "x86");
 		// Doesn't work on gcc 4.7.4
 		QString translatedTextAboutText = QString::fromWCharArray(
 			L"<p>Author: Kajetan Świerk</p>"
