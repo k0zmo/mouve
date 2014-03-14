@@ -280,7 +280,7 @@ void KuwaharaFilter(cv::InputArray src_, cv::OutputArray dst_, int radius)
 		CV_Assert(false);
 }
 
-void makeSector(cv::OutputArray kernel_, int N, float smoothing)
+void getGeneralizedKuwaharaKernel(cv::OutputArray kernel_, int N, float smoothing)
 {
 	// Create sector map
 	const int kernelSize = 32;
@@ -373,8 +373,8 @@ void generalizedKuwaharaFilter_gray(const cv::Mat& src, cv::Mat& dst,
 							for(int k = 0; k < N; ++k)
 							{
 								// map coordinates from circle of radius=radius to kernel map of radius=kernelSize
-								int u = static_cast<int>((v0 + 0.5f) * (kernel.cols - 1));
-								int v = static_cast<int>((v1 + 0.5f) * (kernel.rows - 1));
+								int u = static_cast<int>((v0 + 0.5f) * (kernel.cols - 1) + 0.5f);
+								int v = static_cast<int>((v1 + 0.5f) * (kernel.rows - 1) + 0.5f);
 
 								float w = kernel.at<float>(v, u);
 
@@ -510,7 +510,7 @@ void generalizedKuwaharaFilter(cv::InputArray src_, cv::OutputArray dst_,
 	dst.create(src.size(), src.type());
 
 	cv::Mat kernel;
-	makeSector(kernel, N, smoothing);
+	getGeneralizedKuwaharaKernel(kernel, N, smoothing);
 
 	if(src.type() == CV_8UC1)
 		generalizedKuwaharaFilter_gray(src, dst, radius, N, q, kernel);
@@ -831,7 +831,7 @@ void anisotropicKuwaharaFilter(cv::InputArray src_, cv::OutputArray dst_,
 	dst.create(src.size(), CV_MAKETYPE(CV_32F, src.channels()));
 
 	cv::Mat kernel;
-	makeSector(kernel, N, smoothing);
+	getGeneralizedKuwaharaKernel(kernel, N, smoothing);
 
 	cv::Mat srcNorm;
 	cv::normalize(src, srcNorm, 0, 1.0, cv::NORM_MINMAX, CV_MAKETYPE(CV_32F, src.channels()));

@@ -14,4 +14,7 @@ void generalizedKuwaharaFilter(cv::InputArray src_, cv::OutputArray dst_,
 void anisotropicKuwaharaFilter(cv::InputArray src_, cv::OutputArray dst_,
 							   int radius = 6, int N = 8,
 							   float smoothing = 0.3333f);
+
+void getGeneralizedKuwaharaKernel(cv::OutputArray kernel, int N, float smoothing);
+
 }
