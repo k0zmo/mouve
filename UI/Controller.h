@@ -159,6 +159,7 @@ private slots:
 
 	// Fit whole scene to a current view size
 	void fitToView();
+	void resetZoom();
 
 	// Node execute information as a tooltip
 	void toggleDisplayNodesTooltips(bool checked);

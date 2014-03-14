@@ -183,7 +183,7 @@ __kernel void generalizedKuwahara(__read_only image2d_t src,
             v = (0.5f * v) / (float) radius;
 
             // sample image in circle neighbourhood
-			// convert to 0 .. 255 range (better precision?)
+            // convert to 0 .. 255 range (better precision?)
             float c = read_imagef(src, sampler, gid + (int2){i, j}).x * 255.0f;
 
             for(int k = 0; k < N; ++k)
@@ -219,7 +219,6 @@ __kernel void generalizedKuwahara(__read_only image2d_t src,
 
     write_imagef(dst, gid, (float4)(out / sumWeight / 255.0f, 0.0, 0.0f, 1.0f));
 }
-
 
 __kernel void generalizedKuwaharaRgb(__read_only image2d_t src,
                                      __write_only image2d_t dst,

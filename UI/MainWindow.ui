@@ -132,6 +132,7 @@
    <addaction name="actionStop"/>
    <addaction name="separator"/>
    <addaction name="actionFitToView"/>
+   <addaction name="actionResetZoom"/>
    <addaction name="actionNodesTooltips"/>
   </widget>
   <widget class="QDockWidget" name="propertiesDockWidget">
@@ -478,6 +479,18 @@
    </property>
    <property name="shortcut">
     <string>Del</string>
+   </property>
+  </action>
+  <action name="actionResetZoom">
+   <property name="icon">
+    <iconset resource="Editor.qrc">
+     <normaloff>:/images/button-search.png</normaloff>:/images/button-search.png</iconset>
+   </property>
+   <property name="text">
+    <string>Reset zoom</string>
+   </property>
+   <property name="toolTip">
+    <string>Resets zoom to 100%</string>
    </property>
   </action>
  </widget>

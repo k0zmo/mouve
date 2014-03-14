@@ -558,6 +558,7 @@ void Controller::setupUi()
 
 	connect(_ui->actionDisplayTimeInfo, &QAction::triggered, this, &Controller::displayNodeTimeInfo);
 	connect(_ui->actionFitToView, &QAction::triggered, this, &Controller::fitToView);
+	connect(_ui->actionResetZoom, &QAction::triggered, this, &Controller::resetZoom);
 	connect(_ui->actionNodesTooltips, &QAction::toggled, this, &Controller::toggleDisplayNodesTooltips);
 
 	_ui->actionPlay->setEnabled(false);
@@ -1973,23 +1974,20 @@ void Controller::fitToView()
 	if(items.isEmpty())
 		return;
 
-	QRectF sceneRect = items[0]->sceneBoundingRect();
-
+	QRectF sceneRect;
 	for(auto* item : items)
-	{
-		const QRectF& brect = item->sceneBoundingRect();
-		sceneRect.setTop(qMin(sceneRect.top(), brect.top()));
-		sceneRect.setLeft(qMin(sceneRect.left(), brect.left()));
-		sceneRect.setBottom(qMax(sceneRect.bottom(), brect.bottom()));
-		sceneRect.setRight(qMax(sceneRect.right(), brect.right()));
-	}
-
+		sceneRect = sceneRect.united(item->sceneBoundingRect());
 	_ui->graphicsView->fitInView(sceneRect, Qt::KeepAspectRatio);
 
 	// We assume there's no rotation
 	QTransform t = _ui->graphicsView->transform();
 	
-	_ui->graphicsView->setZoom(t.m11()-0.15f);
+	_ui->graphicsView->setZoom(t.m11() * 0.90);
+}
+
+void Controller::resetZoom()
+{
+	_ui->graphicsView->setZoom(1.0f);
 }
 
 void Controller::toggleDisplayNodesTooltips(bool checked)
