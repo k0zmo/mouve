@@ -5,6 +5,8 @@
 class LOGIC_EXPORT NodeModule
 {
 public:
+	virtual ~NodeModule() {}
+
 	virtual bool initialize() = 0;
 	virtual bool isInitialized() = 0;
 	virtual std::string moduleName() const = 0;
