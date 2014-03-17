@@ -520,16 +520,16 @@ void generalizedKuwaharaFilter(cv::InputArray src_, cv::OutputArray dst_,
 		CV_Assert(false);
 }
 
-void calcTFM(const cv::Mat& sst, cv::Mat& tfm)
+void calcOrientationAndAnisotropy(const cv::Mat& ssm, cv::Mat& oriAni)
 {
-	cvu::parallel_for(cv::Range(0, sst.rows),
+	cvu::parallel_for(cv::Range(0, ssm.rows),
 		[&](const cv::Range& range)
 		{
 			for(int y = range.start; y < range.end; ++y)
 			{
-				for(int x = 0; x < sst.cols; ++x)
+				for(int x = 0; x < ssm.cols; ++x)
 				{
-					cv::Vec3f g = sst.at<cv::Vec3f>(y, x);
+					cv::Vec3f g = ssm.at<cv::Vec3f>(y, x);
 
 					float a = g[0]-g[1];
 					float sqrt_ = sqrtf(a*a + 4*g[2]*g[2]);
@@ -549,31 +549,35 @@ void calcTFM(const cv::Mat& sst, cv::Mat& tfm)
 					float A = (lambda1 + lambda2 > 0) ?
 						(lambda1 - lambda2) / (lambda1 + lambda2) : 0.0f;
 
-					tfm.at<cv::Vec4f>(y, x) = cv::Vec4f(t[0], t[1], phi, A);
+					oriAni.at<cv::Vec2f>(y, x) = cv::Vec2f(phi, A);
 				}
 			}
 		});
 }
 
-void anisotropicKuwaharaFilter_gray(const cv::Mat& srcNorm, cv::Mat& dst,
+void anisotropicKuwaharaFilter_gray(const cv::Mat& src, cv::Mat& dst,
 									int radius, int N, float q, 
 									float alpha, float sigmaSst,
 									const cv::Mat& kernel)
 {
+	cv::Mat srcNorm;
+	cv::normalize(src, srcNorm, 0, 1.0, cv::NORM_MINMAX, CV_MAKETYPE(CV_32F, src.channels()));
+
 	const cv::Mat dx = cv::Mat((cv::Mat_<double>(3,3) << -1,0,1, -2,0,2, -1,0,1));
 	const cv::Mat dy = cv::Mat((cv::Mat_<double>(3,3) << -1,-2,-1, 0,0,0, 1,2,1));
 
+	// Calculate structure tensor (second order matrix)
 	cv::Mat tmpx, tmpy;
 	cv::filter2D(srcNorm, tmpx, CV_32F, dx);
 	cv::filter2D(srcNorm, tmpy, CV_32F, dy);
 
-	cv::Mat sst(srcNorm.size(), CV_32FC3);
-	cvu::parallel_for(cv::Range(0, sst.rows),
+	cv::Mat ssm(srcNorm.size(), CV_32FC3);
+	cvu::parallel_for(cv::Range(0, ssm.rows),
 		[&](const cv::Range& range)
 		{
 			for(int y = range.start; y < range.end; ++y)
 			{
-				for(int x = 0; x < sst.cols; ++x)
+				for(int x = 0; x < ssm.cols; ++x)
 				{
 					float x_color = tmpx.at<float>(y, x);
 					float y_color = tmpy.at<float>(y, x);
@@ -582,15 +586,16 @@ void anisotropicKuwaharaFilter_gray(const cv::Mat& srcNorm, cv::Mat& dst,
 					float fyfy = y_color * y_color;
 					float fxfy = x_color * y_color;
 
-					sst.at<cv::Vec3f>(y, x) = cv::Vec3f(fxfx, fyfy, fxfy);
+					ssm.at<cv::Vec3f>(y, x) = cv::Vec3f(fxfx, fyfy, fxfy);
 				}
 			}
 		});
 
-	cv::GaussianBlur(sst, sst, cv::Size(0,0), sigmaSst);
+	// Smooth it
+	cv::GaussianBlur(ssm, ssm, cv::Size(0,0), sigmaSst);
 
-	cv::Mat tfm(srcNorm.size(), CV_32FC4);
-	calcTFM(sst, tfm);
+	cv::Mat oriAni(srcNorm.size(), CV_32FC2);
+	calcOrientationAndAnisotropy(ssm, oriAni);
 
 	const float pi = 3.14159274101257f;
 	const float piN = 2.0f * pi / float(N);
@@ -605,13 +610,13 @@ void anisotropicKuwaharaFilter_gray(const cv::Mat& srcNorm, cv::Mat& dst,
 			{
 				for(int x = 0; x < dst.cols; ++x)
 				{
-					cv::Vec4f t = tfm.at<cv::Vec4f>(y, x);
+					cv::Vec2f t = oriAni.at<cv::Vec2f>(y, x);
 
-					float a = radius * std::clamp((alpha + t[3]) / alpha, 0.1f, 2.0f);
-					float b = radius * std::clamp(alpha / (alpha + t[3]), 0.1f, 2.0f);
+					float a = radius * std::clamp((alpha + t[1]) / alpha, 0.1f, 2.0f);
+					float b = radius * std::clamp(alpha / (alpha + t[1]), 0.1f, 2.0f);
 
-					float cos_phi = std::cos(t[2]);
-					float sin_phi = std::sin(t[2]);
+					float cos_phi = std::cos(t[0]);
+					float sin_phi = std::sin(t[0]);
 
 					float sr0 =  0.5f/a * cos_phi;
 					float sr1 =  0.5f/a * sin_phi;
@@ -635,9 +640,9 @@ void anisotropicKuwaharaFilter_gray(const cv::Mat& srcNorm, cv::Mat& dst,
 
 							if((v0*v0 + v1*v1) < 0.25f)
 							{
-								float c = srcNorm.at<float>(
-									std::clamp(y + j, 0, srcNorm.rows - 1),
-									std::clamp(x + i, 0, srcNorm.cols - 1));
+								float c = src.at<uchar>(
+									std::clamp(y + j, 0, src.rows - 1),
+									std::clamp(x + i, 0, src.cols - 1));
 								float cc = c * c;
 
 								for (int k = 0; k < N; ++k)
@@ -668,39 +673,41 @@ void anisotropicKuwaharaFilter_gray(const cv::Mat& srcNorm, cv::Mat& dst,
 						mean[k] /= weight[k];
 						sqMean[k] = sqMean[k] / weight[k] - mean[k] * mean[k];
 
-						float w = 1.0f / (1.0f + std::pow(255.0f * std::abs(sqMean[k]), 0.5f * q));
+						float w = 1.0f / (1.0f + std::pow(std::abs(sqMean[k]), 0.5f * q));
 
 						sumWeight += w;
 						out += mean[k] * w;
 					}
 
-					dst.at<float>(y, x) = out / sumWeight;
+					dst.at<uchar>(y, x) = cv::saturate_cast<uchar>(out / sumWeight);
 				}
 			}
 		});
-
-	cv::normalize(dst, dst, 0, 255.0, cv::NORM_MINMAX, CV_8UC1);
 }
 
-void anisotropicKuwaharaFilter_bgr(const cv::Mat& srcNorm, cv::Mat& dst,
+void anisotropicKuwaharaFilter_bgr(const cv::Mat& src, cv::Mat& dst,
 								   int radius, int N, float q, 
 								   float alpha, float sigmaSst,
 								   const cv::Mat& kernel)
 {
+	cv::Mat srcNorm;
+	cv::normalize(src, srcNorm, 0, 1.0, cv::NORM_MINMAX, CV_MAKETYPE(CV_32F, src.channels()));
+
 	const cv::Mat dx = cv::Mat((cv::Mat_<double>(3,3) << -1,0,1, -2,0,2, -1,0,1));
 	const cv::Mat dy = cv::Mat((cv::Mat_<double>(3,3) << -1,-2,-1, 0,0,0, 1,2,1));
 
+	// Calculate structure tensor (second order matrix)
 	cv::Mat tmpx, tmpy;
 	cv::filter2D(srcNorm, tmpx, CV_32F, dx);
 	cv::filter2D(srcNorm, tmpy, CV_32F, dy);
 
-	cv::Mat sst(srcNorm.size(), CV_32FC3);
-	cvu::parallel_for(cv::Range(0, sst.rows),
+	cv::Mat ssm(srcNorm.size(), CV_32FC3);
+	cvu::parallel_for(cv::Range(0, ssm.rows),
 		[&](const cv::Range& range)
 		{
 			for(int y = range.start; y < range.end; ++y)
 			{
-				for(int x = 0; x < sst.cols; ++x)
+				for(int x = 0; x < ssm.cols; ++x)
 				{
 					cv::Vec3f x_rgb = tmpx.at<cv::Vec3f>(y, x);
 					cv::Vec3f y_rgb = tmpy.at<cv::Vec3f>(y, x);
@@ -709,15 +716,16 @@ void anisotropicKuwaharaFilter_bgr(const cv::Mat& srcNorm, cv::Mat& dst,
 					float fyfy = y_rgb.dot(y_rgb);
 					float fxfy = x_rgb.dot(y_rgb);
 
-					sst.at<cv::Vec3f>(y, x) = cv::Vec3f(fxfx, fyfy, fxfy);
+					ssm.at<cv::Vec3f>(y, x) = cv::Vec3f(fxfx, fyfy, fxfy);
 				}
 			}
 		});
 
-	cv::GaussianBlur(sst, sst, cv::Size(0,0), sigmaSst);
+	// Smooth it
+	cv::GaussianBlur(ssm, ssm, cv::Size(0,0), sigmaSst);
 
-	cv::Mat tfm(srcNorm.size(), CV_32FC4);
-	calcTFM(sst, tfm);
+	cv::Mat oriAni(srcNorm.size(), CV_32FC2);
+	calcOrientationAndAnisotropy(ssm, oriAni);
 	
 	const float pi = 3.14159274101257f;
 	const float piN = 2.0f * pi / float(N);
@@ -732,13 +740,13 @@ void anisotropicKuwaharaFilter_bgr(const cv::Mat& srcNorm, cv::Mat& dst,
 			{
 				for(int x = 0; x < dst.cols; ++x)
 				{
-					cv::Vec4f t = tfm.at<cv::Vec4f>(y, x);
+					cv::Vec2f t = oriAni.at<cv::Vec2f>(y, x);
 
-					float a = radius * std::clamp((alpha + t[3]) / alpha, 0.1f, 2.0f);
-					float b = radius * std::clamp(alpha / (alpha + t[3]), 0.1f, 2.0f);
+					float a = radius * std::clamp((alpha + t[1]) / alpha, 0.1f, 2.0f);
+					float b = radius * std::clamp(alpha / (alpha + t[1]), 0.1f, 2.0f);
 
-					float cos_phi = std::cos(t[2]);
-					float sin_phi = std::sin(t[2]);
+					float cos_phi = std::cos(t[0]);
+					float sin_phi = std::sin(t[0]);
 
 					float sr0 =  0.5f/a * cos_phi;
 					float sr1 =  0.5f/a * sin_phi;
@@ -763,9 +771,9 @@ void anisotropicKuwaharaFilter_bgr(const cv::Mat& srcNorm, cv::Mat& dst,
 
 							if((v0*v0 + v1*v1) < 0.25f)
 							{
-								cv::Vec3f c = srcNorm.at<cv::Vec3f>(
-									std::clamp(y + j, 0, srcNorm.rows - 1),
-									std::clamp(x + i, 0, srcNorm.cols - 1));
+								cv::Vec3f c = src.at<cv::Vec3b>(
+									std::clamp(y + j, 0, src.rows - 1),
+									std::clamp(x + i, 0, src.cols - 1));
 								cv::Vec3f cc = c.mul(c);
 
 								for (int k = 0; k < N; ++k)
@@ -797,18 +805,16 @@ void anisotropicKuwaharaFilter_bgr(const cv::Mat& srcNorm, cv::Mat& dst,
 						sqMean[k] = sqMean[k] / weight[k] - mean[k].mul(mean[k]);
 
 						float sigma2 = std::abs(sqMean[k][0]) + std::abs(sqMean[k][1]) + std::abs(sqMean[k][2]);
-						float w = 1.0f / (1.0f + std::pow(255.0f * sigma2, 0.5f * q));
+						float w = 1.0f / (1.0f + std::pow(sigma2, 0.5f * q));
 
 						sumWeight += w;
 						out += mean[k] * w;
 					}
 
-					dst.at<cv::Vec3f>(y, x) = out / sumWeight;
+					dst.at<cv::Vec3b>(y, x) = out / sumWeight;
 				}
 			}
 		});
-
-	cv::normalize(dst, dst, 0, 255.0, cv::NORM_MINMAX, CV_8UC3);
 }
 
 void anisotropicKuwaharaFilter(cv::InputArray src_, cv::OutputArray dst_,
@@ -827,19 +833,15 @@ void anisotropicKuwaharaFilter(cv::InputArray src_, cv::OutputArray dst_,
 	CV_Assert(N >= 3 && N <= maxN);
 
 	cv::Mat& dst = dst_.getMatRef();
-	// later it will be converted to CV_8U
-	dst.create(src.size(), CV_MAKETYPE(CV_32F, src.channels()));
+	dst.create(src.size(), CV_MAKETYPE(CV_8U, src.channels()));
 
 	cv::Mat kernel;
 	getGeneralizedKuwaharaKernel(kernel, N, smoothing);
 
-	cv::Mat srcNorm;
-	cv::normalize(src, srcNorm, 0, 1.0, cv::NORM_MINMAX, CV_MAKETYPE(CV_32F, src.channels()));
-
 	if(src.type() == CV_8UC1)
-		anisotropicKuwaharaFilter_gray(srcNorm, dst, radius, N, q, alpha, sigmaSst, kernel);
+		anisotropicKuwaharaFilter_gray(src, dst, radius, N, q, alpha, sigmaSst, kernel);
 	else if(src.type() == CV_8UC3)
-		anisotropicKuwaharaFilter_bgr(srcNorm, dst, radius, N, q, alpha, sigmaSst, kernel);
+		anisotropicKuwaharaFilter_bgr(src, dst, radius, N, q, alpha, sigmaSst, kernel);
 	else
 		CV_Assert(false);
 }
