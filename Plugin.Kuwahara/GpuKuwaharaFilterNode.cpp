@@ -1,5 +1,6 @@
 #if defined(HAVE_OPENCL)
 
+#include "Kommon/StringUtils.h"
 #include "Logic/NodePlugin.h"
 #include "Logic/NodeSystem.h"
 #include "Logic/OpenCL/GpuNode.h"
@@ -16,8 +17,8 @@ public:
 
 	bool postInit() override
 	{
-		_kidKuwahara = _gpuComputeModule->registerKernel("kuwahara", "kuwahara.cl");
-		_kidKuwaharaRgb = _gpuComputeModule->registerKernel("kuwaharaRgb", "kuwahara.cl");
+		_kidKuwahara = _gpuComputeModule->registerKernel("kuwahara", "kuwahara.cl", "-DN_SECTORS=0");
+		_kidKuwaharaRgb = _gpuComputeModule->registerKernel("kuwaharaRgb", "kuwahara.cl", "-DN_SECTORS=0");
 		return _kidKuwahara != InvalidKernelID
 			&& _kidKuwaharaRgb != InvalidKernelID;
 	}
@@ -135,8 +136,10 @@ public:
 
 	bool postInit() override
 	{
-		_kidGeneralizedKuwahara = _gpuComputeModule->registerKernel("generalizedKuwahara", "kuwahara.cl");
-		_kidGeneralizedKuwaharaRgb = _gpuComputeModule->registerKernel("generalizedKuwaharaRgb", "kuwahara.cl");
+		string opts = string_format("-DN_SECTORS=%d", _N);
+
+		_kidGeneralizedKuwahara = _gpuComputeModule->registerKernel("generalizedKuwahara", "kuwahara.cl", opts);
+		_kidGeneralizedKuwaharaRgb = _gpuComputeModule->registerKernel("generalizedKuwaharaRgb", "kuwahara.cl", opts);
 		return _kidGeneralizedKuwahara != InvalidKernelID
 			&& _kidGeneralizedKuwaharaRgb != InvalidKernelID;
 	}
@@ -151,6 +154,7 @@ public:
 		case pid::N:
 			_N = newValue.toInt();
 			_recreateKernelImage = true;
+			postInit();
 			return true;
 		case pid::Smoothing:
 			_smoothing = newValue.toFloat();
@@ -210,7 +214,6 @@ public:
 		kernelKuwahara.setArg(1, deviceDest);
 		kernelKuwahara.setArg(2, _radius);
 		kernelKuwahara.setArg(3, _kernelImage);
-		kernelKuwahara.setArg(4, _N);
 		_gpuComputeModule->queue().runKernel(kernelKuwahara);
 
 		return ExecutionStatus(EStatus::Ok);

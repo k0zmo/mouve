@@ -1,6 +1,11 @@
 __constant sampler_t sampler = CLK_NORMALIZED_COORDS_FALSE | CLK_FILTER_NEAREST | CLK_ADDRESS_CLAMP_TO_EDGE;
 __constant sampler_t samplerKernel = CLK_NORMALIZED_COORDS_TRUE | CLK_FILTER_NEAREST | CLK_ADDRESS_CLAMP_TO_EDGE;
 
+#define Q_COEFF 8.0f
+#if !defined(N_SECTORS)
+#  error("N_SECTORS must be defined")
+#endif
+
 __kernel void kuwahara(__read_only image2d_t src,
                        __write_only image2d_t dst,
                        const int radius)
@@ -148,27 +153,25 @@ __kernel void kuwaharaRgb(__read_only image2d_t src,
     }
 }
 
-#define Q_COEFF 8.0f
-#define MAX_KERNEL_SECTORS 8
+#if N_SECTORS != 0
 
 __kernel void generalizedKuwahara(__read_only image2d_t src,
                                   __write_only image2d_t dst,
                                   const int radius,
-                                  __read_only image2d_t krnl,
-                                  const int N)
+                                  __read_only image2d_t krnl)
 {
     int2 gid = { get_global_id(0), get_global_id(1) };
 
     if(any(gid >= get_image_dim(src)))
         return;
 
-    const float piN = 2.0f * M_PI_F / (float) N;
+    const float piN = 2.0f * M_PI_F / (float) N_SECTORS;
     const float cosPI = cos(piN);
     const float sinPI = sin(piN);
 
-    __private float mean[MAX_KERNEL_SECTORS] = {0};
-    __private float sqMean[MAX_KERNEL_SECTORS] = {0};
-    __private float weight[MAX_KERNEL_SECTORS] = {0};
+    __private float mean[N_SECTORS] = {0};
+    __private float sqMean[N_SECTORS] = {0};
+    __private float weight[N_SECTORS] = {0};
 
     for(int j = -radius; j <= radius; ++j)
     {
@@ -186,7 +189,8 @@ __kernel void generalizedKuwahara(__read_only image2d_t src,
             // convert to 0 .. 255 range (better precision?)
             float c = read_imagef(src, sampler, gid + (int2){i, j}).x * 255.0f;
 
-            for(int k = 0; k < N; ++k)
+            #pragma unroll
+            for(int k = 0; k < N_SECTORS; ++k)
             {
                 float w = read_imagef(krnl, samplerKernel, (float2)(v + 0.5f)).x;
 
@@ -194,8 +198,8 @@ __kernel void generalizedKuwahara(__read_only image2d_t src,
                 mean[k]   += c * w;
                 sqMean[k] += c * c * w;
 
-                float v0 =   v.x*cosPI + v.y*sinPI;
-                float v1 =  -v.x*sinPI + v.y*cosPI;
+                float v0 =  v.x*cosPI + v.y*sinPI;
+                float v1 = -v.x*sinPI + v.y*cosPI;
 
                 v.x = v0;
                 v.y = v1;
@@ -206,7 +210,8 @@ __kernel void generalizedKuwahara(__read_only image2d_t src,
     float out = 0.0f;
     float sumWeight = 0.0f;
 
-    for (int k = 0; k < N; ++k)
+    #pragma unroll
+    for (int k = 0; k < N_SECTORS; ++k)
     {
         mean[k] /= weight[k];
         sqMean[k] = sqMean[k] / weight[k] - mean[k] * mean[k];
@@ -223,21 +228,20 @@ __kernel void generalizedKuwahara(__read_only image2d_t src,
 __kernel void generalizedKuwaharaRgb(__read_only image2d_t src,
                                      __write_only image2d_t dst,
                                      const int radius,
-                                     __read_only image2d_t krnl,
-                                     const int N)
+                                     __read_only image2d_t krnl)
 {
     int2 gid = { get_global_id(0), get_global_id(1) };
 
     if(any(gid >= get_image_dim(src)))
         return;
 
-    const float piN = 2.0f * M_PI_F / (float) N;
+    const float piN = 2.0f * M_PI_F / (float) N_SECTORS;
     const float cosPI = cos(piN);
     const float sinPI = sin(piN);
 
     // packs mean (float3) and weight
-    __private float4 mean[MAX_KERNEL_SECTORS] = {0};
-    __private float3 sqMean[MAX_KERNEL_SECTORS] = {0};
+    __private float4 mean[N_SECTORS] = {0};
+    __private float3 sqMean[N_SECTORS] = {0};
 
     for(int j = -radius; j <= radius; ++j)
     {
@@ -254,15 +258,16 @@ __kernel void generalizedKuwaharaRgb(__read_only image2d_t src,
             // sample image in circle neighbourhood
             float3 c = read_imagef(src, sampler, gid + (int2){i, j}).xyz * 255.0f;
 
-            for(int k = 0; k < N; ++k)
+            #pragma unroll
+            for(int k = 0; k < N_SECTORS; ++k)
             {
                 float w = read_imagef(krnl, samplerKernel, (float2)(v + 0.5f)).x;
 
                 mean[k]   += (float4)(c * w, w);
                 sqMean[k] += c * c * w;
 
-                float v0 =   v.x*cosPI + v.y*sinPI;
-                float v1 =  -v.x*sinPI + v.y*cosPI;
+                float v0 =  v.x*cosPI + v.y*sinPI;
+                float v1 = -v.x*sinPI + v.y*cosPI;
 
                 v.x = v0;
                 v.y = v1;
@@ -274,6 +279,8 @@ __kernel void generalizedKuwaharaRgb(__read_only image2d_t src,
     float4 out = {0.0f, 0.0f, 0.0f, 0.0f};
 
     for (int k = 0; k < N; ++k)
+    #pragma unroll
+    for (int k = 0; k < N_SECTORS; ++k)
     {
         mean[k].xyz /= mean[k].w;
         sqMean[k] = fabs(sqMean[k] / mean[k].w - mean[k].xyz * mean[k].xyz);
@@ -286,3 +293,5 @@ __kernel void generalizedKuwaharaRgb(__read_only image2d_t src,
 
     write_imagef(dst, gid, (float4)(out.xyz / out.w / 255.0f, 1.0f));
 }
+
+#endif
