@@ -17,6 +17,7 @@ public:
 		, _hStreamThread(nullptr)
 		, _width(0)
 		, _height(0)
+		, _lastTimeStamp(0)
 	{
 	}
 
@@ -43,6 +44,7 @@ public:
 		_height = int(queryNodeValue<int64_t>(_hCamera, NODE_NAME_HEIGHT));
 		int64_t pixelFormat = queryNodeValue<int64_t>(_hCamera, NODE_NAME_PIXELFORMAT);
 		int bpp = J_BitsPerPixel(pixelFormat);
+		_lastTimeStamp = 0;
 
 		switch(bpp)
 		{
@@ -76,9 +78,19 @@ public:
 	void cameraStreamCallback(J_tIMAGE_INFO* pAqImageInfo)
 	{
 		std::lock_guard<std::mutex> lock(_mutex);
-		
-		if(_sourceFrame.step * _sourceFrame.rows == pAqImageInfo->iImageSize)
-			memcpy(_sourceFrame.data, pAqImageInfo->pImageBuffer, pAqImageInfo->iImageSize);
+
+		int64_t diff = pAqImageInfo->iTimeStamp - _lastTimeStamp;
+		if(diff < 0)
+		{
+			// udp packet disordered, ignore it
+		}
+		else
+		{
+			_lastTimeStamp = pAqImageInfo->iTimeStamp;
+
+			if(_sourceFrame.step * _sourceFrame.rows == pAqImageInfo->iImageSize)
+				memcpy(_sourceFrame.data, pAqImageInfo->pImageBuffer, pAqImageInfo->iImageSize);
+		}
 	}
 	
 	ExecutionStatus execute(NodeSocketReader&, NodeSocketWriter& writer) override
@@ -142,6 +154,7 @@ private:
 	int _height;
 	cv::Mat _sourceFrame;
 	std::mutex _mutex;
+	uint64_t _lastTimeStamp;
 
 	std::shared_ptr<JaiNodeModule> _jaiModule;
 };
