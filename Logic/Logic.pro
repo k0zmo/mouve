@@ -95,6 +95,7 @@ OTHER_FILES += \
     OpenCL/kernels/bfmatcher.cl \
     OpenCL/kernels/bfmatcher_macros.cl \
     OpenCL/kernels/bayer.cl \
+    OpenCL/kernels/color.cl \
     OpenCL/kernels/fill.cl \
     OpenCL/kernels/hough.cl \
     OpenCL/kernels/integral.cl \

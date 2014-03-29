@@ -227,6 +227,9 @@
     <CustomBuild Include="OpenCL\kernels\surf.cl">
       <Filter>OpenCL\Kernels</Filter>
     </CustomBuild>
+    <CustomBuild Include="OpenCL\kernels\color.cl">
+      <Filter>OpenCL\Kernels</Filter>
+    </CustomBuild>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="NodeException.h">
@@ -280,10 +283,5 @@
     <ClInclude Include="NodeProperty.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="OpenCL\kernels\color.cl">
-      <Filter>OpenCL\Kernels</Filter>
-    </None>
   </ItemGroup>
 </Project>
