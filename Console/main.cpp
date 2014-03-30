@@ -15,30 +15,34 @@ int main()
 {
 	try
 	{
-		NodeSystem nodeSystem;
-		NodeTreeSerializer treeSerializer("D:/Programowanie/Projects/mouve-assets");
-		std::string filePath = "D:/Programowanie/Projects/mouve-assets/test.tree";
-		std::shared_ptr<NodeTree> nodeTree = nodeSystem.createNodeTree();
-
+		// Create and register GPU Module
 		std::shared_ptr<IGpuNodeModule> gpuModule = createGpuModule();
-		nodeSystem.registerNodeModule(gpuModule);
 		gpuModule->setInteractiveInit(false);
 
+		NodeSystem nodeSystem;
+		nodeSystem.registerNodeModule(gpuModule);
+
+		// Register Kuwahara plugin
 		nodeSystem.loadPlugin("plugins/Plugin.Kuwahara.dll");
 
+		// Load node tree from a file
+		std::string filePath = "D:/Programowanie/Projects/mouve-assets/Kuwahara.tree";
+		NodeTreeSerializer treeSerializer;        
+		std::shared_ptr<NodeTree> nodeTree = nodeSystem.createNodeTree();
 		if(!treeSerializer.deserializeJson(nodeTree, filePath))
 			throw std::runtime_error("Cannot open file " + filePath);
 
+		// Get IDs of input and output nodes
 		const NodeID inputNodeID = nodeTree->resolveNode("Image from file");
 		const NodeID outputNodeID = nodeTree->resolveNode("Download image");
 
-		// Get input and output nodes
 		if(inputNodeID == InvalidNodeID)
 			throw std::logic_error("Couldn't find node named 'Image from file', terminating");
 		if(outputNodeID == InvalidNodeID)
 			throw std::logic_error("Couldn't find node named 'Download image', terminating");
 
 		// Set some properties, e.g input filename
+		/*
 		NodeConfig nodeConfig;
 		nodeTree->nodeConfiguration(inputNodeID, nodeConfig);
 		if(nodeConfig.pProperties != nullptr)
@@ -46,9 +50,10 @@ int main()
 			if(nodeConfig.pProperties[0].type == EPropertyType::Filepath)
 			{
 				nodeTree->nodeSetProperty(inputNodeID, 0, 
-					Filepath("D:/Programowanie/Projects/mouve-assets/lena.jpg"));
+					Filepath("D:/Programowanie/Projects/mouve-assets/lion.png"));
 			}
 		}
+		*/
 
 		// Execute a node
 		nodeTree->execute(true);

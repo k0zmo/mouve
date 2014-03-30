@@ -117,6 +117,8 @@ bool NodeTreeSerializer::deserializeJson(std::shared_ptr<NodeTree>& nodeTree,
 	}
 
 	QJsonObject jsonTree = doc.object();
+	if(_rootDirectory.empty())
+		_rootDirectory = QFileInfo(filePath_).absolutePath().toStdString();
 	return deserializeJson(nodeTree, jsonTree);
 }
 
