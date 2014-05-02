@@ -1,3 +1,27 @@
+/*
+ * Copyright (c) 2013-2014 Kajetan Swierk <k0zmo@outlook.com>
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ *
+ */
+
+
 #pragma once
 
 #include "Prerequisites.h"
@@ -5,49 +29,49 @@
 class NodeFactory
 {
 public:
-	virtual ~NodeFactory() {}
-	virtual std::unique_ptr<NodeType> create() = 0;
+    virtual ~NodeFactory() {}
+    virtual std::unique_ptr<NodeType> create() = 0;
 };
 
 template <class Type>
 class DefaultNodeFactory : public NodeFactory
 {
 public:
-	virtual std::unique_ptr<NodeType> create();
+    virtual std::unique_ptr<NodeType> create();
 };
 
 class AutoRegisterNodeBase : public NodeFactory
 {
 public:
-	AutoRegisterNodeBase(const std::string& typeName)
-		: typeName(typeName)
-	{
-		// Append at the beginning of the list
-		// here the order doesn't really matter
-		next = head;
-		head = this;
-	}
+    AutoRegisterNodeBase(const std::string& typeName)
+        : typeName(typeName)
+    {
+        // Append at the beginning of the list
+        // here the order doesn't really matter
+        next = head;
+        head = this;
+    }
 
-	std::string typeName;
+    std::string typeName;
 
-	// Intrusive single-linked list
-	AutoRegisterNodeBase* next;
-	static AutoRegisterNodeBase* head;
+    // Intrusive single-linked list
+    AutoRegisterNodeBase* next;
+    static AutoRegisterNodeBase* head;
 };
 
 template <class Type>
 class AutoRegisterNode : public AutoRegisterNodeBase
 {
 public:
-	AutoRegisterNode(const std::string& typeName)
-		: AutoRegisterNodeBase(typeName)
-	{}
+    AutoRegisterNode(const std::string& typeName)
+        : AutoRegisterNodeBase(typeName)
+    {}
 
-	virtual std::unique_ptr<NodeType> create();
+    virtual std::unique_ptr<NodeType> create();
 };
 
 #define REGISTER_NODE(NodeTypeName, NodeClass) \
-	AutoRegisterNode<NodeClass> __auto_registered_##NodeClass(NodeTypeName);
+    AutoRegisterNode<NodeClass> __auto_registered_##NodeClass(NodeTypeName);
 
 template <class Type>
 inline std::unique_ptr<NodeType> DefaultNodeFactory<Type>::create()

@@ -1,3 +1,26 @@
+/*
+ * Copyright (c) 2013-2014 Kajetan Swierk <k0zmo@outlook.com>
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ *
+ */
+
 #pragma once
 
 #include "Prerequisites.h"
@@ -22,180 +45,180 @@ typedef QList<QPair<QString, QString>> PropertyHintList;
 class Property
 {
 public:
-	explicit Property(const QString& name,
-		const QVariant& value,
-		EPropertyType type,
-		Property* parent = nullptr);
+    explicit Property(const QString& name,
+        const QVariant& value,
+        EPropertyType type,
+        Property* parent = nullptr);
 
-	virtual ~Property();
+    virtual ~Property();
 
-	PropertyID propertyID() const;
-	void setPropertyID(PropertyID propID);
+    PropertyID propertyID() const;
+    void setPropertyID(PropertyID propID);
 
-	/// Dodaje na koniec listy nowego potomka
-	void appendChild(Property* child);
+    /// Dodaje na koniec listy nowego potomka
+    void appendChild(Property* child);
 
-	/// Zwraca potomka o wskazanym indeksie
-	Property* child(int row);
+    /// Zwraca potomka o wskazanym indeksie
+    Property* child(int row);
 
-	/// Zwraca liczbe potomkow
-	int childCount() const;
+    /// Zwraca liczbe potomkow
+    int childCount() const;
 
-	/// Zwraca indeks jaki Wlasciwosc zajmuje u przodka
-	int childNumber() const;
+    /// Zwraca indeks jaki Wlasciwosc zajmuje u przodka
+    int childNumber() const;
 
-	Property* parent() const;
-	bool isRoot() const;
+    Property* parent() const;
+    bool isRoot() const;
 
-	QString name() const;
-	void setName(const QString& name);
+    QString name() const;
+    void setName(const QString& name);
 
-	virtual QVariant value(int role = Qt::UserRole) const;
-	virtual bool setValue(const QVariant& value,
-		int role = Qt::UserRole);
+    virtual QVariant value(int role = Qt::UserRole) const;
+    virtual bool setValue(const QVariant& value,
+        int role = Qt::UserRole);
 
-	// Type is immutable
-	EPropertyType type() const;
+    // Type is immutable
+    EPropertyType type() const;
 
-	virtual QWidget* createEditor(QWidget* parent);
+    virtual QWidget* createEditor(QWidget* parent);
 
-	virtual bool setEditorData(QWidget* editor,
-		const QVariant& data);
+    virtual bool setEditorData(QWidget* editor,
+        const QVariant& data);
 
-	virtual QVariant editorData(QWidget* editor);
+    virtual QVariant editorData(QWidget* editor);
 
-	virtual bool paint(QPainter* painter,
-		const QStyleOptionViewItem& option,
-		const QVariant& value);
+    virtual bool paint(QPainter* painter,
+        const QStyleOptionViewItem& option,
+        const QVariant& value);
 
-	virtual void setUiHints(const PropertyHintList& list) { Q_UNUSED(list); }
+    virtual void setUiHints(const PropertyHintList& list) { Q_UNUSED(list); }
 
 protected:
-	QVector<Property*> _children;
-	Property* _parent;
-	QString _name;
-	QVariant _value;
-	EPropertyType _type;
-	PropertyID _propID;
+    QVector<Property*> _children;
+    Property* _parent;
+    QString _name;
+    QVariant _value;
+    EPropertyType _type;
+    PropertyID _propID;
 };
 
 class DoubleProperty : public Property
 {
 public:
-	explicit DoubleProperty(const QString& name, double value);
+    explicit DoubleProperty(const QString& name, double value);
 
-	QWidget* createEditor(QWidget* parent) override;
-	bool setEditorData(QWidget* editor,
-		const QVariant& data) override;
-	QVariant editorData(QWidget* editor) override;
+    QWidget* createEditor(QWidget* parent) override;
+    bool setEditorData(QWidget* editor,
+        const QVariant& data) override;
+    QVariant editorData(QWidget* editor) override;
 
-	void setUiHints(const PropertyHintList& list) override;
+    void setUiHints(const PropertyHintList& list) override;
 
 private:
-	double _min;
-	double _max;
-	double _step;
-	int _decimals;
+    double _min;
+    double _max;
+    double _step;
+    int _decimals;
 };
 
 class EnumProperty : public Property
 {
 public:
-	explicit EnumProperty(const QString& name, Enum value);
+    explicit EnumProperty(const QString& name, Enum value);
 
-	QVariant value(int role = Qt::UserRole) const override;
-	bool setValue(const QVariant& value, 
-		int role = Qt::UserRole) override;
+    QVariant value(int role = Qt::UserRole) const override;
+    bool setValue(const QVariant& value, 
+        int role = Qt::UserRole) override;
 
-	QWidget* createEditor(QWidget* parent) override;
-	bool setEditorData(QWidget* editor,
-		const QVariant& data) override;
-	QVariant editorData(QWidget* editor) override;
+    QWidget* createEditor(QWidget* parent) override;
+    bool setEditorData(QWidget* editor,
+        const QVariant& data) override;
+    QVariant editorData(QWidget* editor) override;
 
-	void setUiHints(const PropertyHintList& list) override;
+    void setUiHints(const PropertyHintList& list) override;
 
 private:
-	QStringList _valueList;
+    QStringList _valueList;
 };
 
 class IntegerProperty : public Property
 {
 public:
-	explicit IntegerProperty(const QString& name, int value);
+    explicit IntegerProperty(const QString& name, int value);
 
-	QWidget* createEditor(QWidget* parent) override;
-	bool setEditorData(QWidget* editor,
-		const QVariant& data) override;
-	QVariant editorData(QWidget* editor) override;
+    QWidget* createEditor(QWidget* parent) override;
+    bool setEditorData(QWidget* editor,
+        const QVariant& data) override;
+    QVariant editorData(QWidget* editor) override;
 
-	void setUiHints(const PropertyHintList& list) override;
+    void setUiHints(const PropertyHintList& list) override;
 
 private:
-	int _min;
-	int _max;
-	int _step;
-	bool _wrap;
+    int _min;
+    int _max;
+    int _step;
+    bool _wrap;
 };
 
 class StringProperty : public Property
 {
 public:
-	explicit StringProperty(const QString& name, const QString& value);
+    explicit StringProperty(const QString& name, const QString& value);
 
-	// We use default factory here for string (not need for widget customization for now)
+    // We use default factory here for string (not need for widget customization for now)
 };
 
 class BooleanProperty : public Property
 {
 public:
-	explicit BooleanProperty(const QString& name, bool value);
+    explicit BooleanProperty(const QString& name, bool value);
 
-	QWidget* createEditor(QWidget* parent) override;
-	bool setEditorData(QWidget* editor,
-		const QVariant& data) override;
-	QVariant editorData(QWidget* editor) override;
+    QWidget* createEditor(QWidget* parent) override;
+    bool setEditorData(QWidget* editor,
+        const QVariant& data) override;
+    QVariant editorData(QWidget* editor) override;
 
-	bool paint(QPainter* painter, 
-		const QStyleOptionViewItem& option,
-		const QVariant& value) override;
+    bool paint(QPainter* painter, 
+        const QStyleOptionViewItem& option,
+        const QVariant& value) override;
 };
 
 class FilePathProperty : public Property
 {
 public:
-	explicit FilePathProperty(const QString& name, 
-		const Filepath& initialPath = Filepath());
+    explicit FilePathProperty(const QString& name, 
+        const Filepath& initialPath = Filepath());
 
-	QVariant value(int role = Qt::UserRole) const override;
-	bool setValue(const QVariant& value, 
-		int role = Qt::UserRole) override;
+    QVariant value(int role = Qt::UserRole) const override;
+    bool setValue(const QVariant& value, 
+        int role = Qt::UserRole) override;
 
-	QWidget* createEditor(QWidget* parent) override;
-	bool setEditorData(QWidget* editor,
-		const QVariant& data) override;
-	QVariant editorData(QWidget* editor) override;
+    QWidget* createEditor(QWidget* parent) override;
+    bool setEditorData(QWidget* editor,
+        const QVariant& data) override;
+    QVariant editorData(QWidget* editor) override;
 
-	void setUiHints(const PropertyHintList& list) override;
+    void setUiHints(const PropertyHintList& list) override;
 
 private:
-	QFileInfo _fileInfo;
-	QString _filter;
-	bool _save;
+    QFileInfo _fileInfo;
+    QString _filter;
+    bool _save;
 };
 
 // For now - its simple 3x3 matrix
 class MatrixProperty : public Property
 {
 public:
-	explicit MatrixProperty(const QString& name,
-		const Matrix3x3& initial = Matrix3x3(1));
+    explicit MatrixProperty(const QString& name,
+        const Matrix3x3& initial = Matrix3x3(1));
 
-	QVariant value(int role = Qt::UserRole) const override;
+    QVariant value(int role = Qt::UserRole) const override;
 
-	QWidget* createEditor(QWidget* parent) override;
-	bool setEditorData(QWidget* editor,
-		const QVariant& data) override;
-	QVariant editorData(QWidget* editor) override;
+    QWidget* createEditor(QWidget* parent) override;
+    bool setEditorData(QWidget* editor,
+        const QVariant& data) override;
+    QVariant editorData(QWidget* editor) override;
 };
 
 inline PropertyID Property::propertyID() const
@@ -237,7 +260,7 @@ inline QWidget* Property::createEditor(QWidget* parent)
 { Q_UNUSED(parent); return nullptr; }
 
 inline bool Property::setEditorData(QWidget* editor,
-									const QVariant& data)
+                                    const QVariant& data)
 { Q_UNUSED(editor); Q_UNUSED(data);
   return false; }
 
@@ -245,6 +268,6 @@ inline QVariant Property::editorData(QWidget* editor)
 { Q_UNUSED(editor); return QVariant(); }
 
 inline bool Property::paint(QPainter* painter, 
-							const QStyleOptionViewItem& option, 
-							const QVariant& value)
+                            const QStyleOptionViewItem& option, 
+                            const QVariant& value)
 { Q_UNUSED(painter); Q_UNUSED(option); Q_UNUSED(value); return false; }

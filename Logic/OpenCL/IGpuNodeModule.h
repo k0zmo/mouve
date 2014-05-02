@@ -1,14 +1,37 @@
+/*
+ * Copyright (c) 2013-2014 Kajetan Swierk <k0zmo@outlook.com>
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ *
+ */
+
 #pragma once
 
 #include "Logic/NodeModule.h"
 
 enum class EDeviceType : int
 {
-	None     = 0,
-	Default  = K_BIT(0),
-	Cpu      = K_BIT(1),
-	Gpu      = K_BIT(2),
-	Specific = 0xFFFF,
+    None     = 0,
+    Default  = K_BIT(0),
+    Cpu      = K_BIT(1),
+    Gpu      = K_BIT(2),
+    Specific = 0xFFFF,
 };
 
 struct GpuPlatform;
@@ -16,56 +39,56 @@ struct GpuInteractiveResult;
 struct GpuRegisteredProgram;
 
 typedef std::function<
-	GpuInteractiveResult(const std::vector<GpuPlatform>& gpuPlatforms)
+    GpuInteractiveResult(const std::vector<GpuPlatform>& gpuPlatforms)
 > OnCreateInteractive;
 
 class LOGIC_EXPORT IGpuNodeModule : public NodeModule
 {
 public:
-	virtual void setInteractiveInit(bool interactiveInit) = 0;
-	virtual bool isInteractiveInit() const = 0;
+    virtual void setInteractiveInit(bool interactiveInit) = 0;
+    virtual bool isInteractiveInit() const = 0;
 
-	virtual bool createDefault() = 0;
-	virtual bool createInteractive() = 0;
-	OnCreateInteractive onCreateInteractive;
+    virtual bool createDefault() = 0;
+    virtual bool createInteractive() = 0;
+    OnCreateInteractive onCreateInteractive;
 
-	virtual std::vector<GpuPlatform> availablePlatforms() const = 0;
+    virtual std::vector<GpuPlatform> availablePlatforms() const = 0;
 
-	virtual std::vector<GpuRegisteredProgram> populateListOfRegisteredPrograms() const = 0;
-	virtual void rebuildProgram(const std::string& programName) = 0;
+    virtual std::vector<GpuRegisteredProgram> populateListOfRegisteredPrograms() const = 0;
+    virtual void rebuildProgram(const std::string& programName) = 0;
 };
 
 struct GpuPlatform
 {
-	std::string name;
-	std::vector<std::string> devices;
+    std::string name;
+    std::vector<std::string> devices;
 };
 
 struct GpuInteractiveResult
 {
-	EDeviceType type;
-	int platform;
-	int device;
+    EDeviceType type;
+    int platform;
+    int device;
 };
 
 struct GpuRegisteredProgram
 {
-	struct Build
-	{
-		Build() {}
-		Build(const std::vector<std::string>& kernels, const std::string& options, bool built)
-			: kernels(kernels)
-			, options(options)
-			, built(built)
-		{}
+    struct Build
+    {
+        Build() {}
+        Build(const std::vector<std::string>& kernels, const std::string& options, bool built)
+            : kernels(kernels)
+            , options(options)
+            , built(built)
+        {}
 
-		std::vector<std::string> kernels;
-		std::string options;
-		bool built;
-	};
+        std::vector<std::string> kernels;
+        std::string options;
+        bool built;
+    };
 
-	std::string programName;
-	std::vector<Build> builds;
+    std::string programName;
+    std::vector<Build> builds;
 };
 
 LOGIC_EXPORT std::unique_ptr<IGpuNodeModule> createGpuModule();

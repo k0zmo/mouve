@@ -1,3 +1,26 @@
+/*
+ * Copyright (c) 2013-2014 Kajetan Swierk <k0zmo@outlook.com>
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ *
+ */
+
 #if defined(HAVE_JAI)
 
 #include "NodeType.h"
@@ -12,151 +35,151 @@
 class JaiCameraNodeType : public NodeType
 {
 public:
-	JaiCameraNodeType()
-		: _hCamera(nullptr)
-		, _hStreamThread(nullptr)
-		, _width(0)
-		, _height(0)
-		, _lastTimeStamp(0)
-	{
-	}
+    JaiCameraNodeType()
+        : _hCamera(nullptr)
+        , _hStreamThread(nullptr)
+        , _width(0)
+        , _height(0)
+        , _lastTimeStamp(0)
+    {
+    }
 
-	bool init(const std::shared_ptr<NodeModule>& nodeModule) override
-	{
-		try
-		{
-			_jaiModule = std::dynamic_pointer_cast<JaiNodeModule>(nodeModule);
-			if(!_jaiModule)
-				return false;
+    bool init(const std::shared_ptr<NodeModule>& nodeModule) override
+    {
+        try
+        {
+            _jaiModule = std::dynamic_pointer_cast<JaiNodeModule>(nodeModule);
+            if(!_jaiModule)
+                return false;
 
-			_hCamera = _jaiModule->openCamera(0);
-			return _hCamera != nullptr;
-		}
-		catch(JaiException&)
-		{
-			return false;
-		}
-	}	
-	
-	bool restart() override
-	{
-		_width = int(queryNodeValue<int64_t>(_hCamera, NODE_NAME_WIDTH));
-		_height = int(queryNodeValue<int64_t>(_hCamera, NODE_NAME_HEIGHT));
-		int64_t pixelFormat = queryNodeValue<int64_t>(_hCamera, NODE_NAME_PIXELFORMAT);
-		int bpp = J_BitsPerPixel(pixelFormat);
-		_lastTimeStamp = 0;
+            _hCamera = _jaiModule->openCamera(0);
+            return _hCamera != nullptr;
+        }
+        catch(JaiException&)
+        {
+            return false;
+        }
+    }	
+    
+    bool restart() override
+    {
+        _width = int(queryNodeValue<int64_t>(_hCamera, NODE_NAME_WIDTH));
+        _height = int(queryNodeValue<int64_t>(_hCamera, NODE_NAME_HEIGHT));
+        int64_t pixelFormat = queryNodeValue<int64_t>(_hCamera, NODE_NAME_PIXELFORMAT);
+        int bpp = J_BitsPerPixel(pixelFormat);
+        _lastTimeStamp = 0;
 
-		switch(bpp)
-		{
-		case 8:
-			_sourceFrame.create(_height, _width, CV_8UC1);
-			break;
-		case 16:
-			_sourceFrame.create(_height, _width, CV_16UC1);
-			break;
-		}
-		
-		// Open stream
-		J_STATUS_TYPE error;
-		if ((error = J_Image_OpenStream(_hCamera, 0, reinterpret_cast<J_IMG_CALLBACK_OBJECT>(this),
-			reinterpret_cast<J_IMG_CALLBACK_FUNCTION>(&JaiCameraNodeType::cameraStreamCallback),
-			&_hStreamThread, (_width * _height * bpp)/8)) != J_ST_SUCCESS)
-		{
-			throw JaiException(error, "Stream couldn't be opened");
-		}
+        switch(bpp)
+        {
+        case 8:
+            _sourceFrame.create(_height, _width, CV_8UC1);
+            break;
+        case 16:
+            _sourceFrame.create(_height, _width, CV_16UC1);
+            break;
+        }
+        
+        // Open stream
+        J_STATUS_TYPE error;
+        if ((error = J_Image_OpenStream(_hCamera, 0, reinterpret_cast<J_IMG_CALLBACK_OBJECT>(this),
+            reinterpret_cast<J_IMG_CALLBACK_FUNCTION>(&JaiCameraNodeType::cameraStreamCallback),
+            &_hStreamThread, (_width * _height * bpp)/8)) != J_ST_SUCCESS)
+        {
+            throw JaiException(error, "Stream couldn't be opened");
+        }
 
-		// Start Acquision
-		if ((error = J_Camera_ExecuteCommand(_hCamera, 
-			(int8_t*)NODE_NAME_ACQSTART)) != J_ST_SUCCESS)
-		{
-			throw JaiException(error, "Acquisition couldn't be started");
-		}
-		
-		return true;
-	}
-	
-	void cameraStreamCallback(J_tIMAGE_INFO* pAqImageInfo)
-	{
-		std::lock_guard<std::mutex> lock(_mutex);
+        // Start Acquision
+        if ((error = J_Camera_ExecuteCommand(_hCamera, 
+            (int8_t*)NODE_NAME_ACQSTART)) != J_ST_SUCCESS)
+        {
+            throw JaiException(error, "Acquisition couldn't be started");
+        }
+        
+        return true;
+    }
+    
+    void cameraStreamCallback(J_tIMAGE_INFO* pAqImageInfo)
+    {
+        std::lock_guard<std::mutex> lock(_mutex);
 
-		int64_t diff = pAqImageInfo->iTimeStamp - _lastTimeStamp;
-		if(diff < 0)
-		{
-			// udp packet disordered, ignore it
-		}
-		else
-		{
-			_lastTimeStamp = pAqImageInfo->iTimeStamp;
+        int64_t diff = pAqImageInfo->iTimeStamp - _lastTimeStamp;
+        if(diff < 0)
+        {
+            // udp packet disordered, ignore it
+        }
+        else
+        {
+            _lastTimeStamp = pAqImageInfo->iTimeStamp;
 
-			if(_sourceFrame.step * _sourceFrame.rows == pAqImageInfo->iImageSize)
-				memcpy(_sourceFrame.data, pAqImageInfo->pImageBuffer, pAqImageInfo->iImageSize);
-		}
-	}
-	
-	ExecutionStatus execute(NodeSocketReader&, NodeSocketWriter& writer) override
-	{
-		cv::Mat& matFrame = writer.acquireSocket(0).getImage();
-		{
-			std::lock_guard<std::mutex> lock(_mutex);
-			matFrame = _sourceFrame;
-		}
-		return ExecutionStatus(EStatus::Tag);
-	}
-	
-	void finish() override
-	{
-		J_STATUS_TYPE error;
-		
-		// Stop Acquision
-		if (_hCamera)
-		{
-			if ((error = J_Camera_ExecuteCommand(_hCamera,
-				(int8_t*)NODE_NAME_ACQSTOP)) != J_ST_SUCCESS)
-			{}// Doesn't make any sense to do anything here
-		}
+            if(_sourceFrame.step * _sourceFrame.rows == pAqImageInfo->iImageSize)
+                memcpy(_sourceFrame.data, pAqImageInfo->pImageBuffer, pAqImageInfo->iImageSize);
+        }
+    }
+    
+    ExecutionStatus execute(NodeSocketReader&, NodeSocketWriter& writer) override
+    {
+        cv::Mat& matFrame = writer.acquireSocket(0).getImage();
+        {
+            std::lock_guard<std::mutex> lock(_mutex);
+            matFrame = _sourceFrame;
+        }
+        return ExecutionStatus(EStatus::Tag);
+    }
+    
+    void finish() override
+    {
+        J_STATUS_TYPE error;
+        
+        // Stop Acquision
+        if (_hCamera)
+        {
+            if ((error = J_Camera_ExecuteCommand(_hCamera,
+                (int8_t*)NODE_NAME_ACQSTOP)) != J_ST_SUCCESS)
+            {}// Doesn't make any sense to do anything here
+        }
 
-		if(_hStreamThread)
-		{
-			// Close stream
-			if ((error = J_Image_CloseStream(_hStreamThread)) != J_ST_SUCCESS)
-			{}// Doesn't make any sense to do anything here
-			_hStreamThread = nullptr;
-		}
-	}
-	
-	void configuration(NodeConfig& nodeConfig) const override
-	{
-		static const OutputSocketConfig out_config[] = {
-			{ ENodeFlowDataType::Image, "output", "Output", "" },
-			{ ENodeFlowDataType::Invalid, "", "", "" }
-		};
-		/// TODO: CameraID
-		/// - Rest of properties should be settable via special module menu
-		/*
-		static const PropertyConfig prop_config[] = {
-			{ EPropertyType::Filepath, "Video path", "filter:Video files (*.mkv *.mp4 *.avi)" },
-			{ EPropertyType::Integer, "Start frame", "min:0" },
-			{ EPropertyType::Unknown, "", "" }
-		};
-		*/
+        if(_hStreamThread)
+        {
+            // Close stream
+            if ((error = J_Image_CloseStream(_hStreamThread)) != J_ST_SUCCESS)
+            {}// Doesn't make any sense to do anything here
+            _hStreamThread = nullptr;
+        }
+    }
+    
+    void configuration(NodeConfig& nodeConfig) const override
+    {
+        static const OutputSocketConfig out_config[] = {
+            { ENodeFlowDataType::Image, "output", "Output", "" },
+            { ENodeFlowDataType::Invalid, "", "", "" }
+        };
+        /// TODO: CameraID
+        /// - Rest of properties should be settable via special module menu
+        /*
+        static const PropertyConfig prop_config[] = {
+            { EPropertyType::Filepath, "Video path", "filter:Video files (*.mkv *.mp4 *.avi)" },
+            { EPropertyType::Integer, "Start frame", "min:0" },
+            { EPropertyType::Unknown, "", "" }
+        };
+        */
 
-		nodeConfig.description = "Provides video frames from JAI camera";
-		nodeConfig.pOutputSockets = out_config;
-		nodeConfig.module = "jai";
-		//nodeConfig.pProperties = prop_config;
-		nodeConfig.flags = Node_HasState | Node_AutoTag;
-	}
-	
+        nodeConfig.description = "Provides video frames from JAI camera";
+        nodeConfig.pOutputSockets = out_config;
+        nodeConfig.module = "jai";
+        //nodeConfig.pProperties = prop_config;
+        nodeConfig.flags = Node_HasState | Node_AutoTag;
+    }
+    
 private:
-	CAM_HANDLE _hCamera;
-	THRD_HANDLE _hStreamThread;
-	int _width;
-	int _height;
-	cv::Mat _sourceFrame;
-	std::mutex _mutex;
-	uint64_t _lastTimeStamp;
+    CAM_HANDLE _hCamera;
+    THRD_HANDLE _hStreamThread;
+    int _width;
+    int _height;
+    cv::Mat _sourceFrame;
+    std::mutex _mutex;
+    uint64_t _lastTimeStamp;
 
-	std::shared_ptr<JaiNodeModule> _jaiModule;
+    std::shared_ptr<JaiNodeModule> _jaiModule;
 };
 
 REGISTER_NODE("Source/JAI Camera", JaiCameraNodeType)

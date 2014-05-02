@@ -1,14 +1,39 @@
+/*
+ * Copyright (c) 2013-2014 Kajetan Swierk <k0zmo@outlook.com>
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ *
+ */
+
 #pragma once
 
 // Compiler
 #define K_COMPILER_MSVC 1
 #define K_COMPILER_GCC 2
-/// TODO: Support clang++
+#define K_COMPILER_CLANG 4
 
 #if defined(_MSC_VER)
 #  define K_COMPILER K_COMPILER_MSVC
 #elif defined(__GNUC__)
 #  define K_COMPILER K_COMPILER_GCC
+#elif defined(__clang__)
+#  define K_COMPILER K_COMPILER_CLANG
 #else
 #  error "This compiler is not supported"
 #endif
@@ -33,8 +58,10 @@
 
 #if defined(_M_AMD64) || defined(_M_X64) || defined(__x86_64__)
 #  define K_ARCH K_ARCH_64
+   static_assert(sizeof(void*) == 8, "Pointer isn't 8 bytes");
 #else
 #  define K_ARCH K_ARCH_32
+    static_assert(sizeof(void*) == 4, "Pointer isn't 4 bytes");
 #endif
 
 
@@ -69,15 +96,15 @@
 #  define K_FORCEINLINE inline __attribute__((always_inline))
 #  define K_ALIGNED16(a) a __attribute__ ((aligned (16)))
 #  define K_DISABLE_COPY(classname) \
-	classname(const classname&) = delete; \
-	classname& operator=(const classname&) = delete;
+    classname(const classname&) = delete; \
+    classname& operator=(const classname&) = delete;
 #elif K_COMPILER == K_COMPILER_MSVC
 #  define K_FUNCTION __FUNCSIG__
 #  define K_FORCEINLINE __forceinline
 #  define K_ALIGNED16(a) __declspec(align(16)) a
 #  define K_DISABLE_COPY(classname) \
-	classname(const classname&); \
-	classname& operator=(const classname&);
+    classname(const classname&); \
+    classname& operator=(const classname&);
 #  define snprintf _snprintf
 #endif
 
