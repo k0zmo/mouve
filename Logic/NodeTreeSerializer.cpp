@@ -19,37 +19,29 @@ QJsonObject NodeTreeSerializer::serializeJson(const std::shared_ptr<NodeTree>& n
 	{
 		QJsonObject jsonNode;
 
-		QString typeName = QString::fromStdString(nodeTree->nodeTypeName(nodeID));
-		QString name = QString::fromStdString(node->nodeName());
-
 		jsonNode.insert(QStringLiteral("id"), nodeID);
-		jsonNode.insert(QStringLiteral("class"), typeName);
-		jsonNode.insert(QStringLiteral("name"), name);
+		jsonNode.insert(QStringLiteral("class"), QString::fromStdString(nodeTree->nodeTypeName(nodeID)));
+		jsonNode.insert(QStringLiteral("name"), QString::fromStdString(node->nodeName()));
 
-		// Save properties' values
+		// Save properties' values if any
 		NodeConfig nodeConfig;
 		node->configuration(nodeConfig);
-		PropertyID propID = 0;
-		QJsonArray jsonProperties;
-
 		if(nodeConfig.pProperties)
 		{
+			PropertyID propID = 0;
+			QJsonArray jsonProperties;
+
 			while(nodeConfig.pProperties[propID].type != EPropertyType::Unknown)
 			{
 				NodeProperty propValue = node->property(propID);
-
 				if(propValue.isValid())
-				{
-					const auto& prop = nodeConfig.pProperties[propID];
-					jsonProperties.append(serializeProperty(propID, prop.name, prop.type, propValue));
-				}
-
+					jsonProperties.append(serializeProperty(propID, nodeConfig.pProperties[propID], propValue));
 				++propID;
 			}
-		}
 
-		if(!jsonProperties.isEmpty())
-			jsonNode.insert(QStringLiteral("properties"), jsonProperties);
+			if(!jsonProperties.isEmpty())
+				jsonNode.insert(QStringLiteral("properties"), jsonProperties);
+		}
 
 		jsonNodes.append(jsonNode);
 	}
@@ -109,7 +101,7 @@ bool NodeTreeSerializer::deserializeJson(std::shared_ptr<NodeTree>& nodeTree,
 	QJsonObject jsonTree = doc.object();
 	if(_rootDirectory.empty())
 		_rootDirectory = QFileInfo(filePath_).absolutePath().toStdString();
-	return deserializeJson(nodeTree, jsonTree);
+	return deserializeJson(nodeTree, jsonTree, nullptr);
 }
 
 bool NodeTreeSerializer::deserializeJson(std::shared_ptr<NodeTree>& nodeTree,
@@ -117,20 +109,15 @@ bool NodeTreeSerializer::deserializeJson(std::shared_ptr<NodeTree>& nodeTree,
 										 std::map<NodeID, NodeID>* oldToNewNodeID)
 {
 	nodeTree->clear();
-
-	QJsonArray nodes = jsonTree["nodes"].toArray();
-	QJsonArray links = jsonTree["links"].toArray();
-
-	/// TODO : check if the "nodes", "links" are indeed QVariantList?
 	std::map<NodeID, NodeID> mapping;
 
-	if(!deserializeJsonNodes(nodeTree, nodes, mapping))
+	if (!deserializeJsonNodes(nodeTree, jsonTree["nodes"].toArray(), mapping))
 	{
 		qCritical("Didn't load all saved nodes, tree will be discarded");
 		nodeTree->clear();
 		return false;
 	}
-	if(!deserializeJsonLinks(nodeTree, links, mapping))
+	if (!deserializeJsonLinks(nodeTree, jsonTree["links"].toArray(), mapping))
 	{
 		qCritical("Didn't load all saved links, tree will be discarded");
 		nodeTree->clear();
@@ -230,11 +217,9 @@ bool NodeTreeSerializer::deserializeJsonNodes(std::shared_ptr<NodeTree>& nodeTre
 					continue;
 				}
 
-				NodeProperty propValue = deserializeProperty(propType, qvalue);
-
 				try
 				{
-					if(!nodeTree->nodeSetProperty(_nodeId, propId, propValue))
+					if(!nodeTree->nodeSetProperty(_nodeId, propId, deserializeProperty(propType, qvalue)))
 					{
 						qWarning() << "Couldn't set loaded property" << propId << "to" << qvalue;
 					}
@@ -254,7 +239,7 @@ bool NodeTreeSerializer::deserializeJsonNodes(std::shared_ptr<NodeTree>& nodeTre
 
 bool NodeTreeSerializer::deserializeJsonLinks(std::shared_ptr<NodeTree>& nodeTree,
 											  const QJsonArray& jsonLinks,
-											  std::map<NodeID, NodeID>& mapping)
+											  const std::map<NodeID, NodeID>& mapping)
 {
 	int i = 0;
 	QVariantList links = jsonLinks.toVariantList();
@@ -289,8 +274,8 @@ bool NodeTreeSerializer::deserializeJsonLinks(std::shared_ptr<NodeTree>& nodeTre
 			break;
 		}
 
-		if(nodeTree->linkNodes(SocketAddress(mapping[fromNode], fromSocket, true),
-							   SocketAddress(mapping[toNode], toSocket, false)) != ELinkNodesResult::Ok)
+		if(nodeTree->linkNodes(SocketAddress(mapping.at(fromNode), fromSocket, true),
+							   SocketAddress(mapping.at(toNode), toSocket, false)) != ELinkNodesResult::Ok)
 		{
 			qCritical() << QString("Couldn't link nodes %1:%2 with %3:%4")
 				.arg(fromNode)
@@ -306,15 +291,14 @@ bool NodeTreeSerializer::deserializeJsonLinks(std::shared_ptr<NodeTree>& nodeTre
 }
 
 QJsonObject NodeTreeSerializer::serializeProperty(PropertyID propID,
-												  const std::string& propName,
-												  EPropertyType propType,
+												  const PropertyConfig& propertyConfig,
 												  const NodeProperty& propValue)
 {
 	QJsonObject jsonProp;
 	jsonProp.insert(QStringLiteral("id"), propID);
-	jsonProp.insert(QStringLiteral("name"), QString::fromStdString(propName));
+	jsonProp.insert(QStringLiteral("name"), QString::fromStdString(propertyConfig.name));
 
-	switch(propType)
+	switch(propertyConfig.type)
 	{
 	case EPropertyType::Boolean:
 		jsonProp.insert(QStringLiteral("value"), propValue.toBool());

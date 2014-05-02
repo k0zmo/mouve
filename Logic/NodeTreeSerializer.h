@@ -34,7 +34,7 @@ private:
 		const std::map<NodeID, NodeID>& mapping);
 
 	QJsonObject serializeProperty(PropertyID propID,
-		const std::string& propName, EPropertyType propType,
+		const PropertyConfig& propertyConfig,
 		const NodeProperty& propValue);
 	EPropertyType deserializePropertyType(const std::string&);
 	NodeProperty deserializeProperty(EPropertyType propType, 
