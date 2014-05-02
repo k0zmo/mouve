@@ -31,7 +31,7 @@ private:
 		std::map<NodeID, NodeID>& mapping);
 	bool deserializeJsonLinks(std::shared_ptr<NodeTree>& nodeTree,
 		const QJsonArray& jsonLinks,
-		std::map<NodeID, NodeID>& mapping);
+		const std::map<NodeID, NodeID>& mapping);
 
 	QJsonObject serializeProperty(PropertyID propID,
 		const std::string& propName, EPropertyType propType,
