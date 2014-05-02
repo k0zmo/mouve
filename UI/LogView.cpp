@@ -82,7 +82,7 @@ void LogView::messageHandler(QtMsgType type,
 	auto it = _headView;
 	while(it)
 	{
- 		auto item = new QListWidgetItem(msg);
+		auto item = new QListWidgetItem(msg);
 
 		QString toolTip = QString("Time: %1 (%2:%3)")
 			.arg(QDateTime::currentDateTime().toString("MM.dd.yyyy hh:mm:ss.zzz"))

@@ -9,16 +9,6 @@
 #include <QDir>
 #include <QDebug>
 
-NodeTreeSerializer::NodeTreeSerializer(const std::string& rootDir)
-	: _rootDirectory(rootDir)
-{
-}
-
-void NodeTreeSerializer::setRootDirectory(const std::string& rootDir)
-{
-	_rootDirectory = rootDir;
-}
-
 QJsonObject NodeTreeSerializer::serializeJson(const std::shared_ptr<NodeTree>& nodeTree)
 {
 	// Iterate over all nodes and serialize it as JSON value of JSON array

@@ -9,10 +9,9 @@ class QVariant;
 class LOGIC_EXPORT NodeTreeSerializer
 {
 public:
-	NodeTreeSerializer(const std::string& rootDir = "");
-
-	// Sets root directory - important for filepath properties
-	void setRootDirectory(const std::string& rootDir);
+	NodeTreeSerializer(std::string rootDir = "")
+		: _rootDirectory(std::move(rootDir))
+	{}
 
 	// Serializes given node tree to JSON object
 	QJsonObject serializeJson(const std::shared_ptr<NodeTree>& nodeTree);
