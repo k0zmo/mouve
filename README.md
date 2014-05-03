@@ -1,4 +1,4 @@
-# mouve - Computer vision prototyping system
+# mouve - Computer vision system prototyping tool
 
 Mouve allow you to create and test computer vision system from a set of connected nodes defining operations data flow.
 
