@@ -605,8 +605,8 @@
       <FileType>Document</FileType>
       <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">copy /Y  "$(SolutionDir)external\clw\bin\clw.dll"  "$(TargetDir)clw.dll" &gt; NUL</Command>
       <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">copy /Y  "$(SolutionDir)external\clw\bin\clw_d.dll"  "$(TargetDir)clw_d.dll" &gt; NUL</Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">copy /Y  "$(SolutionDir)external\clw\bin\clw_d.dll"  "$(TargetDir)clw_d.dll" &gt; NUL</Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">copy /Y  "$(SolutionDir)external\clw\bin\clw.dll"  "$(TargetDir)clw.dll" &gt; NUL</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">copy /Y  "$(SolutionDir)external\clw\bin64\clw_d.dll"  "$(TargetDir)clw_d.dll" &gt; NUL</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">copy /Y  "$(SolutionDir)external\clw\bin64\clw.dll"  "$(TargetDir)clw.dll" &gt; NUL</Command>
       <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Copying clw dependencies into target directory</Message>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(TargetDir)clw.dll</Outputs>
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Copying clw dependencies into target directory</Message>
@@ -618,7 +618,7 @@
       <Command Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|Win32'">copy /Y  "$(SolutionDir)external\clw\bin\clw.dll"  "$(TargetDir)clw.dll" &gt; NUL</Command>
       <Message Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|Win32'">Copying clw dependencies into target directory</Message>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|Win32'">$(TargetDir)clw.dll</Outputs>
-      <Command Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|x64'">copy /Y  "$(SolutionDir)external\clw\bin\clw.dll"  "$(TargetDir)clw.dll" &gt; NUL</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|x64'">copy /Y  "$(SolutionDir)external\clw\bin64\clw.dll"  "$(TargetDir)clw.dll" &gt; NUL</Command>
       <Message Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|x64'">Copying clw dependencies into target directory</Message>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|x64'">$(TargetDir)clw.dll</Outputs>
     </CustomBuild>
