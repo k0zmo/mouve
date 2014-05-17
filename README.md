@@ -1,6 +1,6 @@
 ## Features
 
-Mouve (mouse mouve) is a node-based prototyping tool allowing you to rapidly create simple and complex computer vision algorithms from a set of nodes. Connected, they define an image data processing pipeline. Mouve let you test and tune your resultive pipeline in a real-time without the need to (re)compile any source file.
+Mouve is a node-based prototyping tool allowing you to rapidly create simple and complex computer vision algorithms from a set of nodes. Connected, they define an image data processing pipeline. Mouve let you test and tune your resultive pipeline in a real-time without the need to (re)compile any source file.
 
 Nodes database consist of:
 
@@ -15,7 +15,7 @@ Nodes database consist of:
 
 The vast majority of nodes are just thin wrappers for OpenCV algorithms.
 
-Computer vision algorithms are not just about images but also about data extracted from them - such as image features. Consequently, mouve defines couple of node data types: images (gray, rgb, mono, any), keypoints, generic (1 or 2d) arrays, matching results and OpenCL device-located data.
+Computer vision algorithms are not just about images but also about data extracted from them - such as image keypoints. Consequently, mouve defines couple of node data types: images (gray, rgb, mono, any), keypoints, generic (1 or 2d) arrays, matching results and OpenCL device-located data.
 
 ## Building
 
