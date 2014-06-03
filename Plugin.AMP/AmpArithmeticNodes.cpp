@@ -94,7 +94,7 @@ public:
         texture<uint, 2> src1Tx(image_extent, const_cast<const uchar*>(src1.data), sizeInBytes, 8U);
         texture<uint, 2> src2Tx(image_extent, const_cast<const uchar*>(src2.data), sizeInBytes, 8U);
         texture<uint, 2> dstTx(image_extent, 8U);
-        writeonly_texture_view<uint, 2> dstTv(dstTx); // deprecated in VS2013 in favour of texture_view
+        texture_view<uint, 2> dstTv(dstTx);
 
         float alpha = static_cast<float>(_alpha);
         float beta  = static_cast<float>(_beta);

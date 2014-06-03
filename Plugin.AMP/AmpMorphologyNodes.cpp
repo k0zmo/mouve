@@ -63,7 +63,7 @@ public:
 
         texture<uint, 2> srcTx(image_extent, const_cast<const uchar*>(src.data), sizeInBytes, 8U);
         texture<uint, 2> dstTx(image_extent, 8U);
-        writeonly_texture_view<uint, 2> dstTv(dstTx); // deprecated in VS2013 in favour of texture_view
+        texture_view<uint, 2> dstTv(dstTx);
 
         parallel_for_each(image_extent, 
             [&srcTx, dstTv, coordsAv, coordsSize]

@@ -1,11 +1,11 @@
 win32 {
-    OPENCV_DIR = D:/Programowanie/SDKs/opencv
-    OPENCV_VERSION = 245
+    OPENCV_DIR = D:/Programowanie/SDKs/opencv/build
+    OPENCV_VERSION = 248
     OPENCV_ARCH = x86
     #OPENCV_ARCH = x64
 
     INCLUDEPATH += $$OPENCV_DIR/include
-    LIBS += -L$$OPENCV_DIR/lib/$$OPENCV_ARCH
+    LIBS += -L$$OPENCV_DIR/$$OPENCV_ARCH/vc12/lib
     LIBS += -lopencv_core$$OPENCV_VERSION
 }
 
