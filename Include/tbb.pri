@@ -1,7 +1,7 @@
 win32 {
     TBB_DIR = D:/Programowanie/SDKs/tbb41
-    #TBB_ARCH = ia32
-    TBB_ARCH = intel64
+    TBB_ARCH = ia32
+    #TBB_ARCH = intel64
 
     INCLUDEPATH += $$TBB_DIR/include
     DEFINES += NOMINMAX HAVE_TBB

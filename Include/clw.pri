@@ -1,6 +1,6 @@
 win32 {
-    #CLW_ARCH = bin
-    CLW_ARCH = bin64
+    CLW_ARCH = bin
+    #CLW_ARCH = bin64
     DEFINES += HAVE_OPENCL
     HAVE_CLW = true
     INCLUDEPATH += ../external/clw
