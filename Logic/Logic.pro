@@ -107,7 +107,10 @@ OTHER_FILES += \
     win32 {
         # Create kernel DESTDIR/kernels directory if necessary
         !exists($$quote($$DESTDIR/kernels)) {
-            QMAKE_POST_LINK += mkdir $$quote($$DESTDIR/kernels) $$escape_expand(\n\t)
+            # Convert to back slashes
+            DST_PATH = $$quote($$DESTDIR/kernels)
+            DST_PATH ~= s,/,\\,g
+            QMAKE_POST_LINK += if not exist $$quote($$DESTDIR/kernels) mkdir $$DST_PATH $$escape_expand(\n\t)
         }
 
         # Copy kernel files to DESTDIR/kernels/ directory
@@ -132,7 +135,7 @@ OTHER_FILES += \
     unix {
         # Create kernel DESTDIR/kernels directory if necessary
         !exists($$quote($$DESTDIR/kernels)) {
-            QMAKE_POST_LINK += mkdir $$quote($$DESTDIR/kernels) $$escape_expand(\n\t)
+            QMAKE_POST_LINK += mkdir -p $$quote($$DESTDIR/kernels) $$escape_expand(\n\t)
         }
 
         # Copy kernel files to DESTDIR/kernels/ directory
