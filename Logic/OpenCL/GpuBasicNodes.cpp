@@ -65,8 +65,6 @@ public:
         if(hostImage.channels() != 1 && hostImage.channels() != 3)
             return ExecutionStatus(EStatus::Error, "Invalid number of channels (should be 1 or 3)");
 
-        bool recreateImageBuffer = false;
-
         if(deviceImage.isNull() 
             || deviceImage.width() != hostImage.cols
             || deviceImage.height() != hostImage.rows

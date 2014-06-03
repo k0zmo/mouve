@@ -25,7 +25,9 @@
 
 #include "Prerequisites.h"
 
+#ifndef Q_MOC_RUN
 #include <boost/variant.hpp>
+#endif
 
 // OpenCV
 #include <opencv2/core/core.hpp>

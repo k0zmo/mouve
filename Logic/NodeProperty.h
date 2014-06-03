@@ -26,7 +26,10 @@
 #include "Prerequisites.h"
 
 #include <type_traits>
+
+#ifndef Q_MOC_RUN
 #include <boost/variant.hpp>
+#endif
 
 /// Allowed types of node property
 enum class EPropertyType : int
