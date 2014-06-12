@@ -21,6 +21,7 @@
  *
  */
 
+#include "konfig.h"
 #include "StringUtils.h"
 
 #include <cstdarg>
@@ -33,7 +34,8 @@ std::string string_format(std::string fmt, ...)
     std::unique_ptr<char[]> formatted;
     va_list ap;
 
-    while(1) {
+    while(1) 
+    {
         formatted.reset(new char[n]);
 #if K_COMPILER == K_COMPILER_MSVC
 #  pragma warning(push)

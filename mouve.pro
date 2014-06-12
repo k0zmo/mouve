@@ -1,10 +1,12 @@
 TEMPLATE = subdirs
 SUBDIRS = Kommon Logic Console UI \
-    Plugin.BRISK \
-    Plugin.ShiTomasi \
-    Plugin.Template \
-    Plugin.Kuwahara \
-    Plugin.AMP
+	Plugin.BRISK \
+	Plugin.ShiTomasi \
+	Plugin.Template \
+	Plugin.Kuwahara
+win32-msvc2012|win32-msvc2013 {
+	SUBDIRS += Plugin.AMP
+}
 CONFIG += ordered
 
 Logic.depends = Kommon

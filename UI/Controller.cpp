@@ -1521,7 +1521,14 @@ void Controller::nodeEditorContextMenu(const QPoint& globalPos, const QPointF& s
                             if(filePath.isEmpty())
                                 return;
 
-                            outputData.saveToDisk(filePath.toStdString());
+                            try
+                            {
+                                outputData.saveToDisk(filePath.toStdString());
+                            }
+                            catch (cv::Exception& ex)
+                            {
+                                showErrorMessage(QString::fromStdString(ex.msg));
+                            }
                         });	
                     menu.addAction(actionSaveImageSocket);
                 }
@@ -2487,7 +2494,7 @@ static QString pluginDirectory()
 }
 
 #elif K_SYSTEM == K_SYSTEM_LINUX
-static const QString pluginExtensionName = QStringLiteral("*.dll");
+static const QString pluginExtensionName = QStringLiteral("*.so");
 
 static QString pluginDirectory()
 {
@@ -2500,7 +2507,8 @@ static QString pluginDirectory()
 void Controller::pluginLookUp()
 {
     QDir pluginDir(pluginDirectory());
-    auto list = pluginDir.entryInfoList(QStringList(pluginExtensionName), QDir::Files);
+    QList<QFileInfo> list = pluginDir.entryInfoList(
+        QStringList(pluginExtensionName), QDir::Files);
 
     for(const auto& pluginName : list)
     {

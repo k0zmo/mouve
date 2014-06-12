@@ -124,6 +124,8 @@ NodeProperty PropertyManager::variantToNodeProperty(const QVariant& value)
         return NodeProperty(value.toDouble());
     case QVariant::String:
         return NodeProperty(value.toString().toStdString());
+    default:
+        break; // Just to shut down g++
     }
 
     if(value.userType() == qMetaTypeId<Matrix3x3>())
