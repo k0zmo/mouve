@@ -55,6 +55,7 @@
 #include "Nodes/OrbNodes.cpp"
 #include "Nodes/SegmentationNodes.cpp"
 #include "Nodes/SiftNodes.cpp"
+#include "Nodes/SinkNodes.cpp"
 #include "Nodes/SourceNodes.cpp"
 #include "Nodes/SurfNodes.cpp"
 #include "Nodes/TransformationNodes.cpp"
