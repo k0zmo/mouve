@@ -142,7 +142,7 @@ __kernel void mog_image_unorm(__read_only image2d_t frame,
             : 0;
     }
 
-    // Sort mixtures (buble sort).
+    // Sort mixtures (insertion sort).
     // Every mixtures but the one with "completely new" weight and variance
     // are already sorted thus we need to reorder only that single mixture.
     for(int mx = pdfMatched-1; mx >= 0; --mx)

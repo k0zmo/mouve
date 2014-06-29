@@ -23,10 +23,83 @@
 
 __constant sampler_t sampler = CLK_NORMALIZED_COORDS_FALSE | CLK_ADDRESS_CLAMP | CLK_FILTER_NEAREST;
 
-// +WARP_SIZE/2 to get rid of ifs and +1 to avoid bank conflicts
+// +WARP_SIZE/2 to get rid of out-of-bound checks and +1 to avoid bank conflicts
 #define SCAN_STRIDE (WARP_SIZE + WARP_SIZE/2 + 1)
 #define NUM_THREADS 256
 #define NUM_WARPS (NUM_THREADS / WARP_SIZE)
+
+__attribute__((always_inline))
+uint warp_inclusive_scan(const uint x,
+                         // Assumes s is at least (WARP_SIZE+WARP_SIZE/2) 
+                         // and is offseted by WARP_SIZE/2
+                         __local volatile uint* s)
+{
+    // Initialize local memory so first WARP_SIZE/2 is 0s and the rest is x[]
+    s[-WARP_SIZE/2] = 0;
+    s[0] = x;
+
+    uint sum = x;
+
+    // Inclusive scan within a thread's warp (done in locksteps)
+    #pragma unroll
+    for(int offset = 1; offset < WARP_SIZE; offset <<= 1)
+    {
+        sum += s[-offset];
+        s[0] = sum;
+    }
+    
+    // synchronize to make all the totals available to the reduction code
+    barrier(CLK_LOCAL_MEM_FENCE);
+
+    return sum;
+} 
+
+__attribute__((always_inline))
+uint workgroup_inclusive_scan(const uint tid,
+                              const uint x,
+                              __local volatile uint* restrict smem_scan,
+                              __local volatile uint* restrict smem_totals)
+{
+    const int warp = tid / WARP_SIZE;
+    const int lane = (WARP_SIZE - 1) & tid;
+
+    // Perform warp scan - each warp from work group does scan within its extent
+    __local volatile uint* s = smem_scan + SCAN_STRIDE*warp + lane + WARP_SIZE/2;
+    const uint warpSum = warp_inclusive_scan(x, s);
+    
+    // Merge warp results using exclusive scan of the last elements from each warp scan.
+    // This is done by first NUM_WARPS threads
+    if(tid < NUM_WARPS)
+    {
+        // Grab the last element from warp scan sequence.
+        uint x = smem_scan[SCAN_STRIDE*tid + WARP_SIZE/2 + WARP_SIZE - 1];
+
+        __local volatile uint* s2 = smem_totals + NUM_WARPS/2 + tid;
+        s2[-NUM_WARPS/2] = 0;
+        s2[0] = x;
+
+        uint sum = x;
+
+        // Inclusive scan (assumption: done in locksteps if NUM_WARPS < WARP_SIZE)
+        #pragma unroll
+        for(int offset = 1; offset < NUM_WARPS; offset <<= 1)
+        {
+            sum += s2[-offset];
+            s2[0] = sum;
+        }
+
+        // Make it exclusive scan
+        // Ex: Assume 256-vector of 1's and warp_size=64.
+        // Then sum = [64,128,192,256], x=[64,64,64,64]
+        // and sum - x = [0,64,128,192]
+        smem_totals[tid] = sum - x;
+    }
+
+    // Synchronize to make the smem_totals block available to all warps.
+    barrier(CLK_LOCAL_MEM_FENCE);
+
+    return warpSum + smem_totals[warp];
+}
 
 __attribute__((reqd_work_group_size(NUM_THREADS,1,1)))
 __kernel void multiscan_horiz_image(__read_only image2d_t src, 
@@ -35,16 +108,76 @@ __kernel void multiscan_horiz_image(__read_only image2d_t src,
     __local volatile uint smem_scan[NUM_WARPS * SCAN_STRIDE];
     __local volatile uint smem_totals[NUM_WARPS + NUM_WARPS/2];
 
-    int y = get_global_id(1);
-    int tid = get_local_id(0);
-    int warp = tid / WARP_SIZE;
-    int lane = (WARP_SIZE - 1) & tid;
+    const int y = get_global_id(1);
+    const int tid = get_local_id(0);
 
-    int cols = get_image_width(src);
+    const int cols = get_image_width(src);
+    const int iters = (cols + NUM_THREADS - 1)/ NUM_THREADS;
     int prevMax = 0;
-    int iters = cols / NUM_THREADS;
-    if(cols % NUM_THREADS != 0)
-        ++iters;
+
+    for(int i = 0; i < iters; ++i)
+    {
+        int lx = tid + i*NUM_THREADS;
+
+        uint x = convert_uint(read_imagef(src, sampler, (int2)(lx, y)).x * 255.0f);
+        uint sum = workgroup_inclusive_scan(tid, x, smem_scan, smem_totals);
+
+        if(lx < cols)
+        {
+            uint v = sum + prevMax;
+            write_imageui(dst, (int2)(lx,y), (uint4)(v,0,0,0));
+        }
+        prevMax += smem_totals[NUM_WARPS + NUM_WARPS/2 - 1];
+    }
+}
+
+__attribute__((reqd_work_group_size(NUM_THREADS,1,1)))
+__kernel void multiscan_vert_image(__read_only image2d_t src, 
+                                   __write_only image2d_t dst)
+{
+    __local volatile uint smem_scan[NUM_WARPS * SCAN_STRIDE];
+    __local volatile uint smem_totals[NUM_WARPS + NUM_WARPS/2];
+
+    const int x = get_global_id(1);
+    const int tid = get_local_id(0);
+
+    const int rows = get_image_height(src);
+    const int iters = (rows + NUM_THREADS - 1)/ NUM_THREADS;
+    int prevMax = 0;    
+
+    for(int i = 0; i < iters; ++i)
+    {
+        int ly = tid + i*NUM_THREADS;
+
+        uint y = read_imageui(src, sampler, (int2)(x, ly)).x;
+        uint sum = workgroup_inclusive_scan(tid, y, smem_scan, smem_totals);
+
+        if(ly < rows)
+        {
+            // dst is one pixel bigger with 0s on first row and first column
+            // that means we need to shift writing by one
+            uint v = sum + prevMax;
+            write_imageui(dst, (int2)(x+1, ly+1), (uint4)(v,0,0,0));
+        }
+        prevMax += smem_totals[NUM_WARPS + NUM_WARPS/2 - 1];
+    }
+}
+
+__attribute__((reqd_work_group_size(NUM_THREADS,1,1)))
+__kernel void multiscan_horiz_image2(__read_only image2d_t src, 
+                                     __write_only image2d_t dst)
+{
+    __local volatile uint smem_scan[NUM_WARPS * SCAN_STRIDE];
+    __local volatile uint smem_totals[NUM_WARPS + NUM_WARPS/2];
+
+    const int y = get_global_id(1);
+    const int tid = get_local_id(0);
+    const int warp = tid / WARP_SIZE;
+    const int lane = (WARP_SIZE - 1) & tid;
+
+    const int cols = get_image_width(src);
+    const int iters = (cols + NUM_THREADS - 1)/ NUM_THREADS;
+    int prevMax = 0;
 
     __local volatile uint* s = smem_scan + SCAN_STRIDE*warp + lane + WARP_SIZE/2;
 
@@ -107,22 +240,20 @@ __kernel void multiscan_horiz_image(__read_only image2d_t src,
 }
 
 __attribute__((reqd_work_group_size(NUM_THREADS,1,1)))
-__kernel void multiscan_vert_image(__read_only image2d_t src, 
-                                   __write_only image2d_t dst)
+__kernel void multiscan_vert_image2(__read_only image2d_t src, 
+                                    __write_only image2d_t dst)
 {
     __local volatile uint smem_scan[NUM_WARPS * SCAN_STRIDE];
     __local volatile uint smem_totals[NUM_WARPS + NUM_WARPS/2];
 
-    int x = get_global_id(1);
-    int tid = get_local_id(0);
-    int warp = tid / WARP_SIZE;
-    int lane = (WARP_SIZE - 1) & tid;
+    const int x = get_global_id(1);
+    const int tid = get_local_id(0);
+    const int warp = tid / WARP_SIZE;
+    const int lane = (WARP_SIZE - 1) & tid;
 
-    int rows = get_image_height(src);
-    int prevMax = 0;
-    int iters = rows / NUM_THREADS;
-    if(rows % NUM_THREADS != 0)
-        ++iters;
+    const int rows = get_image_height(src);
+    const int iters = (rows + NUM_THREADS - 1)/ NUM_THREADS;
+    int prevMax = 0;    
 
     __local volatile uint* s = smem_scan + SCAN_STRIDE*warp + lane + WARP_SIZE/2;
 
@@ -183,135 +314,5 @@ __kernel void multiscan_vert_image(__read_only image2d_t src,
             write_imageui(dst, (int2)(x+1, ly+1), (uint4)(v,0,0,0));
         }
         prevMax += smem_totals[NUM_WARPS + NUM_WARPS/2 - 1];
-    }
-}
-
-
-#undef SCAN_STRIDE
-#define SCAN_STRIDE (WARP_SIZE + WARP_SIZE/2)
-
-__attribute__((reqd_work_group_size(WARP_SIZE,1,1)))
-__kernel void scan_horiz_image(__read_only image2d_t src,
-                               __write_only image2d_t dst)
-{
-    // Each work group is responsible for scanning a row
-    __local uint smem[SCAN_STRIDE];
-    __local uint smem2[SCAN_STRIDE];
-
-    int rowId = get_global_id(1);
-    int tid = get_local_id(0);
-    int cols = get_image_width(src);
-
-    // Initialize out-of-bounds elements with zeros
-    if(tid < WARP_SIZE/2)
-    {
-        smem[tid] = 0; 
-        smem2[tid] = 0;
-    }
-
-    // Start past out-of-bounds elements
-    tid += WARP_SIZE/2;
-
-    // This value needs to be added to the local data.  It's the highest
-    // value from the prefix scan of the previous elements in the row
-    uint prevMaxVal = 0;
-
-    int iterations = cols/WARP_SIZE;
-    if(cols % WARP_SIZE != 0)
-        ++iterations;
-
-    for(int i = 0; i < iterations; ++i)
-    {
-        int columnOffset = i*WARP_SIZE +get_local_id(0);
-
-        smem[tid] = convert_uint(read_imagef(src, sampler, (int2)(columnOffset, rowId)).x * 255.0f);
-        barrier(CLK_LOCAL_MEM_FENCE);
-
-        // 1
-        smem2[tid] = smem[tid] + smem[tid-1];
-        barrier(CLK_LOCAL_MEM_FENCE);
-        // 2
-        smem[tid] = smem2[tid] + smem2[tid-2];
-        barrier(CLK_LOCAL_MEM_FENCE);
-        // 4
-        smem2[tid] = smem[tid] + smem[tid-4];
-        barrier(CLK_LOCAL_MEM_FENCE);
-        // 8
-        smem[tid] = smem2[tid] + smem2[tid-8];
-        barrier(CLK_LOCAL_MEM_FENCE);
-        // 16
-        smem2[tid] = smem[tid] + smem[tid-16];
-        barrier(CLK_LOCAL_MEM_FENCE);
-        // 32
-        smem[tid] = smem2[tid] + smem2[tid-32];
-        barrier(CLK_LOCAL_MEM_FENCE);
-
-        if(columnOffset < cols) 
-            write_imageui(dst, (int2)(columnOffset, rowId), (uint4)(smem[tid] + prevMaxVal, 0, 0, 0));
-        prevMaxVal += smem[WARP_SIZE + WARP_SIZE/2 - 1];
-    }
-}
-
-__attribute__((reqd_work_group_size(WARP_SIZE,1,1)))
-__kernel void scan_vert_image(__read_only image2d_t src,
-                              __write_only image2d_t dst)
-{
-    // Each work group is responsible for scanning a row
-    __local uint smem[SCAN_STRIDE];
-    __local uint smem2[SCAN_STRIDE];
-
-    int colId = get_global_id(1);
-    int tid = get_local_id(0);
-    int rows = get_image_height(src);
-
-    // Initialize out-of-bounds elements with zeros
-    if(tid < WARP_SIZE/2)
-    {
-        smem[tid] = 0; 
-        smem2[tid] = 0;
-    }
-
-    // Start past out-of-bounds elements
-    tid += WARP_SIZE/2;
-
-    // This value needs to be added to the local data.  It's the highest
-    // value from the prefix scan of the previous elements in the row
-    uint prevMaxVal = 0;
-
-    int iterations = rows/WARP_SIZE;
-    if(rows % WARP_SIZE != 0)
-        ++iterations;
-
-    for(int i = 0; i < iterations; ++i)
-    {
-        int rowOffset = i*WARP_SIZE + get_local_id(0);
-
-        smem[tid] = read_imageui(src, sampler, (int2)(colId, rowOffset)).x;
-        barrier(CLK_LOCAL_MEM_FENCE);
-
-        // 1
-        smem2[tid] = smem[tid] + smem[tid-1];
-        barrier(CLK_LOCAL_MEM_FENCE);
-        // 2
-        smem[tid] = smem2[tid] + smem2[tid-2];
-        barrier(CLK_LOCAL_MEM_FENCE);
-        // 4
-        smem2[tid] = smem[tid] + smem[tid-4];
-        barrier(CLK_LOCAL_MEM_FENCE);
-        // 8
-        smem[tid] = smem2[tid] + smem2[tid-8];
-        barrier(CLK_LOCAL_MEM_FENCE);
-        // 16
-        smem2[tid] = smem[tid] + smem[tid-16];
-        barrier(CLK_LOCAL_MEM_FENCE);
-        // 32
-        smem[tid] = smem2[tid] + smem2[tid-32];
-        barrier(CLK_LOCAL_MEM_FENCE);
-
-        if(rowOffset < rows) 
-            // dst is one pixel bigger with 0s on first row and first column
-            // that means we need to shift writing by one
-            write_imageui(dst, (int2)(colId+1, rowOffset+1), (uint4)(smem[tid] + prevMaxVal, 0, 0, 0));
-        prevMaxVal += smem[WARP_SIZE + WARP_SIZE/2 - 1];
     }
 }
