@@ -1,5 +1,5 @@
 TEMPLATE  = lib
-TARGET    = Plugin.Color
+TARGET    = Plugin.AMP
 QT       -= gui
 
 include(../Include/mouve.pri)

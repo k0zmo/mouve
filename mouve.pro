@@ -16,3 +16,4 @@ Plugin.BRISK.depends = Logic
 Plugin.ShiTomasi.depends = Logic
 Plugin.Template.depends = Logic
 Plugin.Kuwahara.depends = Logic
+Plugin.AMP.depends = Logic
