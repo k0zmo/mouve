@@ -62,24 +62,7 @@ struct ScaleSpaceLayer_cl
 string warpSizeDefine(const std::shared_ptr<GpuNodeModule>& gpuModule)
 {
     ostringstream strm;
-    strm << "-DWARP_SIZE=";
-    if(gpuModule->device().deviceType() != clw::EDeviceType::Gpu)
-    {
-        strm << 1;
-    }
-    else
-    {
-        clw::EPlatformVendor vendor = gpuModule->device().platform().vendorEnum();
-
-        if(vendor == clw::EPlatformVendor::AMD)
-            strm << gpuModule->device().wavefrontWidth();
-        // How to get this for Intel HD Graphics?
-        else if(vendor == clw::EPlatformVendor::Intel)
-            strm << 1;
-        else if(vendor == clw::EPlatformVendor::NVIDIA)
-            strm << gpuModule->device().warpSize();
-    }
-
+    strm << "-DWARP_SIZE=" << gpuModule->warpSize();
     return strm.str();
 }
 

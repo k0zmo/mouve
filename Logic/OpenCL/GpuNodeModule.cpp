@@ -222,6 +222,28 @@ bool GpuNodeModule::createAfterContext()
     return !_device.isNull() && !_queue.isNull();
 }
 
+size_t GpuNodeModule::warpSize() const
+{
+    if(device().deviceType() != clw::EDeviceType::Gpu)
+    {
+        return 1;
+    }
+    else
+    {
+        clw::EPlatformVendor vendor = device().platform().vendorEnum();
+
+        if(vendor == clw::EPlatformVendor::AMD)
+            return device().wavefrontWidth();
+        // How to get this for Intel HD Graphics?
+        else if(vendor == clw::EPlatformVendor::Intel)
+            return 1;
+        else if(vendor == clw::EPlatformVendor::NVIDIA)
+            return device().warpSize();
+
+        return 1;
+    }
+}
+
 #pragma region Kernels Directory
 
 #if K_SYSTEM == K_SYSTEM_WINDOWS

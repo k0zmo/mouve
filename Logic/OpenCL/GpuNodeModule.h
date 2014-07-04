@@ -59,6 +59,7 @@ public:
 
     bool isConstantMemorySufficient(uint64_t memSize) const;
     bool isLocalMemorySufficient(uint64_t memSize) const;
+    size_t warpSize() const;
 
     void beginPerfMarker(const char* markerName, const char* groupName = nullptr);
     void endPerfMarker();
