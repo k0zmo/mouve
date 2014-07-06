@@ -87,8 +87,8 @@ bool GpuNodeModule::createDefault()
 {
 #if INTEL_DEBUGGING == 1
     auto devs = clw::deviceFiltered(
-        clw::Filter::PlatformVendor(clw::Vendor_Intel) 
-        && clw::Filter::DeviceType(clw::Cpu));
+        clw::Filter::PlatformVendor(clw::EPlatformVendor::Intel) 
+        && clw::Filter::DeviceType(clw::EDeviceType::Cpu));
     if(!_context.create(devs) || _context.numDevices() == 0)
         return false;
 #else
