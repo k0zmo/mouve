@@ -65,6 +65,7 @@
 #include "OpenCL/GpuBasicNodes.cpp"
 #include "OpenCL/GpuBruteForceMacherNode.cpp"
 #include "OpenCL/GpuColorConversionNodes.cpp"
+#include "OpenCL/GpuApproxGaussianBlur.cpp"
 #include "OpenCL/GpuHoughLinesNode.cpp"
 #include "OpenCL/GpuKernelLibrary.cpp"
 #include "OpenCL/GpuMixtureOfGaussians.cpp"

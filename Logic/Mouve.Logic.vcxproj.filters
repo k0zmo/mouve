@@ -173,6 +173,9 @@
     <ClCompile Include="Nodes\SinkNodes.cpp">
       <Filter>Nodes</Filter>
     </ClCompile>
+    <ClCompile Include="OpenCL\GpuApproxGaussianBlur.cpp">
+      <Filter>OpenCL</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="Node.h">
@@ -228,6 +231,9 @@
       <Filter>OpenCL\Kernels</Filter>
     </CustomBuild>
     <CustomBuild Include="OpenCL\kernels\color.cl">
+      <Filter>OpenCL\Kernels</Filter>
+    </CustomBuild>
+    <CustomBuild Include="OpenCL\kernels\approx_gaussian.cl">
       <Filter>OpenCL\Kernels</Filter>
     </CustomBuild>
   </ItemGroup>

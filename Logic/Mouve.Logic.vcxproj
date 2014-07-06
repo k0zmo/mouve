@@ -393,6 +393,10 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|x64'">true</ExcludedFromBuild>
     </ClCompile>
+    <ClCompile Include="OpenCL\GpuApproxGaussianBlur.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|x64'">true</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="UnityBuild.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
@@ -835,6 +839,29 @@
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(TargetDir)kernels\%(Filename).cl</Outputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|x64'">$(TargetDir)kernels\%(Filename).cl</Outputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(TargetDir)kernels\%(Filename).cl</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(TargetDir)kernels\%(Filename).cl</Outputs>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="OpenCL\kernels\approx_gaussian.cl">
+      <FileType>Document</FileType>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">copy /Y OpenCL\kernels\%(Filename).cl  "$(TargetDir)kernels\%(Filename).cl" &gt; NUL</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|Win32'">copy /Y OpenCL\kernels\%(Filename).cl  "$(TargetDir)kernels\%(Filename).cl" &gt; NUL</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">copy /Y OpenCL\kernels\%(Filename).cl  "$(TargetDir)kernels\%(Filename).cl" &gt; NUL</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">copy /Y OpenCL\kernels\%(Filename).cl  "$(TargetDir)kernels\%(Filename).cl" &gt; NUL</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|x64'">copy /Y OpenCL\kernels\%(Filename).cl  "$(TargetDir)kernels\%(Filename).cl" &gt; NUL</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">copy /Y OpenCL\kernels\%(Filename).cl  "$(TargetDir)kernels\%(Filename).cl" &gt; NUL</Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Copying %(Filename).cl kernel to target kernels directory</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|Win32'">Copying %(Filename).cl kernel to target kernels directory</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Copying %(Filename).cl kernel to target kernels directory</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Copying %(Filename).cl kernel to target kernels directory</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|x64'">Copying %(Filename).cl kernel to target kernels directory</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Copying %(Filename).cl kernel to target kernels directory</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(TargetDir)kernels\%(Filename).cl</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|Win32'">$(TargetDir)kernels\%(Filename).cl</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(TargetDir)kernels\%(Filename).cl</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(TargetDir)kernels\%(Filename).cl</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|x64'">$(TargetDir)kernels\%(Filename).cl</Outputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(TargetDir)kernels\%(Filename).cl</Outputs>
     </CustomBuild>
   </ItemGroup>
