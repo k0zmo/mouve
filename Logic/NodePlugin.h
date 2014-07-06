@@ -40,14 +40,14 @@ public:
     void registerPlugin(NodeSystem* nodeSystem);	
 
 private:
-    typedef int LogicVersionFunc();
-    typedef int PluginVersionFunc();
-    typedef void RegisterPluginFunc(NodeSystem*);
+    typedef int (*LogicVersionFunc)();
+    typedef int (*PluginVersionFunc)();
+    typedef void (*RegisterPluginFunc)(NodeSystem*);
 
     LibraryHandle _sharedLibraryHandle;
-    LogicVersionFunc* _logicVersionFunc;
-    PluginVersionFunc* _pluginVersionFunc;
-    RegisterPluginFunc* _registerPluginFunc;
+    LogicVersionFunc _logicVersionFunc;
+    PluginVersionFunc _pluginVersionFunc;
+    RegisterPluginFunc _registerPluginFunc;
 };
 
 inline int NodePlugin::logicVersion() const

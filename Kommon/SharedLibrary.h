@@ -44,15 +44,15 @@ namespace SharedLibrary {
 LibraryHandle loadLibrary(const char* path);
 void unloadLibrary(LibraryHandle sharedLibraryHandle);
 
-template<class Signature>
-    Signature* getFunctionAddress(LibraryHandle sharedLibraryHandle, 
+template<class SignaturePtr>
+    SignaturePtr getFunctionAddress(LibraryHandle sharedLibraryHandle, 
         const char* functionName)
     {
 #if K_SYSTEM == K_SYSTEM_WINDOWS
         FARPROC functionAddress = ::GetProcAddress(sharedLibraryHandle, functionName);
         if(!functionAddress)
             throw std::runtime_error(std::string("Could not find exported function: ") + functionName);
-        return reinterpret_cast<Signature*>(functionAddress);
+        return reinterpret_cast<SignaturePtr>(functionAddress);
 #elif K_SYSTEM == K_SYSTEM_LINUX
         ::dlerror(); // clear error value
 
@@ -60,7 +60,7 @@ template<class Signature>
         const char* error = ::dlerror(); // check for error
         if(error)
             throw std::runtime_error(std::string("Could not find exported function: ") + functionName);
-        return reinterpret_cast<Signature*>(functionAddress);
+        return reinterpret_cast<SignaturePtr>(functionAddress);
 #endif
     }
 }
