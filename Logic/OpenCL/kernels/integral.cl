@@ -29,7 +29,7 @@ __constant sampler_t sampler = CLK_NORMALIZED_COORDS_FALSE | CLK_ADDRESS_CLAMP |
 #define NUM_WARPS (NUM_THREADS / WARP_SIZE)
 
 __attribute__((always_inline))
-uint warp_inclusive_scan(const uint x,
+uint warpInclusiveScan(const uint x,
                          const int size,
                          // Assumes s is at least (size+size/2) 
                          // and is offseted by size/2
@@ -53,15 +53,15 @@ uint warp_inclusive_scan(const uint x,
 }
 
 __attribute__((always_inline))
-uint warp_exclusive_scan(const uint x,
+uint warpExclusiveScan(const uint x,
                          const int size,
                          __local volatile uint* s)
 {
-    return warp_inclusive_scan(x, size, s) - x;
+    return warpInclusiveScan(x, size, s) - x;
 }
 
 __attribute__((always_inline))
-uint workgroup_inclusive_scan(const uint tid,
+uint workgroupInclusiveScan(const uint tid,
                               const uint x,
                               __local volatile uint* restrict smem_scan,
                               __local volatile uint* restrict smem_totals)
@@ -71,7 +71,7 @@ uint workgroup_inclusive_scan(const uint tid,
 
     // Perform warp scan - each warp from work group does scan within its extent
     __local volatile uint* s = smem_scan + (SCAN_STRIDE*warp + lane) + WARP_SIZE/2;
-    const uint warpSum = warp_inclusive_scan(x, WARP_SIZE, s);
+    const uint warpSum = warpInclusiveScan(x, WARP_SIZE, s);
 
     // Synchronize to make all the totals available to the reduction code
     barrier(CLK_LOCAL_MEM_FENCE);
@@ -84,7 +84,7 @@ uint workgroup_inclusive_scan(const uint tid,
         uint x = smem_scan[SCAN_STRIDE*tid + WARP_SIZE/2 + WARP_SIZE - 1];
         // Offset smem_totals just like smem_scan before
         __local volatile uint* s2 = smem_totals + tid + NUM_WARPS/2;
-        smem_totals[tid] = warp_exclusive_scan(x, NUM_WARPS, s2);
+        smem_totals[tid] = warpExclusiveScan(x, NUM_WARPS, s2);
     }
 
     // Synchronize to make the smem_totals block available to all warps.
@@ -112,7 +112,7 @@ __kernel void multiscan_horiz_image(__read_only image2d_t src,
         int lx = tid + i*NUM_THREADS;
 
         uint x = convert_uint(read_imagef(src, sampler, (int2)(lx, y)).x * 255.0f);
-        uint sum = workgroup_inclusive_scan(tid, x, smem_scan, smem_totals);
+        uint sum = workgroupInclusiveScan(tid, x, smem_scan, smem_totals);
 
         if(lx < cols)
         {
@@ -142,7 +142,7 @@ __kernel void multiscan_vert_image(__read_only image2d_t src,
         int ly = tid + i*NUM_THREADS;
 
         uint y = read_imageui(src, sampler, (int2)(x, ly)).x;
-        uint sum = workgroup_inclusive_scan(tid, y, smem_scan, smem_totals);
+        uint sum = workgroupInclusiveScan(tid, y, smem_scan, smem_totals);
 
         if(ly < rows)
         {
