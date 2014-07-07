@@ -92,6 +92,7 @@ SOURCES += \
     OpenCL/GpuSurfNode.cpp
 
 OTHER_FILES += \
+    OpenCL/kernels/approx_gaussian.cl \
     OpenCL/kernels/bfmatcher.cl \
     OpenCL/kernels/bfmatcher_macros.cl \
     OpenCL/kernels/bayer.cl \
