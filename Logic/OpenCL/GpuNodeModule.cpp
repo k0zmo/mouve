@@ -28,10 +28,6 @@
 
 #include <cassert>
 
-#if defined(HAVE_CLPERFMARKER_AMD)
-#  include <CLPerfMarker.h>
-#endif
-
 namespace {
 string kernelsDirectory();
 }
@@ -40,16 +36,12 @@ GpuNodeModule::GpuNodeModule(bool interactiveInit)
     : _maxConstantMemory(0)
     , _maxLocalMemory(0)
     , _interactiveInit(interactiveInit)
-    , _perfMarkersInitialized(0)
+    , _logger()
 {
 }
 
 GpuNodeModule::~GpuNodeModule()
 {
-#if defined(HAVE_CLPERFMARKER_AMD)
-    if(_perfMarkersInitialized)
-        clFinalizePerfMarkerAMD();
-#endif
 }
 
 bool GpuNodeModule::initialize()
@@ -214,11 +206,6 @@ bool GpuNodeModule::createAfterContext()
         _maxLocalMemory = _device.localMemorySize();
     }
 
-#if defined(HAVE_CLPERFMARKER_AMD)
-    if(clInitializePerfMarkerAMD() == AP_SUCCESS)
-        _perfMarkersInitialized = true;
-#endif
-
     return !_device.isNull() && !_queue.isNull();
 }
 
@@ -315,92 +302,6 @@ string GpuNodeModule::additionalBuildOptions(const std::string& programName) con
     (void) programName;
 #endif
     return opts;
-}
-
-#if defined(HAVE_CLPERFMARKER_AMD)
-
-std::string clPerfMarkerErrorString(int error)
-{
-    switch(error)
-    {
-    case AP_UNINITIALIZED_PERF_MARKER: return "Unintialized performance marker";
-    case AP_FINALIZED_PERF_MARKER: return "Finalized performance marker";
-    case AP_UNBALANCED_MARKER: return "Unbalanced marker";
-    case AP_APP_PROFILER_NOT_DETECTED: return "APP profiler not detected";
-    case AP_NULL_MARKER_NAME: return "Null marker name";
-    case AP_INTERNAL_ERROR: return "Internal error";
-    case AP_OUT_OF_MEMORY: return "Out of memory";
-    case AP_FAILED_TO_OPEN_OUTPUT_FILE: return "Failed to open output file";
-    default: return "Unknown error";
-    }
-}
-
-#endif
-
-void GpuNodeModule::beginPerfMarker(const char* markerName,
-                                    const char* groupName)
-{
-    assert(markerName);
-#if defined(HAVE_CLPERFMARKER_AMD)
-    if(_perfMarkersInitialized)
-    {
-        int error;
-        if((error = clBeginPerfMarkerAMD(markerName, groupName)) != AP_SUCCESS)
-            throw GpuNodeException(error, "Error on OpenCL performance marker beginning: " + 
-                std::string(markerName) + ", " + clPerfMarkerErrorString(error));
-    }
-#else
-    (void) groupName;
-    (void) markerName;
-#endif
-}
-
-void GpuNodeModule::endPerfMarker()
-{
-#if defined(HAVE_CLPERFMARKER_AMD)
-    if(_perfMarkersInitialized)
-    {
-        int error;
-        if((error = clEndPerfMarkerAMD()) != AP_SUCCESS)
-            throw GpuNodeException(error, "Error on OpenCL performance marker end: " +
-                clPerfMarkerErrorString(error));
-    }
-#endif
-}
-
-GpuPerformanceMarker::GpuPerformanceMarker(bool perfMarkersInitialized,
-                                           const char* markerName,
-                                           const char* groupName)
-    : _ok(false)
-{
-    assert(markerName);
-#if defined(HAVE_CLPERFMARKER_AMD)
-    if(perfMarkersInitialized)
-    {
-        int error;
-        if((error = clBeginPerfMarkerAMD(markerName, groupName)) != AP_SUCCESS)
-            throw GpuNodeException(error, "Error on OpenCL performance marker beginning: " + 
-                std::string(markerName) + ", " + clPerfMarkerErrorString(error));
-        _ok = error == AP_SUCCESS;
-    }
-#else
-    (void) perfMarkersInitialized;
-    (void) markerName;
-    (void) groupName;
-#endif
-}
-
-GpuPerformanceMarker::~GpuPerformanceMarker()
-{
-#if defined(HAVE_CLPERFMARKER_AMD)
-    if(_ok)
-    {
-        int error;
-        if((error = clEndPerfMarkerAMD()) != AP_SUCCESS)
-            throw GpuNodeException(error, "Error on OpenCL performance marker end: " +
-                clPerfMarkerErrorString(error));
-    }
-#endif
 }
 
 std::unique_ptr<IGpuNodeModule> createGpuModule()

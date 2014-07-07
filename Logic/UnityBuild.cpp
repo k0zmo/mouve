@@ -62,6 +62,7 @@
 #include "Nodes/VideoSegmentationNodes.cpp"
 
 #include "OpenCL/DeviceArray.cpp"
+#include "OpenCL/GpuActivityLogger.cpp"
 #include "OpenCL/GpuBasicNodes.cpp"
 #include "OpenCL/GpuBruteForceMacherNode.cpp"
 #include "OpenCL/GpuColorConversionNodes.cpp"

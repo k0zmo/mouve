@@ -106,7 +106,7 @@ public:
         if(srcWidth == 0 || srcHeight == 0)
             return ExecutionStatus(EStatus::Ok);
 
-        GpuPerformanceMarker marker(_gpuComputeModule->performanceMarkersInitialized(), "Hough");
+        GpuPerformanceMarker marker(_gpuComputeModule->activityLogger(), "Hough");
 
         ensureSizeIsEnough(_deviceCounterPoints, sizeof(cl_uint));
         ensureSizeIsEnough(_deviceCounterLines, sizeof(cl_uint));

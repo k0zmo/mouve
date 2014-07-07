@@ -393,6 +393,10 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|x64'">true</ExcludedFromBuild>
     </ClCompile>
+    <ClCompile Include="OpenCL\GpuActivityLogger.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|x64'">true</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="OpenCL\GpuApproxGaussianBlur.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|x64'">true</ExcludedFromBuild>
@@ -601,6 +605,7 @@
     <ClInclude Include="Nodes\ksurf.h" />
     <ClInclude Include="NodeTreeSerializer.h" />
     <ClInclude Include="OpenCL\DeviceArray.h" />
+    <ClInclude Include="OpenCL\GpuActivityLogger.h" />
     <ClInclude Include="OpenCL\GpuException.h" />
     <ClInclude Include="OpenCL\GpuKernelLibrary.h" />
     <ClInclude Include="OpenCL\GpuNode.h" />
@@ -915,6 +920,7 @@
     <Import Project="..\Include\Boost.props" />
     <Import Project="..\Include\tbb.Debug.props" />
     <Import Project="..\Include\clw.Debug.props" />
+    <Import Project="..\Include\AMDTActivityLogger.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
@@ -923,6 +929,7 @@
     <Import Project="..\Include\Boost.props" />
     <Import Project="..\Include\tbb.Debug.x64.props" />
     <Import Project="..\Include\clw.Debug.x64.props" />
+    <Import Project="..\Include\AMDTActivityLogger.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
@@ -931,6 +938,7 @@
     <Import Project="..\Include\Boost.props" />
     <Import Project="..\Include\tbb.Release.props" />
     <Import Project="..\Include\clw.Release.props" />
+    <Import Project="..\Include\AMDTActivityLogger.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|Win32'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
@@ -939,6 +947,7 @@
     <Import Project="..\Include\Boost.props" />
     <Import Project="..\Include\tbb.Release.props" />
     <Import Project="..\Include\clw.Release.props" />
+    <Import Project="..\Include\AMDTActivityLogger.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
@@ -947,6 +956,7 @@
     <Import Project="..\Include\Boost.props" />
     <Import Project="..\Include\tbb.Release.x64.props" />
     <Import Project="..\Include\clw.Release.x64.props" />
+    <Import Project="..\Include\AMDTActivityLogger.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|x64'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
@@ -955,6 +965,7 @@
     <Import Project="..\Include\Boost.props" />
     <Import Project="..\Include\tbb.Release.x64.props" />
     <Import Project="..\Include\clw.Release.x64.props" />
+    <Import Project="..\Include\AMDTActivityLogger.props" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup>

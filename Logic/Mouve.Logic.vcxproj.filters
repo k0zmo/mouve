@@ -176,6 +176,9 @@
     <ClCompile Include="OpenCL\GpuApproxGaussianBlur.cpp">
       <Filter>OpenCL</Filter>
     </ClCompile>
+    <ClCompile Include="OpenCL\GpuActivityLogger.cpp">
+      <Filter>OpenCL</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="Node.h">
@@ -288,6 +291,9 @@
     </ClInclude>
     <ClInclude Include="NodeProperty.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="OpenCL\GpuActivityLogger.h">
+      <Filter>OpenCL</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

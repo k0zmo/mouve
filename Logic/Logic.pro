@@ -37,6 +37,7 @@ HEADERS += \
     Nodes/CV.h \
     Nodes/ksurf.h \
     OpenCL/DeviceArray.h \
+    OpenCL/GpuActivityLogger.h \
     OpenCL/GpuException.h \
     OpenCL/GpuKernelLibrary.h \
     OpenCL/GpuNode.h \
@@ -81,6 +82,7 @@ SOURCES += \
     Nodes/TransformationNodes.cpp \
     Nodes/VideoSegmentationNodes.cpp \
     OpenCL/DeviceArray.cpp \
+    OpenCL/GpuActivityLogger.cpp \
     OpenCL/GpuBasicNodes.cpp \
     OpenCL/GpuBruteForceMacherNode.cpp \
     OpenCL/GpuColorConversionNodes.cpp \
