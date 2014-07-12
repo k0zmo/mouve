@@ -177,7 +177,7 @@ public:
     // MSVC2012 allows to make chained user-defined conversion
     template <typename EnumType>
     NodeProperty(EnumType v, typename std::enable_if<std::is_enum<EnumType>::value>::type* = 0)
-        : NodeProperty{v}
+        : NodeProperty{Enum{v}}
     {
     }
 #endif

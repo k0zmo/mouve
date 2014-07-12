@@ -35,8 +35,8 @@ string kernelsDirectory();
 GpuNodeModule::GpuNodeModule(bool interactiveInit)
     : _maxConstantMemory(0)
     , _maxLocalMemory(0)
-    , _interactiveInit(interactiveInit)
     , _logger()
+    , _interactiveInit(interactiveInit)
 {
 }
 

@@ -1316,7 +1316,7 @@ bool Controller::openTreeFromFileImpl(const QString& filePath)
         // Create new view associated with the model
         if(!_nodeViews.contains(mappedNodeID))
         {
-            if(!_nodeTree->nodeTypeID(mappedNodeID) == InvalidNodeTypeID)
+            if(_nodeTree->nodeTypeID(mappedNodeID) != InvalidNodeTypeID)
             {
                 QString nodeName = QString::fromStdString(_nodeTree->nodeName(mappedNodeID));
                 addNodeView(nodeName, mappedNodeID, QPointF(scenePosX, scenePosY));

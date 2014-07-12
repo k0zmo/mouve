@@ -83,6 +83,7 @@ SOURCES += \
     Nodes/VideoSegmentationNodes.cpp \
     OpenCL/DeviceArray.cpp \
     OpenCL/GpuActivityLogger.cpp \
+    OpenCL/GpuApproxGaussianBlur.cpp \
     OpenCL/GpuBasicNodes.cpp \
     OpenCL/GpuBruteForceMacherNode.cpp \
     OpenCL/GpuColorConversionNodes.cpp \

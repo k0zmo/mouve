@@ -317,7 +317,6 @@ private:
     KernelID _kidBruteForceMatch_nndrMatch_SIFT;
     KernelID _kidBruteForceMatch_nndrMatch_FREAK; // also BRISK
     KernelID _kidBruteForceMatch_nndrMatch_ORB;
-    KernelID _kidFillBuffer;
 
     clw::Buffer _matches_cl;
     clw::Buffer _matchesCount_cl;
