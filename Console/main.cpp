@@ -65,18 +65,10 @@ int main()
             throw std::logic_error("Couldn't find node named 'Download image', terminating");
 
         // Set some properties, e.g input filename
-        /*
-        NodeConfig nodeConfig;
-        nodeTree->nodeConfiguration(inputNodeID, nodeConfig);
-        if(nodeConfig.pProperties != nullptr)
-        {
-            if(nodeConfig.pProperties[0].type == EPropertyType::Filepath)
-            {
-                nodeTree->nodeSetProperty(inputNodeID, 0, 
-                    Filepath("D:/Programowanie/Projects/mouve-assets/lion.png"));
-            }
-        }
-        */
+        nodeTree->nodeSetProperty(inputNodeID, nodeTree->resolveProperty(inputNodeID, "File path"), 
+            Filepath{ "D:/Programowanie/Projects/mouve-assets/lion.png" });
+        nodeTree->nodeSetProperty(inputNodeID, nodeTree->resolveProperty(inputNodeID, "Force grayscale"),
+            false);
 
         // Execute a node
         nodeTree->execute(true);
