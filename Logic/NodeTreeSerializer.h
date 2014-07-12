@@ -36,10 +36,13 @@ public:
         : _rootDirectory(std::move(rootDir))
     {}
 
+    bool serializeJsonToFile(const std::shared_ptr<NodeTree>& nodeTree,
+        const std::string& filePath);
+
     // Serializes given node tree to JSON object
     QJsonObject serializeJson(const std::shared_ptr<NodeTree>& nodeTree);
 
-    bool deserializeJson(std::shared_ptr<NodeTree>& nodeTree, 
+    bool deserializeJsonFromFile(std::shared_ptr<NodeTree>& nodeTree, 
         const std::string& filePath);
 
     // Deserializes given JSON object to nodeTree object

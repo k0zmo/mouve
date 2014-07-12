@@ -52,7 +52,7 @@ int main()
         std::string filePath = "D:/Programowanie/Projects/mouve-assets/Kuwahara.tree";
         NodeTreeSerializer treeSerializer;        
         std::shared_ptr<NodeTree> nodeTree = nodeSystem.createNodeTree();
-        if(!treeSerializer.deserializeJson(nodeTree, filePath))
+        if(!treeSerializer.deserializeJsonFromFile(nodeTree, filePath))
             throw std::runtime_error("Cannot open file " + filePath);
 
         // Get IDs of input and output nodes

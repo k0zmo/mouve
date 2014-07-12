@@ -32,6 +32,21 @@
 #include <QDir>
 #include <QDebug>
 
+bool NodeTreeSerializer::serializeJsonToFile(const std::shared_ptr<NodeTree>& nodeTree,
+                                             const std::string& filePath)
+{
+    QJsonObject jsonTree = serializeJson(nodeTree);
+    QJsonDocument doc(jsonTree);
+    QByteArray textJson = doc.toJson(QJsonDocument::Indented);
+    textJson.replace("    ", "  ");
+
+    QFile file(QString::fromStdString(filePath));
+    if(!file.open(QIODevice::WriteOnly | QIODevice::Text))
+        return false;
+    file.write(textJson);
+    return true;
+}
+
 QJsonObject NodeTreeSerializer::serializeJson(const std::shared_ptr<NodeTree>& nodeTree)
 {
     // Iterate over all nodes and serialize it as JSON value of JSON array
@@ -92,8 +107,8 @@ QJsonObject NodeTreeSerializer::serializeJson(const std::shared_ptr<NodeTree>& n
     return jsonTree;
 }
 
-bool NodeTreeSerializer::deserializeJson(std::shared_ptr<NodeTree>& nodeTree, 
-                                         const std::string& filePath)
+bool NodeTreeSerializer::deserializeJsonFromFile(std::shared_ptr<NodeTree>& nodeTree, 
+                                                 const std::string& filePath)
 {
     QString filePath_ = QString::fromStdString(filePath);
     QFile file(filePath_);
