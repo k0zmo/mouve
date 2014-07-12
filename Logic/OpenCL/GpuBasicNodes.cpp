@@ -111,8 +111,8 @@ public:
         {
             // Copy to intermediate buffer (BGR) and run kernel to convert it to RGBA image
             clw::Kernel kernelConvertBufferRgbToImageRgba = _gpuComputeModule->acquireKernel(_kidConvertBufferRgbToImageRgba);
-            size_t intermediateBufferPitch = hostImage.cols * hostImage.channels() * sizeof(uchar);
-            size_t intermediateBufferSize = intermediateBufferPitch * hostImage.rows;
+            int intermediateBufferPitch = hostImage.cols * hostImage.channels() * sizeof(uchar);
+            int intermediateBufferSize = intermediateBufferPitch * hostImage.rows;
 
             if(_intermediateBuffer.isNull() || _intermediateBuffer.size() != intermediateBufferSize)
             {
@@ -279,8 +279,8 @@ public:
         {
             // Convert image RGBA to intermediate buffer (BGR) and copy it to host image
             clw::Kernel kernelConvertImageRgbaToBufferRgb = _gpuComputeModule->acquireKernel(_kidConvertImageRgbaToBufferRgb);
-            size_t intermediateBufferPitch = hostImage.cols * hostImage.channels() * sizeof(uchar);
-            size_t intermediateBufferSize = intermediateBufferPitch * hostImage.rows;
+            int intermediateBufferPitch = hostImage.cols * hostImage.channels() * sizeof(uchar);
+            int intermediateBufferSize = intermediateBufferPitch * hostImage.rows;
 
             if(_intermediateBuffer.isNull() || _intermediateBuffer.size() != intermediateBufferSize)
             {
