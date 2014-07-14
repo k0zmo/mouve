@@ -24,6 +24,7 @@
 #pragma once
 
 #include <type_traits>
+#include <tuple>
 
 template<typename T>
 struct not_
@@ -89,3 +90,43 @@ typename std::underlying_type<Enum>::type underlying_cast(Enum e)
 {
     return static_cast<typename std::underlying_type<Enum>::type>(e);
 }
+
+// Lambdas and anything else
+template <class L>
+struct func_traits : public func_traits<decltype(&L::operator())>
+{
+};
+
+// Function pointers
+template <class R, class... Args>
+struct func_traits<R(*)(Args...)> : public func_traits<R(Args...)>
+{
+};
+
+// Member function pointers
+template <class C, class R, class... Args>
+struct func_traits<R(C::*)(Args...)> : public func_traits<R(Args...)>
+{
+    using class_type = C;
+};
+
+// Member const-function pointers
+template <class C, class R, class... Args>
+struct func_traits<R(C::*)(Args...) const> : public func_traits<R(Args...)>
+{
+    using class_type = C;
+};
+
+template <class R, class... Args>
+struct func_traits<R(Args...)>
+{
+    using return_type = R;
+    static const std::size_t arity = sizeof...(Args);
+
+    template <std::size_t N>
+    struct arg
+    {
+        static_assert(N < arity, "invalid argument index");
+        using type = typename std::tuple_element<N, std::tuple<Args...>>::type;
+    };
+};
