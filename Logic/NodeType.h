@@ -158,6 +158,56 @@ struct NodeConfig
     }
 };
 
+// These allow for iterating over NodeConfig fields: input/output socket config
+// and property config
+template <class Iter>
+const Iter* begin_config(const NodeConfig& nodeConfig)
+{
+    return nullptr;
+}
+
+template <class Iter>
+bool end_config(const Iter* iter)
+{
+    return true;
+}
+
+template <>
+inline const InputSocketConfig* begin_config(const NodeConfig& nodeConfig)
+{
+    return nodeConfig.pInputSockets;
+}
+
+template <>
+inline bool end_config(const InputSocketConfig* iter)
+{
+    return !iter || iter->dataType == ENodeFlowDataType::Invalid;
+}
+
+template <>
+inline const OutputSocketConfig* begin_config(const NodeConfig& nodeConfig)
+{
+    return nodeConfig.pOutputSockets;
+}
+
+template <>
+inline bool end_config(const OutputSocketConfig* iter)
+{
+    return !iter || iter->dataType == ENodeFlowDataType::Invalid;
+}
+
+template <>
+inline const PropertyConfig* begin_config(const NodeConfig& nodeConfig)
+{
+    return nodeConfig.pProperties;
+}
+
+template <>
+inline bool end_config(const PropertyConfig* iter)
+{
+    return !iter || iter->type == EPropertyType::Unknown;
+}
+
 /// Node execution status 
 enum class EStatus : int
 {

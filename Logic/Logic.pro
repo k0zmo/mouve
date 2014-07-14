@@ -25,6 +25,7 @@ HEADERS += \
     NodeModule.h \
     NodePlugin.h \
     NodeProperty.h \
+    NodeResolver.h \
     NodeSystem.h \
     NodeTree.h \
     NodeTreeSerializer.h \
@@ -51,6 +52,7 @@ SOURCES += \
     NodeLink.cpp \
     NodePlugin.cpp \
     NodeProperty.cpp \
+    NodeResolver.cpp \
     NodeSystem.cpp \
     NodeTree.cpp \
     NodeTreeSerializer.cpp \

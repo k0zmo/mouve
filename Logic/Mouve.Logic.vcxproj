@@ -389,6 +389,7 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|x64'">true</ExcludedFromBuild>
     </ClCompile>
+    <ClCompile Include="NodeResolver.cpp" />
     <ClCompile Include="Nodes\SinkNodes.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|x64'">true</ExcludedFromBuild>
@@ -601,6 +602,7 @@
     <ClInclude Include="NodeModule.h" />
     <ClInclude Include="NodePlugin.h" />
     <ClInclude Include="NodeProperty.h" />
+    <ClInclude Include="NodeResolver.h" />
     <ClInclude Include="Nodes\CV.h" />
     <ClInclude Include="Nodes\ksurf.h" />
     <ClInclude Include="NodeTreeSerializer.h" />

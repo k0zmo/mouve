@@ -83,6 +83,7 @@ class NodeSystem;
 class NodeModule;
 class NodePlugin;
 class NodeTreeSerializer;
+class NodeResolver;
 
 struct NodeLink;
 struct SocketAddress;

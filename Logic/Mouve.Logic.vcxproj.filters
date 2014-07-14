@@ -179,6 +179,9 @@
     <ClCompile Include="OpenCL\GpuActivityLogger.cpp">
       <Filter>OpenCL</Filter>
     </ClCompile>
+    <ClCompile Include="NodeResolver.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="Node.h">
@@ -294,6 +297,9 @@
     </ClInclude>
     <ClInclude Include="OpenCL\GpuActivityLogger.h">
       <Filter>OpenCL</Filter>
+    </ClInclude>
+    <ClInclude Include="NodeResolver.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
