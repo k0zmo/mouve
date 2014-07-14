@@ -348,9 +348,9 @@ namespace
         if (nodeTree.nodeConfiguration(nodeID, nodeConfig))
         {
             //using PredArg = const InputSocketConfig&;
-            using PredArg = func_traits<Pred>::arg<0>::type;
+            using PredArg = typename func_traits<Pred>::template arg<0>::type;
             // using Iter = InputSocketConfig
-            using Iter = std::remove_cv<std::remove_reference<PredArg>::type>::type;
+            using Iter = typename std::remove_cv<typename std::remove_reference<PredArg>::type>::type;
 
             const Iter* iter = begin_config<Iter>(nodeConfig);
             while (!end_config(iter))
