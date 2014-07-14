@@ -27,6 +27,7 @@
 #include "Logic/NodeLink.h"
 #include "Logic/NodeException.h"
 #include "Logic/NodeTreeSerializer.h"
+#include "Logic/NodeResolver.h"
 
 #include "Logic/OpenCL/IGpuNodeModule.h"
 
@@ -34,62 +35,143 @@
 #include <stdexcept>
 #include <iostream>
 
+using namespace std;
+
+void nodeReflection(NodeTree& nodeTree, NodeID nodeID)
+{
+    NodeConfig nodeConfig;
+    nodeTree.nodeConfiguration(nodeID, nodeConfig);
+
+    cout << endl << "Reflection of " << nodeTree.nodeTypeName(nodeID) << endl;
+    const InputSocketConfig* iscIter = begin_config<InputSocketConfig>(nodeConfig);
+    while (!end_config(iscIter))
+    {
+        cout << "<+> input socket: " << iscIter->name << "(" << to_string(iscIter->dataType) << ")" << endl;
+        ++iscIter;
+    }
+
+    const OutputSocketConfig* oscIter = begin_config<OutputSocketConfig>(nodeConfig);
+    while (!end_config(oscIter))
+    {
+        cout << "<+> output socket: " << oscIter->name << "(" << to_string(oscIter->dataType) << ")" << endl;
+        ++oscIter;
+    }
+
+    const PropertyConfig* pcIter = begin_config<PropertyConfig>(nodeConfig);
+    while (!end_config(pcIter))
+    {
+        cout << "<+> property: " << pcIter->name << "(" << to_string(pcIter->type) << ")" << endl;
+        ++pcIter;
+    }
+}
+
 int main()
 {
     try
     {
-        // Create and register GPU Module
-        std::shared_ptr<IGpuNodeModule> gpuModule = createGpuModule();
-        gpuModule->setInteractiveInit(false);
-
         NodeSystem nodeSystem;
+
+        // Create and register GPU Module
+        shared_ptr<IGpuNodeModule> gpuModule = createGpuModule();
+        gpuModule->setInteractiveInit(false); // Just use default device
         nodeSystem.registerNodeModule(gpuModule);
 
         // Register Kuwahara plugin
         nodeSystem.loadPlugin("plugins/Plugin.Kuwahara.dll");
 
-        // Load node tree from a file
-        std::string filePath = "D:/Programowanie/Projects/mouve-assets/Kuwahara.tree";
-        NodeTreeSerializer treeSerializer;        
-        std::shared_ptr<NodeTree> nodeTree = nodeSystem.createNodeTree();
-        if(!treeSerializer.deserializeJsonFromFile(nodeTree, filePath))
-            throw std::runtime_error("Cannot open file " + filePath);
+        // Print out all registered node types
+        cout << "Available node types: \n";
+        unique_ptr<NodeTypeIterator> typeIter = nodeSystem.createNodeTypeIterator();
+        NodeTypeIterator::NodeTypeInfo nodeTypeInfo;
+        while (typeIter->next(nodeTypeInfo))
+            cout << nodeTypeInfo.typeID << ": " << nodeTypeInfo.typeName << endl;
 
-        // Get IDs of input and output nodes
-        const NodeID inputNodeID = nodeTree->resolveNode("Image from file");
-        const NodeID outputNodeID = nodeTree->resolveNode("Download image");
+        {
+            shared_ptr<NodeTree> nodeTree = nodeSystem.createNodeTree();
+        
+            NodeID inputImageID = nodeTree->createNode(nodeSystem.nodeTypeID("Sources/Image from file"), "Input image");
+            NodeID uploadID = nodeTree->createNode(nodeSystem.nodeTypeID("OpenCL/Upload image"), "Upload");
+            NodeID akfID = nodeTree->createNode(nodeSystem.nodeTypeID("OpenCL/Filters/Anisotropic Kuwahara filter"), "AKF");
+            NodeID downloadID = nodeTree->createNode(nodeSystem.nodeTypeID("OpenCL/Download image"), "Download");
 
-        if(inputNodeID == InvalidNodeID)
-            throw std::logic_error("Couldn't find node named 'Image from file', terminating");
-        if(outputNodeID == InvalidNodeID)
-            throw std::logic_error("Couldn't find node named 'Download image', terminating");
+            nodeReflection(*nodeTree, inputImageID);
+            nodeReflection(*nodeTree, uploadID);
+            nodeReflection(*nodeTree, akfID);
+            nodeReflection(*nodeTree, downloadID);
 
-        // Set some properties, e.g input filename
-        nodeTree->nodeSetProperty(inputNodeID, nodeTree->resolveProperty(inputNodeID, "File path"), 
-            Filepath{ "D:/Programowanie/Projects/mouve-assets/lion.png" });
-        nodeTree->nodeSetProperty(inputNodeID, nodeTree->resolveProperty(inputNodeID, "Force grayscale"),
-            false);
+            NodeResolver resolver(nodeTree);
 
-        // Execute a node
-        nodeTree->execute(true);
+            nodeTree->linkNodes(resolver.resolveSocketAddress("o://Input image/output"),
+                                resolver.resolveSocketAddress("i://Upload/input"));
+            nodeTree->linkNodes(resolver.resolveSocketAddress("o://Upload/output"),
+                                resolver.resolveSocketAddress("i://AKF/source"));
+            nodeTree->linkNodes(resolver.resolveSocketAddress("o://AKF/output"),
+                                resolver.resolveSocketAddress("i://Download/input"));
 
-        // Get output data
-        const NodeFlowData& outData = nodeTree->outputSocket(outputNodeID, 0);
+            // Set some properties, e.g input filename
+            nodeTree->nodeSetProperty(inputImageID, 
+                resolver.resolveProperty(inputImageID, "File path"), 
+                Filepath{ "rgb.png" });
+            nodeTree->nodeSetProperty(inputImageID, 
+                resolver.resolveProperty(inputImageID, "Force grayscale"),
+                false);
+            nodeTree->nodeSetProperty(akfID,
+                resolver.resolveProperty(akfID, "Radius"),
+                8);
 
-        // Show it if possible
-        cv::namedWindow("output from node tree");
-        cv::imshow("output from node tree", outData.getImage());
-        cv::waitKey(-1);
+            // Execute a node
+            nodeTree->execute(true);
+
+            NodeTreeSerializer nodeTreeSerializer;
+            nodeTreeSerializer.serializeJsonToFile(nodeTree, "example.tree");
+
+            // Get output data
+            const NodeFlowData& outData = nodeTree->outputSocket(downloadID, 
+                resolver.resolveOutputSocket(downloadID, "output"));
+
+            // Show it if possible
+            cv::namedWindow("Output from node tree");
+            cv::imshow("Output from node tree", outData.getImage());
+            cv::waitKey(-1);
+        }
+
+        {
+            // Load a tree from a file
+            shared_ptr<NodeTree> nodeTree = nodeSystem.createNodeTree();
+            NodeTreeSerializer nodeTreeSerializer;
+            if(!nodeTreeSerializer.deserializeJsonFromFile(nodeTree, "example.tree"))
+                throw runtime_error("Cannot open file example.tree");
+
+            NodeResolver resolver(nodeTree);
+
+            // Change some property to see a small difference
+            NodeID inputImageID = resolver.resolveNode("Input image");
+            nodeTree->nodeSetProperty(inputImageID, 
+                resolver.resolveProperty(inputImageID, "Force grayscale"),
+                true);
+
+            nodeTree->execute(true);
+
+            // Get output data
+            NodeID downloadID = resolver.resolveNode("Download");
+            const NodeFlowData& outData = nodeTree->outputSocket(downloadID, 
+                resolver.resolveOutputSocket(downloadID, "output"));
+
+            // Show it if possible
+            cv::namedWindow("Output from node tree");
+            cv::imshow("Output from node tree", outData.getImage());
+            cv::waitKey(-1);
+        }
     }
     catch(ExecutionError& ex)
     {
-        std::cerr << "Execution error in:\nNode: " << ex.nodeName << "\n"
+        cerr << "Execution error in:\nNode: " << ex.nodeName << "\n"
             "Node typename: " << ex.nodeTypeName << "\n\nError message:\n" << ex.errorMessage;;
-        std::cin.get();
+        cin.get();
     }
-    catch(std::exception& ex)
+    catch(exception& ex)
     {
-        std::cerr << ex.what() << std::endl;
-        std::cin.get();
+        cerr << ex.what() << endl;
+        cin.get();
     }
 }
