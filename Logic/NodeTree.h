@@ -74,7 +74,7 @@ public:
     bool unlinkNodes(SocketAddress from, SocketAddress to);
 
     // Set a new name for a given node
-    void setNodeName(NodeID nodeID, const std::string& newNodeName);
+    bool setNodeName(NodeID nodeID, const std::string& newNodeName);
     // Returns the current node name for a given node
     const std::string& nodeName(NodeID nodeID) const;
 

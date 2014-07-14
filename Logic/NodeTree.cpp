@@ -31,6 +31,14 @@
 
 #include "Kommon/StlUtils.h"
 
+namespace
+{
+    bool validateNodeName(const std::string& nodeName)
+    {
+        return nodeName.find('/') == std::string::npos;
+    }
+}
+
 NodeTree::NodeTree(NodeSystem* nodeSystem)
     : _nodeSystem(nodeSystem)
     , _executeListDirty(false)
@@ -256,6 +264,10 @@ NodeID NodeTree::createNode(NodeTypeID typeID, const std::string& name)
     if(_nodeNameToNodeID.find(name) != _nodeNameToNodeID.end())
         return InvalidNodeID;
 
+    // Validate correctness of given node name
+    if(!validateNodeName(name))
+        return InvalidNodeID;
+
     // Allocate NodeID
     NodeID id = allocateNodeID();
     if(id == InvalidNodeID)
@@ -370,7 +382,7 @@ NodeID NodeTree::duplicateNode(NodeID nodeID)
 
 std::string NodeTree::generateNodeName(NodeTypeID typeID) const
 {
-    // Generate unique name
+    // Generate unique name - defaultNodeName() method guarantees there won't be any '/' char
     std::string defaultNodeTitle = _nodeSystem->defaultNodeName(typeID);
     std::string nodeTitle = defaultNodeTitle;
     int num = 1;
@@ -458,21 +470,29 @@ bool NodeTree::unlinkNodes(SocketAddress from, SocketAddress to)
     return false;
 }
 
-void NodeTree::setNodeName(NodeID nodeID, const std::string& newNodeName)
+bool NodeTree::setNodeName(NodeID nodeID, const std::string& newNodeName)
 {
     if(nodeID < _nodes.size())
     {
         auto& node = _nodes[nodeID];
         if(node.isValid() && node.nodeName() != newNodeName)
         {
-            // Remove old mapping
-            _nodeNameToNodeID.erase(node.nodeName());
+            // Check if new node name doesn't contain forbidden characters ('/')
+            if(validateNodeName(newNodeName))
+            {
+                // Remove old mapping
+                _nodeNameToNodeID.erase(node.nodeName());
 
-            // Change a name and add a new mapping
-            node.setNodeName(newNodeName);
-            _nodeNameToNodeID.insert(std::make_pair(newNodeName, nodeID));
+                // Change a name and add a new mapping
+                node.setNodeName(newNodeName);
+                _nodeNameToNodeID.insert(std::make_pair(newNodeName, nodeID));
+
+                return true;
+            }
         }
     }
+
+    return false;
 }
 
 const std::string& NodeTree::nodeName(NodeID nodeID) const

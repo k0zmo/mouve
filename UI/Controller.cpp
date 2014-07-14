@@ -1678,10 +1678,17 @@ void Controller::changeProperty(NodeID nodeID,
 
                 if(_nodeTree->resolveNode(nameStd) == InvalidNodeID)
                 {
-                    _nodeTree->setNodeName(nodeID, nameStd);
-                    _nodeViews[nodeID]->setNodeViewName(name);
-                    _nodeTreeDirty = true;
-                    updateTitleBar();
+                    if(_nodeTree->setNodeName(nodeID, nameStd))
+                    {
+                        _nodeViews[nodeID]->setNodeViewName(name);
+                        _nodeTreeDirty = true;
+                        updateTitleBar();
+                    }
+                    else
+                    {
+                        *ok = false;
+                        showErrorMessage("Node name contains some invalid characters");
+                    }
                 }
                 else
                 {
