@@ -57,7 +57,12 @@ enum class EPropertyType : int
     /// * save: if true file dialog will ask for new file, not existing
     Filepath,
     String,
-}; 
+};
+
+namespace std
+{
+    LOGIC_EXPORT string to_string(EPropertyType);
+}
 
 /// Simple class representing 3x3 matrix
 struct Matrix3x3

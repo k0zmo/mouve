@@ -144,3 +144,30 @@ std::string NodeProperty::toString() const
 
     return boost::get<std::string>(_data);
 }
+
+namespace std
+{
+    string to_string(EPropertyType type)
+    {
+        switch(type)
+        {
+        default:
+        case EPropertyType::Unknown:
+            return "Unknown";
+        case EPropertyType::Boolean:
+            return "Boolean";
+        case EPropertyType::Integer:
+            return "Integer";
+        case EPropertyType::Double:
+            return "Double";
+        case EPropertyType::Enum:
+            return "Enum";
+        case EPropertyType::Matrix:
+            return "Matrix";
+        case EPropertyType::Filepath:
+            return "Filepath";
+        case EPropertyType::String:
+            return "String";
+        }
+    }
+}

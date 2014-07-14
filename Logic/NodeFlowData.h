@@ -82,6 +82,11 @@ enum class ENodeFlowDataType : int
 #endif
 };
 
+namespace std
+{
+    LOGIC_EXPORT string to_string(ENodeFlowDataType);
+}
+
 class LOGIC_EXPORT NodeFlowData
 {
     typedef boost::variant<

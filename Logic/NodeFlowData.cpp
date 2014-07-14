@@ -264,3 +264,38 @@ const Type& NodeFlowData::getType() const
         throw boost::bad_get();
     return boost::get<Type>(_data);
 }
+
+namespace std
+{
+    string to_string(ENodeFlowDataType type)
+    {
+        switch(type)
+        {
+        default:
+        case ENodeFlowDataType::Invalid:
+            return "Invalid";
+        case ENodeFlowDataType::Image:
+            return "Image";
+        case ENodeFlowDataType::ImageMono:
+            return "ImageMono";
+        case ENodeFlowDataType::ImageRgb:
+            return "ImageRgb";
+        case ENodeFlowDataType::Array:
+            return "Array";
+        case ENodeFlowDataType::Keypoints:
+            return "Keypoints";
+        case ENodeFlowDataType::Matches:
+            return "Matches";
+#if defined(HAVE_OPENCL)
+        case ENodeFlowDataType::DeviceImage:
+            return "DeviceImage";
+        case ENodeFlowDataType::DeviceImageMono:
+            return "DeviceImageMono";
+        case ENodeFlowDataType::DeviceImageRgb:
+            return "DeviceImageRgb";
+        case ENodeFlowDataType::DeviceArray:
+            return "DeviceArray";
+#endif
+        }
+    }
+}
