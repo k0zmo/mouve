@@ -98,7 +98,7 @@ const InputSocketConfig& NodeResolver::inputSocketConfig(NodeID nodeID,
 {
     SocketID iter = 0;
     auto conf = find<const InputSocketConfig*>(*_nodeTree, nodeID, 
-        [socketID,&iter](const InputSocketConfig& cfg)
+        [socketID,&iter](const InputSocketConfig&)
         {
             return iter++ == socketID;
         });
@@ -149,7 +149,7 @@ const OutputSocketConfig& NodeResolver::outputSocketConfig(NodeID nodeID,
 {
     SocketID iter = 0;
     auto conf = find<const OutputSocketConfig*>(*_nodeTree, nodeID, 
-        [socketID,&iter](const OutputSocketConfig& cfg)
+        [socketID,&iter](const OutputSocketConfig&)
         {
             return iter++ == socketID;
         });
@@ -200,7 +200,7 @@ const PropertyConfig& NodeResolver::propertyConfig(NodeID nodeID,
 {
     SocketID iter = 0;
     auto conf = find<const PropertyConfig*>(*_nodeTree, nodeID, 
-        [propertyID,&iter](const PropertyConfig& cfg)
+        [propertyID,&iter](const PropertyConfig&)
         {
             return iter++ == propertyID;
         });
@@ -282,19 +282,19 @@ namespace
 {
     const PropertyConfig& invalidPropertyConfig()
     {
-        static PropertyConfig instance{ EPropertyType::Unknown };
+        static PropertyConfig instance{ EPropertyType::Unknown, {}, {} };
         return instance;
     }
 
     const InputSocketConfig& invalidInputSocketConfig()
     {
-        static InputSocketConfig instance{ ENodeFlowDataType::Invalid };
+        static InputSocketConfig instance{ ENodeFlowDataType::Invalid, {}, {}, {} };
         return instance;
     }
 
     const OutputSocketConfig& invalidOutputSocketConfig()
     {
-        static OutputSocketConfig instance{ ENodeFlowDataType::Invalid };
+        static OutputSocketConfig instance{ ENodeFlowDataType::Invalid, {}, {}, {} };
         return instance;
     }
 
@@ -302,6 +302,7 @@ namespace
     template <class RetValue, class Iter>
     RetValue return_value(Iter iter, Iter begin, typename std::enable_if<std::is_pointer<RetValue>::value>::type* = 0)
     {
+        (void)begin;
         return iter;
     }
 

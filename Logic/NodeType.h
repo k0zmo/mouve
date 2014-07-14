@@ -161,13 +161,13 @@ struct NodeConfig
 // These allow for iterating over NodeConfig fields: input/output socket config
 // and property config
 template <class Iter>
-const Iter* begin_config(const NodeConfig& nodeConfig)
+const Iter* begin_config(const NodeConfig&)
 {
     return nullptr;
 }
 
 template <class Iter>
-bool end_config(const Iter* iter)
+bool end_config(const Iter*)
 {
     return true;
 }
