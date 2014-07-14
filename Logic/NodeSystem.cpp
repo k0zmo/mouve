@@ -124,7 +124,6 @@ std::string NodeSystem::nodeDescription(NodeTypeID nodeTypeID) const
     if(!tmpNode)
         return InvalidType;
     NodeConfig nodeConfig;
-    /// TODO: Perhaps configuration should be static ?
     tmpNode->configuration(nodeConfig);
     return nodeConfig.description;
 }

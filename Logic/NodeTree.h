@@ -85,9 +85,6 @@ public:
     // For a given NodeID returns its type name as string
     const std::string& nodeTypeName(NodeID nodeID) const;
 
-    PropertyID resolveProperty(NodeID nodeID, const std::string& propertyName);
-    PropertyID resolveProperty(const std::string& nodeName, const std::string& propertyName);
-
     // Returns output socket address from which given input socket is connected to
     SocketAddress connectedFrom(SocketAddress iSocketAddress) const;
     const NodeFlowData& outputSocket(NodeID nodeID, SocketID socketID) const;

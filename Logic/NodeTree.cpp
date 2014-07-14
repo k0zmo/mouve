@@ -527,34 +527,6 @@ const std::string& NodeTree::nodeTypeName(NodeID nodeID) const
     return EmptyString;
 }
 
-PropertyID NodeTree::resolveProperty(NodeID nodeID, const std::string& propertyName)
-{
-    NodeConfig nodeConfig;
-    if(!nodeConfiguration(nodeID, nodeConfig))
-        return InvalidPropertyID;
-    
-    if(nodeConfig.pProperties)
-    {
-        PropertyID propID = 0;
-        while(nodeConfig.pProperties[propID].type != EPropertyType::Unknown)
-        {
-            if (nodeConfig.pProperties[propID].name == propertyName)
-                return propID;
-            ++propID;
-        }
-    }
-
-    return InvalidPropertyID;
-}
-
-PropertyID NodeTree::resolveProperty(const std::string& nodeName, const std::string& propertyName)
-{
-    NodeID nodeID;
-    if((nodeID = resolveNode(nodeName)) != InvalidNodeID)
-        return resolveProperty(nodeID, propertyName);
-    return InvalidPropertyID;
-}
-
 SocketAddress NodeTree::connectedFrom(SocketAddress iSocketAddr) const
 {
     // This function does not rely on a assumption that links are sorted
