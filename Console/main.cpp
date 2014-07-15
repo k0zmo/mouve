@@ -93,10 +93,10 @@ int main()
         {
             shared_ptr<NodeTree> nodeTree = nodeSystem.createNodeTree();
         
-            NodeID inputImageID = nodeTree->createNode(nodeSystem.nodeTypeID("Sources/Image from file"), "Input image");
-            NodeID uploadID = nodeTree->createNode(nodeSystem.nodeTypeID("OpenCL/Upload image"), "Upload");
-            NodeID akfID = nodeTree->createNode(nodeSystem.nodeTypeID("OpenCL/Filters/Anisotropic Kuwahara filter"), "AKF");
-            NodeID downloadID = nodeTree->createNode(nodeSystem.nodeTypeID("OpenCL/Download image"), "Download");
+            NodeID inputImageID = nodeTree->createNode("Sources/Image from file", "Input image");
+            NodeID uploadID = nodeTree->createNode("OpenCL/Upload image", "Upload");
+            NodeID akfID = nodeTree->createNode("OpenCL/Filters/Anisotropic Kuwahara filter", "AKF");
+            NodeID downloadID = nodeTree->createNode("OpenCL/Download image", "Download");
 
             nodeReflection(*nodeTree, inputImageID);
             nodeReflection(*nodeTree, uploadID);

@@ -64,6 +64,7 @@ public:
     // Returned list is valid between prepareList() calls.
     std::vector<NodeID> executeList() const;
 
+    NodeID createNode(const std::string& nodeTypeName, const std::string& name);
     NodeID createNode(NodeTypeID typeID, const std::string& name);
     bool removeNode(NodeID nodeID);
     bool removeNode(const std::string& nodeName);

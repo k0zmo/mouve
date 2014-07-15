@@ -255,6 +255,11 @@ std::vector<NodeID> NodeTree::executeList() const
     return _executeList;
 }
 
+NodeID NodeTree::createNode(const std::string& nodeTypeName, const std::string& name)
+{
+    return createNode(_nodeSystem->nodeTypeID(nodeTypeName), name);
+}
+
 NodeID NodeTree::createNode(NodeTypeID typeID, const std::string& name)
 {
     if(!_nodeSystem)
