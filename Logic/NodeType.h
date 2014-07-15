@@ -172,6 +172,12 @@ bool end_config(const Iter*)
     return true;
 }
 
+template <class Iter>
+int pos_config(const Iter*, const NodeConfig&)
+{
+    return 0;
+}
+
 template <>
 inline const InputSocketConfig* begin_config(const NodeConfig& nodeConfig)
 {
@@ -182,6 +188,12 @@ template <>
 inline bool end_config(const InputSocketConfig* iter)
 {
     return !iter || iter->dataType == ENodeFlowDataType::Invalid;
+}
+
+template <>
+inline int pos_config(const InputSocketConfig* iter, const NodeConfig& nodeConfig)
+{
+    return iter - nodeConfig.pInputSockets;
 }
 
 template <>
@@ -197,6 +209,12 @@ inline bool end_config(const OutputSocketConfig* iter)
 }
 
 template <>
+inline int pos_config(const OutputSocketConfig* iter, const NodeConfig& nodeConfig)
+{
+    return iter - nodeConfig.pOutputSockets;
+}
+
+template <>
 inline const PropertyConfig* begin_config(const NodeConfig& nodeConfig)
 {
     return nodeConfig.pProperties;
@@ -206,6 +224,12 @@ template <>
 inline bool end_config(const PropertyConfig* iter)
 {
     return !iter || iter->type == EPropertyType::Unknown;
+}
+
+template <>
+inline int pos_config(const PropertyConfig* iter, const NodeConfig& nodeConfig)
+{
+    return iter - nodeConfig.pProperties;
 }
 
 /// Node execution status 

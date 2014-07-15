@@ -372,14 +372,12 @@ NodeID NodeTree::duplicateNode(NodeID nodeID)
     NodeConfig nodeConfig;
     _nodes[nodeID].configuration(nodeConfig);
 
-    PropertyID propID = 0;
-    if(nodeConfig.pProperties)
+    auto prop = begin_config<PropertyConfig>(nodeConfig);
+    while(!end_config(prop))
     {
-        while(nodeConfig.pProperties[propID].type != EPropertyType::Unknown)
-        {
-            _nodes[newNodeID].setProperty(propID, _nodes[nodeID].property(propID));
-            ++propID;
-        }
+        PropertyID propID = static_cast<PropertyID>(pos_config(prop, nodeConfig));
+        _nodes[newNodeID].setProperty(propID, _nodes[nodeID].property(propID));
+        ++prop;
     }
 
     return newNodeID;

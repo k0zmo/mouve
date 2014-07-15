@@ -21,7 +21,7 @@ Computer vision algorithms are not just about images but also about data extract
 
 ### Windows 
 
-Open (VS2012 or higher) solution file or QtCreator project file. In order to customize include and library paths you need to modify project property files (.props or .pri, depending on used IDE) located in Include directory. 
+Open (VS2013 or higher) solution file or QtCreator project file. In order to customize include and library paths you need to modify project property files (.props or .pri, depending on used IDE) located in Include directory. 
 
 ### Linux
 

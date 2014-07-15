@@ -27,6 +27,7 @@
 #include "NodeLink.cpp"
 #include "NodePlugin.cpp"
 #include "NodeProperty.cpp"
+#include "NodeResolver.cpp"
 #include "NodeSystem.cpp"
 #include "NodeTree.cpp"
 #include "NodeTreeSerializer.cpp"

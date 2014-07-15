@@ -62,22 +62,24 @@ Node::Node(std::unique_ptr<NodeType> nodeType,
         setFlag(ENodeFlags::OverridesTimeComp);
 
     // Count number of input sockets
-    if(config.pInputSockets)
+    auto input = begin_config<InputSocketConfig>(config);
+    while(!end_config(input))
     {
-        while(config.pInputSockets[_numInputs].name.length() > 0)
-            _numInputs++;
+        ++_numInputs;
+        ++input;
     }
 
-    // Count number of output sockets
-    if(config.pOutputSockets)
-    {
-        while(config.pOutputSockets[_numOutputs].name.length() > 0)
-            _numOutputs++;
-    } 
-
     _outputSockets.clear();
-    for(int i = 0; i < _numOutputs; ++i)
-        _outputSockets.emplace_back(config.pOutputSockets[i].dataType);
+
+    // Count number of output sockets
+    auto output = begin_config<OutputSocketConfig>(config);
+    while(!end_config(output))
+    {
+        _outputSockets.emplace_back(output->dataType);
+        ++output;
+    }
+
+    _numOutputs = static_cast<SocketID>(_outputSockets.size());
 }
 
 Node::~Node()

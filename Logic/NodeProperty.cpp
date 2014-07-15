@@ -153,21 +153,21 @@ namespace std
         {
         default:
         case EPropertyType::Unknown:
-            return "Unknown";
+            return "unknown";
         case EPropertyType::Boolean:
-            return "Boolean";
+            return "boolean";
         case EPropertyType::Integer:
-            return "Integer";
+            return "integer";
         case EPropertyType::Double:
-            return "Double";
+            return "double";
         case EPropertyType::Enum:
-            return "Enum";
+            return "enum";
         case EPropertyType::Matrix:
-            return "Matrix";
+            return "matrix3x3";
         case EPropertyType::Filepath:
-            return "Filepath";
+            return "filepath";
         case EPropertyType::String:
-            return "String";
+            return "string";
         }
     }
 }

@@ -273,28 +273,28 @@ namespace std
         {
         default:
         case ENodeFlowDataType::Invalid:
-            return "Invalid";
+            return "invalid";
         case ENodeFlowDataType::Image:
-            return "Image";
+            return "image";
         case ENodeFlowDataType::ImageMono:
-            return "ImageMono";
+            return "imageMono";
         case ENodeFlowDataType::ImageRgb:
-            return "ImageRgb";
+            return "imageRgb";
         case ENodeFlowDataType::Array:
-            return "Array";
+            return "array";
         case ENodeFlowDataType::Keypoints:
-            return "Keypoints";
+            return "keypoints";
         case ENodeFlowDataType::Matches:
-            return "Matches";
+            return "matches";
 #if defined(HAVE_OPENCL)
         case ENodeFlowDataType::DeviceImage:
-            return "DeviceImage";
+            return "deviceImage";
         case ENodeFlowDataType::DeviceImageMono:
-            return "DeviceImageMono";
+            return "deviceImageMono";
         case ENodeFlowDataType::DeviceImageRgb:
-            return "DeviceImageRgb";
+            return "deviceImageRgb";
         case ENodeFlowDataType::DeviceArray:
-            return "DeviceArray";
+            return "deviceArray";
 #endif
         }
     }

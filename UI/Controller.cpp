@@ -216,35 +216,27 @@ void Controller::addNodeView(const QString& nodeTitle,
     //	nodeView->setToolTip(QString::fromStdString(nodeConfig.description));
 
     // Add input sockets views to node view
-    SocketID socketID = 0;
-    if(nodeConfig.pInputSockets)
+    auto input = begin_config<InputSocketConfig>(nodeConfig);
+    while(!end_config(input))
     {
-        while(nodeConfig.pInputSockets[socketID].dataType != ENodeFlowDataType::Invalid)
-        {
-            const auto& input = nodeConfig.pInputSockets[socketID];
-
-            QString socketTitle = input.humanName.length() > 0
-                ? QString::fromStdString(input.humanName)
-                : QString::fromStdString(input.name);
-            nodeView->addSocketView(socketID, input.dataType, socketTitle, false);
-            ++socketID;
-        }
+        QString socketTitle = input->humanName.length() > 0
+            ? QString::fromStdString(input->humanName)
+            : QString::fromStdString(input->name);
+        nodeView->addSocketView(static_cast<SocketID>(pos_config(input, nodeConfig)),
+                                input->dataType, socketTitle, false);
+        ++input;
     }
 
     // Add output sockets views to node view
-    socketID = 0;
-    if(nodeConfig.pOutputSockets)
+    auto output = begin_config<OutputSocketConfig>(nodeConfig);
+    while(!end_config(output))
     {
-        while(nodeConfig.pOutputSockets[socketID].dataType != ENodeFlowDataType::Invalid)
-        {
-            const auto& output = nodeConfig.pOutputSockets[socketID];
-
-            QString socketTitle = output.humanName.length() > 0
-                ? QString::fromStdString(output.humanName)
-                : QString::fromStdString(output.name);
-            nodeView->addSocketView(socketID, output.dataType, socketTitle, true);
-            ++socketID;
-        }
+        QString socketTitle = output->humanName.length() > 0
+            ? QString::fromStdString(output->humanName)
+            : QString::fromStdString(output->name);
+        nodeView->addSocketView(static_cast<SocketID>(pos_config(output, nodeConfig)),
+                                output->dataType, socketTitle, true);
+        ++output;
     }
 
     // Make a default property - node name
@@ -252,22 +244,19 @@ void Controller::addNodeView(const QString& nodeTitle,
     _propManager->newProperty(nodeID, -1, EPropertyType::String,
         "Node name", nodeTitle, QString());
 
-    PropertyID propID = 0;
-    if(nodeConfig.pProperties)
-    {
+    auto prop = begin_config<PropertyConfig>(nodeConfig);
+    if(prop)
         _propManager->newPropertyGroup(nodeID, "Specific");
 
-        while(nodeConfig.pProperties[propID].type != EPropertyType::Unknown)
-        {
-            const auto& prop = nodeConfig.pProperties[propID];
-
-            _propManager->newProperty(nodeID, propID, prop.type, 
-                QString::fromStdString(prop.name),
-                PropertyManager::nodePropertyToVariant(_nodeTree->nodeProperty(nodeID, propID)),
-                QString::fromStdString(prop.uiHint));
-
-            ++propID;
-        }
+    // Add rest of the properties
+    while(!end_config(prop))
+    {
+        PropertyID propID = static_cast<PropertyID>(pos_config(prop, nodeConfig));
+        _propManager->newProperty(nodeID, propID, prop->type, 
+            QString::fromStdString(prop->name),
+            PropertyManager::nodePropertyToVariant(_nodeTree->nodeProperty(nodeID, propID)),
+            QString::fromStdString(prop->uiHint));
+        ++prop;
     }
 
     auto* propModel = _propManager->propertyModel(nodeID);
