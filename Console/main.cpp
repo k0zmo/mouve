@@ -77,7 +77,11 @@ int main()
         nodeSystem.registerNodeModule(gpuModule);
 
         // Register Kuwahara plugin
+#if K_SYSTEM == K_SYSTEM_WINDOWS
         nodeSystem.loadPlugin("plugins/Plugin.Kuwahara.dll");
+#else
+        nodeSystem.loadPlugin("plugins/libPlugin.Kuwahara.so");
+#endif
 
         // Print out all registered node types
         cout << "Available node types: \n";
