@@ -35,36 +35,16 @@ public:
         , _nOctaves(4)
         , _nOctaveLayers(2)
     {
-    }
-
-    bool setProperty(PropertyID propId, const NodeProperty& newValue) override
-    {
-        switch(static_cast<pid>(propId))
-        {
-        case pid::HessianThreshold:
-            _hessianThreshold = newValue.toDouble();
-            return true;
-        case pid::NumOctaves:
-            _nOctaves = newValue.toInt();
-            return true;
-        case pid::NumOctaveLayers:
-            _nOctaveLayers = newValue.toInt();
-            return true;
-        }
-
-        return false;
-    }
-
-    NodeProperty property(PropertyID propId) const override
-    {
-        switch(static_cast<pid>(propId))
-        {
-        case pid::HessianThreshold: return _hessianThreshold;
-        case pid::NumOctaves: return _nOctaves;
-        case pid::NumOctaveLayers: return _nOctaveLayers;
-        }
-
-        return NodeProperty();
+        addInput("Image", ENodeFlowDataType::ImageMono);
+        addOutput("Keypoints", ENodeFlowDataType::Keypoints);
+        addProperty("Hessian threshold", _hessianThreshold);
+        addProperty("Number of octaves", _nOctaves)
+            .setValidator(make_validator<MinPropertyValidator<int>>(1))
+            .setUiHints("min:1");
+        addProperty("Number of octave layers", _nOctaveLayers)
+            .setValidator(make_validator<MinPropertyValidator<int>>(1))
+            .setUiHints("min:1");
+        setDescription("Extracts Speeded Up Robust Features from an image.");
     }
 
     ExecutionStatus execute(NodeSocketReader& reader, NodeSocketWriter& writer) override
@@ -87,40 +67,10 @@ public:
             string_format("Keypoints detected: %d", (int) kp.kpoints.size()));
     }
 
-    void configuration(NodeConfig& nodeConfig) const override
-    {
-        static const InputSocketConfig in_config[] = {
-            { ENodeFlowDataType::ImageMono, "image", "Image", "" },
-            { ENodeFlowDataType::Invalid, "", "", "" }
-        };
-        static const OutputSocketConfig out_config[] = {
-            { ENodeFlowDataType::Keypoints, "keypoints", "Keypoints", "" },
-            { ENodeFlowDataType::Invalid, "", "", "" }
-        };
-        static const PropertyConfig prop_config[] = {
-            { EPropertyType::Double, "Hessian threshold", "" },
-            { EPropertyType::Integer, "Number of octaves", "min:1" },
-            { EPropertyType::Integer, "Number of octave layers", "min:1" },
-            { EPropertyType::Unknown, "", "" }
-        };
-
-        nodeConfig.description = "Extracts Speeded Up Robust Features from an image.";
-        nodeConfig.pInputSockets = in_config;
-        nodeConfig.pOutputSockets = out_config;
-        nodeConfig.pProperties = prop_config;
-    }
-
 private:
-    enum class pid
-    {
-        HessianThreshold,
-        NumOctaves,
-        NumOctaveLayers
-    };
-
-    double _hessianThreshold;
-    int _nOctaves;
-    int _nOctaveLayers;
+    TypedNodeProperty<double> _hessianThreshold;
+    TypedNodeProperty<int> _nOctaves;
+    TypedNodeProperty<int> _nOctaveLayers;
 };
 
 class SurfDescriptorExtractorNodeType : public NodeType
@@ -130,32 +80,12 @@ public:
         : _extended(false)
         , _upright(false)
     {
-    }
-
-    bool setProperty(PropertyID propId, const NodeProperty& newValue) override
-    {
-        switch(static_cast<pid>(propId))
-        {
-        case pid::Extended:
-            _extended = newValue.toBool();
-            return true;
-        case pid::Upright:
-            _upright = newValue.toBool();
-            return true;
-        }
-
-        return false;
-    }
-
-    NodeProperty property(PropertyID propId) const override
-    {
-        switch(static_cast<pid>(propId))
-        {
-        case pid::Extended: return _extended;
-        case pid::Upright: return _upright;
-        }
-
-        return NodeProperty();
+        addInput("Keypoints", ENodeFlowDataType::Keypoints);
+        addOutput("Keypoints", ENodeFlowDataType::Keypoints);
+        addOutput("Descriptors", ENodeFlowDataType::Array);
+        addProperty("Extended", _extended);
+        addProperty("Upright", _upright);
+        setDescription("Describes local features using SURF algorithm.");
     }
 
     ExecutionStatus execute(NodeSocketReader& reader, NodeSocketWriter& writer) override
@@ -179,38 +109,9 @@ public:
         return ExecutionStatus(EStatus::Ok);
     }
 
-    void configuration(NodeConfig& nodeConfig) const override
-    {
-        static const InputSocketConfig in_config[] = {
-            { ENodeFlowDataType::Keypoints, "keypoints", "Keypoints", "" },
-            { ENodeFlowDataType::Invalid, "", "", "" }
-        };
-        static const OutputSocketConfig out_config[] = {
-            { ENodeFlowDataType::Keypoints, "output", "Keypoints", "" },
-            { ENodeFlowDataType::Array, "output", "Descriptors", "" },
-            { ENodeFlowDataType::Invalid, "", "", "" }
-        };
-        static const PropertyConfig prop_config[] = {
-            { EPropertyType::Boolean, "Extended", "" },
-            { EPropertyType::Boolean, "Upright", "" },
-            { EPropertyType::Unknown, "", "" }
-        };
-
-        nodeConfig.description = "Describes local features using SURF algorithm.";
-        nodeConfig.pInputSockets = in_config;
-        nodeConfig.pOutputSockets = out_config;
-        nodeConfig.pProperties = prop_config;
-    }
-
 private:
-    enum class pid
-    {
-        Extended,
-        Upright
-    };
-
-    bool _extended;
-    bool _upright;
+    TypedNodeProperty<bool> _extended;
+    TypedNodeProperty<bool> _upright;
 };
 
 class SurfNodeType : public NodeType
@@ -223,44 +124,19 @@ public:
         , _extended(false)
         , _upright(false)
     {
-    }
-
-    bool setProperty(PropertyID propId, const NodeProperty& newValue) override
-    {
-        switch(static_cast<pid>(propId))
-        {
-        case pid::HessianThreshold:
-            _hessianThreshold = newValue.toDouble();
-            return true;
-        case pid::NumOctaves:
-            _nOctaves = newValue.toInt();
-            return true;
-        case pid::NumOctaveLayers:
-            _nOctaveLayers = newValue.toInt();
-            return true;
-        case pid::Extended:
-            _extended = newValue.toBool();
-            return true;
-        case pid::Upright:
-            _upright = newValue.toBool();
-            return true;
-        }
-
-        return false;
-    }
-
-    NodeProperty property(PropertyID propId) const override
-    {
-        switch(static_cast<pid>(propId))
-        {
-        case pid::HessianThreshold: return _hessianThreshold;
-        case pid::NumOctaves: return _nOctaves;
-        case pid::NumOctaveLayers: return _nOctaveLayers;
-        case pid::Extended: return _extended;
-        case pid::Upright: return _upright;
-        }
-
-        return NodeProperty();
+        addInput("Image", ENodeFlowDataType::ImageMono);
+        addOutput("Keypoints", ENodeFlowDataType::Keypoints);
+        addOutput("Descriptors", ENodeFlowDataType::Array);
+        addProperty("Hessian threshold", _hessianThreshold);
+        addProperty("Number of octaves", _nOctaves)
+            .setValidator(make_validator<MinPropertyValidator<int>>(1))
+            .setUiHints("min:1");
+        addProperty("Number of octave layers", _nOctaveLayers)
+            .setValidator(make_validator<MinPropertyValidator<int>>(1))
+            .setUiHints("min:1");
+        addProperty("Extended", _extended);
+        addProperty("Upright", _upright);
+        setDescription("Extracts Speeded Up Robust Features and computes their descriptors from an image.");
     }
 
     ExecutionStatus execute(NodeSocketReader& reader, NodeSocketWriter& writer) override
@@ -285,47 +161,12 @@ public:
             string_format("Keypoints detected: %d", (int) kp.kpoints.size()));
     }
 
-    void configuration(NodeConfig& nodeConfig) const override
-    {
-        static const InputSocketConfig in_config[] = {
-            { ENodeFlowDataType::ImageMono, "image", "Image", "" },
-            { ENodeFlowDataType::Invalid, "", "", "" }
-        };
-        static const OutputSocketConfig out_config[] = {
-            { ENodeFlowDataType::Keypoints, "keypoints", "Keypoints", "" },
-            { ENodeFlowDataType::Array, "output", "Descriptors", "" },
-            { ENodeFlowDataType::Invalid, "", "", "" }
-        };
-        static const PropertyConfig prop_config[] = {
-            { EPropertyType::Double, "Hessian threshold", "" },
-            { EPropertyType::Integer, "Number of octaves", "min:1" },
-            { EPropertyType::Integer, "Number of octave layers", "min:1" },
-            { EPropertyType::Boolean, "Extended", "" },
-            { EPropertyType::Boolean, "Upright", "" },
-            { EPropertyType::Unknown, "", "" }
-        };
-
-        nodeConfig.description = "Extracts Speeded Up Robust Features and computes their descriptors from an image.";
-        nodeConfig.pInputSockets = in_config;
-        nodeConfig.pOutputSockets = out_config;
-        nodeConfig.pProperties = prop_config;
-    }
-
 private:
-    enum class pid
-    {
-        HessianThreshold,
-        NumOctaves,
-        NumOctaveLayers,
-        Extended,
-        Upright
-    };
-
-    double _hessianThreshold;
-    int _nOctaves;
-    int _nOctaveLayers;
-    bool _extended;
-    bool _upright;
+    TypedNodeProperty<double> _hessianThreshold;
+    TypedNodeProperty<int> _nOctaves;
+    TypedNodeProperty<int> _nOctaveLayers;
+    TypedNodeProperty<bool> _extended;
+    TypedNodeProperty<bool> _upright;
 };
 
 REGISTER_NODE("Features/Descriptors/SURF", SurfDescriptorExtractorNodeType)
