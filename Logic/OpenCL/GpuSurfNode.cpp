@@ -80,6 +80,26 @@ public:
         , _nTotalLayers(0)
         , _constantsUploaded(false)
     {
+        addInput("Image", ENodeFlowDataType::DeviceImageMono);
+        addOutput("Keypoints", ENodeFlowDataType::Keypoints);
+        addOutput("Descriptors", ENodeFlowDataType::Array);
+        addOutput("Device descriptors", ENodeFlowDataType::DeviceArray);
+        addProperty("Hessian threshold", _hessianThreshold);
+        addProperty("Number of octaves", _nOctaves)
+            .setValidator(make_validator<MinPropertyValidator<int>>(1))
+            .setUiHints("min:1");
+        addProperty("Number of scale levels", _nScales)
+            .setValidator(make_validator<MinPropertyValidator<int>>(1))
+            .setUiHints("min:1");
+        addProperty("Initial sampling rate", _initSampling)
+            .setValidator(make_validator<MinPropertyValidator<int>>(1))
+            .setUiHints("min:1");
+        addProperty("MSURF descriptor", _msurf);
+        addProperty("Upright", _upright);
+        addProperty("Download descriptors", _downloadDescriptors);
+        setDescription("Extracts Speeded Up Robust Features and "
+            "computes their descriptors from an image.");
+        setModule("opencl");
     }
 
     bool postInit() override
@@ -108,52 +128,6 @@ public:
             _kidCalculateDescriptors != InvalidKernelID &&
             _kidCalculateDescriptorsMSurf != InvalidKernelID &&
             _kidNormalizeDescriptors != InvalidKernelID;
-    }
-
-    bool setProperty(PropertyID propId, const NodeProperty& newValue) override
-    {
-        switch(static_cast<pid>(propId))
-        {
-        case pid::HessianThreshold:
-            _hessianThreshold = newValue.toDouble();
-            return true;
-        case pid::NumOctaves:
-            _nOctaves = newValue.toInt();
-            return true;
-        case pid::NumScales:
-            _nScales = newValue.toInt();
-            return true;
-        case pid::InitSampling:
-            _initSampling = newValue.toInt();
-            return true;
-        case pid::MSurfDescriptor:
-            _msurf = newValue.toBool();
-            return true;
-        case pid::Upright:
-            _upright = newValue.toBool();
-            return true;
-        case pid::DownloadDescriptors:
-            _downloadDescriptors = newValue.toBool();
-            return true;
-        }
-
-        return false;
-    }
-
-    NodeProperty property(PropertyID propId) const override
-    {
-        switch(static_cast<pid>(propId))
-        {
-        case pid::HessianThreshold: return _hessianThreshold;
-        case pid::NumOctaves: return _nOctaves;
-        case pid::NumScales: return _nScales;
-        case pid::InitSampling: return _initSampling;
-        case pid::MSurfDescriptor: return _msurf;
-        case pid::Upright: return _upright;
-        case pid::DownloadDescriptors: return _downloadDescriptors;
-        }
-
-        return NodeProperty();
     }
 
     ExecutionStatus execute(NodeSocketReader& reader, NodeSocketWriter& writer) override
@@ -286,37 +260,6 @@ public:
 
         return ExecutionStatus(EStatus::Ok, 
             string_format("Keypoints detected: %d", (int) kp.kpoints.size()));
-    }
-
-    void configuration(NodeConfig& nodeConfig) const override
-    {
-        static const InputSocketConfig in_config[] = {
-            { ENodeFlowDataType::DeviceImageMono, "image", "Image", "" },
-            { ENodeFlowDataType::Invalid, "", "", "" }
-        };
-        static const OutputSocketConfig out_config[] = {
-            /// TODO: Just for now
-            { ENodeFlowDataType::Keypoints, "keypoints", "Keypoints", "" },
-            { ENodeFlowDataType::Array, "output", "Descriptors", "" },
-            { ENodeFlowDataType::DeviceArray, "output", "Device descriptors", "" },
-            { ENodeFlowDataType::Invalid, "", "", "" }
-        };
-        static const PropertyConfig prop_config[] = {
-            { EPropertyType::Double, "Hessian threshold", "" },
-            { EPropertyType::Integer, "Number of octaves", "min:1" },
-            { EPropertyType::Integer, "Number of scale levels", "min:1" },
-            { EPropertyType::Integer, "Initial sampling rate", "min:1" },
-            { EPropertyType::Boolean, "MSURF descriptor", "" },
-            { EPropertyType::Boolean, "Upright", "" },
-            { EPropertyType::Boolean, "Download descriptors", "" },
-            { EPropertyType::Unknown, "", "" }
-        };
-
-        nodeConfig.description = "";
-        nodeConfig.pInputSockets = in_config;
-        nodeConfig.pOutputSockets = out_config;
-        nodeConfig.pProperties = prop_config;
-        nodeConfig.module = "opencl";
     }
 
 protected:
@@ -707,24 +650,13 @@ protected:
     }
 
 protected:
-    enum class pid
-    {
-        HessianThreshold,
-        NumOctaves,
-        NumScales,
-        InitSampling,
-        MSurfDescriptor,
-        Upright,
-        DownloadDescriptors
-    };
-
-    double _hessianThreshold;
-    int _nOctaves;
-    int _nScales;
-    int _initSampling;
-    bool _msurf;
-    bool _upright;
-    bool _downloadDescriptors;
+    TypedNodeProperty<double> _hessianThreshold;
+    TypedNodeProperty<int> _nOctaves;
+    TypedNodeProperty<int> _nScales;
+    TypedNodeProperty<int> _initSampling;
+    TypedNodeProperty<bool> _msurf;
+    TypedNodeProperty<bool> _upright;
+    TypedNodeProperty<bool> _downloadDescriptors;
 
     KernelID _kidFillImage;
     KernelID _kidMultiScan_horiz;

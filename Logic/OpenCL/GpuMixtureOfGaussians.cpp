@@ -34,12 +34,13 @@ class GpuMixtureOfGaussiansNodeType : public GpuNodeType
 {
 public:
     GpuMixtureOfGaussiansNodeType()
-        : _nmixtures(5)
-        , _nframe(0)
-        , _history(200)
-        , _learningRate(-1)
-        , _varianceThreshold(6.25f)
+        : _history(200)
+        , _nmixtures(5)
         , _backgroundRatio(0.7f)
+        , _learningRate(-1)
+        , _showBackground(false)
+        , _nframe(0)
+        , _varianceThreshold(6.25f)
         , _initialWeight(0.05f)
 #if ACCURATE_CALCULATIONS != 1
         , _initialVariance(15*15*4)
@@ -48,14 +49,39 @@ public:
         , _initialVariance(500)
         , _minVariance(0.4f)
 #endif
-        , _showBackground(false)
     {
+        addInput("Image", ENodeFlowDataType::DeviceImageMono);
+        addOutput("Output", ENodeFlowDataType::DeviceImageMono);
+        addOutput("Background", ENodeFlowDataType::DeviceImageMono);
+        addProperty("History frames", _history)
+            .setValidator(make_validator<InclRangePropertyValidator<int>>(1, 500))
+            .setUiHints("min:1, max:500");
+        addProperty("Number of mixtures", _nmixtures)
+            .setValidator(make_validator<InclRangePropertyValidator<int>>(1, 9))
+            .setObserver(make_observer<FuncObserver>([this](const NodeProperty& np) {
+                std::string opts = string_format("-DNMIXTURES=%d -DACCURATE_CALCULATIONS=%d",
+                    _nmixtures, ACCURATE_CALCULATIONS);
+                _kidGaussMix = _gpuComputeModule->registerKernel(
+                    "mog_image_unorm", "mog.cl", opts);
+                _kidGaussBackground = _gpuComputeModule->registerKernel(
+                    "mog_background_image_unorm", "mog.cl", opts);
+            }))
+            .setUiHints("min:1, max:9");
+        addProperty("Background ratio", _backgroundRatio)
+            .setValidator(make_validator<ExclRangePropertyValidator<double>>(0.0, 1.0))
+            .setUiHints("min:0.01, max:0.99, step:0.01");
+        addProperty("Learning rate", _learningRate)
+            .setValidator(make_validator<InclRangePropertyValidator<double>>(-1.0, 1.0))
+            .setUiHints("min:-1, max:1, step:0.01, decimals:3");
+        addProperty("Show background", _showBackground);
+        setFlags(ENodeConfig::HasState);
+        setModule("opencl");
     }
 
     bool postInit() override
     {
         std::string opts = string_format("-DNMIXTURES=%d -DACCURATE_CALCULATIONS=%d",
-            _nmixtures, ACCURATE_CALCULATIONS);
+            _nmixtures.cast_value<int>(), ACCURATE_CALCULATIONS);
 
         _kidGaussMix = _gpuComputeModule->registerKernel(
             "mog_image_unorm", "mog.cl", opts);
@@ -63,55 +89,6 @@ public:
             "mog_background_image_unorm", "mog.cl", opts);
         return _kidGaussMix != InvalidKernelID &&
             _kidGaussBackground != InvalidKernelID;
-    }
-
-    bool setProperty(PropertyID propId, const NodeProperty& newValue) override
-    {
-        switch(static_cast<pid>(propId))
-        {
-        case pid::History:
-            _history = newValue.toInt();
-            return true;
-        case pid::NMixtures:
-            {
-                _nmixtures = newValue.toInt();
-
-                std::string opts = string_format("-DNMIXTURES=%d -DACCURATE_CALCULATIONS=%d",
-                    _nmixtures, ACCURATE_CALCULATIONS);
-
-                _kidGaussMix = _gpuComputeModule->registerKernel(
-                    "mog_image_unorm", "mog.cl", opts);
-                _kidGaussBackground = _gpuComputeModule->registerKernel(
-                    "mog_background_image_unorm", "mog.cl", opts);
-
-                return true;
-            }
-        case pid::BackgroundRatio:
-            _backgroundRatio = newValue.toFloat();
-            return true;
-        case pid::LearningRate:
-            _learningRate = newValue.toFloat();
-            return true;
-        case pid::ShowBackground:
-            _showBackground = newValue.toBool();
-            return true;
-        }
-
-        return false;
-    }
-
-    NodeProperty property(PropertyID propId) const override
-    {
-        switch(static_cast<pid>(propId))
-        {
-        case pid::History: return _history;
-        case pid::NMixtures: return _nmixtures;
-        case pid::BackgroundRatio: return _backgroundRatio;
-        case pid::LearningRate: return _learningRate;
-        case pid::ShowBackground: return _showBackground;
-        }
-
-        return NodeProperty();
     }
 
     bool restart() override
@@ -191,7 +168,7 @@ public:
         ++_nframe;
         float alpha = _learningRate >= 0 && _nframe > 1 
             ? _learningRate
-            : 1.0f/std::min(_nframe, _history);
+            : 1.0f/std::min(_nframe, _history.cast<int>());
 
         kernelGaussMix.setLocalWorkSize(16, 16);
         kernelGaussMix.setRoundedGlobalWorkSize(srcWidth, srcHeight);
@@ -230,34 +207,6 @@ public:
         return ExecutionStatus(EStatus::Ok);
     }
 
-    void configuration(NodeConfig& nodeConfig) const override
-    {
-        static const InputSocketConfig in_config[] = {
-            { ENodeFlowDataType::DeviceImageMono, "input", "Image", "" },
-            { ENodeFlowDataType::Invalid, "", "", "" }
-        };
-        static const OutputSocketConfig out_config[] = {
-            { ENodeFlowDataType::DeviceImageMono, "output", "Output", "" },
-            { ENodeFlowDataType::DeviceImageMono, "background", "Background", "" },
-            { ENodeFlowDataType::Invalid, "", "", "" }
-        };
-        static const PropertyConfig prop_config[] = {
-            { EPropertyType::Integer, "History frames", "min:1, max:500" },
-            { EPropertyType::Integer, "Number of mixtures",  "min:1, max:9" },
-            { EPropertyType::Double, "Background ratio", "min:0.01, max:0.99, step:0.01" },
-            { EPropertyType::Double, "Learning rate", "min:-1, max:1, step:0.01, decimals:3" },
-            { EPropertyType::Boolean, "Show background", "" },
-            { EPropertyType::Unknown, "", "" }
-        };
-
-        nodeConfig.description = "";
-        nodeConfig.pInputSockets = in_config;
-        nodeConfig.pOutputSockets = out_config;
-        nodeConfig.pProperties = prop_config;
-        nodeConfig.flags = ENodeConfig::HasState;
-        nodeConfig.module = "opencl";
-    }
-
 private:
     void resetMixturesState(int pixNumbers)
     {
@@ -278,30 +227,22 @@ private:
     }
 
 private:
-    enum class pid
-    {
-        History,
-        NMixtures,
-        BackgroundRatio,
-        LearningRate,
-        ShowBackground
-    };
+    TypedNodeProperty<int> _history;
+    TypedNodeProperty<int> _nmixtures;
+    TypedNodeProperty<float> _backgroundRatio;
+    TypedNodeProperty<float> _learningRate;
+    TypedNodeProperty<bool> _showBackground;
 
     clw::Buffer _mixtureDataBuffer;
     clw::Buffer _mixtureParamsBuffer;
     KernelID _kidGaussMix;
     KernelID _kidGaussBackground;
 
-    int _nmixtures;
     int _nframe;
-    int _history;
-    float _learningRate;
     float _varianceThreshold;
-    float _backgroundRatio;
     float _initialWeight;
     float _initialVariance;
     float _minVariance;
-    bool _showBackground;
 };
 
 REGISTER_NODE("OpenCL/Video segmentation/Mixture of Gaussians", GpuMixtureOfGaussiansNodeType)

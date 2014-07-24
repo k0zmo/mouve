@@ -34,32 +34,15 @@ public:
         : _sigma(1.2)
         , _numPasses(3)
     {
-    }
-
-    bool setProperty(PropertyID propId, const NodeProperty& newValue) override
-    {
-        switch(static_cast<pid>(propId))
-        {
-        case pid::Sigma:
-            _sigma = newValue.toDouble();
-            return true;
-        case pid::NumPasses:
-            _numPasses = newValue.toInt();
-            return true;
-        }
-
-        return false;
-    }
-
-    NodeProperty property(PropertyID propId) const override
-    {
-        switch(static_cast<pid>(propId))
-        {
-        case pid::Sigma: return _sigma;
-        case pid::NumPasses: return _numPasses;
-        }
-
-        return NodeProperty();
+        addInput("Input", ENodeFlowDataType::DeviceImageMono);
+        addOutput("Output", ENodeFlowDataType::DeviceImageMono);
+        addProperty("Sigma", _sigma)
+            .setValidator(make_validator<GreaterPropertyValidator<double>>(0.0))
+            .setUiHints("min:0.1, step:0.1");
+        addProperty("Approx. passes", _numPasses)
+            .setValidator(make_validator<InclRangePropertyValidator<int>>(1, 8))
+            .setUiHints("min:1, max:8");
+        setModule("opencl");
     }
 
     bool postInit() override
@@ -151,29 +134,6 @@ public:
         return ExecutionStatus(EStatus::Ok);
     }
 
-    void configuration(NodeConfig& nodeConfig) const override
-    {
-        static const InputSocketConfig in_config[] = {
-            { ENodeFlowDataType::DeviceImageMono, "input", "Input", "" },
-            { ENodeFlowDataType::Invalid, "", "", "" }
-        };
-        static const OutputSocketConfig out_config[] = {
-            { ENodeFlowDataType::DeviceImageMono, "output", "Output", "" },
-            { ENodeFlowDataType::Invalid, "", "", "" }
-        };
-        static const PropertyConfig prop_config[] = {
-            { EPropertyType::Double, "Sigma", "min:0.1, step:0.1" },
-            { EPropertyType::Integer, "Approx. passes", "min:1, max:8" },
-            { EPropertyType::Unknown, "", "" }
-        };
-
-        nodeConfig.description = "";
-        nodeConfig.pInputSockets = in_config;
-        nodeConfig.pOutputSockets = out_config;
-        nodeConfig.pProperties = prop_config;
-        nodeConfig.module = "opencl";
-    }
-
 private:
     float calculateBoxFilterWidth(float sigma, int numPasses)
     {
@@ -212,14 +172,8 @@ private:
     }
 
 private:
-    enum class pid
-    {
-        Sigma,
-        NumPasses,
-    };
-
-    double _sigma;
-    int _numPasses;
+    TypedNodeProperty<double> _sigma;
+    TypedNodeProperty<int> _numPasses;
 
     static const int threadsPerGroup = 256;
 

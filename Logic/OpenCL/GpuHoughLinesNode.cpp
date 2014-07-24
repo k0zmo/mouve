@@ -37,44 +37,19 @@ public:
         , _thetaResolution(1.0f)
         , _houghSpaceScale(100.0f)
     {
-    }
-
-    bool setProperty(PropertyID propId, const NodeProperty& newValue)
-    {
-        switch(static_cast<pid>(propId))
-        {
-        case pid::Threshold:
-            _threshold = newValue.toInt();
-            return true;
-        case pid::ShowHoughSpace:
-            _showHoughSpace = newValue.toBool();
-            return true;
-        case pid::RhoResolution:
-            _rhoResolution = newValue.toFloat();
-            return true;
-        case pid::ThetaResolution:
-            _thetaResolution = newValue.toFloat();
-            return true;
-        case pid::HoughSpaceScale:
-            _houghSpaceScale = newValue.toFloat();
-            return true;
-        }
-
-        return false;
-    }
-
-    NodeProperty property(PropertyID propId) const
-    {
-        switch(static_cast<pid>(propId))
-        {
-        case pid::Threshold: return _threshold;
-        case pid::ShowHoughSpace: return _showHoughSpace;
-        case pid::RhoResolution: return _rhoResolution;
-        case pid::ThetaResolution: return _thetaResolution;
-        case pid::HoughSpaceScale: return _houghSpaceScale;
-        }
-
-        return NodeProperty();
+        addInput("Binary image", ENodeFlowDataType::DeviceImageMono);
+        addOutput("Lines", ENodeFlowDataType::DeviceArray);
+        addOutput("Hough space", ENodeFlowDataType::DeviceImageMono);
+        addProperty("Threshold", _threshold)
+            .setValidator(make_validator<MinPropertyValidator<int>>(1))
+            .setUiHints("min:1");
+        addProperty("Show Hough space", _showHoughSpace);
+        addProperty("Rho resolution", _rhoResolution);
+        addProperty("Theta resolution", _thetaResolution);
+        addProperty("Hough space scale", _houghSpaceScale)
+            .setValidator(make_validator<MinPropertyValidator<float>>(1.0f))
+            .setUiHints("min:1.0");
+        setModule("opencl");
     }
 
     bool postInit() override
@@ -146,33 +121,6 @@ public:
 
         return ExecutionStatus(EStatus::Ok, 
             string_format("Detected lines: %d (max: %d)", linesCount, maxLines));
-    }
-
-    void configuration(NodeConfig& nodeConfig) const override
-    {
-        static const InputSocketConfig in_config[] = {
-            { ENodeFlowDataType::DeviceImageMono, "input", "Binary image", "" },
-            { ENodeFlowDataType::Invalid, "", "", "" }
-        };
-        static const OutputSocketConfig out_config[] = {
-            { ENodeFlowDataType::DeviceArray, "lines", "Lines", "" },
-            { ENodeFlowDataType::DeviceImageMono, "houghSpace", "Hough space", "" },
-            { ENodeFlowDataType::Invalid, "", "", "" }
-        };
-        static const PropertyConfig prop_config[] = {
-            { EPropertyType::Integer, "Threshold", "min:1" },
-            { EPropertyType::Boolean, "Show Hough space", "" },
-            { EPropertyType::Double, "Rho resolution", "" },
-            { EPropertyType::Double, "Theta resolution", "" },
-            { EPropertyType::Double, "Hough space scale", "min:1.0" },
-            { EPropertyType::Unknown, "", "" }
-        };
-
-        nodeConfig.description = "";
-        nodeConfig.pInputSockets = in_config;
-        nodeConfig.pOutputSockets = out_config;
-        nodeConfig.pProperties = prop_config;
-        nodeConfig.module = "opencl";
     }
 
 private:
@@ -256,11 +204,11 @@ private:
         kernelGetLines.setArg(0, _deviceAccum);
         kernelGetLines.setArg(1, deviceLines.buffer());
         kernelGetLines.setArg(2, _deviceCounterLines);
-        kernelGetLines.setArg(3, _threshold);
+        kernelGetLines.setArg(3, _threshold.cast_value<int>());
         kernelGetLines.setArg(4, maxLines);
         kernelGetLines.setArg(5, numRho);
         kernelGetLines.setArg(6, numAngle);
-        kernelGetLines.setArg(7, _rhoResolution);
+        kernelGetLines.setArg(7, (float) _rhoResolution);
         kernelGetLines.setArg(8, theta);
         _gpuComputeModule->queue().asyncRunKernel(kernelGetLines);
 
@@ -284,7 +232,7 @@ private:
         kernelAccumToImage.setRoundedGlobalWorkSize(numRho, numAngle);
         kernelAccumToImage.setArg(0, _deviceAccum);
         kernelAccumToImage.setArg(1, numRho);
-        kernelAccumToImage.setArg(2, std::max(_houghSpaceScale, 1.0f));
+        kernelAccumToImage.setArg(2, _houghSpaceScale.cast_value<float>());
         kernelAccumToImage.setArg(3, deviceAccumImage);
         _gpuComputeModule->queue().runKernel(kernelAccumToImage);
     }
@@ -313,22 +261,12 @@ private:
     }
 
 private:
-    enum class pid
-    {
-        Threshold,
-        ShowHoughSpace,
-        RhoResolution,
-        ThetaResolution,
-        HoughSpaceScale
-    };
+    TypedNodeProperty<int> _threshold;
+    TypedNodeProperty<bool> _showHoughSpace;
+    TypedNodeProperty<float> _rhoResolution;
+    TypedNodeProperty<float> _thetaResolution;
+    TypedNodeProperty<float> _houghSpaceScale;
 
-    int _threshold;
-    bool _showHoughSpace;
-    float _rhoResolution;
-    float _thetaResolution;
-    float _houghSpaceScale;
-
-private:
     clw::Buffer _deviceCounterPoints;
     clw::Buffer _deviceCounterLines;
     clw::Buffer _devicePointsList;

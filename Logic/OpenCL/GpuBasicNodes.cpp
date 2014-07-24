@@ -32,23 +32,11 @@ public:
     GpuUploadImageNodeType()
         : _usePinnedMemory(false)
     {
-    }
-
-    bool setProperty(PropertyID propId, const NodeProperty& newValue)
-    {
-        if(propId == 0)
-        {
-            _usePinnedMemory = newValue.toBool();
-            return true;
-        }
-        return false;
-    }
-
-    NodeProperty property(PropertyID propId) const
-    {
-        if(propId == 0)
-            return _usePinnedMemory;
-        return NodeProperty();
+        addInput("Host image", ENodeFlowDataType::Image);
+        addOutput("Device image", ENodeFlowDataType::DeviceImage);
+        addProperty("Use pinned memory", _usePinnedMemory);
+        setDescription("Uploads given image from host to device (GPU) memory");
+        setModule("opencl");
     }
 
     bool postInit() override
@@ -145,30 +133,6 @@ public:
         }
     }
 
-    void configuration(NodeConfig& nodeConfig) const override
-    {
-        static const InputSocketConfig in_config[] = {
-            { ENodeFlowDataType::Image, "input", "Host image", "" },
-            { ENodeFlowDataType::Invalid, "", "", "" }
-        };
-
-        static const OutputSocketConfig out_config[] = {
-            { ENodeFlowDataType::DeviceImage, "output", "Device image", "" },
-            { ENodeFlowDataType::Invalid, "", "", "" }
-        };
-
-        static const PropertyConfig prop_config[] = {
-            { EPropertyType::Boolean, "Use pinned memory", "" },
-            { EPropertyType::Unknown, "", "" }
-        };
-
-        nodeConfig.description = "Uploads given image from host to device (GPU) memory";
-        nodeConfig.pInputSockets = in_config;
-        nodeConfig.pOutputSockets = out_config;
-        nodeConfig.pProperties = prop_config;
-        nodeConfig.module = "opencl";
-    }
-
 private:
     bool copyToPinnedBufferAsync(const cv::Mat& hostImage)
     {
@@ -193,7 +157,7 @@ private:
     clw::Buffer _pinnedBuffer;
     clw::Buffer _intermediateBuffer;
     KernelID _kidConvertBufferRgbToImageRgba;
-    bool _usePinnedMemory;
+    TypedNodeProperty<bool> _usePinnedMemory;
 };
 
 
@@ -203,23 +167,11 @@ public:
     GpuDownloadImageNodeType()
         : _usePinnedMemory(false)
     {
-    }
-
-    bool setProperty(PropertyID propId, const NodeProperty& newValue)
-    {
-        if(propId == 0)
-        {
-            _usePinnedMemory = newValue.toBool();
-            return true;
-        }
-        return false;
-    }
-
-    NodeProperty property(PropertyID propId) const
-    {
-        if(propId == 0)
-            return _usePinnedMemory;
-        return NodeProperty();
+        addInput("Device image", ENodeFlowDataType::DeviceImage);
+        addOutput("Host image", ENodeFlowDataType::Image);        
+        addProperty("Use pinned memory", _usePinnedMemory);
+        setDescription("Download given image device (GPU) to host memory");
+        setModule("opencl");
     }
 
     bool postInit() override
@@ -314,30 +266,6 @@ public:
         }
     }
 
-    void configuration(NodeConfig& nodeConfig) const override
-    {
-        static const InputSocketConfig in_config[] = {
-            { ENodeFlowDataType::DeviceImage, "input", "Device image", "" },
-            { ENodeFlowDataType::Invalid, "", "", "" }
-        };
-
-        static const OutputSocketConfig out_config[] = {
-            { ENodeFlowDataType::Image, "output", "Host image", "" },
-            { ENodeFlowDataType::Invalid, "", "", "" }
-        };
-
-        static const PropertyConfig prop_config[] = {
-            { EPropertyType::Boolean, "Use pinned memory", "" },
-            { EPropertyType::Unknown, "", "" }
-        };
-
-        nodeConfig.description = "Download given image device (GPU) to host memory";
-        nodeConfig.pInputSockets = in_config;
-        nodeConfig.pOutputSockets = out_config;
-        nodeConfig.pProperties = prop_config;
-        nodeConfig.module = "opencl";
-    }
-
 private:
     bool copyFromPinnedBufferAsync(cv::Mat& hostImage)
     {
@@ -362,13 +290,21 @@ private:
     clw::Buffer _pinnedBuffer;
     clw::Buffer _intermediateBuffer;
     KernelID _kidConvertImageRgbaToBufferRgb;
-    bool _usePinnedMemory;
+    TypedNodeProperty<bool> _usePinnedMemory;
 };
 
 
 class GpuUploadArrayNodeType : public GpuNodeType
 {
 public:
+    GpuUploadArrayNodeType()
+    {
+        addInput("Host array", ENodeFlowDataType::Array);
+        addOutput("Device array", ENodeFlowDataType::DeviceArray);
+        setDescription("Uploads given array from host to device (GPU) memory");
+        setModule("opencl");
+    }
+
     ExecutionStatus execute(NodeSocketReader& reader, NodeSocketWriter& writer) override
     {
         const cv::Mat& hostArray = reader.readSocket(0).getArray();
@@ -385,29 +321,19 @@ public:
 
         return ExecutionStatus(EStatus::Ok);
     }
-
-    void configuration(NodeConfig& nodeConfig) const override
-    {
-        static const InputSocketConfig in_config[] = {
-            { ENodeFlowDataType::Array, "input", "Host array", "" },
-            { ENodeFlowDataType::Invalid, "", "", "" }
-        };
-
-        static const OutputSocketConfig out_config[] = {
-            { ENodeFlowDataType::DeviceArray, "output", "Device array", "" },
-            { ENodeFlowDataType::Invalid, "", "", "" }
-        };
-
-        nodeConfig.description = "Uploads given array from host to device (GPU) memory";
-        nodeConfig.pInputSockets = in_config;
-        nodeConfig.pOutputSockets = out_config;
-        nodeConfig.module = "opencl";
-    }
 };
 
 class GpuDownloadArrayNodeType : public GpuNodeType
 {
 public:
+    GpuDownloadArrayNodeType()
+    {
+        addInput("Device array", ENodeFlowDataType::DeviceArray);
+        addOutput("Host array", ENodeFlowDataType::Array);
+        setDescription("Download given array device (GPU) to host memory");
+        setModule("opencl");
+    }
+
     ExecutionStatus execute(NodeSocketReader& reader, NodeSocketWriter& writer) override
     {
         const DeviceArray& deviceArray = reader.readSocket(0).getDeviceArray();
@@ -420,24 +346,6 @@ public:
         evt.waitForFinished();
 
         return ExecutionStatus(EStatus::Ok);
-    }
-
-    void configuration(NodeConfig& nodeConfig) const override
-    {
-        static const InputSocketConfig in_config[] = {
-            { ENodeFlowDataType::DeviceArray, "input", "Device array", "" },
-            { ENodeFlowDataType::Invalid, "", "", "" }
-        };
-
-        static const OutputSocketConfig out_config[] = {
-            { ENodeFlowDataType::Array, "output", "Host array", "" },
-            { ENodeFlowDataType::Invalid, "", "", "" }
-        };
-
-        nodeConfig.description = "Download given array device (GPU) to host memory";
-        nodeConfig.pInputSockets = in_config;
-        nodeConfig.pOutputSockets = out_config;
-        nodeConfig.module = "opencl";
     }
 };
 

@@ -37,40 +37,21 @@ public:
         , _blueGain(1.0)
         , _BayerCode(cvu::EBayerCode::RG)
     {
-    }
-
-    bool setProperty(PropertyID propId, const NodeProperty& newValue) override
-    {
-        switch(static_cast<pid>(propId))
-        {
-        case pid::BayerFormat:
-            _BayerCode = newValue.toEnum().cast<cvu::EBayerCode>();
-            return true;
-        case pid::RedGain:
-            _redGain = newValue.toDouble();
-            return true;
-        case pid::GreenGain:
-            _greenGain = newValue.toDouble();
-            return true;
-        case pid::BlueGain:
-            _blueGain = newValue.toDouble();
-            return true;
-        }
-
-        return false;
-    }
-
-    NodeProperty property(PropertyID propId) const override
-    {
-        switch(static_cast<pid>(propId))
-        {
-        case pid::BayerFormat: return _BayerCode;
-        case pid::RedGain: return _redGain;
-        case pid::GreenGain: return _greenGain;
-        case pid::BlueGain: return _blueGain;
-        }
-
-        return NodeProperty();
+        addInput("Input", ENodeFlowDataType::DeviceImageMono);
+        addOutput("Output", ENodeFlowDataType::DeviceImageMono);
+        addProperty("Bayer format", _BayerCode)
+            .setUiHints("item: BG, item: GB, item: RG, item: GR");
+        addProperty("Red gain", _redGain)
+            .setValidator(make_validator<InclRangePropertyValidator<double>>(0.0, 4.0))
+            .setUiHints("min:0.0, max:4.0, step:0.01");
+        addProperty("Green gain", _greenGain)
+            .setValidator(make_validator<InclRangePropertyValidator<double>>(0.0, 4.0))
+            .setUiHints("min:0.0, max:4.0, step:0.01");
+        addProperty("Blue gain", _blueGain)
+            .setValidator(make_validator<InclRangePropertyValidator<double>>(0.0, 4.0))
+            .setUiHints("min:0.0, max:4.0, step:0.01");
+        setDescription("Performs demosaicing from Bayer pattern image to mono image");
+        setModule("opencl");
     }
 
     bool postInit() override
@@ -107,7 +88,7 @@ public:
             return ExecutionStatus(EStatus::Ok);
 
         clw::Kernel kernelConvertBayer2Gray;
-        switch(_BayerCode)
+        switch(_BayerCode.cast<Enum>().cast<cvu::EBayerCode>())
         {
         case cvu::EBayerCode::RG:
             kernelConvertBayer2Gray = _gpuComputeModule->acquireKernel(_kidConvertRG2Gray);
@@ -154,46 +135,12 @@ public:
         return ExecutionStatus(EStatus::Ok);
     }
 
-    void configuration(NodeConfig& nodeConfig) const override
-    {
-        static const InputSocketConfig in_config[] = {
-            { ENodeFlowDataType::DeviceImageMono, "input", "Input", "" },
-            { ENodeFlowDataType::Invalid, "", "", "" }
-        };
-        static const OutputSocketConfig out_config[] = {
-            { ENodeFlowDataType::DeviceImageMono, "output", "Output", "" },
-            { ENodeFlowDataType::Invalid, "", "", "" }
-        };
-        static const PropertyConfig prop_config[] = {
-            { EPropertyType::Enum, "Bayer format", "item: BG, item: GB, item: RG, item: GR" },
-            { EPropertyType::Double, "Red gain", "min:0.0, max:4.0, step:0.01" },
-            { EPropertyType::Double, "Green gain", "min:0.0, max:4.0, step:0.01" },
-            { EPropertyType::Double, "Blue gain", "min:0.0, max:4.0, step:0.01" },
-            { EPropertyType::Unknown, "", "" }
-        };
-
-        nodeConfig.description = "Performs demosaicing from Bayer pattern image to RGB image";
-        nodeConfig.pInputSockets = in_config;
-        nodeConfig.pOutputSockets = out_config;
-        nodeConfig.pProperties = prop_config;
-        nodeConfig.module = "opencl";
-    }
-
 private:
-    enum class pid
-    {
-        BayerFormat,
-        RedGain,
-        GreenGain,
-        BlueGain,
-    };
+    TypedNodeProperty<double> _redGain;
+    TypedNodeProperty<double> _greenGain;
+    TypedNodeProperty<double> _blueGain;
+    TypedNodeProperty<cvu::EBayerCode> _BayerCode;
 
-    double _redGain;
-    double _greenGain;
-    double _blueGain;
-    cvu::EBayerCode _BayerCode;
-
-private:
     KernelID _kidConvertRG2Gray;
     KernelID _kidConvertGB2Gray;
     KernelID _kidConvertGR2Gray;
@@ -209,40 +156,21 @@ public:
         , _blueGain(1.0)
         , _BayerCode(cvu::EBayerCode::RG)
     {
-    }
-
-    bool setProperty(PropertyID propId, const NodeProperty& newValue) override
-    {
-        switch(static_cast<pid>(propId))
-        {
-        case pid::BayerFormat:
-            _BayerCode = newValue.toEnum().cast<cvu::EBayerCode>();
-            return true;
-        case pid::RedGain:
-            _redGain = newValue.toDouble();
-            return true;
-        case pid::GreenGain:
-            _greenGain = newValue.toDouble();
-            return true;
-        case pid::BlueGain:
-            _blueGain = newValue.toDouble();
-            return true;
-        }
-
-        return false;
-    }
-
-    NodeProperty property(PropertyID propId) const override
-    {
-        switch(static_cast<pid>(propId))
-        {
-        case pid::BayerFormat: return _BayerCode;
-        case pid::RedGain: return _redGain;
-        case pid::GreenGain: return _greenGain;
-        case pid::BlueGain: return _blueGain;
-        }
-
-        return NodeProperty();
+        addInput("Input", ENodeFlowDataType::DeviceImageMono);
+        addOutput("Output", ENodeFlowDataType::DeviceImageRgb);
+        addProperty("Bayer format", _BayerCode)
+            .setUiHints("item: BG, item: GB, item: RG, item: GR");
+        addProperty("Red gain", _redGain)
+            .setValidator(make_validator<InclRangePropertyValidator<double>>(0.0, 4.0))
+            .setUiHints("min:0.0, max:4.0, step:0.01");
+        addProperty("Green gain", _greenGain)
+            .setValidator(make_validator<InclRangePropertyValidator<double>>(0.0, 4.0))
+            .setUiHints("min:0.0, max:4.0, step:0.01");
+        addProperty("Blue gain", _blueGain)
+            .setValidator(make_validator<InclRangePropertyValidator<double>>(0.0, 4.0))
+            .setUiHints("min:0.0, max:4.0, step:0.01");
+        setDescription("Performs demosaicing from Bayer pattern image to RGB image");
+        setModule("opencl");
     }
 
     bool postInit() override
@@ -279,7 +207,7 @@ public:
             return ExecutionStatus(EStatus::Ok);
 
         clw::Kernel kernelConvertBayer2Rgb;
-        switch(_BayerCode)
+        switch(_BayerCode.cast<Enum>().cast<cvu::EBayerCode>())
         {
         case cvu::EBayerCode::RG:
             kernelConvertBayer2Rgb = _gpuComputeModule->acquireKernel(_kidConvertRG2Rgb);
@@ -326,46 +254,12 @@ public:
         return ExecutionStatus(EStatus::Ok);
     }
 
-    void configuration(NodeConfig& nodeConfig) const override
-    {
-        static const InputSocketConfig in_config[] = {
-            { ENodeFlowDataType::DeviceImageMono, "input", "Input", "" },
-            { ENodeFlowDataType::Invalid, "", "", "" }
-        };
-        static const OutputSocketConfig out_config[] = {
-            { ENodeFlowDataType::DeviceImageRgb, "output", "Output", "" },
-            { ENodeFlowDataType::Invalid, "", "", "" }
-        };
-        static const PropertyConfig prop_config[] = {
-            { EPropertyType::Enum, "Bayer format", "item: BG, item: GB, item: RG, item: GR" },
-            { EPropertyType::Double, "Red gain", "min:0.0, max:4.0, step:0.01" },
-            { EPropertyType::Double, "Green gain", "min:0.0, max:4.0, step:0.01" },
-            { EPropertyType::Double, "Blue gain", "min:0.0, max:4.0, step:0.01" },
-            { EPropertyType::Unknown, "", "" }
-        };
-
-        nodeConfig.description = "Performs demosaicing from Bayer pattern image to RGB image";
-        nodeConfig.pInputSockets = in_config;
-        nodeConfig.pOutputSockets = out_config;
-        nodeConfig.pProperties = prop_config;
-        nodeConfig.module = "opencl";
-    }
-
 private:
-    enum class pid
-    {
-        BayerFormat,
-        RedGain,
-        GreenGain,
-        BlueGain,
-    };
+    TypedNodeProperty<double> _redGain;
+    TypedNodeProperty<double> _greenGain;
+    TypedNodeProperty<double> _blueGain;
+    TypedNodeProperty<cvu::EBayerCode> _BayerCode;
 
-    double _redGain;
-    double _greenGain;
-    double _blueGain;
-    cvu::EBayerCode _BayerCode;
-
-private:
     KernelID _kidConvertRG2Rgb;
     KernelID _kidConvertGB2Rgb;
     KernelID _kidConvertGR2Rgb;

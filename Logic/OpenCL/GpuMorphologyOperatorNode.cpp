@@ -34,6 +34,14 @@ public:
         : _op(EMorphologyOperation::Erode)
         , _sElemHash(0)
     {
+        addInput("Source", ENodeFlowDataType::DeviceImageMono);
+        addInput("Structuring element", ENodeFlowDataType::Image);
+        addOutput("Output", ENodeFlowDataType::DeviceImageMono);
+        addProperty("Operation type", _op)
+            .setUiHints("item: Erode, item: Dilate, item: Open, item: Close,"
+                "item: Gradient, item: Top Hat, item: Black Hat");
+        setDescription("Performs a morphology operation on a given image");
+        setModule("opencl");
     }
 
     bool postInit() override
@@ -44,31 +52,6 @@ public:
             "morphOp_image_unorm_local_unroll2", "morphOp.cl", "-DDILATE_OP");
         return _kidErode != InvalidKernelID
             && _kidDilate != InvalidKernelID;
-    }
-
-    bool setProperty(PropertyID propId, const NodeProperty& newValue) override
-    {
-        switch(static_cast<pid>(propId))
-        {
-        case pid::Operation:
-            if(newValue.toEnum().data() < Enum(EMorphologyOperation::Gradient).data())
-            {
-                _op = newValue.toEnum().cast<EMorphologyOperation>();
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    NodeProperty property(PropertyID propId) const override
-    {
-        switch(static_cast<pid>(propId))
-        {
-        case pid::Operation: return _op;
-        }
-
-        return NodeProperty();
     }
 
     ExecutionStatus execute(NodeSocketReader& reader, NodeSocketWriter& writer) override
@@ -93,18 +76,20 @@ public:
         if(!sElemCoordsSize)
             return ExecutionStatus(EStatus::Error, "Structuring element is too big to fit in constant memory");
 
+        EMorphologyOperation op = _op.cast<Enum>().cast<EMorphologyOperation>();
+
         // Prepare if necessary buffer for temporary result
-        if(_op > EMorphologyOperation::Dilate)
+        if(op > EMorphologyOperation::Dilate)
             ensureSizeIsEnough(_tmpImage, width, height);
 
         // Acquire kernel(s)
         clw::Kernel kernelErode, kernelDilate, kernelSubtract;
         
-        if(_op != EMorphologyOperation::Dilate)
+        if(op != EMorphologyOperation::Dilate)
             kernelErode = _gpuComputeModule->acquireKernel(_kidErode);
-        if(_op > EMorphologyOperation::Erode)
+        if(op > EMorphologyOperation::Erode)
             kernelDilate = _gpuComputeModule->acquireKernel(_kidDilate);
-        //if(_op > EMorphologyOperation::Close)
+        //if(op > EMorphologyOperation::Close)
         //	kernelSubtract = _gpuComputeModule->acquireKernel(_kidSubtract);
 
         clw::Event evt;
@@ -114,7 +99,7 @@ public:
         int krady = (sElem.rows - 1) >> 1;		
         clw::Grid grid(deviceSrc.width(), deviceSrc.height());
 
-        switch(_op)
+        switch(op)
         {
         case EMorphologyOperation::Erode:
             evt = runMorphologyKernel(kernelErode, grid, deviceSrc, deviceDest, sElemCoordsSize, kradx, krady);
@@ -140,31 +125,6 @@ public:
         _gpuComputeModule->queue().finish();
 
         return ExecutionStatus(EStatus::Ok);
-    }
-
-    void configuration(NodeConfig& nodeConfig) const override
-    {
-        static const InputSocketConfig in_config[] = {
-            { ENodeFlowDataType::DeviceImageMono, "source", "Source", "" },
-            { ENodeFlowDataType::Image, "source", "Structuring element", "" },
-            { ENodeFlowDataType::Invalid, "", "", "" }
-        };
-        static const OutputSocketConfig out_config[] = {
-            { ENodeFlowDataType::DeviceImageMono, "output", "Output", "" },
-            { ENodeFlowDataType::Invalid, "", "", "" }
-        };
-        static const PropertyConfig prop_config[] = {
-            { EPropertyType::Enum, "Operation type", 
-                "item: Erode, item: Dilate, item: Open, item: Close,"
-                "item: Gradient, item: Top Hat, item: Black Hat"},
-            { EPropertyType::Unknown, "", "" }
-        };
-
-        nodeConfig.description = "Performs a morphology operation on a given image";
-        nodeConfig.pInputSockets = in_config;
-        nodeConfig.pOutputSockets = out_config;
-        nodeConfig.pProperties = prop_config;
-        nodeConfig.module = "opencl";
     }
 
 private:
@@ -298,12 +258,7 @@ private:
         BlackHat
     };
 
-    enum class pid
-    {
-        Operation
-    };
-
-    EMorphologyOperation _op;
+    TypedNodeProperty<EMorphologyOperation> _op;
     uint32_t _sElemHash;
 };
 

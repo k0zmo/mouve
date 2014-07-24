@@ -63,32 +63,16 @@ public:
         : _distanceRatio(0.8)
         , _symmetryTest(false)
     {
-    }
-
-    bool setProperty(PropertyID propId, const NodeProperty& newValue) override
-    {
-        switch(static_cast<pid>(propId))
-        {
-        case pid::DistanceRatio:
-            _distanceRatio = newValue.toDouble();
-            return true;
-        case pid::SymmetryTest:
-            _symmetryTest = newValue.toBool();
-            return true;
-        }
-
-        return false;
-    }
-
-    NodeProperty property(PropertyID propId) const override
-    {
-        switch(static_cast<pid>(propId))
-        {
-        case pid::DistanceRatio: return _distanceRatio;
-        case pid::SymmetryTest: return _symmetryTest;
-        }
-
-        return NodeProperty();
+        addInput("Query keypoints", ENodeFlowDataType::Keypoints);
+        addInput("Query descriptors", ENodeFlowDataType::DeviceArray);
+        addInput("Train keypoints", ENodeFlowDataType::Keypoints);
+        addInput("Train descriptors", ENodeFlowDataType::DeviceArray);
+        addOutput("Matches", ENodeFlowDataType::Matches);
+        addProperty("Distance ratio", _distanceRatio)
+            .setValidator(make_validator<InclRangePropertyValidator<double>>(0.0, 1.0))
+            .setUiHints("min:0.0, max:1.0, step:0.1, decimals:2");
+        addProperty("Symmetry test", _symmetryTest);
+        setModule("opencl");
     }
 
     bool postInit() override
@@ -181,32 +165,6 @@ public:
 
         return ExecutionStatus(EStatus::Ok, 
             string_format("Matches found: %d", (int) mt.queryPoints.size()));
-    }
-
-    void configuration(NodeConfig& nodeConfig) const override
-    {
-        static const InputSocketConfig in_config[] = {
-            { ENodeFlowDataType::Keypoints, "keypoints1", "Query keypoints", "" },
-            { ENodeFlowDataType::DeviceArray, "descriptors1", "Query descriptors", "" },
-            { ENodeFlowDataType::Keypoints, "keypoints2", "Train keypoints", "" },
-            { ENodeFlowDataType::DeviceArray, "descriptors2", "Train descriptors", "" },
-            { ENodeFlowDataType::Invalid, "", "", "" }
-        };
-        static const OutputSocketConfig out_config[] = {
-            { ENodeFlowDataType::Matches, "matches", "Matches", "" },
-            { ENodeFlowDataType::Invalid, "", "", "" }
-        };
-        static const PropertyConfig prop_config[] = {
-            { EPropertyType::Double, "Distance ratio", "min:0.0, max:1.0, step:0.1, decimals:2" },
-            { EPropertyType::Boolean, "Symmetry test", "" },
-            { EPropertyType::Unknown, "", "" }
-        };
-
-        nodeConfig.description = "";
-        nodeConfig.pInputSockets = in_config;
-        nodeConfig.pOutputSockets = out_config;
-        nodeConfig.pProperties = prop_config;
-        nodeConfig.module = "opencl";
     }
 
 private:
@@ -303,16 +261,9 @@ private:
     }
 
 private:
-    enum class pid
-    {
-        DistanceRatio,
-        SymmetryTest
-    };
+    TypedNodeProperty<double> _distanceRatio;
+    TypedNodeProperty<bool> _symmetryTest;
 
-    double _distanceRatio;
-    bool _symmetryTest;
-
-private:
     KernelID _kidBruteForceMatch_nndrMatch_SURF;
     KernelID _kidBruteForceMatch_nndrMatch_SIFT;
     KernelID _kidBruteForceMatch_nndrMatch_FREAK; // also BRISK
