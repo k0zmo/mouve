@@ -35,40 +35,18 @@ public:
         , _patternScale(22.0f)
         , _nOctaves(4)
     {
-    }
-
-    bool setProperty(PropertyID propId, const NodeProperty& newValue) override
-    {
-        switch(static_cast<pid>(propId))
-        {
-        case pid::OrientationNormalized:
-            _orientationNormalized = newValue.toBool();
-            return true;
-        case pid::ScaleNormalized:
-            _scaleNormalized = newValue.toBool();
-            return true;
-        case pid::PatternScale:
-            _patternScale = newValue.toFloat();
-            return true;
-        case pid::NumOctaves:
-            _nOctaves = newValue.toInt();
-            return true;
-        }
-
-        return false;
-    }
-
-    NodeProperty property(PropertyID propId) const override
-    {
-        switch(static_cast<pid>(propId))
-        {
-        case pid::OrientationNormalized: return _orientationNormalized;
-        case pid::ScaleNormalized: return _scaleNormalized;
-        case pid::PatternScale: return _patternScale;
-        case pid::NumOctaves: return _nOctaves;
-        }
-
-        return NodeProperty();
+        addInput("Keypoints", ENodeFlowDataType::Keypoints);
+        addOutput("Keypoints", ENodeFlowDataType::Keypoints);
+        addOutput("Descriptors", ENodeFlowDataType::Array);
+        addProperty("Enable orientation normalization", _orientationNormalized);
+        addProperty("Enable scale normalization", _scaleNormalized);
+        addProperty("Scaling of the description pattern", _patternScale)
+            .setValidator(make_validator<MinPropertyValidator<float>>(1.0f))
+            .setUiHints("min:1.0");
+        addProperty("Number of octaves covered by detected keypoints", _nOctaves)
+            .setValidator(make_validator<MinPropertyValidator<int>>(1))
+            .setUiHints("min:1");
+        setDescription("FREAK (Fast Retina Keypoint) keypoint descriptor.");
     }
 
     ExecutionStatus execute(NodeSocketReader& reader, NodeSocketWriter& writer) override
@@ -92,43 +70,11 @@ public:
         return ExecutionStatus(EStatus::Ok);
     }
 
-    void configuration(NodeConfig& nodeConfig) const override
-    {
-        static const InputSocketConfig in_config[] = {
-            { ENodeFlowDataType::Keypoints, "keypoints", "Keypoints", "" },
-            { ENodeFlowDataType::Invalid, "", "", "" }
-        };
-        static const OutputSocketConfig out_config[] = {
-            { ENodeFlowDataType::Keypoints, "output", "Keypoints", "" },
-            { ENodeFlowDataType::Array, "output", "Descriptors", "" },
-            { ENodeFlowDataType::Invalid, "", "", "" }
-        };
-        static const PropertyConfig prop_config[] = {
-            { EPropertyType::Boolean, "Enable orientation normalization", "" },
-            { EPropertyType::Boolean, "Enable scale normalization", "" },
-            { EPropertyType::Double, "Scaling of the description pattern", "min:1.0" },
-            { EPropertyType::Integer, "Number of octaves covered by detected keypoints", "min:1" },
-            { EPropertyType::Unknown, "", "" }
-        };
-
-        nodeConfig.description = "FREAK (Fast Retina Keypoint) keypoint descriptor.";
-        nodeConfig.pInputSockets = in_config;
-        nodeConfig.pOutputSockets = out_config;
-        nodeConfig.pProperties = prop_config;
-    }
-
 private:
-    enum class pid
-    {
-        OrientationNormalized,
-        ScaleNormalized,
-        PatternScale,
-        NumOctaves,
-    };
-
-    bool _orientationNormalized;
-    bool _scaleNormalized;
-    float _patternScale;
-    int _nOctaves;
+    TypedNodeProperty<bool> _orientationNormalized;
+    TypedNodeProperty<bool> _scaleNormalized;
+    TypedNodeProperty<float> _patternScale;
+    TypedNodeProperty<int> _nOctaves;
 };
+
 REGISTER_NODE("Features/Descriptors/FREAK", FreakDescriptorExtractorNodeType)
