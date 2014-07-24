@@ -50,36 +50,18 @@ public:
     VideoWriterNodeType()
         : _fps(25.0)
         , _fourcc(FOURCC::MJPG)
+        , _filename(Filepath{})
     {
-    }
-
-    bool setProperty(PropertyID propId, const NodeProperty& newValue) override
-    {
-        switch(static_cast<pid>(propId))
-        {
-        case pid::Filename:
-            _filename = newValue.toFilepath();
-            return true;
-        case pid::Fps:
-            _fps = newValue.toDouble();
-            return true;
-        case pid::FourCC:
-            _fourcc = newValue.toEnum().cast<FOURCC>();
-            return true;
-        }
-        return false;
-    }
-
-    NodeProperty property(PropertyID propId) const override
-    {
-        switch(static_cast<pid>(propId))
-        {
-        case pid::Filename: return _filename;
-        case pid::Fps: return _fps;
-        case pid::FourCC: return _fourcc;
-        }
-
-        return NodeProperty();
+        addInput("Input", ENodeFlowDataType::Image);
+        addProperty("Filepath", _filename)
+            .setUiHints("filter: Video files (*.avi), save: true");
+        addProperty("FPS", _fps)
+            .setValidator(make_validator<MinPropertyValidator<double>>(1.0))
+            .setUiHints("min: 1.0");
+        addProperty("FOURCC", _fourcc)
+            .setUiHints("item: IYUV, item: MJPG");
+        setDescription("Saves incoming images as a video");
+        setFlags(ENodeConfig::HasState);
     }
 
     bool restart() override
@@ -105,10 +87,10 @@ public:
         if(!_writer.isOpened())
         {
             bool isColor = input.channels() == 3;
-            _writer.open(_filename.data(), getFOURCC(_fourcc), _fps, input.size(), isColor);
+            _writer.open(_filename.cast<Filepath>().data(), getFOURCC(_fourcc), _fps, input.size(), isColor);
             if(!_writer.isOpened())
                 return ExecutionStatus(EStatus::Error, 
-                    string_format("Couldn't open video writer for file %s", _filename.data().c_str()));
+                    string_format("Couldn't open video writer for file %s", _filename.cast<Filepath>().data().c_str()));
         }
 
         _writer << input;
@@ -116,41 +98,11 @@ public:
         return ExecutionStatus(EStatus::Ok);
     }
 
-    void configuration(NodeConfig& nodeConfig) const override
-    {
-        static const InputSocketConfig in_config[] = {
-            { ENodeFlowDataType::Image, "input", "Input", "" },
-            { ENodeFlowDataType::Invalid, "", "", "" }
-        };
-        static const OutputSocketConfig out_config[] = {
-            { ENodeFlowDataType::Invalid, "", "", "" }
-        };
-        static const PropertyConfig prop_config[] = {
-            { EPropertyType::Filepath, "Filepath", "filter: Video files (*.avi), save: true" },
-            { EPropertyType::Double, "FPS", "min: 1.0" },
-            { EPropertyType::Enum, "FOURCC", "item: IYUV, item: MJPG" },			
-            { EPropertyType::Unknown, "", "" }
-        };
-
-        nodeConfig.description = "Saves incoming images as a video";
-        nodeConfig.pInputSockets = in_config;
-        nodeConfig.pOutputSockets = out_config;
-        nodeConfig.pProperties = prop_config;
-        nodeConfig.flags = ENodeConfig::HasState;
-    }
-
 private:
-    enum class pid
-    {
-        Filename,
-        Fps,
-        FourCC
-    };
-
     cv::VideoWriter _writer;
-    double _fps;
-    FOURCC _fourcc;
-    Filepath _filename;
+    TypedNodeProperty<double> _fps;
+    TypedNodeProperty<FOURCC> _fourcc;
+    TypedNodeProperty<Filepath> _filename;
 };
 
 REGISTER_NODE("Sink/Video writer", VideoWriterNodeType)
