@@ -128,9 +128,9 @@ public:
 protected:
     enum class ELineType
     {
-        Line_4Connected = 4,
-        Line_8Connected = 8,
-        Line_AA         = CV_AA
+        Line_4Connected,
+        Line_8Connected,
+        Line_AA
     };
 
     int intLineType(ELineType type)
