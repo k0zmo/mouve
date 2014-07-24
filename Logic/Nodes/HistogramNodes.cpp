@@ -29,6 +29,12 @@
 class EqualizeHistogramNodeType : public NodeType
 {
 public:
+    EqualizeHistogramNodeType()
+    {
+        addInput("Source", ENodeFlowDataType::ImageMono);
+        addOutput("Output", ENodeFlowDataType::ImageMono);
+    }
+
     ExecutionStatus execute(NodeSocketReader& reader, NodeSocketWriter& writer) override
     {
         const cv::Mat& src = reader.readSocket(0).getImageMono();
@@ -41,22 +47,6 @@ public:
 
         return ExecutionStatus(EStatus::Ok);
     }
-
-    void configuration(NodeConfig& nodeConfig) const override
-    {
-        static const InputSocketConfig in_config[] = {
-            { ENodeFlowDataType::ImageMono, "source", "Source", "" },
-            { ENodeFlowDataType::Invalid, "", "", "" }
-        };
-        static const OutputSocketConfig out_config[] = {
-            { ENodeFlowDataType::ImageMono, "output", "Output", "" },
-            { ENodeFlowDataType::Invalid, "", "", "" }
-        };
-
-        nodeConfig.description = "";
-        nodeConfig.pInputSockets = in_config;
-        nodeConfig.pOutputSockets = out_config;
-    }
 };
 
 class ClaheNodeType : public NodeType
@@ -66,32 +56,15 @@ public:
         : _clipLimit(2.0)
         , _tilesGridSize(8)
     {
-    }
-
-    bool setProperty(PropertyID propId, const NodeProperty& newValue) override
-    {
-        switch(static_cast<pid>(propId))
-        {
-        case pid::ClipLimit:
-            _clipLimit = newValue.toDouble();
-            return true;
-        case pid::TilesGridSize:
-            _tilesGridSize = newValue.toInt();
-            return true;
-        }
-
-        return false;
-    }
-
-    NodeProperty property(PropertyID propId) const override
-    {
-        switch(static_cast<pid>(propId))
-        {
-        case pid::ClipLimit: return _clipLimit;
-        case pid::TilesGridSize: return _tilesGridSize;
-        }
-
-        return NodeProperty();
+        addInput("Source", ENodeFlowDataType::ImageMono);
+        addOutput("Output", ENodeFlowDataType::ImageMono);
+        addProperty("Clip limit", _clipLimit)
+            .setValidator(make_validator<MinPropertyValidator<double>>(0.0))
+            .setUiHints("min:0.0");
+        addProperty("Tiles size", _tilesGridSize)
+            .setValidator(make_validator<MinPropertyValidator<int>>(1))
+            .setUiHints("min:1");
+        setDescription("Performs CLAHE (Contrast Limited Adaptive Histogram Equalization)");
     }
 
     ExecutionStatus execute(NodeSocketReader& reader, NodeSocketWriter& writer) override
@@ -108,42 +81,20 @@ public:
         return ExecutionStatus(EStatus::Ok);
     }
 
-    void configuration(NodeConfig& nodeConfig) const override
-    {
-        static const InputSocketConfig in_config[] = {
-            { ENodeFlowDataType::ImageMono, "source", "Source", "" },
-            { ENodeFlowDataType::Invalid, "", "", "" }
-        };
-        static const OutputSocketConfig out_config[] = {
-            { ENodeFlowDataType::ImageMono, "output", "Output", "" },
-            { ENodeFlowDataType::Invalid, "", "", "" }
-        };
-        static const PropertyConfig prop_config[] = {
-            { EPropertyType::Double, "Clip limit", "min:0.0" },
-            { EPropertyType::Integer, "Tiles size", "min:1" },
-            { EPropertyType::Unknown, "", "" }
-        };
-
-        nodeConfig.description = "Performs CLAHE (Contrast Limited Adaptive Histogram Equalization)";
-        nodeConfig.pInputSockets = in_config;
-        nodeConfig.pOutputSockets = out_config;
-        nodeConfig.pProperties = prop_config;
-    }
-
 private:
-    enum class pid
-    {
-        ClipLimit,
-        TilesGridSize
-    };
-
-    double _clipLimit;
-    int _tilesGridSize;
+    TypedNodeProperty<double> _clipLimit;
+    TypedNodeProperty<int> _tilesGridSize;
 };
 
 class DrawHistogramNodeType : public NodeType
 {
 public:
+    DrawHistogramNodeType()
+    {
+        addInput("Source", ENodeFlowDataType::Image);
+        addOutput("Output", ENodeFlowDataType::ImageRgb);
+    }
+
     ExecutionStatus execute(NodeSocketReader& reader, NodeSocketWriter& writer) override
     {
         // Read input sockets
@@ -225,22 +176,6 @@ public:
         }
 
         return ExecutionStatus(EStatus::Ok);
-    }
-
-    void configuration(NodeConfig& nodeConfig) const override
-    {
-        static const InputSocketConfig in_config[] = {
-            { ENodeFlowDataType::Image, "source", "Source", "" },
-            { ENodeFlowDataType::Invalid, "", "", "" }
-        };
-        static const OutputSocketConfig out_config[] = {
-            { ENodeFlowDataType::ImageRgb, "output", "Output", "" },
-            { ENodeFlowDataType::Invalid, "", "", "" }
-        };
-
-        nodeConfig.description = "";
-        nodeConfig.pInputSockets = in_config;
-        nodeConfig.pOutputSockets = out_config;
     }
 };
 
