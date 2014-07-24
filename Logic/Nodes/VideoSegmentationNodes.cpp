@@ -37,40 +37,22 @@ public:
         , _backgroundRatio(0.7)
         , _learningRate(-1)
     {
-    }
-
-    bool setProperty(PropertyID propId, const NodeProperty& newValue) override
-    {
-        switch(static_cast<pid>(propId))
-        {
-        case pid::History:
-            _history = newValue.toInt();
-            return true;
-        case pid::NMixtures:
-            _nmixtures = newValue.toInt();
-            return true;
-        case pid::BackgroundRatio:
-            _backgroundRatio = newValue.toDouble();
-            return true;
-        case pid::LearningRate:
-            _learningRate = newValue.toDouble();
-            return true;
-        }
-
-        return false;
-    }
-
-    NodeProperty property(PropertyID propId) const override
-    {
-        switch(static_cast<pid>(propId))
-        {
-        case pid::History: return _history;
-        case pid::NMixtures: return _nmixtures;
-        case pid::BackgroundRatio: return _backgroundRatio;
-        case pid::LearningRate: return _learningRate;
-        }
-
-        return NodeProperty();
+        addInput("Input", ENodeFlowDataType::Image);
+        addOutput("Output", ENodeFlowDataType::ImageMono);
+        addProperty("History frames", _history)
+            .setValidator(make_validator<InclRangePropertyValidator<int>>(1, 500))
+            .setUiHints("min:1, max:500");
+        addProperty("Number of mixtures", _nmixtures)
+            .setValidator(make_validator<InclRangePropertyValidator<int>>(1, 9))
+            .setUiHints("min:1, max:9");
+        addProperty("Background ratio", _backgroundRatio)
+            .setValidator(make_validator<ExclRangePropertyValidator<double>>(0.0, 1.0))
+            .setUiHints("min:0.01, max:0.99, step:0.01");
+        addProperty("Learning rate", _learningRate)
+            .setValidator(make_validator<InclRangePropertyValidator<double>>(-1.0, 1.0))
+            .setUiHints("min:-1, max:1, step:0.01, decimals:3");
+        setDescription("Gaussian Mixture-based image sequence background/foreground segmentation.");
+        setFlags(ENodeConfig::HasState);
     }
 
     bool restart() override
@@ -96,91 +78,35 @@ public:
         return ExecutionStatus(EStatus::Ok);
     }
 
-    void configuration(NodeConfig& nodeConfig) const override
-    {
-        static const InputSocketConfig in_config[] = {
-            { ENodeFlowDataType::Image, "input", "Input", "" },
-            { ENodeFlowDataType::Invalid, "", "", "" }
-        };
-        static const OutputSocketConfig out_config[] = {
-            { ENodeFlowDataType::ImageMono, "output", "Output", "" },
-            { ENodeFlowDataType::Invalid, "", "", "" }
-        };
-
-        static const PropertyConfig prop_config[] = {
-            { EPropertyType::Integer, "History frames", "min:1, max:500" },
-            { EPropertyType::Integer, "Number of mixtures",  "min:1, max:9" },
-            { EPropertyType::Double, "Background ratio", "min:0.01, max:0.99, step:0.01" },
-            { EPropertyType::Double, "Learning rate", "min:-1, max:1, step:0.01, decimals:3" },
-            { EPropertyType::Unknown, "", "" }
-        };
-
-        nodeConfig.description = "Gaussian Mixture-based image sequence background/foreground segmentation.";
-        nodeConfig.pInputSockets = in_config;
-        nodeConfig.pOutputSockets = out_config;
-        nodeConfig.pProperties = prop_config;
-        nodeConfig.flags = ENodeConfig::HasState;
-    }
-
 private:
-    enum class pid
-    {
-        History,
-        NMixtures,
-        BackgroundRatio,
-        LearningRate
-    };
-
     cv::BackgroundSubtractorMOG _mog;
-    int _history;
-    int _nmixtures;
-    double _backgroundRatio;
-    double _learningRate;
+    TypedNodeProperty<int> _history;
+    TypedNodeProperty<int> _nmixtures;
+    TypedNodeProperty<double> _backgroundRatio;
+    TypedNodeProperty<double> _learningRate;
 };
 
 class AdaptiveMixtureOfGaussiansNodeType : public NodeType
 {
 public:
     AdaptiveMixtureOfGaussiansNodeType()
-        : _learningRate(-1)
-        , _history(200)
+        : _history(200)
         , _varThreshold(16.0f)
         , _shadowDetection(true)
+        , _learningRate(-1)
     {
-    }
-
-    bool setProperty(PropertyID propId, const NodeProperty& newValue) override
-    {
-        switch(static_cast<pid>(propId))
-        {
-        case pid::History:
-            _history = newValue.toInt();
-            return true;
-        case pid::VarianceThreshold:
-            _varThreshold = newValue.toFloat();
-            return true;
-        case pid::ShadowDetection:
-            _shadowDetection = newValue.toBool();
-            return true;
-        case pid::LearningRate:
-            _learningRate = newValue.toDouble();
-            return true;
-        }
-
-        return false;
-    }
-
-    NodeProperty property(PropertyID propId) const override
-    {
-        switch(static_cast<pid>(propId))
-        {
-        case pid::History: return _history;
-        case pid::VarianceThreshold: return _varThreshold;
-        case pid::ShadowDetection: return _shadowDetection;
-        case pid::LearningRate: return _learningRate;
-        }
-
-        return NodeProperty();
+        addInput("Input", ENodeFlowDataType::Image);
+        addOutput("Output", ENodeFlowDataType::ImageMono);
+        addProperty("History frames", _history)
+            .setValidator(make_validator<InclRangePropertyValidator<int>>(1, 500))
+            .setUiHints("min:1, max:500");
+        addProperty("Mahalanobis distance threshold", _varThreshold);
+        addProperty("Detect shadow", _shadowDetection);
+        addProperty("Learning rate", _learningRate)
+            .setValidator(make_validator<InclRangePropertyValidator<double>>(-1.0, 1.0))
+            .setUiHints("min:-1, max:1, step:0.01, decimals:3");
+        setDescription("Improved adaptive Gausian mixture model for background subtraction.");
+        setFlags(ENodeConfig::HasState);
     }
 
     bool restart() override
@@ -206,32 +132,6 @@ public:
         return ExecutionStatus(EStatus::Ok);
     }
 
-    void configuration(NodeConfig& nodeConfig) const override
-    {
-        static const InputSocketConfig in_config[] = {
-            { ENodeFlowDataType::Image, "input", "Input", "" },
-            { ENodeFlowDataType::Invalid, "", "", "" }
-        };
-        static const OutputSocketConfig out_config[] = {
-            { ENodeFlowDataType::ImageMono, "output", "Output", "" },
-            { ENodeFlowDataType::Invalid, "", "", "" }
-        };
-
-        static const PropertyConfig prop_config[] = {
-            { EPropertyType::Integer, "History frames", "min:1, max:500" },
-            { EPropertyType::Double, "Mahalanobis distance threshold",  "" },
-            { EPropertyType::Boolean, "Detect shadow", "" },
-            { EPropertyType::Double, "Learning rate", "min:-1, max:1, step:0.01, decimals:3" },
-            { EPropertyType::Unknown, "", "" }
-        };
-
-        nodeConfig.description = "Improved adaptive Gausian mixture model for background subtraction.";
-        nodeConfig.pInputSockets = in_config;
-        nodeConfig.pOutputSockets = out_config;
-        nodeConfig.pProperties = prop_config;
-        nodeConfig.flags = ENodeConfig::HasState;
-    }
-
 private:
     enum class pid
     {
@@ -241,11 +141,11 @@ private:
         LearningRate
     };
 
-    double _learningRate;
-    int _history;
-    float _varThreshold;
+    TypedNodeProperty<int> _history;
+    TypedNodeProperty<float> _varThreshold;
+    TypedNodeProperty<bool> _shadowDetection;
+    TypedNodeProperty<double> _learningRate;
     cv::BackgroundSubtractorMOG2 _mog2;
-    bool _shadowDetection;
 };
 
 class BackgroundSubtractorGMGNodeType : public NodeType
@@ -254,28 +154,13 @@ public:
     BackgroundSubtractorGMGNodeType()
         : _learningRate(-1)
     {
-    }
-
-    bool setProperty(PropertyID propId, const NodeProperty& newValue) override
-    {
-        switch(static_cast<pid>(propId))
-        {
-        case pid::LearningRate:
-            _learningRate = newValue.toDouble();
-            return true;
-        }
-
-        return false;
-    }
-
-    NodeProperty property(PropertyID propId) const override
-    {
-        switch(static_cast<pid>(propId))
-        {
-        case pid::LearningRate: return _learningRate;
-        }
-
-        return NodeProperty();
+        addInput("Input", ENodeFlowDataType::Image);
+        addOutput("Output", ENodeFlowDataType::ImageMono);
+        addProperty("Learning rate", _learningRate)
+            .setValidator(make_validator<InclRangePropertyValidator<double>>(-1, 1))
+            .setUiHints("min:-1, max:1, step:0.01, decimals:3");
+        setDescription("GMG background subtractor.");
+        setFlags(ENodeConfig::HasState);
     }
 
     bool restart() override
@@ -301,33 +186,9 @@ public:
         return ExecutionStatus(EStatus::Ok);
     }
 
-    void configuration(NodeConfig& nodeConfig) const override
-    {
-        static const InputSocketConfig in_config[] = {
-            { ENodeFlowDataType::Image, "input", "Input", "" },
-            { ENodeFlowDataType::Invalid, "", "", "" }
-        };
-        static const OutputSocketConfig out_config[] = {
-            { ENodeFlowDataType::ImageMono, "output", "Output", "" },
-            { ENodeFlowDataType::Invalid, "", "", "" }
-        };
-
-        static const PropertyConfig prop_config[] = {
-            { EPropertyType::Double, "Learning rate", "min:-1, max:1, step:0.01, decimals:3" },
-            { EPropertyType::Unknown, "", "" }
-        };
-
-        nodeConfig.description = "GMG background subtractor.";
-        nodeConfig.pInputSockets = in_config;
-        nodeConfig.pOutputSockets = out_config;
-        nodeConfig.pProperties = prop_config;
-        nodeConfig.flags = ENodeConfig::HasState;
-    }
 
 private:
-    enum class pid { LearningRate };
-
-    double _learningRate;
+    TypedNodeProperty<double> _learningRate;
     cv::BackgroundSubtractorGMG _gmg;
 };
 
@@ -338,31 +199,17 @@ public:
         : _alpha(0.92f)
         , _threshCoeff(3)
     {
-    }
-
-    bool setProperty(PropertyID propId, const NodeProperty& newValue) override
-    {
-        switch(static_cast<pid>(propId))
-        {
-        case pid::Alpha:
-            _alpha = newValue.toFloat();
-            return true;
-        case pid::ThresholdCoeff:
-            _threshCoeff = newValue.toFloat();
-            return true;
-        }
-
-        return false;
-    }
-
-    NodeProperty property(PropertyID propId) const override
-    {
-        switch(static_cast<pid>(propId))
-        {
-        case pid::Alpha: return _alpha;
-        case pid::ThresholdCoeff: return _threshCoeff;
-        }
-        return NodeProperty();
+        addInput("Source", ENodeFlowDataType::ImageMono);
+        addOutput("Background", ENodeFlowDataType::ImageMono);
+        addOutput("Moving pixels", ENodeFlowDataType::ImageMono);
+        addOutput("Threshold image", ENodeFlowDataType::ImageMono);
+        addProperty("Alpha", _alpha)
+            .setValidator(make_validator<InclRangePropertyValidator<double>>(0.0, 1.0))
+            .setUiHints("min:0.0, max:1.0, decimals:3");
+        addProperty("Threshold coeff.", _threshCoeff)
+            .setValidator(make_validator<MinPropertyValidator<double>>(0.0))
+            .setUiHints("min:0.0, decimals:3");
+        setFlags(ENodeConfig::HasState);
     }
 
     bool restart() override
@@ -445,42 +292,11 @@ public:
         return ExecutionStatus(EStatus::Ok);
     }
 
-    void configuration(NodeConfig& nodeConfig) const override
-    {
-        static const InputSocketConfig in_config[] = {
-            { ENodeFlowDataType::ImageMono, "source", "Source", "" },
-            { ENodeFlowDataType::Invalid, "", "", "" }
-        };
-        static const OutputSocketConfig out_config[] = {
-            { ENodeFlowDataType::ImageMono, "background", "Background", "" },
-            { ENodeFlowDataType::ImageMono, "movingPixels", "Moving pixels", "" },
-            { ENodeFlowDataType::ImageMono, "threshold", "Threshold image", "" },
-            { ENodeFlowDataType::Invalid, "", "", "" }
-        };
-        static const PropertyConfig prop_config[] = {
-            { EPropertyType::Double, "Alpha", "min:0.0, max:1.0, decimals:3" },
-            { EPropertyType::Double, "Threshold coeff.", "min:0.0, decimals:3" },
-            { EPropertyType::Unknown, "", "" }
-        };
-
-        nodeConfig.description = "";
-        nodeConfig.pInputSockets = in_config;
-        nodeConfig.pOutputSockets = out_config;
-        nodeConfig.pProperties = prop_config;
-        nodeConfig.flags = ENodeConfig::HasState;
-    }
-
 private:
-    enum class pid
-    {
-        Alpha,
-        ThresholdCoeff
-    };
-
     cv::Mat _frameN1; // I_{n-1}
     cv::Mat _frameN2; // I_{n-2}
-    float _alpha;
-    float _threshCoeff;
+    TypedNodeProperty<float> _alpha;
+    TypedNodeProperty<float> _threshCoeff;
 };
 
 REGISTER_NODE("Video segmentation/Background subtractor", BackgroundSubtractorNodeType)
