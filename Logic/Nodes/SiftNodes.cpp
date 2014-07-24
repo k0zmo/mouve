@@ -37,43 +37,18 @@ public:
         , _edgeThreshold(10)
         , _sigma(1.6)
     {
-    }
-
-    bool setProperty(PropertyID propId, const NodeProperty& newValue) override
-    {
-        switch(static_cast<pid>(propId))
-        {
-        case pid::NumFeatures: 
-            _nFeatures = newValue.toInt();
-            return true;
-        case pid::NumOctaveLayers:  
-            _nOctaveLayers = newValue.toInt();
-            return true;
-        case pid::ContrastThreshold:
-            _contrastThreshold = newValue.toDouble();
-            return true;
-        case pid::EdgeThreshold:
-            _edgeThreshold = newValue.toDouble();
-            return true;
-        case pid::Sigma:
-            _sigma = newValue.toDouble();
-            return true;
-        }
-        return false;
-    }
-
-    NodeProperty property(PropertyID propId) const override
-    {
-        switch(static_cast<pid>(propId))
-        {
-        case pid::NumFeatures: return _nFeatures;
-        case pid::NumOctaveLayers: return _nOctaveLayers;
-        case pid::ContrastThreshold: return _contrastThreshold;
-        case pid::EdgeThreshold: return _edgeThreshold;
-        case pid::Sigma: return _sigma;
-        }
-
-        return NodeProperty();
+        addInput("Image", ENodeFlowDataType::ImageMono);
+        addOutput("Keypoints", ENodeFlowDataType::Keypoints);
+        addProperty("Number of best features to retain", _nFeatures)
+            .setValidator(make_validator<MinPropertyValidator<int>>(0))
+            .setUiHints("min:0");
+        addProperty("Number of layers in each octave", _nOctaveLayers)
+            .setValidator(make_validator<MinPropertyValidator<int>>(2))
+            .setUiHints("min:2");
+        addProperty("Contrast threshold", _contrastThreshold);
+        addProperty("Edge threshold", _edgeThreshold);
+        addProperty("Input image sigma", _sigma);
+        setDescription("Extracts keypoints using difference of gaussians (DoG) algorithm.");
     }
 
     ExecutionStatus execute(NodeSocketReader& reader, NodeSocketWriter& writer) override
@@ -97,51 +72,25 @@ public:
             string_format("Keypoints detected: %d", (int) kp.kpoints.size()));
     }
 
-    void configuration(NodeConfig& nodeConfig) const override
-    {
-        static const InputSocketConfig in_config[] = {
-            { ENodeFlowDataType::ImageMono, "image", "Image", "" },
-            { ENodeFlowDataType::Invalid, "", "", "" }
-        };
-        static const OutputSocketConfig out_config[] = {
-            { ENodeFlowDataType::Keypoints, "keypoints", "Keypoints", "" },
-            { ENodeFlowDataType::Invalid, "", "", "" }
-        };
-        static const PropertyConfig prop_config[] = {
-            { EPropertyType::Integer, "Number of best features to retain", "min:0" },
-            { EPropertyType::Integer, "Number of layers in each octave", "min:2" },
-            { EPropertyType::Double, "Contrast threshold", "" },
-            { EPropertyType::Double, "Edge threshold", "" },
-            { EPropertyType::Double, "Input image sigma", "" },
-            { EPropertyType::Unknown, "", "" }
-        };
-
-        nodeConfig.description = "Extracts keypoints using difference of gaussians (DoG) algorithm.";
-        nodeConfig.pInputSockets = in_config;
-        nodeConfig.pOutputSockets = out_config;
-        nodeConfig.pProperties = prop_config;
-    }
-
 protected:
-    enum class pid
-    {
-        NumFeatures,
-        NumOctaveLayers,
-        ContrastThreshold,
-        EdgeThreshold,
-        Sigma
-    };
-
-    int _nFeatures;
-    int _nOctaveLayers;
-    double _contrastThreshold;
-    double _edgeThreshold;
-    double _sigma;
+    TypedNodeProperty<int> _nFeatures;
+    TypedNodeProperty<int> _nOctaveLayers;
+    TypedNodeProperty<double> _contrastThreshold;
+    TypedNodeProperty<double> _edgeThreshold;
+    TypedNodeProperty<double> _sigma;
 };
 
 class SiftDescriptorExtractorNodeType : public NodeType
 {
 public:
+    SiftDescriptorExtractorNodeType()
+    {
+        addInput("Keypoints", ENodeFlowDataType::Keypoints);
+        addOutput("Keypoints", ENodeFlowDataType::Keypoints);
+        addOutput("Descriptors", ENodeFlowDataType::Array);
+        setDescription("Computes descriptors using the Scale Invariant Feature Transform (SIFT) algorithm.");
+    }
+
     ExecutionStatus execute(NodeSocketReader& reader, NodeSocketWriter& writer) override
     {
         // Read input sockets
@@ -162,28 +111,22 @@ public:
 
         return ExecutionStatus(EStatus::Ok);
     }
-
-    void configuration(NodeConfig& nodeConfig) const override
-    {
-        static const InputSocketConfig in_config[] = {
-            { ENodeFlowDataType::Keypoints, "keypoints", "Keypoints", "" },
-            { ENodeFlowDataType::Invalid, "", "", "" }
-        };
-        static const OutputSocketConfig out_config[] = {
-            { ENodeFlowDataType::Keypoints, "output", "Keypoints", "" },
-            { ENodeFlowDataType::Array, "output", "Descriptors", "" },
-            { ENodeFlowDataType::Invalid, "", "", "" }
-        };
-
-        nodeConfig.description = "Computes descriptors using the Scale Invariant Feature Transform (SIFT) algorithm.";
-        nodeConfig.pInputSockets = in_config;
-        nodeConfig.pOutputSockets = out_config;
-    }
 };
 
 class SiftNodeType : public SiftFeatureDetectorNodeType
 {
 public:
+    SiftNodeType()
+        : SiftFeatureDetectorNodeType()
+    {
+        // Just add one more output socket
+        clearOutputs();
+        addOutput("Keypoints", ENodeFlowDataType::Keypoints);
+        addOutput("Descriptors", ENodeFlowDataType::Array);
+        setDescription("Extracts keypoints and computes descriptors using "
+            "the Scale Invariant Feature Transform (SIFT) algorithm.");
+    }
+
     ExecutionStatus execute(NodeSocketReader& reader, NodeSocketWriter& writer) override
     {
         // Read input sockets
@@ -204,21 +147,6 @@ public:
 
         return ExecutionStatus(EStatus::Ok, 
             string_format("Keypoints detected: %d", (int) kp.kpoints.size()));
-    }
-
-    void configuration(NodeConfig& nodeConfig) const override
-    {
-        SiftFeatureDetectorNodeType::configuration(nodeConfig);
-
-        // Just add one more output socket
-        static const OutputSocketConfig out_config[] = {
-            { ENodeFlowDataType::Keypoints, "keypoints", "Keypoints", "" },
-            { ENodeFlowDataType::Array, "output", "Descriptors", "" },
-            { ENodeFlowDataType::Invalid, "", "", "" }
-        };
-
-        nodeConfig.description = "Extracts keypoints and computes descriptors using the Scale Invariant Feature Transform (SIFT) algorithm.";
-        nodeConfig.pOutputSockets = out_config;
     }
 };
 
