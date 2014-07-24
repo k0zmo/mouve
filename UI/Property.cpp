@@ -33,10 +33,8 @@
 template <typename T>
 bool tryConvert(const QString& str, T& value) 
 {
-#if defined(Q_CC_MSVC)
-    static_assert(false, "conversion doesn't exist");
-#endif
-    return false;
+    // Expression must be T-dependent to be evaluated at the moment of instantiation
+    static_assert(sizeof(T) == 0, "Conversion doesn't exist");
 }
 
 template <> 
