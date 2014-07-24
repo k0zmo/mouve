@@ -39,52 +39,27 @@ public:
 #ifdef QT_DEBUG
         : _videoPath("video-4.mkv")
 #else
-        : _videoPath("")
+        : _videoPath(Filepath(""))
 #endif
-        , _startFrame(0)
-        , _endFrame(0)
-        , _frameInterval(0)
+        , _startFrame(0U)
+        , _endFrame(0U)
+        , _frameInterval(0U)
         , _ignoreFps(false)
         , _forceGrayscale(false)
     {
-    }
-
-    bool setProperty(PropertyID propId, const NodeProperty& newValue) override
-    {
-        switch(static_cast<pid>(propId))
-        {
-        case pid::VideoPath:
-            _videoPath = newValue.toFilepath();
-            return true;
-        case pid::StartFrame:
-            _startFrame = newValue.toInt();
-            return true;
-        case pid::EndFrame:
-            _endFrame = newValue.toInt();
-            return true;
-        case pid::IgnoreFps:
-            _ignoreFps = newValue.toBool();
-            return true;
-        case pid::ForceGrayscale:
-            _forceGrayscale = newValue.toBool();
-            return true;
-        }
-
-        return false;
-    }
-
-    NodeProperty property(PropertyID propId) const override
-    {
-        switch(static_cast<pid>(propId))
-        {
-        case pid::VideoPath: return _videoPath;
-        case pid::StartFrame: return int(_startFrame);
-        case pid::EndFrame: return int(_endFrame);
-        case pid::IgnoreFps: return _ignoreFps;
-        case pid::ForceGrayscale: return _forceGrayscale;
-        }
-
-        return NodeProperty();
+        addOutput("Output", ENodeFlowDataType::Image);
+        addProperty("Video path", _videoPath)
+            .setUiHints("filter:Video files (*.mkv *.mp4 *.avi *.flv)");
+        addProperty("Start frame", _startFrame)
+            .setValidator(make_validator<MinPropertyValidator<int>>(0))
+            .setUiHints("min:0");
+        addProperty("End frame", _endFrame)
+            .setValidator(make_validator<MinPropertyValidator<int>>(0))
+            .setUiHints("min:0");
+        addProperty("Ignore FPS", _ignoreFps);
+        addProperty("Force grayscale", _forceGrayscale);
+        setDescription("Provides video frames from specified stream.");
+        setFlags(ENodeConfig::HasState | ENodeConfig::AutoTag | ENodeConfig::OverridesTimeComputation);
     }
 
     bool restart() override
@@ -94,7 +69,7 @@ public:
         if(_capture.isOpened())
             _capture.release();
 
-        _capture.open(_videoPath.data());
+        _capture.open(_videoPath.cast<Filepath>().data());
         if(!_capture.isOpened())
             return false;
 
@@ -104,10 +79,10 @@ public:
         double fps = _ignoreFps ? 0 : _capture.get(CV_CAP_PROP_FPS);
 
         _frameInterval = (fps != 0)
-            ? unsigned(ceil(1000.0 / fps))
+            ? int(ceil(1000.0 / fps))
             : 0;
         _timeStamp = std::chrono::high_resolution_clock::time_point();
-        _maxFrames = static_cast<unsigned>(_capture.get(CV_CAP_PROP_FRAME_COUNT));
+        _maxFrames = static_cast<int>(_capture.get(CV_CAP_PROP_FRAME_COUNT));
         _currentFrame = _startFrame > 0 ? _startFrame : 0;
 
         return true;
@@ -166,6 +141,7 @@ public:
 
         if(!buffer.empty())
         {
+            _forceGrayscale.cast_value<bool>();
             if(_forceGrayscale && buffer.channels() > 1)
                 cv::cvtColor(buffer, output, CV_BGR2GRAY);
             else
@@ -190,48 +166,18 @@ public:
         }
     }
 
-    void configuration(NodeConfig& nodeConfig) const override
-    {
-        static const OutputSocketConfig out_config[] = {
-            { ENodeFlowDataType::Image, "output", "Output", "" },
-            { ENodeFlowDataType::Invalid, "", "", "" }
-        };
-        static const PropertyConfig prop_config[] = {
-            { EPropertyType::Filepath, "Video path", "filter:Video files (*.mkv *.mp4 *.avi *.flv)" },
-            { EPropertyType::Integer, "Start frame", "min:0" },
-            { EPropertyType::Integer, "End frame", "min:0" },
-            { EPropertyType::Boolean, "Ignore FPS", "" },
-            { EPropertyType::Boolean, "Force grayscale", "" },
-            { EPropertyType::Unknown, "", "" }
-        };
-
-        nodeConfig.description = "Provides video frames from specified stream.";
-        nodeConfig.pOutputSockets = out_config;
-        nodeConfig.pProperties = prop_config;
-        nodeConfig.flags = ENodeConfig::HasState | ENodeConfig::AutoTag | ENodeConfig::OverridesTimeComputation;
-    }
-
 private:
-    enum class pid
-    {
-        VideoPath,
-        StartFrame,
-        EndFrame,
-        IgnoreFps,
-        ForceGrayscale
-    };
-
-    Filepath _videoPath;
+    TypedNodeProperty<Filepath> _videoPath;
     cv::VideoCapture _capture;
-    unsigned _startFrame;
-    unsigned _endFrame;
-    unsigned _frameInterval;
-    unsigned _currentFrame;
-    unsigned _maxFrames;
+    TypedNodeProperty<int> _startFrame;
+    TypedNodeProperty<int> _endFrame;
+    int _frameInterval;
+    int _currentFrame;
+    int _maxFrames;
     std::chrono::high_resolution_clock::time_point _timeStamp;
     static HighResolutionClock _clock;
-    bool _ignoreFps;
-    bool _forceGrayscale;
+    TypedNodeProperty<bool> _ignoreFps;
+    TypedNodeProperty<bool> _forceGrayscale;
 };
 HighResolutionClock VideoFromFileNodeType::_clock;
 
@@ -242,43 +188,31 @@ public:
 #ifdef QT_DEBUG
         : _filePath("lena.jpg")
 #else
-        : _filePath("")
+        : _filePath(Filepath(""))
 #endif
         , _forceGrayscale(false)
     {
-    }
-
-    bool setProperty(PropertyID propId, const NodeProperty& newValue) override
-    {
-        switch(static_cast<pid>(propId))
-        {
-        case pid::Filepath:
-            _filePath = newValue.toFilepath();
-            return true;
-        case pid::ForceGrayscale:
-            _forceGrayscale = newValue.toBool();
-            return true;
-        }
-
-        return false;
-    }
-
-    NodeProperty property(PropertyID propId) const override
-    {
-        switch(static_cast<pid>(propId))
-        {
-        case pid::Filepath: return _filePath;
-        case pid::ForceGrayscale: return _forceGrayscale;
-        }
-
-        return NodeProperty();
+        addOutput("Output", ENodeFlowDataType::Image);
+        addProperty("File path", _filePath)
+            .setUiHints("filter:"
+                "Popular image formats (*.bmp *.jpeg *.jpg *.png *.tiff);;"
+                "Windows bitmaps (*.bmp *.dib);;"
+                "JPEG files (*.jpeg *.jpg *.jpe);;"
+                "JPEG 2000 files (*.jp2);;"
+                "Portable Network Graphics (*.png);;"
+                "Portable image format (*.pbm *.pgm *.ppm);;"
+                "Sun rasters (*.sr *.ras);;"
+                "TIFF files (*.tiff *.tif);;"
+                "All files (*.*)");
+        addProperty("Force grayscale", _forceGrayscale);
+        setDescription("Loads image from a given location.");
     }
 
     ExecutionStatus execute(NodeSocketReader&, NodeSocketWriter& writer) override
     {
         cv::Mat& output = writer.acquireSocket(0).getImage();
 
-        output = cv::imread(_filePath.data(), _forceGrayscale ? CV_LOAD_IMAGE_GRAYSCALE : CV_LOAD_IMAGE_UNCHANGED);
+        output = cv::imread(_filePath.cast<Filepath>().data(), _forceGrayscale ? CV_LOAD_IMAGE_GRAYSCALE : CV_LOAD_IMAGE_UNCHANGED);
         if(output.channels() == 4)
             cv::cvtColor(output, output, CV_BGRA2BGR);
 
@@ -292,49 +226,24 @@ public:
                 output.cols * output.rows * sizeof(uchar) * output.channels() / 1024));
     }
 
-    void configuration(NodeConfig& nodeConfig) const override
-    {
-        static const OutputSocketConfig out_config[] = {
-            { ENodeFlowDataType::Image, "output", "Output", "" },
-            { ENodeFlowDataType::Invalid, "", "", "" }
-        };
-        static const PropertyConfig prop_config[] = {
-            { EPropertyType::Filepath, "File path", "filter:"
-            "Popular image formats (*.bmp *.jpeg *.jpg *.png *.tiff);;"
-            "Windows bitmaps (*.bmp *.dib);;"
-            "JPEG files (*.jpeg *.jpg *.jpe);;"
-            "JPEG 2000 files (*.jp2);;"
-            "Portable Network Graphics (*.png);;"
-            "Portable image format (*.pbm *.pgm *.ppm);;"
-            "Sun rasters (*.sr *.ras);;"
-            "TIFF files (*.tiff *.tif);;"
-            "All files (*.*)" },
-            { EPropertyType::Boolean, "Force grayscale", "" },
-            { EPropertyType::Unknown, "", "" }
-        };
-
-        nodeConfig.description = "Loads image from a given location.";
-        nodeConfig.pOutputSockets = out_config;
-        nodeConfig.pProperties = prop_config;
-    }
-
 protected:
-    enum class pid
-    {
-        Filepath,
-        ForceGrayscale
-    };
 
-    Filepath _filePath;
-    bool _forceGrayscale;
+    TypedNodeProperty<Filepath> _filePath;
+    TypedNodeProperty<bool> _forceGrayscale;
 };
 
 class ImageFromFileStreamNodeType : public ImageFromFileNodeType
 {
 public: 
+    ImageFromFileStreamNodeType()
+        : ImageFromFileNodeType()
+    {
+        setFlags(ENodeConfig::AutoTag | ENodeConfig::HasState);
+    }
+
     bool restart() override
     { 
-        _img = cv::imread(_filePath.data(), _forceGrayscale ? CV_LOAD_IMAGE_GRAYSCALE : CV_LOAD_IMAGE_UNCHANGED);
+        _img = cv::imread(_filePath.cast<Filepath>().data(), _forceGrayscale ? CV_LOAD_IMAGE_GRAYSCALE : CV_LOAD_IMAGE_UNCHANGED);
 
         return !_img.empty();
     }
@@ -353,12 +262,6 @@ public:
                 output.cols * output.rows * sizeof(uchar) * output.channels() / 1024));
     }
 
-    void configuration(NodeConfig& nodeConfig) const override
-    {
-        ImageFromFileNodeType::configuration(nodeConfig);
-        nodeConfig.flags = ENodeConfig::AutoTag | ENodeConfig::HasState;
-    }
-
 private:
     cv::Mat _img;
 };
@@ -370,32 +273,12 @@ public:
         : _deviceId(0)
         , _forceGrayscale(false)
     {
-    }
-
-    bool setProperty(PropertyID propId, const NodeProperty& newValue) override
-    {
-        switch(static_cast<pid>(propId))
-        {
-        case pid::DeviceId:
-            _deviceId = newValue.toInt();
-            return true;
-        case pid::ForceGrayscale:
-            _forceGrayscale = newValue.toBool();
-            return true;
-        }
-
-        return false;
-    }
-
-    NodeProperty property(PropertyID propId) const override
-    {
-        switch(static_cast<pid>(propId))
-        {
-        case pid::DeviceId: return _deviceId;
-        case pid::ForceGrayscale: return _forceGrayscale;
-        }
-
-        return NodeProperty();
+        addOutput("Output", ENodeFlowDataType::Image);
+        addProperty("Device Id", _deviceId)
+            .setUiHints("min:0")
+            .setValidator(make_validator<MinPropertyValidator<int>>(0));
+        setDescription("Provides video frames from specified camera device.");
+        setFlags(ENodeConfig::HasState | ENodeConfig::AutoTag);
     }
 
     bool restart() override
@@ -436,33 +319,9 @@ public:
             _capture.release();
     }
 
-    void configuration(NodeConfig& nodeConfig) const override
-    {
-        static const OutputSocketConfig out_config[] = {
-            { ENodeFlowDataType::Image, "output", "Output", "" },
-            { ENodeFlowDataType::Invalid, "", "", "" }
-        };
-        static const PropertyConfig prop_config[] = {
-            { EPropertyType::Integer, "Device Id", "min:0" },
-            { EPropertyType::Boolean, "Force grayscale", "" },
-            { EPropertyType::Unknown, "", "" }
-        };
-
-        nodeConfig.description = "Provides video frames from specified camera device.";
-        nodeConfig.pOutputSockets = out_config;
-        nodeConfig.pProperties = prop_config;
-        nodeConfig.flags = ENodeConfig::HasState | ENodeConfig::AutoTag;
-    }
-
 private:
-    enum class pid
-    {
-        DeviceId,
-        ForceGrayscale
-    };
-
-    int _deviceId;
-    bool _forceGrayscale;
+    TypedNodeProperty<int> _deviceId;
+    TypedNodeProperty<bool> _forceGrayscale;
     cv::VideoCapture _capture;
 };
 
@@ -474,36 +333,17 @@ public:
         , _height(512)
         , _gray(0)
     {
-    }
-
-    bool setProperty(PropertyID propId, const NodeProperty& newValue) override
-    {
-        switch(static_cast<pid>(propId))
-        {
-        case pid::Width:
-            _width = newValue.toInt();
-            return true;
-        case pid::Height:
-            _height = newValue.toInt();
-            return true;
-        case pid::Gray:
-            _gray = newValue.toInt();
-            return true;
-        }
-
-        return false;
-    }
-
-    NodeProperty property(PropertyID propId) const override
-    {
-        switch(static_cast<pid>(propId))
-        {
-        case pid::Width: return _width;
-        case pid::Height: return _height;
-        case pid::Gray: return _gray;
-        }
-
-        return NodeProperty();
+        addOutput("Output", ENodeFlowDataType::ImageMono);
+        addProperty("Width", _width)
+            .setValidator(make_validator<InclRangePropertyValidator<int>>(1, 4096))
+            .setUiHints("min:1, max:4096");
+        addProperty("Height", _height)
+            .setValidator(make_validator<InclRangePropertyValidator<int>>(1, 4096))
+            .setUiHints("min:1, max:4096");
+        addProperty("Gray", _gray)
+            .setValidator(make_validator<InclRangePropertyValidator<int>>(0, 255))
+            .setUiHints("min:0, max:255");
+        setDescription("Creates solid one-color (grayscale) image");
     }
 
     ExecutionStatus execute(NodeSocketReader&, NodeSocketWriter& writer) override
@@ -514,35 +354,10 @@ public:
         return ExecutionStatus(EStatus::Ok);
     }
 
-    void configuration(NodeConfig& nodeConfig) const override
-    {
-        static const OutputSocketConfig out_config[] = {
-            { ENodeFlowDataType::ImageMono, "output", "Output", "" },
-            { ENodeFlowDataType::Invalid, "", "", "" }
-        };
-        static const PropertyConfig prop_config[] = {
-            { EPropertyType::Integer, "Width", "min:1, max:4096" },
-            { EPropertyType::Integer, "Height", "min:1, max:4096" },
-            { EPropertyType::Integer, "Gray", "min:0, max:255" },
-            { EPropertyType::Unknown, "", "" }
-        };
-
-        nodeConfig.description = "Creates solid one-color (grayscale) image";
-        nodeConfig.pOutputSockets = out_config;
-        nodeConfig.pProperties = prop_config;
-    }
-
 private:
-    enum class pid
-    {
-        Width,
-        Height,
-        Gray
-    };
-
-    int _width;
-    int _height;
-    int _gray;
+    TypedNodeProperty<int> _width;
+    TypedNodeProperty<int> _height;
+    TypedNodeProperty<int> _gray;
 };
 
 class SolidRgbImageNodeType : public NodeType
@@ -555,44 +370,23 @@ public:
         , _green(0)
         , _blue(0)
     {
-    }
-
-    bool setProperty(PropertyID propId, const NodeProperty& newValue) override
-    {
-        switch(static_cast<pid>(propId))
-        {
-        case pid::Width:
-            _width = newValue.toInt();
-            return true;
-        case pid::Height:
-            _height = newValue.toInt();
-            return true;
-        case pid::Red:
-            _red = newValue.toInt();
-            return true;
-        case pid::Green:
-            _green = newValue.toInt();
-            return true;
-        case pid::Blue:
-            _blue = newValue.toInt();
-            return true;
-        }
-
-        return false;
-    }
-
-    NodeProperty property(PropertyID propId) const override
-    {
-        switch(static_cast<pid>(propId))
-        {
-        case pid::Width: return _width;
-        case pid::Height: return _height;
-        case pid::Red: return _red;
-        case pid::Green: return _green;
-        case pid::Blue: return _blue;
-        }
-
-        return NodeProperty();
+        addOutput("Output", ENodeFlowDataType::ImageRgb);
+        addProperty("Width", _width)
+            .setValidator(make_validator<InclRangePropertyValidator<int>>(1, 4096))
+            .setUiHints("min:1, max:4096");
+        addProperty("Height", _height)
+            .setValidator(make_validator<InclRangePropertyValidator<int>>(1, 4096))
+            .setUiHints("min:1, max:4096");
+        addProperty("Red", _red)
+            .setValidator(make_validator<InclRangePropertyValidator<int>>(0, 255))
+            .setUiHints("min:0, max:255");
+        addProperty("Green", _green)
+            .setValidator(make_validator<InclRangePropertyValidator<int>>(0, 255))
+            .setUiHints("min:0, max:255");
+        addProperty("Blue", _blue)
+            .setValidator(make_validator<InclRangePropertyValidator<int>>(0, 255))
+            .setUiHints("min:0, max:255");
+        setDescription("Creates solid RGB image");
     }
 
     ExecutionStatus execute(NodeSocketReader&, NodeSocketWriter& writer) override
@@ -603,41 +397,12 @@ public:
         return ExecutionStatus(EStatus::Ok);
     }
 
-    void configuration(NodeConfig& nodeConfig) const override
-    {
-        static const OutputSocketConfig out_config[] = {
-            { ENodeFlowDataType::ImageRgb, "output", "Output", "" },
-            { ENodeFlowDataType::Invalid, "", "", "" }
-        };
-        static const PropertyConfig prop_config[] = {
-            { EPropertyType::Integer, "Width", "min:1, max:4096" },
-            { EPropertyType::Integer, "Height", "min:1, max:4096" },
-            { EPropertyType::Integer, "Red", "min:0, max:255" },
-            { EPropertyType::Integer, "Green", "min:0, max:255" },
-            { EPropertyType::Integer, "Blue", "min:0, max:255" },
-            { EPropertyType::Unknown, "", "" }
-        };
-
-        nodeConfig.description = "Creates solid RGB image";
-        nodeConfig.pOutputSockets = out_config;
-        nodeConfig.pProperties = prop_config;
-    }
-
 private:
-    enum class pid
-    {
-        Width,
-        Height,
-        Red,
-        Green,
-        Blue,
-    };
-
-    int _width;
-    int _height;
-    int _red;
-    int _green;
-    int _blue;
+    TypedNodeProperty<int> _width;
+    TypedNodeProperty<int> _height;
+    TypedNodeProperty<int> _red;
+    TypedNodeProperty<int> _green;
+    TypedNodeProperty<int> _blue;
 };
 
 REGISTER_NODE("Sources/Solid image", SolidRgbImageNodeType)
