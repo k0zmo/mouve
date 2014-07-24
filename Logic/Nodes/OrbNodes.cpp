@@ -36,40 +36,21 @@ public:
         , _nlevels(8)
         , _edgeThreshold(31)
     {
-    }
-
-    bool setProperty(PropertyID propId, const NodeProperty& newValue) override
-    {
-        switch(static_cast<pid>(propId))
-        {
-        case pid::NumFeatures:
-            _nfeatures = newValue.toInt();
-            return true;
-        case pid::ScaleFactor:
-            _scaleFactor = newValue.toFloat();
-            return true;
-        case pid::NumLevels:
-            _nlevels = newValue.toInt();
-            return true;
-        case pid::EdgeThreshold:
-            _edgeThreshold = newValue.toInt();
-            return true;
-        }
-
-        return false;
-    }
-
-    NodeProperty property(PropertyID propId) const override
-    {
-        switch(static_cast<pid>(propId))
-        {
-        case pid::NumFeatures: return _nfeatures;
-        case pid::ScaleFactor: return _scaleFactor;
-        case pid::NumLevels: return _nlevels;
-        case pid::EdgeThreshold: return _edgeThreshold;
-        }
-
-        return NodeProperty();
+        addInput("Image", ENodeFlowDataType::ImageMono);
+        addOutput("Keypoints", ENodeFlowDataType::Keypoints);
+        addProperty("Number of features to retain", _nfeatures)
+            .setValidator(make_validator<MinPropertyValidator<int>>(1))
+            .setUiHints("min:1");
+        addProperty("Pyramid decimation ratio", _scaleFactor)
+            .setValidator(make_validator<MinPropertyValidator<double>>(1.0))
+            .setUiHints("min:1.0");
+        addProperty("The number of pyramid levels", _nlevels)
+            .setValidator(make_validator<MinPropertyValidator<int>>(1))
+            .setUiHints("min:1");
+        addProperty("Border margin", _edgeThreshold)
+            .setValidator(make_validator<MinPropertyValidator<int>>(1))
+            .setUiHints("min:1");
+        setDescription("Extracts keypoints using FAST in pyramids.");
     }
 
     ExecutionStatus execute(NodeSocketReader& reader, NodeSocketWriter& writer) override
@@ -92,48 +73,24 @@ public:
             string_format("Keypoints detected: %d", (int) kp.kpoints.size()));
     }
 
-    void configuration(NodeConfig& nodeConfig) const override
-    {
-        static const InputSocketConfig in_config[] = {
-            { ENodeFlowDataType::ImageMono, "image", "Image", "" },
-            { ENodeFlowDataType::Invalid, "", "", "" }
-        };
-        static const OutputSocketConfig out_config[] = {
-            { ENodeFlowDataType::Keypoints, "keypoints", "Keypoints", "" },
-            { ENodeFlowDataType::Invalid, "", "", "" }
-        };
-        static const PropertyConfig prop_config[] = {
-            { EPropertyType::Integer, "Number of features to retain", "min:1" },
-            { EPropertyType::Double, "Pyramid decimation ratio", "min:1.0" },
-            { EPropertyType::Integer, "The number of pyramid levels", "min:1" },
-            { EPropertyType::Integer, "Border margin", "min:1" },
-            { EPropertyType::Unknown, "", "" }
-        };
-
-        nodeConfig.description = "Extracts keypoints using FAST in pyramids.";
-        nodeConfig.pInputSockets = in_config;
-        nodeConfig.pOutputSockets = out_config;
-        nodeConfig.pProperties = prop_config;
-    }
-
 protected:
-    enum class pid
-    {
-        NumFeatures,
-        ScaleFactor,
-        NumLevels,
-        EdgeThreshold
-    };
-
-    int _nfeatures;
-    float _scaleFactor;
-    int _nlevels;
-    int _edgeThreshold;
+    TypedNodeProperty<int> _nfeatures;
+    TypedNodeProperty<float> _scaleFactor;
+    TypedNodeProperty<int> _nlevels;
+    TypedNodeProperty<int> _edgeThreshold;
 };
 
 class OrbDescriptorExtractorNodeType : public NodeType
 {
 public:
+    OrbDescriptorExtractorNodeType()
+    {
+        addInput("Keypoints", ENodeFlowDataType::Keypoints);
+        addOutput("Keypoints", ENodeFlowDataType::Keypoints);
+        addOutput("Descriptors", ENodeFlowDataType::Array);
+        setDescription("Computes descriptors using oriented and rotated BRIEF (ORB).");
+    }
+
     ExecutionStatus execute(NodeSocketReader& reader, NodeSocketWriter& writer) override
     {
         // Read input sockets
@@ -154,28 +111,20 @@ public:
 
         return ExecutionStatus(EStatus::Ok);
     }
-
-    void configuration(NodeConfig& nodeConfig) const override
-    {
-        static const InputSocketConfig in_config[] = {
-            { ENodeFlowDataType::Keypoints, "keypoints", "Keypoints", "" },
-            { ENodeFlowDataType::Invalid, "", "", "" }
-        };
-        static const OutputSocketConfig out_config[] = {
-            { ENodeFlowDataType::Keypoints, "output", "Keypoints", "" },
-            { ENodeFlowDataType::Array, "output", "Descriptors", "" },
-            { ENodeFlowDataType::Invalid, "", "", "" }
-        };
-
-        nodeConfig.description = "Computes descriptors using oriented and rotated BRIEF (ORB).";
-        nodeConfig.pInputSockets = in_config;
-        nodeConfig.pOutputSockets = out_config;
-    }
 };
 
 class OrbNodeType : public OrbFeatureDetectorNodeType
 {
 public:
+    OrbNodeType()
+        : OrbFeatureDetectorNodeType()
+    {
+        clearOutputs();
+        addOutput("Keypoints", ENodeFlowDataType::Keypoints);
+        addOutput("Descriptors", ENodeFlowDataType::Array);
+        setDescription("Detects keypoints and computes descriptors "
+            "using oriented and rotated BRIEF (ORB).");
+    }
 
     ExecutionStatus execute(NodeSocketReader& reader, NodeSocketWriter& writer) override
     {
@@ -196,20 +145,6 @@ public:
 
         return ExecutionStatus(EStatus::Ok, 
             string_format("Keypoints detected: %d", (int) kp.kpoints.size()));
-    }
-
-    void configuration(NodeConfig& nodeConfig) const override
-    {
-        OrbFeatureDetectorNodeType::configuration(nodeConfig);
-
-        static const OutputSocketConfig out_config[] = {
-            { ENodeFlowDataType::Keypoints, "keypoints", "Keypoints", "" },
-            { ENodeFlowDataType::Array, "output", "Descriptors", "" },
-            { ENodeFlowDataType::Invalid, "", "", "" }
-        };
-
-        nodeConfig.description = "Detects keypoints and computes descriptors using oriented and rotated BRIEF (ORB).";
-        nodeConfig.pOutputSockets = out_config;
     }
 };
 
