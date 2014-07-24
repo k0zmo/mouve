@@ -34,32 +34,16 @@ public:
         : _alpha(0.5)
         , _beta(0.5)
     {
-    }
-
-    bool setProperty(PropertyID propId, const NodeProperty& newValue) override
-    {
-        switch(static_cast<pid>(propId))
-        {
-        case pid::Alpha:
-            _alpha = newValue.toDouble();
-            return true;
-        case pid::Beta:
-            _beta = newValue.toDouble();
-            return true;
-        }
-
-        return false;
-    }
-
-    NodeProperty property(PropertyID propId) const override
-    {
-        switch(static_cast<pid>(propId))
-        {
-        case pid::Alpha: return _alpha;
-        case pid::Beta: return _beta;
-        }
-
-        return NodeProperty();
+        addInput("X", ENodeFlowDataType::Image);
+        addInput("Y", ENodeFlowDataType::Image);
+        addOutput("Output", ENodeFlowDataType::Image);
+        addProperty("Alpha", _alpha)
+            .setValidator(make_validator<InclRangePropertyValidator<double>>(0.0, 1.0))
+            .setUiHints("min:0.0, max:1.0, decimals:3, step:0.1");
+        addProperty("Beta", _beta)
+            .setValidator(make_validator<InclRangePropertyValidator<double>>(0.0, 1.0))
+            .setUiHints("min:0.0, max:1.0, decimals:3, step:0.1");
+        setDescription("Adds one image to another with specified weights: alpha * x + beta * y.");
     }
 
     ExecutionStatus execute(NodeSocketReader& reader, NodeSocketWriter& writer) override
@@ -82,43 +66,21 @@ public:
         return ExecutionStatus(EStatus::Ok);
     }
 
-    void configuration(NodeConfig& nodeConfig) const override
-    {
-        static const InputSocketConfig in_config[] = {
-            { ENodeFlowDataType::Image, "source1", "X", "" },
-            { ENodeFlowDataType::Image, "source2", "Y", "" },
-            { ENodeFlowDataType::Invalid, "", "", "" }
-        };
-        static const OutputSocketConfig out_config[] = {
-            { ENodeFlowDataType::Image, "output", "Output", "" },
-            { ENodeFlowDataType::Invalid, "", "", "" }
-        };
-        static const PropertyConfig prop_config[] = {
-            { EPropertyType::Double, "Alpha", "min:0.0, max:1.0, decimals:3, step:0.1" },
-            { EPropertyType::Double, "Beta",  "min:0.0, max:1.0, decimals:3, step:0.1" },
-            { EPropertyType::Unknown, "", "" }
-        };
-
-        nodeConfig.description = "Adds one image to another with specified weights: alpha * x + beta * y.";
-        nodeConfig.pInputSockets = in_config;
-        nodeConfig.pOutputSockets = out_config;
-        nodeConfig.pProperties = prop_config;
-    }
-
 private:
-    enum class pid
-    {
-        Alpha,
-        Beta
-    };
-
-    double _alpha;
-    double _beta;
+    TypedNodeProperty<double> _alpha;
+    TypedNodeProperty<double> _beta;
 };
 
 class AbsoluteNodeType : public NodeType
 {
 public:
+    AbsoluteNodeType()
+    {
+        addInput("Source", ENodeFlowDataType::Image);
+        addOutput("Output", ENodeFlowDataType::Image);
+        setDescription("Calculates an absolute value of each pixel element in given image: y = abs(x).");
+    }
+
     ExecutionStatus execute(NodeSocketReader& reader, NodeSocketWriter& writer) override
     {
         // Read input sockets
@@ -135,27 +97,19 @@ public:
 
         return ExecutionStatus(EStatus::Ok);
     }
-
-    void configuration(NodeConfig& nodeConfig) const override
-    {
-        static const InputSocketConfig in_config[] = {
-            { ENodeFlowDataType::Image, "source", "Source", "" },
-            { ENodeFlowDataType::Invalid, "", "", "" }
-        };
-        static const OutputSocketConfig out_config[] = {
-            { ENodeFlowDataType::Image, "output", "Output", "" },
-            { ENodeFlowDataType::Invalid, "", "", "" }
-        };
-
-        nodeConfig.description = "Calculates an absolute value of each pixel element in given image: y = abs(x).";
-        nodeConfig.pInputSockets = in_config;
-        nodeConfig.pOutputSockets = out_config;
-    }
 };
 
 class SubtractNodeType : public NodeType
 {
 public:
+    SubtractNodeType()
+    {
+        addInput("X", ENodeFlowDataType::Image);
+        addInput("Y", ENodeFlowDataType::Image);
+        addOutput("Output", ENodeFlowDataType::Image);
+        setDescription("Subtracts (per-element) one image from another : x - y");
+    }
+
     ExecutionStatus execute(NodeSocketReader& reader, NodeSocketWriter& writer) override
     {
         // Read input sockets
@@ -175,28 +129,19 @@ public:
 
         return ExecutionStatus(EStatus::Ok);
     }
-
-    void configuration(NodeConfig& nodeConfig) const override
-    {
-        static const InputSocketConfig in_config[] = {
-            { ENodeFlowDataType::Image, "source1", "X", "" },
-            { ENodeFlowDataType::Image, "source2", "Y", "" },
-            { ENodeFlowDataType::Invalid, "", "", "" }
-        };
-        static const OutputSocketConfig out_config[] = {
-            { ENodeFlowDataType::Image, "output", "Output", "" },
-            { ENodeFlowDataType::Invalid, "", "", "" }
-        };
-
-        nodeConfig.description = "Subtracts (per-element) one image from another : x - y";
-        nodeConfig.pInputSockets = in_config;
-        nodeConfig.pOutputSockets = out_config;
-    }
 };
 
 class AbsoluteDifferenceNodeType : public NodeType
 {
 public:
+    AbsoluteDifferenceNodeType()
+    {
+        addInput("X", ENodeFlowDataType::Image);
+        addInput("Y", ENodeFlowDataType::Image);
+        addOutput("Output", ENodeFlowDataType::Image);
+        setDescription("Calculates (per-element) absolute difference between two images: |x - y|.");
+    }
+
     ExecutionStatus execute(NodeSocketReader& reader, NodeSocketWriter& writer) override
     {
         // Read input sockets
@@ -216,28 +161,18 @@ public:
 
         return ExecutionStatus(EStatus::Ok);
     }
-
-    void configuration(NodeConfig& nodeConfig) const override
-    {
-        static const InputSocketConfig in_config[] = {
-            { ENodeFlowDataType::Image, "source1", "X", "" },
-            { ENodeFlowDataType::Image, "source2", "Y", "" },
-            { ENodeFlowDataType::Invalid, "", "", "" }
-        };
-        static const OutputSocketConfig out_config[] = {
-            { ENodeFlowDataType::Image, "output", "Output", "" },
-            { ENodeFlowDataType::Invalid, "", "", "" }
-        };
-
-        nodeConfig.description = "Calculates (per-element) absolute difference between two images: |x - y|.";
-        nodeConfig.pInputSockets = in_config;
-        nodeConfig.pOutputSockets = out_config;
-    }
 };
 
 class NegateNodeType : public NodeType
 {
 public:
+    NegateNodeType()
+    {
+        addInput("Source", ENodeFlowDataType::Image);
+        addOutput("Output", ENodeFlowDataType::Image);
+        setDescription("Negates image.");
+    }
+
     ExecutionStatus execute(NodeSocketReader& reader, NodeSocketWriter& writer) override
     {
         // Read input sockets
@@ -253,27 +188,17 @@ public:
 
         return ExecutionStatus(EStatus::Ok);
     }
-
-    void configuration(NodeConfig& nodeConfig) const override
-    {
-        static const InputSocketConfig in_config[] = {
-            { ENodeFlowDataType::Image, "source", "Source", "" },
-            { ENodeFlowDataType::Invalid, "", "", "" }
-        };
-        static const OutputSocketConfig out_config[] = {
-            { ENodeFlowDataType::Image, "output", "Output", "" },
-            { ENodeFlowDataType::Invalid, "", "", "" }
-        };
-
-        nodeConfig.description = "Negates image.";
-        nodeConfig.pInputSockets = in_config;
-        nodeConfig.pOutputSockets = out_config;
-    }
 };
 
 class CountNonZeroNodeType : public NodeType
 {
 public:
+    CountNonZeroNodeType()
+    {
+        addInput("Source", ENodeFlowDataType::ImageMono);
+        setDescription("Count non-zero pixel elements in given image.");
+    }
+
     ExecutionStatus execute(NodeSocketReader& reader, NodeSocketWriter&) override
     {
         // Read input sockets
@@ -283,17 +208,6 @@ public:
         int n = cv::countNonZero(src);
 
         return ExecutionStatus(EStatus::Ok, string_format("Non-zero elements: %d\n", n));
-    }
-
-    void configuration(NodeConfig& nodeConfig) const override
-    {
-        static const InputSocketConfig in_config[] = {
-            { ENodeFlowDataType::ImageMono, "source", "Source", "" },
-            { ENodeFlowDataType::Invalid, "", "", "" }
-        };
-
-        nodeConfig.description = "Count non-zero pixel elements in given image.";
-        nodeConfig.pInputSockets = in_config;
     }
 };
 
