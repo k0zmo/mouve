@@ -39,30 +39,15 @@ using namespace std;
 
 void nodeReflection(NodeTree& nodeTree, NodeID nodeID)
 {
-    NodeConfig nodeConfig;
-    nodeTree.nodeConfiguration(nodeID, nodeConfig);
+    const NodeConfig& nodeConfig = nodeTree.nodeConfiguration(nodeID);
 
     cout << endl << "Reflection of " << nodeTree.nodeTypeName(nodeID) << endl;
-    const InputSocketConfig* iscIter = begin_config<InputSocketConfig>(nodeConfig);
-    while (!end_config(iscIter))
-    {
-        cout << "<+> input socket: " << iscIter->name << "(" << to_string(iscIter->dataType) << ")" << endl;
-        ++iscIter;
-    }
-
-    const OutputSocketConfig* oscIter = begin_config<OutputSocketConfig>(nodeConfig);
-    while (!end_config(oscIter))
-    {
-        cout << "<+> output socket: " << oscIter->name << "(" << to_string(oscIter->dataType) << ")" << endl;
-        ++oscIter;
-    }
-
-    const PropertyConfig* pcIter = begin_config<PropertyConfig>(nodeConfig);
-    while (!end_config(pcIter))
-    {
-        cout << "<+> property: " << pcIter->name << "(" << to_string(pcIter->type) << ")" << endl;
-        ++pcIter;
-    }
+    for (const auto& input : nodeConfig.inputs())
+        cout << "<+> input socket: " << input.name() << "(" << to_string(input.type()) << ")" << endl;
+    for (const auto& output : nodeConfig.outputs())
+        cout << "<+> output socket: " << output.name() << "(" << to_string(output.type()) << ")" << endl;
+    for (const auto& prop : nodeConfig.properties())
+        cout << "<+> property socket: " << prop.name() << "(" << to_string(prop.type()) << ")" << endl;
 }
 
 int main()
@@ -105,17 +90,17 @@ int main()
 
             NodeResolver resolver(nodeTree);
 
-            nodeTree->linkNodes(resolver.resolveSocketAddress("o://Input image/output"),
-                                resolver.resolveSocketAddress("i://Upload/input"));
-            nodeTree->linkNodes(resolver.resolveSocketAddress("o://Upload/output"),
-                                resolver.resolveSocketAddress("i://AKF/source"));
-            nodeTree->linkNodes(resolver.resolveSocketAddress("o://AKF/output"),
-                                resolver.resolveSocketAddress("i://Download/input"));
+            nodeTree->linkNodes(resolver.resolveSocketAddress("o://Input image/Output"),
+                                resolver.resolveSocketAddress("i://Upload/Host image"));
+            nodeTree->linkNodes(resolver.resolveSocketAddress("o://Upload/Device image"),
+                                resolver.resolveSocketAddress("i://AKF/Image"));
+            nodeTree->linkNodes(resolver.resolveSocketAddress("o://AKF/Output"),
+                                resolver.resolveSocketAddress("i://Download/Device image"));
 
             // Set some properties, e.g input filename
             nodeTree->nodeSetProperty(inputImageID, 
                 resolver.resolveProperty(inputImageID, "File path"), 
-                Filepath{ "rgb.png" });
+                Filepath{"rgb.png"});
             nodeTree->nodeSetProperty(inputImageID, 
                 resolver.resolveProperty(inputImageID, "Force grayscale"),
                 false);
@@ -131,7 +116,7 @@ int main()
 
             // Get output data
             const NodeFlowData& outData = nodeTree->outputSocket(downloadID, 
-                resolver.resolveOutputSocket(downloadID, "output"));
+                resolver.resolveOutputSocket(downloadID, "Host image"));
 
             // Show it if possible
             cv::namedWindow("Output from node tree");
@@ -159,7 +144,7 @@ int main()
             // Get output data
             NodeID downloadID = resolver.resolveNode("Download");
             const NodeFlowData& outData = nodeTree->outputSocket(downloadID, 
-                resolver.resolveOutputSocket(downloadID, "output"));
+                resolver.resolveOutputSocket(downloadID, "Host image"));
 
             // Show it if possible
             cv::namedWindow("Output from node tree");
