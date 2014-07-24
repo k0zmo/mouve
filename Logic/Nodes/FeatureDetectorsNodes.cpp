@@ -36,36 +36,15 @@ public:
         , _type(cv::FastFeatureDetector::TYPE_9_16)
         , _nonmaxSupression(true)
     {
-    }
-
-    bool setProperty(PropertyID propId, const NodeProperty& newValue) override
-    {
-        switch(propId)
-        {
-        case 0:
-            _threshold = newValue.toInt();
-            return true;
-        case 1:
-            _nonmaxSupression = newValue.toBool();
-            return true;
-        case 2:
-            _type = newValue.toEnum();
-            return true;
-        }
-
-        return false;
-    }
-
-    NodeProperty property(PropertyID propId) const override
-    {
-        switch(propId)
-        {
-        case 0: return _threshold;
-        case 1: return _nonmaxSupression;
-        case 2: return _type;
-        }
-
-        return NodeProperty();
+        addInput("Image", ENodeFlowDataType::ImageMono);
+        addOutput("Keypoints", ENodeFlowDataType::Keypoints);
+        addProperty("Threshold", _threshold)
+            .setValidator(make_validator<InclRangePropertyValidator<int>>(0, 255))
+            .setUiHints("min:0, max:255");
+        addProperty("Nonmax supression", _nonmaxSupression);
+        addProperty("Neighborhoods type", _type)
+            .setUiHints("item: 5_8, item: 7_12, item: 9_16");
+        setDescription("Detects corners using the FAST algorithm.");
     }
 
     ExecutionStatus execute(NodeSocketReader& reader, NodeSocketWriter& writer) override
@@ -80,45 +59,29 @@ public:
             return ExecutionStatus(EStatus::Ok);
 
         // Do stuff
-        cv::FASTX(src, kp.kpoints, _threshold, _nonmaxSupression, _type.data());
+        cv::FASTX(src, kp.kpoints, _threshold, _nonmaxSupression, _type.cast<Enum>().data());
         kp.image = src;
 
         return ExecutionStatus(EStatus::Ok, 
             string_format("Keypoints detected: %d", (int) kp.kpoints.size()));
     }
 
-    void configuration(NodeConfig& nodeConfig) const override
-    {
-        static const InputSocketConfig in_config[] = {
-            { ENodeFlowDataType::ImageMono, "image", "Image", "" },
-            { ENodeFlowDataType::Invalid, "", "", "" }
-        };
-        static const OutputSocketConfig out_config[] = {
-            { ENodeFlowDataType::Keypoints, "keypoints", "Keypoints", "" },
-            { ENodeFlowDataType::Invalid, "", "", "" }
-        };
-        static const PropertyConfig prop_config[] = {
-            { EPropertyType::Integer, "Threshold", "min:0, max:255" },
-            { EPropertyType::Boolean, "Nonmax supression", "" },
-            { EPropertyType::Enum, "Neighborhoods type", "item: 5_8, item: 7_12, item: 9_16" },
-            { EPropertyType::Unknown, "", "" }
-        };
-
-        nodeConfig.description = "Detects corners using the FAST algorithm.";
-        nodeConfig.pInputSockets = in_config;
-        nodeConfig.pOutputSockets = out_config;
-        nodeConfig.pProperties = prop_config;
-    }
-
 private:
-    int _threshold;
-    Enum _type;
-    bool _nonmaxSupression;
+    TypedNodeProperty<int> _threshold;
+    TypedNodeProperty<Enum> _type;
+    TypedNodeProperty<bool> _nonmaxSupression;
 };
 
 class MserSalientRegionDetectorNodeType : public NodeType
 {
 public:
+    MserSalientRegionDetectorNodeType()
+    {
+        addInput("Image", ENodeFlowDataType::ImageMono);
+        addOutput("Output", ENodeFlowDataType::ImageRgb);
+        setDescription("Maximally stable extremal region extractor.");
+    }
+
     ExecutionStatus execute(NodeSocketReader& reader, NodeSocketWriter& writer) override
     {
         // Read input sockets
@@ -147,27 +110,18 @@ public:
 
         return ExecutionStatus(EStatus::Ok);
     }
-
-    void configuration(NodeConfig& nodeConfig) const override
-    {
-        static const InputSocketConfig in_config[] = {
-            { ENodeFlowDataType::ImageMono, "image", "Image", "" },
-            { ENodeFlowDataType::Invalid, "", "", "" }
-        };
-        static const OutputSocketConfig out_config[] = {
-            { ENodeFlowDataType::ImageRgb, "output", "Output", "" },
-            { ENodeFlowDataType::Invalid, "", "", "" }
-        };
-
-        nodeConfig.description = "Maximally stable extremal region extractor.";
-        nodeConfig.pInputSockets = in_config;
-        nodeConfig.pOutputSockets = out_config;
-    }
 };
 
 class StarFeatureDetectorNodeType : public NodeType
 {
 public:
+    StarFeatureDetectorNodeType()
+    {
+        addInput("Image", ENodeFlowDataType::ImageMono);
+        addOutput("Keypoints", ENodeFlowDataType::Keypoints);
+        setDescription("CenSurE keypoint detector.");
+    }
+
     ExecutionStatus execute(NodeSocketReader& reader, NodeSocketWriter& writer) override
     {
         // Read input sockets
@@ -186,22 +140,6 @@ public:
 
         return ExecutionStatus(EStatus::Ok, 
             string_format("Keypoints detected: %d", (int) kp.kpoints.size()));
-    }
-
-    void configuration(NodeConfig& nodeConfig) const override
-    {
-        static const InputSocketConfig in_config[] = {
-            { ENodeFlowDataType::ImageMono, "image", "Image", "" },
-            { ENodeFlowDataType::Invalid, "", "", "" }
-        };
-        static const OutputSocketConfig out_config[] = {
-            { ENodeFlowDataType::Keypoints, "keypoints", "Keypoints", "" },
-            { ENodeFlowDataType::Invalid, "", "", "" }
-        };
-
-        nodeConfig.description = "CenSurE keypoint detector.";
-        nodeConfig.pInputSockets = in_config;
-        nodeConfig.pOutputSockets = out_config;
     }
 };
 
