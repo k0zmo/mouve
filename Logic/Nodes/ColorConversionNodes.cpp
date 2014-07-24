@@ -32,6 +32,13 @@
 class GrayToRgbNodeType : public NodeType
 {
 public:
+    GrayToRgbNodeType()
+    {
+        addInput("Gray", ENodeFlowDataType::Image);
+        addOutput("Color", ENodeFlowDataType::ImageRgb);
+        setDescription("Converts gray 1-channel image to 3-channel image");
+    }
+
     ExecutionStatus execute(NodeSocketReader& reader, NodeSocketWriter& writer) override
     {
         // Read input sockets
@@ -58,27 +65,18 @@ public:
 
         return ExecutionStatus(EStatus::Ok);
     }
-
-    void configuration(NodeConfig& nodeConfig) const override
-    {
-        static const InputSocketConfig in_config[] = {
-            { ENodeFlowDataType::Image, "input", "Gray", "" },
-            { ENodeFlowDataType::Invalid, "", "", "" }
-        };
-        static const OutputSocketConfig out_config[] = {
-            { ENodeFlowDataType::ImageRgb, "output", "Color", "" },
-            { ENodeFlowDataType::Invalid, "", "", "" }
-        };
-
-        nodeConfig.description = "Converts gray 1-channel image to 3-channel image";
-        nodeConfig.pInputSockets = in_config;
-        nodeConfig.pOutputSockets = out_config;
-    }
 };
 
 class RgbToGrayNodeType : public NodeType
 {
 public:
+    RgbToGrayNodeType()
+    {
+        addInput("Color", ENodeFlowDataType::Image);
+        addOutput("Gray", ENodeFlowDataType::ImageMono);
+        setDescription("Converts color 3-channel image to 1-channel gray image");
+    }
+
     ExecutionStatus execute(NodeSocketReader& reader, NodeSocketWriter& writer) override
     {
         // Read input sockets
@@ -105,22 +103,6 @@ public:
 
         return ExecutionStatus(EStatus::Ok);
     }
-
-    void configuration(NodeConfig& nodeConfig) const override
-    {
-        static const InputSocketConfig in_config[] = {
-            { ENodeFlowDataType::Image, "input", "Color", "" },
-            { ENodeFlowDataType::Invalid, "", "", "" }
-        };
-        static const OutputSocketConfig out_config[] = {
-            { ENodeFlowDataType::ImageMono, "output", "Gray", "" },
-            { ENodeFlowDataType::Invalid, "", "", "" }
-        };
-
-        nodeConfig.description = "Converts color 3-channel image to 1-channel gray image";
-        nodeConfig.pInputSockets = in_config;
-        nodeConfig.pOutputSockets = out_config;
-    }
 };
 
 class BayerToGrayNodeType : public NodeType
@@ -129,28 +111,11 @@ public:
     BayerToGrayNodeType()
         : _BayerCode(cvu::EBayerCode::RG)
     {
-    }
-
-    bool setProperty(PropertyID propId, const NodeProperty& newValue) override
-    {
-        switch(propId)
-        {
-        case 0:
-            _BayerCode = newValue.toEnum().cast<cvu::EBayerCode>();
-            return true;
-        }
-
-        return false;
-    }
-
-    NodeProperty property(PropertyID propId) const override
-    {
-        switch(propId)
-        {
-        case 0: return _BayerCode;
-        }
-
-        return NodeProperty();
+        addInput("Input", ENodeFlowDataType::ImageMono);
+        addOutput("Output", ENodeFlowDataType::ImageMono);
+        addProperty("Bayer format", _BayerCode)
+            .setUiHints("item: BG, item: GB, item: RG, item: GR");
+        setDescription("Performs demosaicing from Bayer pattern image to gray-scale image");
     }
 
     ExecutionStatus execute(NodeSocketReader& reader, NodeSocketWriter& writer) override
@@ -164,34 +129,13 @@ public:
             return ExecutionStatus(EStatus::Ok);
         
         // Do stuff
-        cv::cvtColor(input, output, cvu::bayerCodeGray(_BayerCode));
+        cv::cvtColor(input, output, cvu::bayerCodeGray(_BayerCode.toEnum().cast<cvu::EBayerCode>()));
 
         return ExecutionStatus(EStatus::Ok);
     }
 
-    void configuration(NodeConfig& nodeConfig) const override
-    {
-        static const InputSocketConfig in_config[] = {
-            { ENodeFlowDataType::ImageMono, "input", "Input", "" },
-            { ENodeFlowDataType::Invalid, "", "", "" }
-        };
-        static const OutputSocketConfig out_config[] = {
-            { ENodeFlowDataType::ImageMono, "output", "Output", "" },
-            { ENodeFlowDataType::Invalid, "", "", "" }
-        };
-        static const PropertyConfig prop_config[] = {
-            { EPropertyType::Enum, "Bayer format", "item: BG, item: GB, item: RG, item: GR" },
-            { EPropertyType::Unknown, "", "" }
-        };
-
-        nodeConfig.description = "Performs demosaicing from Bayer pattern image to gray-scale image";
-        nodeConfig.pInputSockets = in_config;
-        nodeConfig.pOutputSockets = out_config;
-        nodeConfig.pProperties = prop_config;
-    }
-
 private:
-    cvu::EBayerCode _BayerCode;
+    TypedNodeProperty<cvu::EBayerCode> _BayerCode;
 };
 
 class BayerToRgbNodeType : public NodeType
@@ -203,40 +147,20 @@ public:
         , _blueGain(1.0)
         , _BayerCode(cvu::EBayerCode::RG)
     {
-    }
-
-    bool setProperty(PropertyID propId, const NodeProperty& newValue) override
-    {
-        switch(static_cast<pid>(propId))
-        {
-        case pid::BayerFormat:
-            _BayerCode = newValue.toEnum().cast<cvu::EBayerCode>();
-            return true;
-        case pid::RedGain:
-            _redGain = newValue.toDouble();
-            return true;
-        case pid::GreenGain:
-            _greenGain = newValue.toDouble();
-            return true;
-        case pid::BlueGain:
-            _blueGain = newValue.toDouble();
-            return true;
-        }
-
-        return false;
-    }
-
-    NodeProperty property(PropertyID propId) const override
-    {
-        switch(static_cast<pid>(propId))
-        {
-        case pid::BayerFormat: return _BayerCode;
-        case pid::RedGain: return _redGain;
-        case pid::GreenGain: return _greenGain;
-        case pid::BlueGain: return _blueGain;
-        }
-
-        return NodeProperty();
+        addInput("Input", ENodeFlowDataType::ImageMono);
+        addOutput("Output", ENodeFlowDataType::ImageRgb);
+        addProperty("Bayer format", _BayerCode)
+            .setUiHints("item: BG, item: GB, item: RG, item: GR");
+        addProperty("Red gain", _redGain)
+            .setValidator(make_validator<InclRangePropertyValidator<double>>(0.0, 4.0))
+            .setUiHints("min:0.0, max:4.0, step:0.001");
+        addProperty("Green gain", _greenGain)
+            .setValidator(make_validator<InclRangePropertyValidator<double>>(0.0, 4.0))
+            .setUiHints("min:0.0, max:4.0, step:0.001");
+        addProperty("Blue gain", _blueGain)
+            .setValidator(make_validator<InclRangePropertyValidator<double>>(0.0, 4.0))
+            .setUiHints("min:0.0, max:4.0, step:0.001");
+        setDescription("Performs demosaicing from Bayer pattern image to RGB image.");
     }
 
     ExecutionStatus execute(NodeSocketReader& reader, NodeSocketWriter& writer) override
@@ -251,11 +175,11 @@ public:
             return ExecutionStatus(EStatus::Ok);
         
         // Do stuff
-        cv::cvtColor(input, output, cvu::bayerCodeRgb(_BayerCode));
+        cv::cvtColor(input, output, cvu::bayerCodeRgb(_BayerCode.toEnum().cast<cvu::EBayerCode>()));
 
-        if(!fcmp(_redGain, 1.0)
-        || !fcmp(_greenGain, 1.0) 
-        || !fcmp(_blueGain, 1.0))
+        if(!fcmp(_redGain.toDouble(), 1.0)
+        || !fcmp(_greenGain.toDouble(), 1.0) 
+        || !fcmp(_blueGain.toDouble(), 1.0))
         {
             cvu::parallel_for(cv::Range(0, output.rows), [&](const cv::Range& range) 
             {
@@ -276,43 +200,11 @@ public:
         return ExecutionStatus(EStatus::Ok);
     }
 
-    void configuration(NodeConfig& nodeConfig) const override
-    {
-        static const InputSocketConfig in_config[] = {
-            { ENodeFlowDataType::ImageMono, "input", "Input", "" },
-            { ENodeFlowDataType::Invalid, "", "", "" }
-        };
-        static const OutputSocketConfig out_config[] = {
-            { ENodeFlowDataType::ImageRgb, "output", "Output", "" },
-            { ENodeFlowDataType::Invalid, "", "", "" }
-        };
-        static const PropertyConfig prop_config[] = {
-            { EPropertyType::Enum, "Bayer format", "item: BG, item: GB, item: RG, item: GR" },
-            { EPropertyType::Double, "Red gain", "min:0.0, max:4.0, step:0.001" },
-            { EPropertyType::Double, "Green gain", "min:0.0, max:4.0, step:0.001" },
-            { EPropertyType::Double, "Blue gain", "min:0.0, max:4.0, step:0.001" },
-            { EPropertyType::Unknown, "", "" }
-        };
-
-        nodeConfig.description = "Performs demosaicing from Bayer pattern image to RGB image.";
-        nodeConfig.pInputSockets = in_config;
-        nodeConfig.pOutputSockets = out_config;
-        nodeConfig.pProperties = prop_config;	
-    }
-
 private:
-    enum class pid
-    {
-        BayerFormat,
-        RedGain,
-        GreenGain,
-        BlueGain,
-    };
-
-    double _redGain;
-    double _greenGain;
-    double _blueGain;
-    cvu::EBayerCode _BayerCode;
+    TypedNodeProperty<double> _redGain;
+    TypedNodeProperty<double> _greenGain;
+    TypedNodeProperty<double> _blueGain;
+    TypedNodeProperty<cvu::EBayerCode> _BayerCode;
 };
 
 class ContrastAndBrightnessNodeType : public NodeType
@@ -322,32 +214,15 @@ public:
         : _gain(1.0)
         , _bias(0)
     {
-    }
-
-    bool setProperty(PropertyID propId, const NodeProperty& newValue) override
-    {
-        switch(static_cast<pid>(propId))
-        {
-        case pid::Gain:
-            _gain = newValue.toDouble();
-            return true;
-        case pid::Bias:
-            _bias = newValue.toInt();
-            return true;
-        }
-
-        return false;
-    }
-
-    NodeProperty property(PropertyID propId) const override
-    {
-        switch(static_cast<pid>(propId))
-        {
-        case pid::Gain: return _gain;
-        case pid::Bias: return _bias;
-        }
-
-        return NodeProperty();
+        addInput("Input", ENodeFlowDataType::Image);
+        addOutput("Output", ENodeFlowDataType::Image);
+        addProperty("Gain", _gain)
+            .setValidator(make_validator<InclRangePropertyValidator<double>>(0.0, 16.0))
+            .setUiHints("min:0.0, max:16.0");
+        addProperty("Bias", _bias)
+            .setValidator(make_validator<InclRangePropertyValidator<int>>(-255, 255))
+            .setUiHints("min:-255, max:255");
+        setDescription("Adjusts contrast and brightness of input image.");
     }
 
     ExecutionStatus execute(NodeSocketReader& reader, NodeSocketWriter& writer) override
@@ -362,7 +237,7 @@ public:
             return ExecutionStatus(EStatus::Ok);
 
         // Do stuff
-        if(!fcmp(_gain, 1.0) || _bias != 0)
+        if(!fcmp(_gain.toDouble(), 1.0) || _bias != 0)
         {
             output = cv::Mat(input.size(), input.type());
 
@@ -406,38 +281,9 @@ public:
         return ExecutionStatus(EStatus::Ok);
     }
 
-    void configuration(NodeConfig& nodeConfig) const override
-    {
-        static const InputSocketConfig in_config[] = {
-            { ENodeFlowDataType::Image, "input", "Input", "" },
-            { ENodeFlowDataType::Invalid, "", "", "" }
-        };
-        static const OutputSocketConfig out_config[] = {
-            { ENodeFlowDataType::Image, "output", "Output", "" },
-            { ENodeFlowDataType::Invalid, "", "", "" }
-        };
-        static const PropertyConfig prop_config[] = {
-            { EPropertyType::Double, "Gain", "min:0.0, max:16.0" },
-            { EPropertyType::Integer, "Bias", "min:-255, max:255" },
-            { EPropertyType::Unknown, "", "" }
-        };
-
-        nodeConfig.description = "Adjusts contrast and brightness of input image.";
-        nodeConfig.pInputSockets = in_config;
-        nodeConfig.pOutputSockets = out_config;
-        nodeConfig.pProperties = prop_config;	
-    }
-
-
 protected:
-    enum class pid
-    {
-        Gain,
-        Bias
-    };
-
-    double _gain;
-    int _bias;
+    TypedNodeProperty<double> _gain;
+    TypedNodeProperty<int> _bias;
 };
 
 REGISTER_NODE("Format conversion/Contrast & brightness", ContrastAndBrightnessNodeType)
