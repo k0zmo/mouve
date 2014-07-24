@@ -37,40 +37,19 @@ public:
         , _yradius(1)
         , _rotation(0)
     {
-    }
-
-    bool setProperty(PropertyID propId, const NodeProperty& newValue) override
-    {
-        switch(static_cast<pid>(propId))
-        {
-        case pid::StructuringElementType:
-            _se = newValue.toEnum().cast<cvu::EStructuringElementType>();
-            return true;
-        case pid::XRadius:
-            _xradius = newValue.toInt();
-            return true;
-        case pid::YRadius:
-            _yradius = newValue.toInt();
-            return true;
-        case pid::Rotation:
-            _rotation = newValue.toInt();
-            return true;
-        }
-
-        return false;
-    }
-
-    NodeProperty property(PropertyID propId) const override
-    {
-        switch(static_cast<pid>(propId))
-        {
-        case pid::StructuringElementType: return _se;
-        case pid::XRadius: return _xradius;
-        case pid::YRadius: return _yradius;
-        case pid::Rotation: return _rotation;
-        }
-
-        return NodeProperty();
+        addOutput("Structuring element", ENodeFlowDataType::ImageMono);
+        addProperty("SE shape", _se)
+            .setUiHints("item: Rectangle, item: Ellipse, item: Cross");
+        addProperty("Horizontal radius", _xradius)
+            .setValidator(make_validator<InclRangePropertyValidator<int>>(1, 50))
+            .setUiHints("min:1, max:50");
+        addProperty("Vertical radius", _yradius)
+            .setValidator(make_validator<InclRangePropertyValidator<int>>(1, 50))
+            .setUiHints("min:1, max:50");
+        addProperty("Rotation", _rotation)
+            .setUiHints("min:0, max:359, wrap:true");
+        setDescription("Generates a structuring element for a morphological "
+            "operations with a given parameters describing its shape, size and rotation.");
     }
 
     ExecutionStatus execute(NodeSocketReader&, NodeSocketWriter& writer) override
@@ -81,44 +60,17 @@ public:
             return ExecutionStatus(EStatus::Ok);
 
         // Do stuff
-        kernel = cvu::standardStructuringElement(_xradius, _yradius, _se, _rotation);
+        kernel = cvu::standardStructuringElement(_xradius, _yradius, 
+            _se.cast<Enum>().cast<cvu::EStructuringElementType>(), _rotation);
 
         return ExecutionStatus(EStatus::Ok);
     }
 
-    void configuration(NodeConfig& nodeConfig) const override
-    {
-        static const OutputSocketConfig out_config[] = {
-            { ENodeFlowDataType::ImageMono, "structuringElement", "Structuring element", "" },
-            { ENodeFlowDataType::Invalid, "", "", "" }
-        };
-        static const PropertyConfig prop_config[] = {
-            { EPropertyType::Enum, "SE shape", "item: Rectangle, item: Ellipse, item: Cross" },
-            { EPropertyType::Integer, "Horizontal radius", "min:1, max:50" },
-            { EPropertyType::Integer, "Vertical radius", "min:1, max:50" },
-            { EPropertyType::Integer, "Rotation", "min:0, max:359, wrap:true" },
-            { EPropertyType::Unknown, "", "" }
-        };
-
-        nodeConfig.description = "Generates a structuring element for a morphological "
-            "operations with a given parameters describing its shape, size and rotation.";
-        nodeConfig.pOutputSockets = out_config;
-        nodeConfig.pProperties = prop_config;
-    }
-
 private:
-    enum class pid
-    {
-        StructuringElementType,
-        XRadius,
-        YRadius,
-        Rotation
-    };
-
-    cvu::EStructuringElementType _se;
-    int _xradius;
-    int _yradius;
-    int _rotation;
+    TypedNodeProperty<cvu::EStructuringElementType> _se;
+    TypedNodeProperty<int> _xradius;
+    TypedNodeProperty<int> _yradius;
+    TypedNodeProperty<int> _rotation;
 };
 
 class MorphologyOperatorNodeType : public NodeType
@@ -127,28 +79,13 @@ public:
     MorphologyOperatorNodeType()
         : _op(EMorphologyOperation::Erode)
     {
-    }
-
-    bool setProperty(PropertyID propId, const NodeProperty& newValue) override
-    {
-        switch(static_cast<pid>(propId))
-        {
-        case pid::Operation:
-            _op = newValue.toEnum().cast<EMorphologyOperation>();
-            return true;
-        }
-
-        return false;
-    }
-
-    NodeProperty property(PropertyID propId) const override
-    {
-        switch(static_cast<pid>(propId))
-        {
-        case pid::Operation: return _op;
-        }
-
-        return NodeProperty();
+        addInput("Source", ENodeFlowDataType::Image);
+        addInput("Structuring element", ENodeFlowDataType::ImageMono);
+        addOutput("Output", ENodeFlowDataType::Image);
+        addProperty("Operation type", _op)
+            .setUiHints("item: Erode, item: Dilate, item: Open, item: Close,"
+                "item: Gradient, item: Top Hat, item: Black Hat");
+        setDescription("Performs morphological operation on a given image.");
     }
 
     ExecutionStatus execute(NodeSocketReader& reader, NodeSocketWriter& writer) override
@@ -164,33 +101,9 @@ public:
             return ExecutionStatus(EStatus::Ok);
 
         // Do stuff
-        cv::morphologyEx(src, dst, int(_op), se);
+        cv::morphologyEx(src, dst, _op.cast<Enum>().data(), se);
 
         return ExecutionStatus(EStatus::Ok);
-    }
-
-    void configuration(NodeConfig& nodeConfig) const override
-    {
-        static const InputSocketConfig in_config[] = {
-            { ENodeFlowDataType::Image, "source", "Source", "" },
-            { ENodeFlowDataType::ImageMono, "source", "Structuring element", "" },
-            { ENodeFlowDataType::Invalid, "", "", "" }
-        };
-        static const OutputSocketConfig out_config[] = {
-            { ENodeFlowDataType::Image, "output", "Output", "" },
-            { ENodeFlowDataType::Invalid, "", "", "" }
-        };
-        static const PropertyConfig prop_config[] = {
-            { EPropertyType::Enum, "Operation type", 
-            "item: Erode, item: Dilate, item: Open, item: Close,"
-            "item: Gradient, item: Top Hat, item: Black Hat"},
-            { EPropertyType::Unknown, "", "" }
-        };
-
-        nodeConfig.description = "Performs morphological operation on a given image.";
-        nodeConfig.pInputSockets = in_config;
-        nodeConfig.pOutputSockets = out_config;
-        nodeConfig.pProperties = prop_config;
     }
 
 private:
@@ -205,12 +118,7 @@ private:
         BlackHat = cv::MORPH_BLACKHAT
     };
 
-    enum class pid
-    {
-        Operation
-    };
-
-    EMorphologyOperation _op;
+    TypedNodeProperty<EMorphologyOperation> _op;
 };
 
 static const int OBJ = 255;
@@ -233,28 +141,11 @@ public:
     HitMissOperatorNodeType()
         : _op(EHitMissOperation::Outline)
     {
-    }
-
-    bool setProperty(PropertyID propId, const NodeProperty& newValue) override
-    {
-        switch(static_cast<pid>(propId))
-        {
-        case pid::Operation:
-            _op = newValue.toEnum().cast<EHitMissOperation>();
-            return true;
-        }
-
-        return false;
-    }
-
-    NodeProperty property(PropertyID propId) const override
-    {
-        switch(static_cast<pid>(propId))
-        {
-        case pid::Operation: return _op;
-        }
-
-        return NodeProperty();
+        addInput("Source", ENodeFlowDataType::ImageMono);
+        addOutput("Output", ENodeFlowDataType::ImageMono);
+        addProperty("Operation type", _op)
+            .setUiHints("item: Outline, item: Skeleton, item: Skeleton (Zhang-Suen)");
+        setDescription("Performs hit-miss operation on a given image.");
     }
 
     ExecutionStatus execute(NodeSocketReader& reader, NodeSocketWriter& writer) override
@@ -269,7 +160,7 @@ public:
             return ExecutionStatus(EStatus::Ok);
 
         // Do stuff
-        switch(_op)
+        switch(_op.cast<Enum>().cast<EHitMissOperation>())
         {
         case EHitMissOperation::Outline:
             hitmissOutline(src, dst);
@@ -283,28 +174,6 @@ public:
         }
 
         return ExecutionStatus(EStatus::Ok);
-    }
-
-    void configuration(NodeConfig& nodeConfig) const override
-    {
-        static const InputSocketConfig in_config[] = {
-            { ENodeFlowDataType::ImageMono, "source", "Source", "" },
-            { ENodeFlowDataType::Invalid, "", "", "" }
-        };
-        static const OutputSocketConfig out_config[] = {
-            { ENodeFlowDataType::ImageMono, "output", "Output", "" },
-            { ENodeFlowDataType::Invalid, "", "", "" }
-        };
-        static const PropertyConfig prop_config[] = {
-            { EPropertyType::Enum, "Operation type", 
-            "item: Outline, item: Skeleton, item: Skeleton (Zhang-Suen)"},
-            { EPropertyType::Unknown, "", "" }
-        };
-
-        nodeConfig.description = "Performs hit-miss operation on a given image.";
-        nodeConfig.pInputSockets = in_config;
-        nodeConfig.pOutputSockets = out_config;
-        nodeConfig.pProperties = prop_config;
     }
 
 private:
@@ -772,12 +641,7 @@ private:
         SkeletonZhang
     };
 
-    enum class pid
-    {
-        Operation
-    };
-
-    EHitMissOperation _op;
+    TypedNodeProperty<EHitMissOperation> _op;
 };
 
 REGISTER_NODE("Morphology/Hit-miss", HitMissOperatorNodeType)
