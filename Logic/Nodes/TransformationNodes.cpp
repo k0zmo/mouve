@@ -33,27 +33,12 @@ public:
     RotateImageNodeType()
         : _angle(0)
     {
-    }
-
-    bool setProperty(PropertyID propId, const NodeProperty& newValue) override
-    {
-        switch(static_cast<pid>(propId))
-        {
-        case pid::Angle: 
-            _angle = newValue.toDouble();
-            return true;
-        }
-        return false;
-    }
-
-    NodeProperty property(PropertyID propId) const override
-    {
-        switch(static_cast<pid>(propId))
-        {
-        case pid::Angle: return _angle;
-        }
-
-        return NodeProperty();
+        addInput("Input", ENodeFlowDataType::Image);
+        addOutput("Output", ENodeFlowDataType::Image);
+        addProperty("Angle", _angle)
+            .setValidator(make_validator<InclRangePropertyValidator<double>>(0.0, 360.0))
+            .setUiHints("min:0, max:360, step:0.1");
+        setDescription("Applies rotation transformation to a given image.");
     }
 
     ExecutionStatus execute(NodeSocketReader& reader, NodeSocketWriter& writer) override
@@ -75,35 +60,8 @@ public:
         return ExecutionStatus(EStatus::Ok);
     }
 
-    void configuration(NodeConfig& nodeConfig) const override
-    {
-        static const InputSocketConfig in_config[] = {
-            { ENodeFlowDataType::Image, "input", "Input", "" },
-            { ENodeFlowDataType::Invalid, "", "", "" }
-        };
-        static const OutputSocketConfig out_config[] = {
-            { ENodeFlowDataType::Image, "output", "Output", "" },
-            { ENodeFlowDataType::Invalid, "", "", "" }
-        };
-
-        static const PropertyConfig prop_config[] = {
-            { EPropertyType::Double, "Angle", "min:0, max:360, step:0.1" },
-            { EPropertyType::Unknown, "", "" }
-        };
-
-        nodeConfig.description = "Applies rotation transformation to a given image.";
-        nodeConfig.pInputSockets = in_config;
-        nodeConfig.pOutputSockets = out_config;
-        nodeConfig.pProperties = prop_config;
-    }
-
 private:
-    enum class pid
-    {
-        Angle
-    };
-
-    double _angle;
+    TypedNodeProperty<double> _angle;
 };
 
 class ScaleImageNodeType : public NodeType
@@ -113,31 +71,14 @@ public:
         : _scale(1.0)
         , _inter(EInterpolationMethod::eimArea)
     {
-    }
-
-    bool setProperty(PropertyID propId, const NodeProperty& newValue) override
-    {
-        switch(static_cast<pid>(propId))
-        {
-        case pid::Scale: 
-            _scale = newValue.toDouble();
-            return true;
-        case pid::IntepolationMethod:
-            _inter = newValue.toEnum().cast<EInterpolationMethod>();
-            return true;
-        }
-        return false;
-    }
-
-    NodeProperty property(PropertyID propId) const override
-    {
-        switch(static_cast<pid>(propId))
-        {
-        case pid::Scale: return _scale;
-        case pid::IntepolationMethod: return _inter;
-        }
-
-        return NodeProperty();
+        addInput("Input", ENodeFlowDataType::Image);
+        addOutput("Output", ENodeFlowDataType::Image);
+        addProperty("Scale", _scale)
+            .setValidator(make_validator<GreaterPropertyValidator<double>>(0.0))
+            .setUiHints("min:0, step:0.1");
+        addProperty("Interpolation method", _inter)
+            .setUiHints("item: Nearest neighbour, item: Linear, item: Cubic, item: Area, item: Lanczos");
+        setDescription("Resizes given image.");
     }
 
     ExecutionStatus execute(NodeSocketReader& reader, NodeSocketWriter& writer) override
@@ -153,43 +94,14 @@ public:
 
         // Do stuff
         cv::Size dstSize(int(input.cols * _scale), int(input.rows * _scale));
-        cv::resize(input, output, dstSize, 0, 0, int(_inter));
+        cv::resize(input, output, dstSize, 0, 0, _inter.cast<Enum>().data());
 
         return ExecutionStatus(EStatus::Ok, 
             string_format("Output image width: %d\nOutput image height: %d",
                 output.cols, output.rows));
     }
 
-    void configuration(NodeConfig& nodeConfig) const override
-    {
-        static const InputSocketConfig in_config[] = {
-            { ENodeFlowDataType::Image, "input", "Input", "" },
-            { ENodeFlowDataType::Invalid, "", "", "" }
-        };
-        static const OutputSocketConfig out_config[] = {
-            { ENodeFlowDataType::Image, "output", "Output", "" },
-            { ENodeFlowDataType::Invalid, "", "", "" }
-        };
-
-        static const PropertyConfig prop_config[] = {
-            { EPropertyType::Double, "Scale", "min:0" },
-            { EPropertyType::Enum, "Interpolation method", 
-            "item: Nearest neighbour, item: Linear, item: Cubic, item: Area, item: Lanczos" },
-            { EPropertyType::Unknown, "", "" }
-        };
-
-        nodeConfig.description = "Resizes given image.";
-        nodeConfig.pInputSockets = in_config;
-        nodeConfig.pOutputSockets = out_config;
-        nodeConfig.pProperties = prop_config;
-    }
-
 private:
-    enum class pid
-    {
-        Scale,
-        IntepolationMethod
-    };
 
     enum class EInterpolationMethod
     {
@@ -200,13 +112,20 @@ private:
         eimLanczos          = cv::INTER_LANCZOS4
     };
 
-    double _scale;
-    EInterpolationMethod _inter;
+    TypedNodeProperty<double> _scale;
+    TypedNodeProperty<EInterpolationMethod >_inter;
 };
 
 class DownsampleNodeType : public NodeType
 {
 public:
+    DownsampleNodeType()
+    {
+        addInput("Source", ENodeFlowDataType::Image);
+        addOutput("Output", ENodeFlowDataType::Image);
+        setDescription("Blurs an image and downsamples it.");
+    }
+
     ExecutionStatus execute(NodeSocketReader& reader, NodeSocketWriter& writer) override
     {
         // Read input sockets
@@ -224,27 +143,18 @@ public:
         return ExecutionStatus(EStatus::Ok, 
             string_format("Image size: %dx%d\n", dst.cols, dst.rows));
     }
-
-    void configuration(NodeConfig& nodeConfig) const override
-    {
-        static const InputSocketConfig in_config[] = {
-            { ENodeFlowDataType::Image, "source", "Source", "" },
-            { ENodeFlowDataType::Invalid, "", "", "" }
-        };
-        static const OutputSocketConfig out_config[] = {
-            { ENodeFlowDataType::Image, "output", "Output", "" },
-            { ENodeFlowDataType::Invalid, "", "", "" }
-        };
-
-        nodeConfig.description = "Blurs an image and downsamples it.";
-        nodeConfig.pInputSockets = in_config;
-        nodeConfig.pOutputSockets = out_config;
-    }
 };
 
 class UpsampleNodeType : public NodeType
 {
 public:
+    UpsampleNodeType()
+    {
+        addInput("Source", ENodeFlowDataType::Image);
+        addOutput("Output", ENodeFlowDataType::Image);
+        setDescription("Upsamples an image and then blurs it.");
+    }
+
     ExecutionStatus execute(NodeSocketReader& reader, NodeSocketWriter& writer) override
     {
         // Read input sockets
@@ -262,27 +172,18 @@ public:
         return ExecutionStatus(EStatus::Ok, 
             string_format("Image size: %dx%d\n", dst.cols, dst.rows));
     }
-
-    void configuration(NodeConfig& nodeConfig) const override
-    {
-        static const InputSocketConfig in_config[] = {
-            { ENodeFlowDataType::Image, "source", "Source", "" },
-            { ENodeFlowDataType::Invalid, "", "", "" }
-        };
-        static const OutputSocketConfig out_config[] = {
-            { ENodeFlowDataType::Image, "output", "Output", "" },
-            { ENodeFlowDataType::Invalid, "", "", "" }
-        };
-
-        nodeConfig.description = "Upsamples an image and then blurs it.";
-        nodeConfig.pInputSockets = in_config;
-        nodeConfig.pOutputSockets = out_config;
-    }
 };
 
 class MaskedImageNodeType : public NodeType
 {
 public:
+    MaskedImageNodeType()
+    {
+        addInput("Image", ENodeFlowDataType::Image);
+        addInput("Mask", ENodeFlowDataType::ImageMono);
+        addOutput("Output", ENodeFlowDataType::Image);
+    }
+
     ExecutionStatus execute(NodeSocketReader& reader, NodeSocketWriter& writer) override
     {
         // Read input sockets
@@ -302,23 +203,6 @@ public:
         src.copyTo(dst, mask);
 
         return ExecutionStatus(EStatus::Ok);
-    }
-
-    void configuration(NodeConfig& nodeConfig) const override
-    {
-        static const InputSocketConfig in_config[] = {
-            { ENodeFlowDataType::Image, "image", "Image", "" },
-            { ENodeFlowDataType::ImageMono, "mask", "Mask", "" },
-            { ENodeFlowDataType::Invalid, "", "", "" }
-        };
-        static const OutputSocketConfig out_config[] = {
-            { ENodeFlowDataType::Image, "output", "Output", "" },
-            { ENodeFlowDataType::Invalid, "", "", "" }
-        };
-
-        nodeConfig.description = "";
-        nodeConfig.pInputSockets = in_config;
-        nodeConfig.pOutputSockets = out_config;
     }
 };
 
