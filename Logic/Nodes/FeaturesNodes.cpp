@@ -35,32 +35,15 @@ public:
         : _threshold(10)
         , _ratio(3)
     {
-    }
-
-    NodeProperty property(PropertyID propId) const override
-    {
-        switch(static_cast<pid>(propId))
-        {
-        case pid::Threshold: return _threshold;
-        case pid::Ratio: return _ratio;
-        }
-
-        return NodeProperty();
-    }
-
-    bool setProperty(PropertyID propId, const NodeProperty& newValue) override
-    {
-        switch(static_cast<pid>(propId))
-        {
-        case pid::Threshold:
-            _threshold = newValue.toDouble();
-            return true;
-        case pid::Ratio:
-            _ratio = newValue.toDouble();
-            return true;
-        }
-
-        return false;
+        addInput("Input", ENodeFlowDataType::Image);
+        addOutput("Output", ENodeFlowDataType::ImageMono);
+        addProperty("Threshold", _threshold)
+            .setValidator(make_validator<InclRangePropertyValidator<double>>(0.0, 100.0))
+            .setUiHints("min:0.0, max:100.0, decimals:3");
+        addProperty("Ratio", _ratio)
+            .setValidator(make_validator<MinPropertyValidator<double>>(0.0))
+            .setUiHints("min:0.0, decimals:3");
+        setDescription("Detects edges in input image using Canny detector");
     }
 
     ExecutionStatus execute(NodeSocketReader& reader, NodeSocketWriter& writer) override
@@ -76,38 +59,9 @@ public:
         return ExecutionStatus(EStatus::Ok);
     }
 
-
-    void configuration(NodeConfig& nodeConfig) const override
-    {
-        static const InputSocketConfig in_config[] = {
-            { ENodeFlowDataType::Image, "input", "Input", "" },
-            { ENodeFlowDataType::Invalid, "", "", "" }
-        };
-        static const OutputSocketConfig out_config[] = {
-            { ENodeFlowDataType::ImageMono, "output", "Output", "" },
-            { ENodeFlowDataType::Invalid, "", "", "" }
-        };
-        static const PropertyConfig prop_config[] = {
-            { EPropertyType::Double, "Threshold", "min:0.0, max:100.0, decimals:3" },
-            { EPropertyType::Double, "Ratio", "min:0.0, decimals:3" },
-            { EPropertyType::Unknown, "", "" }
-        };
-
-        nodeConfig.description = "Detects edges in input image using Canny detector";
-        nodeConfig.pInputSockets = in_config;
-        nodeConfig.pOutputSockets = out_config;
-        nodeConfig.pProperties = prop_config;
-    }
-
 private:
-    enum class pid
-    {
-        Threshold,
-        Ratio,
-    };
-
-    double _threshold;
-    double _ratio;
+    TypedNodeProperty<double> _threshold;
+    TypedNodeProperty<double> _ratio;
 };
 
 class HoughLinesNodeType : public NodeType
@@ -118,40 +72,16 @@ public:
         , _rhoResolution(1.0f)
         , _thetaResolution(1.0f)
     {
-    }
-
-    bool setProperty(PropertyID propId, const NodeProperty& newValue) override
-    {
-        switch(static_cast<pid>(propId))
-        {
-        case pid::Threshold:
-            _threshold = newValue.toInt();
-            return true;
-        case pid::RhoResolution:
-            if(newValue.toFloat() <= 0)
-                return false;
-            _rhoResolution = newValue.toFloat();
-            return true;
-        case pid::ThetaResolution:
-            if(newValue.toFloat() <= 0)
-                return false;
-            _thetaResolution = newValue.toFloat();
-            return true;
-        }
-
-        return false;
-    }
-
-    NodeProperty property(PropertyID propId) const override
-    {
-        switch(static_cast<pid>(propId))
-        {
-        case pid::Threshold: return _threshold;
-        case pid::RhoResolution: return _rhoResolution;
-        case pid::ThetaResolution: return _thetaResolution;
-        }
-
-        return NodeProperty();
+        addInput("Image", ENodeFlowDataType::ImageMono);
+        addOutput("Lines", ENodeFlowDataType::Array);
+        addProperty("Accumulator threshold", _threshold);
+        addProperty("Rho resolution", _rhoResolution)
+            .setValidator(make_validator<GreaterPropertyValidator<float>>(0.0f))
+            .setUiHints("min:0.01");
+        addProperty("Theta resolution", _thetaResolution)
+            .setValidator(make_validator<GreaterPropertyValidator<float>>(0.0f))
+            .setUiHints("min:0.01");
+        setDescription("Finds lines in a binary image using the standard Hough transform.");
     }
 
     ExecutionStatus execute(NodeSocketReader& reader, NodeSocketWriter& writer) override
@@ -182,40 +112,10 @@ public:
             string_format("Lines detected: %d", (int) linesVector.size()));
     }
 
-    void configuration(NodeConfig& nodeConfig) const override
-    {
-        static const InputSocketConfig in_config[] = {
-            { ENodeFlowDataType::ImageMono, "image", "Image", "" },
-            { ENodeFlowDataType::Invalid, "", "", "" }
-        };
-        static const OutputSocketConfig out_config[] = {
-            { ENodeFlowDataType::Array, "lines", "Lines", "" },
-            { ENodeFlowDataType::Invalid, "", "", "" }
-        };
-        static const PropertyConfig prop_config[] = {
-            { EPropertyType::Integer, "Accumulator threshold", "" },
-            { EPropertyType::Double, "Rho resolution", "min:0.01" },
-            { EPropertyType::Double, "Theta resolution", "min:0.01" },
-            { EPropertyType::Unknown, "", "" }
-        };
-
-        nodeConfig.description = "Finds lines in a binary image using the standard Hough transform.";
-        nodeConfig.pInputSockets = in_config;
-        nodeConfig.pOutputSockets = out_config;
-        nodeConfig.pProperties = prop_config;
-    }
-
 private:
-    enum class pid
-    {
-        Threshold,
-        RhoResolution,
-        ThetaResolution,
-    };
-
-    int _threshold;
-    float _rhoResolution;
-    float _thetaResolution;
+    TypedNodeProperty<int> _threshold;
+    TypedNodeProperty<float> _rhoResolution;
+    TypedNodeProperty<float> _thetaResolution;
 };
 
 class HoughCirclesNodeType : public NodeType
@@ -228,48 +128,24 @@ public:
         , _minRadius(0)
         , _maxRadius(0)
     {
-    }
-
-    bool setProperty(PropertyID propId, const NodeProperty& newValue) override
-    {
-        switch(static_cast<pid>(propId))
-        {
-        case pid::AccResolution:
-            _dp = newValue.toDouble();
-            return true;
-        case pid::CannyThreshold:
-            if(newValue.toDouble() <= 0)
-                return false;
-            _cannyThreshold = newValue.toDouble();
-            return true;
-        case pid::CircleCenterThreshold:
-            if(newValue.toDouble() <= 0)
-                return false;
-            _accThreshold = newValue.toDouble();
-            return true;
-        case pid::MinRadius:
-            _minRadius = newValue.toInt();
-            return true;
-        case pid::MaxRadius:
-            _maxRadius = newValue.toInt();
-            return true;
-        }
-
-        return false;
-    }
-
-    NodeProperty property(PropertyID propId) const override
-    {
-        switch(static_cast<pid>(propId))
-        {
-        case pid::AccResolution: return _dp;
-        case pid::CannyThreshold: return _cannyThreshold;
-        case pid::CircleCenterThreshold: return _accThreshold;
-        case pid::MinRadius: return _minRadius;
-        case pid::MaxRadius: return _maxRadius;
-        }
-
-        return NodeProperty();
+        addInput("Image", ENodeFlowDataType::ImageMono);
+        addOutput("Circles", ENodeFlowDataType::Array);
+        addProperty("Accumulator resolution", _dp)
+            .setValidator(make_validator<GreaterPropertyValidator<double>>(0.0))
+            .setUiHints("min:0.01");
+        addProperty("Canny threshold", _cannyThreshold)
+            .setValidator(make_validator<GreaterPropertyValidator<double>>(0.0))
+            .setUiHints("min:0.0");
+        addProperty("Centers threshold", _accThreshold)
+            .setValidator(make_validator<GreaterPropertyValidator<double>>(0.0))
+            .setUiHints("min:0.01");
+        addProperty("Min. radius", _minRadius)
+            .setValidator(make_validator<MinPropertyValidator<int>>(0))
+            .setUiHints("min:0");
+        addProperty("Max. radius", _maxRadius)
+            .setValidator(make_validator<MinPropertyValidator<int>>(0))
+            .setUiHints("min:0");
+        setDescription("Finds circles in a grayscale image using the Hough transform.");
     }
 
     ExecutionStatus execute(NodeSocketReader& reader, NodeSocketWriter& writer) override
@@ -291,46 +167,12 @@ public:
             string_format("Circles detected: %d", circles.cols));
     }
 
-    void configuration(NodeConfig& nodeConfig) const override
-    {
-        static const InputSocketConfig in_config[] = {
-            { ENodeFlowDataType::ImageMono, "image", "Image", "" },
-            { ENodeFlowDataType::Invalid, "", "", "" }
-        };
-        static const OutputSocketConfig out_config[] = {
-            { ENodeFlowDataType::Array, "circles", "Circles", "" },
-            { ENodeFlowDataType::Invalid, "", "", "" }
-        };
-        static const PropertyConfig prop_config[] = {
-            { EPropertyType::Double, "Accumulator resolution", "min:0.01" },
-            { EPropertyType::Double, "Canny threshold", "min:0.0" },
-            { EPropertyType::Double, "Centers threshold", "min:0.01" },
-            { EPropertyType::Integer, "Min. radius", "min: 0" },
-            { EPropertyType::Integer, "Max. radius", "min: 0" },
-            { EPropertyType::Unknown, "", "" }
-        };
-
-        nodeConfig.description = "Finds circles in a grayscale image using the Hough transform.";
-        nodeConfig.pInputSockets = in_config;
-        nodeConfig.pOutputSockets = out_config;
-        nodeConfig.pProperties = prop_config;
-    }
-
 private:
-    enum class pid
-    {
-        AccResolution,
-        CannyThreshold,
-        CircleCenterThreshold,
-        MinRadius,
-        MaxRadius
-    };
-
-    double _dp;
-    double _cannyThreshold;
-    double _accThreshold;
-    int _minRadius;
-    int _maxRadius;
+    TypedNodeProperty<double> _dp;
+    TypedNodeProperty<double> _cannyThreshold;
+    TypedNodeProperty<double> _accThreshold;
+    TypedNodeProperty<int> _minRadius;
+    TypedNodeProperty<int> _maxRadius;
 };
 
 REGISTER_NODE("Features/Hough Circles", HoughCirclesNodeType)
