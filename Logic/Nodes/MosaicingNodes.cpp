@@ -29,6 +29,13 @@
 class SimpleMosaicNodeType : public NodeType
 {
 public:
+    SimpleMosaicNodeType()
+    {
+        addInput("Homography", ENodeFlowDataType::Array);
+        addInput("Matches", ENodeFlowDataType::Matches);
+        addOutput("Mosaic", ENodeFlowDataType::ImageRgb);
+    }
+
     ExecutionStatus execute(NodeSocketReader& reader, NodeSocketWriter& writer) override
     {
         //inputs
@@ -59,23 +66,6 @@ public:
         maskWarped[0] = cv::Mat(); maskWarped[1] = cv::Mat();
 
         return ExecutionStatus(EStatus::Ok);
-    }
-
-    void configuration(NodeConfig& nodeConfig) const override
-    {
-        static const InputSocketConfig in_config[] = {
-            { ENodeFlowDataType::Array, "source", "Homography", "" },
-            { ENodeFlowDataType::Matches, "source", "Matches", "" },
-            { ENodeFlowDataType::Invalid, "", "", "" }
-        };
-        static const OutputSocketConfig out_config[] = {
-            { ENodeFlowDataType::ImageRgb, "output", "Output", "" },
-            { ENodeFlowDataType::Invalid, "", "", "" }
-        };
-
-        nodeConfig.description = "";
-        nodeConfig.pInputSockets = in_config;
-        nodeConfig.pOutputSockets = out_config;
     }
 
 private:
