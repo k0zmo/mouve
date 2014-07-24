@@ -34,28 +34,13 @@ public:
     EstimateHomographyNodeType()
         : _reprojThreshold(3.0)
     {
-    }
-
-    bool setProperty(PropertyID propId, const NodeProperty& newValue) override
-    {
-        switch(static_cast<pid>(propId))
-        {
-        case pid::ReprojThreshold:
-            _reprojThreshold = newValue.toDouble();
-            return true;
-        }
-
-        return false;
-    }
-
-    NodeProperty property(PropertyID propId) const override
-    {
-        switch(static_cast<pid>(propId))
-        {
-        case pid::ReprojThreshold: return _reprojThreshold;
-        }
-
-        return NodeProperty();
+        addInput("Matches", ENodeFlowDataType::Matches);
+        addOutput("Homography", ENodeFlowDataType::Array);
+        addOutput("Inliers", ENodeFlowDataType::Matches);
+        addProperty("Reprojection error threshold", _reprojThreshold)
+            .setValidator(make_validator<InclRangePropertyValidator<double>>(1.0, 50.0))
+            .setUiHints("min:1.0, max:50.0");
+        setDescription("Finds a perspective transformation between two planes.");
     }
 
     ExecutionStatus execute(NodeSocketReader& reader, NodeSocketWriter& writer) override
@@ -138,70 +123,25 @@ public:
             );
     }
 
-    void configuration(NodeConfig& nodeConfig) const override
-    {
-        static const InputSocketConfig in_config[] = {
-            { ENodeFlowDataType::Matches, "matches", "Matches", "" },
-            { ENodeFlowDataType::Invalid, "", "", "" }
-        };
-        static const OutputSocketConfig out_config[] = {
-            { ENodeFlowDataType::Array, "output", "Homography", "" },
-            { ENodeFlowDataType::Matches, "inliers", "Inliers", "" },
-            { ENodeFlowDataType::Invalid, "", "", "" }
-        };
-        static const PropertyConfig prop_config[] = {
-            { EPropertyType::Double, "Reprojection error threshold", "min:1.0, max:50.0" },
-            { EPropertyType::Unknown, "", "" }
-        };
-
-        nodeConfig.description = "Finds a perspective transformation between two planes.";
-        nodeConfig.pInputSockets = in_config;
-        nodeConfig.pOutputSockets = out_config;
-        nodeConfig.pProperties = prop_config;
-    }
-
 private:
-    enum class pid
-    {
-        ReprojThreshold
-    };
-
-    double _reprojThreshold;
+    TypedNodeProperty<double> _reprojThreshold;
 };
 
 class KnownHomographyInliersNodeType : public NodeType
 {
 public:
     KnownHomographyInliersNodeType()
-        : _homographyPath()
+        : _homographyPath(Filepath{})
         , _reprojThreshold(3.0)
     {
-    }
-
-    bool setProperty(PropertyID propId, const NodeProperty& newValue) override
-    {
-        switch(static_cast<pid>(propId))
-        {
-        case pid::HomographyPath:
-            _homographyPath = newValue.toFilepath();
-            return true;
-        case pid::ReprojThreshold:
-            _reprojThreshold = newValue.toDouble();
-            return true;
-        }
-
-        return false;
-    }
-
-    NodeProperty property(PropertyID propId) const override
-    {
-        switch(static_cast<pid>(propId))
-        {
-        case pid::HomographyPath: return _homographyPath;
-        case pid::ReprojThreshold: return _reprojThreshold;
-        }
-
-        return NodeProperty();
+        addInput("Matches", ENodeFlowDataType::Matches);
+        addOutput("Homography", ENodeFlowDataType::Array);
+        addOutput("Inliers", ENodeFlowDataType::Matches);
+        addProperty("Homography path", _homographyPath);
+        addProperty("Reprojection error threshold", _reprojThreshold)
+            .setValidator(make_validator<InclRangePropertyValidator<double>>(1.0, 50.0))
+            .setUiHints("min:1.0, max:50.0");
+        setDescription("Rejects outliers using known homography.");
     }
 
     ExecutionStatus execute(NodeSocketReader& reader, NodeSocketWriter& writer) override
@@ -222,9 +162,9 @@ public:
             "Points from one images doesn't correspond to key points in another one");
 
         // Do stuff - Load real homography 
-        std::ifstream homographyFile(_homographyPath.data(), std::ios::in);
+        std::ifstream homographyFile(_homographyPath.cast<Filepath>().data(), std::ios::in);
         if(!homographyFile.is_open())
-            return ExecutionStatus(EStatus::Error, string_format("Can't load %s\n", _homographyPath.data().c_str()));
+            return ExecutionStatus(EStatus::Error, string_format("Can't load %s\n", _homographyPath.cast<Filepath>().data().c_str()));
 
         cv::Mat homography(3, 3, CV_32F);
         homographyFile >> homography.at<float>(0, 0) >> homography.at<float>(0, 1) >> homography.at<float>(0, 2);
@@ -276,38 +216,9 @@ public:
             );
     }
 
-    void configuration(NodeConfig& nodeConfig) const override
-    {
-        static const InputSocketConfig in_config[] = {
-            { ENodeFlowDataType::Matches, "matches", "Matches", "" },
-            { ENodeFlowDataType::Invalid, "", "", "" }
-        };
-        static const OutputSocketConfig out_config[] = {
-            { ENodeFlowDataType::Array, "output", "Homography", "" },
-            { ENodeFlowDataType::Matches, "inliers", "Inliers", "" },
-            { ENodeFlowDataType::Invalid, "", "", "" }
-        };
-        static const PropertyConfig prop_config[] = {
-            { EPropertyType::Filepath, "Homography path", "" },
-            { EPropertyType::Double, "Reprojection error threshold", "min:1.0, max:50.0" },
-            { EPropertyType::Unknown, "", "" }
-        };
-
-        nodeConfig.description = "Rejects outliers using known homography.";
-        nodeConfig.pInputSockets = in_config;
-        nodeConfig.pOutputSockets = out_config;
-        nodeConfig.pProperties = prop_config;
-    }
-
 private:
-    enum class pid
-    {
-        HomographyPath,
-        ReprojThreshold
-    };
-
-    Filepath _homographyPath;
-    double _reprojThreshold;
+    TypedNodeProperty<Filepath> _homographyPath;
+    TypedNodeProperty<double> _reprojThreshold;
 };
 
 REGISTER_NODE("Features/Known homography inliers", KnownHomographyInliersNodeType)
