@@ -33,32 +33,13 @@ public:
         : _threshold(128)
         , _inv(false)
     {
-    }
-
-    bool setProperty(PropertyID propId, const NodeProperty& newValue) override
-    {
-        switch(static_cast<pid>(propId))
-        {
-        case pid::Threshold:
-            _threshold = newValue.toInt();
-            return true;
-        case pid::Invert:
-            _inv = newValue.toBool();
-            return true;
-        }
-
-        return false;
-    }
-
-    NodeProperty property(PropertyID propId) const override
-    {
-        switch(static_cast<pid>(propId))
-        {
-        case pid::Threshold: return _threshold;
-        case pid::Invert: return _inv;
-        }
-
-        return NodeProperty();
+        addInput("Source", ENodeFlowDataType::ImageMono);
+        addOutput("Output", ENodeFlowDataType::ImageMono);
+        addProperty("Threshold", _threshold)
+            .setValidator(make_validator<InclRangePropertyValidator<int>>(0, 255))
+            .setUiHints("min:0, max:255");
+        addProperty("Inverted", _inv);
+        setDescription("Applies a fixed-level threshold to each pixel element.");
     }
 
     ExecutionStatus execute(NodeSocketReader& reader, NodeSocketWriter& writer) override
@@ -81,42 +62,21 @@ public:
         return ExecutionStatus(EStatus::Ok);
     }
 
-    void configuration(NodeConfig& nodeConfig) const override
-    {
-        static const InputSocketConfig in_config[] = {
-            { ENodeFlowDataType::ImageMono, "source", "Source", "" },
-            { ENodeFlowDataType::Invalid, "", "", "" }
-        };
-        static const OutputSocketConfig out_config[] = {
-            { ENodeFlowDataType::ImageMono, "output", "Output", "" },
-            { ENodeFlowDataType::Invalid, "", "", "" }
-        };
-        static const PropertyConfig prop_config[] = {
-            { EPropertyType::Integer, "Threshold", "min:0, max:255" },
-            { EPropertyType::Boolean, "Inverted", "" },
-            { EPropertyType::Unknown, "", "" }
-        };
-
-        nodeConfig.description = "Applies a fixed-level threshold to each pixel element.";
-        nodeConfig.pInputSockets = in_config;
-        nodeConfig.pOutputSockets = out_config;
-        nodeConfig.pProperties = prop_config;
-    }
-
 private:
-    enum class pid
-    {
-        Threshold,
-        Invert
-    };
-
-    int _threshold;
-    bool _inv;
+    TypedNodeProperty<int> _threshold;
+    TypedNodeProperty<bool> _inv;
 };
 
 class OtsuThresholdingNodeType : public NodeType
 {
 public:
+    OtsuThresholdingNodeType()
+    {
+        addInput("Source", ENodeFlowDataType::ImageMono);
+        addOutput("Output", ENodeFlowDataType::ImageMono);
+        setDescription("Applies optimal threshold value using Otsu's algorithm to each pixel element.");
+    }
+
     ExecutionStatus execute(NodeSocketReader& reader, NodeSocketWriter& writer) override
     {
         // Read input sockets
@@ -132,22 +92,6 @@ public:
         cv::threshold(src, dst, 0, 255, cv::THRESH_OTSU);
 
         return ExecutionStatus(EStatus::Ok);
-    }
-
-    void configuration(NodeConfig& nodeConfig) const override
-    {
-        static const InputSocketConfig in_config[] = {
-            { ENodeFlowDataType::ImageMono, "source", "Source", "" },
-            { ENodeFlowDataType::Invalid, "", "", "" }
-        };
-        static const OutputSocketConfig out_config[] = {
-            { ENodeFlowDataType::ImageMono, "output", "Output", "" },
-            { ENodeFlowDataType::Invalid, "", "", "" }
-        };
-
-        nodeConfig.description = "Applies optimal threshold value using Otsu's algorithm to each pixel element.";
-        nodeConfig.pInputSockets = in_config;
-        nodeConfig.pOutputSockets = out_config;
     }
 };
 
