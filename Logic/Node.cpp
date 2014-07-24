@@ -51,34 +51,19 @@ Node::Node(std::unique_ptr<NodeType> nodeType,
     , _flags(0)
     , _timeElapsed(0)
 {
-    NodeConfig config;
-    _nodeType->configuration(config);
+    const NodeConfig& config = _nodeType->config();
 
-    if(config.flags.testFlag(ENodeConfig::HasState))
+    if(config.flags().testFlag(ENodeConfig::HasState))
         setFlag(ENodeFlags::StateNode);
-    if(config.flags.testFlag(ENodeConfig::AutoTag))
+    if(config.flags().testFlag(ENodeConfig::AutoTag))
         setFlag(ENodeFlags::AutoTag);
-    if(config.flags.testFlag(ENodeConfig::OverridesTimeComputation))
+    if(config.flags().testFlag(ENodeConfig::OverridesTimeComputation))
         setFlag(ENodeFlags::OverridesTimeComp);
 
-    // Count number of input sockets
-    auto input = begin_config<InputSocketConfig>(config);
-    while(!end_config(input))
-    {
-        ++_numInputs;
-        ++input;
-    }
-
-    _outputSockets.clear();
-
-    // Count number of output sockets
-    auto output = begin_config<OutputSocketConfig>(config);
-    while(!end_config(output))
-    {
-        _outputSockets.emplace_back(output->dataType);
-        ++output;
-    }
-
+    _numInputs = static_cast<SocketID>(config.inputs().size());
+    
+    for(const SocketConfig& output : config.outputs())
+        _outputSockets.emplace_back(output.type());
     _numOutputs = static_cast<SocketID>(_outputSockets.size());
 }
 
@@ -126,9 +111,9 @@ const NodeFlowData& Node::outputSocket(SocketID socketID) const
     return _outputSockets[socketID];
 }
 
-void Node::configuration(NodeConfig& nodeConfig) const
+const NodeConfig& Node::config() const
 {
-    _nodeType->configuration(nodeConfig);
+    return _nodeType->config();
 }
 
 ExecutionStatus Node::execute(NodeSocketReader& reader, NodeSocketWriter& writer)
@@ -148,12 +133,16 @@ ExecutionStatus Node::execute(NodeSocketReader& reader, NodeSocketWriter& writer
 
 bool Node::setProperty(PropertyID propID, const NodeProperty& value)
 {
-    return _nodeType->setProperty(propID, value);
+    if(propID < 0 || propID >= static_cast<PropertyID>(config().properties().size()))
+        return false;
+    return _nodeType->config().properties()[propID].setPropertyValue(value);
 }
 
 NodeProperty Node::property(PropertyID propID) const
 {
-    return _nodeType->property(propID);
+    if(propID < 0 || propID >= static_cast<PropertyID>(config().properties().size()))
+        return NodeProperty{};
+    return config().properties()[propID].propertyValue();
 }
 
 const std::string& Node::executeInformation() const

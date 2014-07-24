@@ -99,7 +99,8 @@ public:
     bool allRequiredInputSocketConnected(NodeID nodeID) const;
     bool taggedButNotExecuted(NodeID nodeID) const;
 
-    bool nodeConfiguration(NodeID nodeID, NodeConfig& nodeConfig) const;
+    const NodeConfig& nodeConfiguration(NodeID nodeID) const;
+    const NodeConfig* nodeConfigurationPtr(NodeID nodeID) const;
     bool nodeSetProperty(NodeID nodeID, PropertyID propID, const NodeProperty& value);
     NodeProperty nodeProperty(NodeID nodeID, PropertyID propID);
     const std::string& nodeExecuteInformation(NodeID nodeID) const;

@@ -29,7 +29,7 @@
 #include "Kommon/StringUtils.h"
 
 /// TODO: Change this to some neat logging system
-#include <iostream>
+#include <QDebug>
 
 static const std::string InvalidType("InvalidType");
 
@@ -97,12 +97,20 @@ std::unique_ptr<NodeType> NodeSystem::createNode(NodeTypeID nodeTypeID) const
     const auto& nodeFactory = _registeredNodeTypes[nodeTypeID].nodeFactory;
     if(nodeFactory != nullptr)
     {
-        return nodeFactory->create();
+        try
+        {
+            // Can throw (for example: bad configuration)
+            return nodeFactory->create();
+        }
+        catch (std::exception& ex)
+        {
+            qCritical() << "Failed to create node type:" << 
+                _registeredNodeTypes[nodeTypeID].nodeTypeName.c_str() << 
+                "details:" << ex.what();
+        }
     }
-    else
-    {
-        return nullptr;
-    }
+
+    return nullptr;
 }
 
 std::unique_ptr<NodeTree> NodeSystem::createNodeTree()
@@ -123,9 +131,7 @@ std::string NodeSystem::nodeDescription(NodeTypeID nodeTypeID) const
     auto tmpNode = createNode(nodeTypeID);
     if(!tmpNode)
         return InvalidType;
-    NodeConfig nodeConfig;
-    tmpNode->configuration(nodeConfig);
-    return nodeConfig.description;
+    return tmpNode->config().description();
 }
 
 NodeTypeID NodeSystem::nodeTypeID(const std::string& nodeTypeName) const

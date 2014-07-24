@@ -70,7 +70,7 @@ public:
     double timeElapsed() const;
 
     // Below methods are thin wrapper for held NodeType interface
-    void configuration(NodeConfig& nodeConfig) const;
+    const NodeConfig& config() const;
     ExecutionStatus execute(NodeSocketReader& reader, NodeSocketWriter& writer);
     bool setProperty(PropertyID propID, const NodeProperty& value);
     NodeProperty property(PropertyID propID) const;

@@ -202,8 +202,8 @@ void Controller::addNode(NodeTypeID nodeTypeID, const QPointF& scenePos)
 void Controller::addNodeView(const QString& nodeTitle,
     NodeID nodeID, const QPointF& scenePos)
 {
-    NodeConfig nodeConfig;
-    if(!_nodeTree->nodeConfiguration(nodeID, nodeConfig))
+    const NodeConfig* nodeConfig = _nodeTree->nodeConfigurationPtr(nodeID);
+    if(!nodeConfig)
     {
         showErrorMessage("Internal error - querying node type configuration.\n"
             "Given node ID was invalid.");
@@ -212,31 +212,21 @@ void Controller::addNodeView(const QString& nodeTitle,
 
     QString nodeTypeName = QString::fromStdString(_nodeTree->nodeTypeName(nodeID));
     NodeView* nodeView = new NodeView(nodeTitle, nodeTypeName);
-    //if(!nodeConfig.description.empty())
-    //	nodeView->setToolTip(QString::fromStdString(nodeConfig.description));
+    //if(!nodeConfig->description().empty())
+    //	nodeView->setToolTip(QString::fromStdString(nodeConfig->description()));
 
     // Add input sockets views to node view
-    auto input = begin_config<InputSocketConfig>(nodeConfig);
-    while(!end_config(input))
+    for(const SocketConfig& input : nodeConfig->inputs())
     {
-        QString socketTitle = input->humanName.length() > 0
-            ? QString::fromStdString(input->humanName)
-            : QString::fromStdString(input->name);
-        nodeView->addSocketView(static_cast<SocketID>(pos_config(input, nodeConfig)),
-                                input->dataType, socketTitle, false);
-        ++input;
+        nodeView->addSocketView(input.socketID(), input.type(), 
+                                QString::fromStdString(input.name()), false);
     }
 
     // Add output sockets views to node view
-    auto output = begin_config<OutputSocketConfig>(nodeConfig);
-    while(!end_config(output))
+    for(const SocketConfig& output : nodeConfig->outputs())
     {
-        QString socketTitle = output->humanName.length() > 0
-            ? QString::fromStdString(output->humanName)
-            : QString::fromStdString(output->name);
-        nodeView->addSocketView(static_cast<SocketID>(pos_config(output, nodeConfig)),
-                                output->dataType, socketTitle, true);
-        ++output;
+        nodeView->addSocketView(output.socketID(), output.type(),
+                                QString::fromStdString(output.name()), true);
     }
 
     // Make a default property - node name
@@ -244,19 +234,16 @@ void Controller::addNodeView(const QString& nodeTitle,
     _propManager->newProperty(nodeID, -1, EPropertyType::String,
         "Node name", nodeTitle, QString());
 
-    auto prop = begin_config<PropertyConfig>(nodeConfig);
-    if(prop)
+    if(!nodeConfig->properties().empty())
         _propManager->newPropertyGroup(nodeID, "Specific");
 
     // Add rest of the properties
-    while(!end_config(prop))
+    for(const PropertyConfig& prop : nodeConfig->properties())
     {
-        PropertyID propID = static_cast<PropertyID>(pos_config(prop, nodeConfig));
-        _propManager->newProperty(nodeID, propID, prop->type, 
-            QString::fromStdString(prop->name),
-            PropertyManager::nodePropertyToVariant(_nodeTree->nodeProperty(nodeID, propID)),
-            QString::fromStdString(prop->uiHint));
-        ++prop;
+        _propManager->newProperty(nodeID, prop.propertyID(), prop.type(),
+            QString::fromStdString(prop.name()),
+            PropertyManager::nodePropertyToVariant(_nodeTree->nodeProperty(nodeID, prop.propertyID())),
+            QString::fromStdString(prop.uiHints()));
     }
 
     auto* propModel = _propManager->propertyModel(nodeID);
@@ -275,7 +262,7 @@ void Controller::addNodeView(const QString& nodeTitle,
     _nodeScene->addItem(nodeView);
     nodeView->setData(NodeDataIndex::NodeKey, nodeID);
     nodeView->setPos(scenePos);
-    nodeView->setNodeWithStateMark(nodeConfig.flags.testFlag(ENodeConfig::HasState));
+    nodeView->setNodeWithStateMark(nodeConfig->flags().testFlag(ENodeConfig::HasState));
     _nodeViews[nodeID] = nodeView;
 
     // Set time info visibility on new nodes
@@ -2262,12 +2249,9 @@ void Controller::showProgramsList()
                     NodeID nodeID;
                     while(nit->next(nodeID))
                     {
-                        NodeConfig nodeConfig;
-                        if(_nodeTree->nodeConfiguration(nodeID, nodeConfig))
-                        {
-                            if(nodeConfig.module == "opencl")
-                                _nodeTree->tagNode(nodeID);
-                        }						
+                        const NodeConfig& nodeConfig = _nodeTree->nodeConfiguration(nodeID);
+                        if(nodeConfig.module() == "opencl")
+                            _nodeTree->tagNode(nodeID);
                     }
                 }
                 catch (...)

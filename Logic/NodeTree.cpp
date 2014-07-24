@@ -287,12 +287,11 @@ NodeID NodeTree::createNode(NodeTypeID typeID, const std::string& name)
     }
 
     // If node type belongs to a registered module
-    NodeConfig nodeConfig;
-    nodeType->configuration(nodeConfig);
-    if(!nodeConfig.module.empty())
+    const NodeConfig& nodeConfig = nodeType->config();
+    if(!nodeConfig.module().empty())
     {
         bool res = false;
-        const auto& module = _nodeSystem->nodeModule(nodeConfig.module);
+        const auto& module = _nodeSystem->nodeModule(nodeConfig.module());
         if(module && module->ensureInitialized())
             res = nodeType->init(module);
 
@@ -369,16 +368,8 @@ NodeID NodeTree::duplicateNode(NodeID nodeID)
         return InvalidNodeID;
 
     // Set properties
-    NodeConfig nodeConfig;
-    _nodes[nodeID].configuration(nodeConfig);
-
-    auto prop = begin_config<PropertyConfig>(nodeConfig);
-    while(!end_config(prop))
-    {
-        PropertyID propID = static_cast<PropertyID>(pos_config(prop, nodeConfig));
-        _nodes[newNodeID].setProperty(propID, _nodes[nodeID].property(propID));
-        ++prop;
-    }
+    for(const auto& prop : _nodes[nodeID].config().properties())
+        _nodes[newNodeID].setProperty(prop.propertyID(), _nodes[nodeID].property(prop.propertyID()));
 
     return newNodeID;
 }
@@ -643,13 +634,21 @@ bool NodeTree::taggedButNotExecuted(NodeID nodeID) const
     return false;
 }
 
-bool NodeTree::nodeConfiguration(NodeID nodeID, NodeConfig& nodeConfig) const
+const NodeConfig& NodeTree::nodeConfiguration(NodeID nodeID) const
+{
+    const NodeConfig* cfg = nodeConfigurationPtr(nodeID);
+
+    if(!cfg)
+        throw BadNodeException();
+    return *cfg;
+}
+
+const NodeConfig* NodeTree::nodeConfigurationPtr(NodeID nodeID) const
 {
     if(!validateNode(nodeID))
-        return false;
+        return nullptr;
 
-    _nodes[nodeID].configuration(nodeConfig);
-    return true;
+    return &_nodes[nodeID].config();
 }
 
 bool NodeTree::nodeSetProperty(NodeID nodeID, PropertyID propID, const NodeProperty& value)
