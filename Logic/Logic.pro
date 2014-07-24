@@ -57,7 +57,7 @@ SOURCES += \
     NodeTree.cpp \
     NodeTreeSerializer.cpp \
     NodeType.cpp \    
-    Jai/JaiCameraNodes.cpp \
+    Jai/JaiCameraNode.cpp \
     Jai/JaiNodeModule.cpp \
     Nodes/ArithmeticNodes.cpp \
     Nodes/BriskNodes.cpp \
@@ -85,13 +85,13 @@ SOURCES += \
     Nodes/VideoSegmentationNodes.cpp \
     OpenCL/DeviceArray.cpp \
     OpenCL/GpuActivityLogger.cpp \
-    OpenCL/GpuApproxGaussianBlur.cpp \
+    OpenCL/GpuApproxGaussianBlurNode.cpp \
     OpenCL/GpuBasicNodes.cpp \
     OpenCL/GpuBruteForceMacherNode.cpp \
     OpenCL/GpuColorConversionNodes.cpp \
     OpenCL/GpuHoughLinesNode.cpp \
     OpenCL/GpuKernelLibrary.cpp \
-    OpenCL/GpuMixtureOfGaussians.cpp \
+    OpenCL/GpuMixtureOfGaussiansNode.cpp \
     OpenCL/GpuMorphologyOperatorNode.cpp \
     OpenCL/GpuNodeModule.cpp \
     OpenCL/GpuSurfNode.cpp

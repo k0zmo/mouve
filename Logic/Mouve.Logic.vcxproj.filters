@@ -26,6 +26,15 @@
     <Filter Include="JAI">
       <UniqueIdentifier>{9c6451d6-6afb-4654-a120-74c0e61b6396}</UniqueIdentifier>
     </Filter>
+    <Filter Include="OpenCL\Nodes">
+      <UniqueIdentifier>{c679c487-f8a8-450c-8fdf-5eb96dbdf149}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="JAI\Nodes">
+      <UniqueIdentifier>{5cfc9e69-651a-455c-90dc-3a99ffc9cb1a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Nodes\Utils">
+      <UniqueIdentifier>{1ed01145-75d5-47e8-872b-4ffe12d6170a}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Precomp.cpp">
@@ -55,9 +64,6 @@
     <ClCompile Include="Nodes\BriskNodes.cpp">
       <Filter>Nodes</Filter>
     </ClCompile>
-    <ClCompile Include="Nodes\CV.cpp">
-      <Filter>Nodes</Filter>
-    </ClCompile>
     <ClCompile Include="Nodes\HomographyNodes.cpp">
       <Filter>Nodes</Filter>
     </ClCompile>
@@ -70,15 +76,6 @@
     <ClCompile Include="OpenCL\GpuNodeModule.cpp">
       <Filter>OpenCL</Filter>
     </ClCompile>
-    <ClCompile Include="OpenCL\GpuBasicNodes.cpp">
-      <Filter>OpenCL</Filter>
-    </ClCompile>
-    <ClCompile Include="OpenCL\GpuHoughLinesNode.cpp">
-      <Filter>OpenCL</Filter>
-    </ClCompile>
-    <ClCompile Include="OpenCL\GpuMixtureOfGaussians.cpp">
-      <Filter>OpenCL</Filter>
-    </ClCompile>
     <ClCompile Include="OpenCL\GpuKernelLibrary.cpp">
       <Filter>OpenCL</Filter>
     </ClCompile>
@@ -88,16 +85,10 @@
     <ClCompile Include="Nodes\ColorConversionNodes.cpp">
       <Filter>Nodes</Filter>
     </ClCompile>
-    <ClCompile Include="Jai\JaiCameraNodes.cpp">
-      <Filter>JAI</Filter>
-    </ClCompile>
     <ClCompile Include="Jai\JaiNodeModule.cpp">
       <Filter>JAI</Filter>
     </ClCompile>
     <ClCompile Include="Nodes\SiftNodes.cpp">
-      <Filter>Nodes</Filter>
-    </ClCompile>
-    <ClCompile Include="Nodes\ksurf.cpp">
       <Filter>Nodes</Filter>
     </ClCompile>
     <ClCompile Include="Nodes\kSurfNodes.cpp">
@@ -109,14 +100,8 @@
     <ClCompile Include="OpenCL\GpuSurfNode.cpp">
       <Filter>OpenCL</Filter>
     </ClCompile>
-    <ClCompile Include="OpenCL\GpuColorConversionNodes.cpp">
-      <Filter>OpenCL</Filter>
-    </ClCompile>
     <ClCompile Include="Nodes\MosaicingNodes.cpp">
       <Filter>Nodes</Filter>
-    </ClCompile>
-    <ClCompile Include="OpenCL\GpuBruteForceMacherNode.cpp">
-      <Filter>OpenCL</Filter>
     </ClCompile>
     <ClCompile Include="NodePlugin.cpp">
       <Filter>Source Files</Filter>
@@ -163,9 +148,6 @@
     <ClCompile Include="Nodes\DrawFeaturesNodes.cpp">
       <Filter>Nodes</Filter>
     </ClCompile>
-    <ClCompile Include="OpenCL\GpuMorphologyOperatorNode.cpp">
-      <Filter>OpenCL</Filter>
-    </ClCompile>
     <ClCompile Include="NodeProperty.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -173,14 +155,41 @@
     <ClCompile Include="Nodes\SinkNodes.cpp">
       <Filter>Nodes</Filter>
     </ClCompile>
-    <ClCompile Include="OpenCL\GpuApproxGaussianBlur.cpp">
-      <Filter>OpenCL</Filter>
-    </ClCompile>
     <ClCompile Include="OpenCL\GpuActivityLogger.cpp">
       <Filter>OpenCL</Filter>
     </ClCompile>
     <ClCompile Include="NodeResolver.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="OpenCL\GpuBasicNodes.cpp">
+      <Filter>OpenCL\Nodes</Filter>
+    </ClCompile>
+    <ClCompile Include="OpenCL\GpuBruteForceMacherNode.cpp">
+      <Filter>OpenCL\Nodes</Filter>
+    </ClCompile>
+    <ClCompile Include="OpenCL\GpuColorConversionNodes.cpp">
+      <Filter>OpenCL\Nodes</Filter>
+    </ClCompile>
+    <ClCompile Include="OpenCL\GpuHoughLinesNode.cpp">
+      <Filter>OpenCL\Nodes</Filter>
+    </ClCompile>
+    <ClCompile Include="OpenCL\GpuMorphologyOperatorNode.cpp">
+      <Filter>OpenCL\Nodes</Filter>
+    </ClCompile>
+    <ClCompile Include="OpenCL\GpuMixtureOfGaussiansNode.cpp">
+      <Filter>OpenCL\Nodes</Filter>
+    </ClCompile>
+    <ClCompile Include="OpenCL\GpuApproxGaussianBlurNode.cpp">
+      <Filter>OpenCL\Nodes</Filter>
+    </ClCompile>
+    <ClCompile Include="Jai\JaiCameraNode.cpp">
+      <Filter>JAI\Nodes</Filter>
+    </ClCompile>
+    <ClCompile Include="Nodes\CV.cpp">
+      <Filter>Nodes\Utils</Filter>
+    </ClCompile>
+    <ClCompile Include="Nodes\ksurf.cpp">
+      <Filter>Nodes\Utils</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -253,12 +262,6 @@
     <ClInclude Include="NodeModule.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Nodes\CV.h">
-      <Filter>Nodes</Filter>
-    </ClInclude>
-    <ClInclude Include="Nodes\ksurf.h">
-      <Filter>Nodes</Filter>
-    </ClInclude>
     <ClInclude Include="OpenCL\GpuNodeModule.h">
       <Filter>OpenCL</Filter>
     </ClInclude>
@@ -300,6 +303,12 @@
     </ClInclude>
     <ClInclude Include="NodeResolver.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Nodes\CV.h">
+      <Filter>Nodes\Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="Nodes\ksurf.h">
+      <Filter>Nodes\Utils</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
