@@ -31,24 +31,12 @@ public:
     RetainBestFeaturesNodeType()
         : _n(1000)
     {
-    }
-
-    bool setProperty(PropertyID propId, const NodeProperty& newValue) override
-    {
-        if(propId == 0)
-        {
-            _n = newValue.toInt();
-            return true;
-        }
-
-        return false;
-    }
-
-    NodeProperty property(PropertyID propId) const override
-    {
-        if(propId == 0)
-            return _n;
-        return NodeProperty();
+        addInput("Keypoints", ENodeFlowDataType::Keypoints);
+        addOutput("Best", ENodeFlowDataType::Keypoints);
+        addProperty("Best keypoints to retain", _n)
+            .setValidator(make_validator<MinPropertyValidator<int>>(1))
+            .setUiHints("min:1");
+        setDescription("Retains the specified number of the best keypoints (according to the response).");
     }
 
     ExecutionStatus execute(NodeSocketReader& reader, NodeSocketWriter& writer) override
@@ -75,28 +63,8 @@ public:
             string_format("Keypoints retained: %d", (int) dst.kpoints.size()));
     }
 
-    void configuration(NodeConfig& nodeConfig) const override
-    {
-        static const InputSocketConfig in_config[] = {
-            { ENodeFlowDataType::Keypoints, "inKp", "Keypoints", "" },
-            { ENodeFlowDataType::Invalid, "", "", "" }
-        };
-        static const OutputSocketConfig out_config[] = {
-            { ENodeFlowDataType::Keypoints, "outKp", "Best", "" },
-            { ENodeFlowDataType::Invalid, "", "", "" }
-        };
-        static const PropertyConfig prop_config[] = {
-            { EPropertyType::Integer, "Best keypoints to retain", "min:1" },
-            { EPropertyType::Unknown, "", "" }
-        };
-
-        nodeConfig.description = "Retains the specified number of the best keypoints (according to the response).";
-        nodeConfig.pInputSockets = in_config;
-        nodeConfig.pOutputSockets = out_config;
-        nodeConfig.pProperties = prop_config;
-    }
 private:
-    int _n;
+    TypedNodeProperty<int> _n;
 };
 
 REGISTER_NODE("Features/Retain best", RetainBestFeaturesNodeType)
