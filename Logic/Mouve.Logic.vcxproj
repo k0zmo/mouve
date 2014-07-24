@@ -927,10 +927,10 @@
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
     <Import Project="..\Include\Mouve.Kommon.props" />
-    <Import Project="..\Include\OpenCV.Modules.Debug.x64.props" />
+    <Import Project="..\Include\OpenCV.Modules.Debug.props" />
     <Import Project="..\Include\Boost.props" />
-    <Import Project="..\Include\tbb.Debug.x64.props" />
-    <Import Project="..\Include\clw.Debug.x64.props" />
+    <Import Project="..\Include\tbb.Debug.props" />
+    <Import Project="..\Include\clw.Debug.props" />
     <Import Project="..\Include\AMDTActivityLogger.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
@@ -954,19 +954,19 @@
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
     <Import Project="..\Include\Mouve.Kommon.props" />
-    <Import Project="..\Include\OpenCV.Modules.Release.x64.props" />
+    <Import Project="..\Include\OpenCV.Modules.Release.props" />
     <Import Project="..\Include\Boost.props" />
-    <Import Project="..\Include\tbb.Release.x64.props" />
-    <Import Project="..\Include\clw.Release.x64.props" />
+    <Import Project="..\Include\tbb.Release.props" />
+    <Import Project="..\Include\clw.Release.props" />
     <Import Project="..\Include\AMDTActivityLogger.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|x64'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
     <Import Project="..\Include\Mouve.Kommon.props" />
-    <Import Project="..\Include\OpenCV.Modules.Release.x64.props" />
+    <Import Project="..\Include\OpenCV.Modules.Release.props" />
     <Import Project="..\Include\Boost.props" />
-    <Import Project="..\Include\tbb.Release.x64.props" />
-    <Import Project="..\Include\clw.Release.x64.props" />
+    <Import Project="..\Include\tbb.Release.props" />
+    <Import Project="..\Include\clw.Release.props" />
     <Import Project="..\Include\AMDTActivityLogger.props" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />

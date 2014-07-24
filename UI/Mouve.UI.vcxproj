@@ -1004,9 +1004,9 @@
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
     <Import Project="..\Include\Mouve.Logic.props" />
     <Import Project="..\Include\Mouve.Kommon.props" />
-    <Import Project="..\Include\OpenCV.Debug.x64.props" />
+    <Import Project="..\Include\OpenCV.Debug.props" />
     <Import Project="..\Include\Boost.props" />
-    <Import Project="..\Include\clw.Debug.x64.props" />
+    <Import Project="..\Include\clw.Debug.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
@@ -1028,17 +1028,17 @@
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
     <Import Project="..\Include\Mouve.Kommon.props" />
     <Import Project="..\Include\Mouve.Logic.props" />
-    <Import Project="..\Include\OpenCV.Release.x64.props" />
+    <Import Project="..\Include\OpenCV.Release.props" />
     <Import Project="..\Include\Boost.props" />
-    <Import Project="..\Include\clw.Release.x64.props" />
+    <Import Project="..\Include\clw.Release.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|x64'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
     <Import Project="..\Include\Mouve.Kommon.props" />
     <Import Project="..\Include\Mouve.Logic.props" />
-    <Import Project="..\Include\OpenCV.Release.x64.props" />
+    <Import Project="..\Include\OpenCV.Release.props" />
     <Import Project="..\Include\Boost.props" />
-    <Import Project="..\Include\clw.Release.x64.props" />
+    <Import Project="..\Include\clw.Release.props" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup>
