@@ -31,30 +31,30 @@
 #include <boost/variant.hpp>
 #endif
 
-/// Allowed types of node property
+// Allowed types of node property
 enum class EPropertyType : int
 {
     Unknown,
     Boolean,
-    /// Available UI hints: 
-    /// * min: minimum value that property can hold
-    /// * max: maximum value that property can hold
-    /// * step: step value used when spin box value is incremented/decremented
-    /// * wrap: is spin box circular (stepping up from max takes min and vice versa)
+    // Available UI hints: 
+    // * min: minimum value that property can hold
+    // * max: maximum value that property can hold
+    // * step: step value used when spin box value is incremented/decremented
+    // * wrap: is spin box circular (stepping up from max takes min and vice versa)
     Integer,
-    /// Available UI hints: 
-    /// * min: minimum value that property can hold
-    /// * max: maximum value that property can hold
-    /// * step: step value used when spin box value is incremented/decremented
-    /// * decimals: precision of the spin box in decimals
+    // Available UI hints: 
+    // * min: minimum value that property can hold
+    // * max: maximum value that property can hold
+    // * step: step value used when spin box value is incremented/decremented
+    // * decimals: precision of the spin box in decimals
     Double,
-    /// Available UI hints:
-    /// * item: Human readable enum value name. Should occur n times (n - number of values that enum can take).
+    // Available UI hints:
+    // * item: Human readable enum value name. Should occur n times (n - number of values that enum can take).
     Enum,
     Matrix,
-    /// Available UI hints:
-    /// * filter: Filter used when displaying files in file dialog
-    /// * save: if true file dialog will ask for new file, not existing
+    // Available UI hints:
+    // * filter: Filter used when displaying files in file dialog
+    // * save: if true file dialog will ask for new file, not existing
     Filepath,
     String,
 };
@@ -64,7 +64,7 @@ namespace std
     LOGIC_EXPORT string to_string(EPropertyType);
 }
 
-/// Simple class representing 3x3 matrix
+// Simple class representing 3x3 matrix
 struct Matrix3x3
 {
     double v[9];
@@ -92,7 +92,7 @@ struct Matrix3x3
     }
 };
 
-/// Simple wrapper for Enum types (typedef doesn't create a new type)
+// Simple wrapper for Enum types (typedef doesn't create a new type)
 class Enum
 {
 public:
@@ -115,7 +115,7 @@ public:
     }
 
     template <typename EnumType>
-    typename std::enable_if<std::is_enum<EnumType>::value, EnumType>::type cast()
+    typename std::enable_if<std::is_enum<EnumType>::value, EnumType>::type cast() const
     {
         return EnumType(_v);
     }
@@ -178,14 +178,12 @@ public:
     NodeProperty(const Filepath& value);
     NodeProperty(const std::string& value);
 
-#if K_COMPILER != K_COMPILER_MSVC
-    // MSVC2012 allows to make chained user-defined conversion
-    template <typename EnumType>
-    NodeProperty(EnumType v, typename std::enable_if<std::is_enum<EnumType>::value>::type* = 0)
+    template <typename EnumType, 
+        class = typename std::enable_if<std::is_enum<EnumType>::value>::type>
+    NodeProperty(EnumType v)
         : NodeProperty{Enum{v}}
     {
     }
-#endif
 
     ~NodeProperty();
 
@@ -197,6 +195,12 @@ public:
     Matrix3x3 toMatrix3x3() const;
     Filepath toFilepath() const;
     std::string toString() const;
+
+    // T must be exactly the same as in property_data
+    template <class T> inline T& cast();
+    template <class T> inline const T& cast() const;
+    // T must be constructible from current held data
+    template <class T> inline T cast_value() const;
 
     bool isValid() const;
     EPropertyType type() const;
@@ -211,3 +215,103 @@ inline bool NodeProperty::isValid() const
 
 inline EPropertyType NodeProperty::type() const
 { return _type; }
+
+namespace
+{
+    template <class T>
+    EPropertyType propertyType_(typename std::enable_if<std::is_constructible<NodeProperty, T>::value>::type* = 0)
+    {
+        static NodeProperty np{ T() };
+        return np.type();
+    }
+
+    template <class T>
+    EPropertyType propertyType_(typename std::enable_if<!std::is_constructible<NodeProperty, T>::value>::type* = 0)
+    {
+        return EPropertyType::Unknown;
+    }
+
+    // Visitor for variant value casting - returns value types
+    template <class T>
+    class convert_visitor : public boost::static_visitor<T>
+    {
+    private:
+        // Used to specialize template member function (for bool type) of template class 
+        template <class C> struct type_wrap {};
+
+    public:
+        template <class U>
+        typename std::enable_if<std::is_convertible<U, T>::value, T>::type
+            operator()(U& i) const
+        {
+            return convert_impl(i, type_wrap<T>());
+        }
+
+        template <class U>
+        typename std::enable_if<!std::is_convertible<U, T>::value, T>::type
+            operator()(U& i) const
+        {
+            throw boost::bad_get();
+        }
+
+    private:
+        template <class U, class C>
+        T convert_impl(U& i, type_wrap<C>) const
+        {
+            return static_cast<T>(i);
+        }
+
+        // convert_impl specialization for bool return type
+        template <class U>
+        T convert_impl(U& i, type_wrap<bool>) const
+        {
+            // Shuts up MSVC whining something about performance warning
+            return static_cast<T>(!!(i));
+        }
+    };
+}
+
+template <class T>
+EPropertyType propertyType()
+{
+    return propertyType_<T>();
+}
+
+template <class T>
+T& NodeProperty::cast()
+{
+    return const_cast<T&>(const_cast<const NodeProperty*>(this)->cast<T>());
+}
+
+template <class T>
+const T& NodeProperty::cast() const
+{
+    if(_type != EPropertyType::Unknown && _type == propertyType<T>())
+        return boost::get<T>(_data);
+    throw boost::bad_get();
+}
+
+template <class T>
+T NodeProperty::cast_value() const
+{
+    if(_type != EPropertyType::Unknown && _type == propertyType<T>())
+        return boost::apply_visitor(convert_visitor<T>(), _data);
+    throw boost::bad_get();
+}
+
+template <class T>
+class TypedNodeProperty : public NodeProperty
+{
+    static_assert(std::is_constructible<NodeProperty, T>::value || 
+                  std::is_convertible<T, NodeProperty>::value,
+                  "NodeProperty is not constructible from T");
+public:
+    typedef T type;
+
+    explicit TypedNodeProperty(T value)
+        : NodeProperty(value)
+    {
+    }
+
+    operator T() const { return cast_value<T>(); }
+};
