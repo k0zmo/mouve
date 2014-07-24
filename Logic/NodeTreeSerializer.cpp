@@ -64,6 +64,32 @@ QJsonObject NodeTreeSerializer::serializeJson(const std::shared_ptr<NodeTree>& n
         // Save properties' values if any
         const NodeConfig& nodeConfig = node->config();
 
+        QJsonArray jsonInputSockets;
+        for(const auto& input : nodeConfig.inputs())
+        {
+            QJsonObject jsonInputSocket;
+            jsonInputSocket.insert(QStringLiteral("id"), input.socketID());
+            jsonInputSocket.insert(QStringLiteral("name"), QString::fromStdString(input.name()));
+            jsonInputSocket.insert(QStringLiteral("type"), QString::fromStdString(std::to_string(input.type())));
+            jsonInputSockets.append(jsonInputSocket);
+        }
+
+        if(!jsonInputSockets.isEmpty())
+            jsonNode.insert(QStringLiteral("inputs"), jsonInputSockets);
+
+        QJsonArray jsonOutputSockets;
+        for(const auto& output : nodeConfig.outputs())
+        {
+            QJsonObject jsonOutputSocket;
+            jsonOutputSocket.insert(QStringLiteral("id"), output.socketID());
+            jsonOutputSocket.insert(QStringLiteral("name"), QString::fromStdString(output.name()));
+            jsonOutputSocket.insert(QStringLiteral("type"), QString::fromStdString(std::to_string(output.type())));
+            jsonOutputSockets.append(jsonOutputSocket);
+        }
+
+        if(!jsonOutputSockets.isEmpty())
+            jsonNode.insert(QStringLiteral("outputs"), jsonOutputSockets);
+
         QJsonArray jsonProperties;
         for(const auto& prop : nodeConfig.properties())
         {
