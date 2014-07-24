@@ -40,43 +40,22 @@ public:
         , _patternScale(1.0f)
         , _brisk(new cv::BRISK())
     {
-    }
-
-    bool setProperty(PropertyID propId, const NodeProperty& newValue) override
-    {
-        if(propId > underlying_cast(pid::PatternScale) || 
-            propId < underlying_cast(pid::Threshold))
-            return false;
-
-        switch(static_cast<pid>(propId))
-        {
-        case pid::Threshold:
-            _thresh = newValue.toInt();
-            break;
-        case pid::NumOctaves:
-            _nOctaves = newValue.toInt();
-            break;
-        case pid::PatternScale:
-            _patternScale  = newValue.toFloat();
-            break;
-        }
-
-        // That's a bit cheating here - creating BRISK object takes time (approx. 200ms for PAL)
-        // which if done per frame makes it slowish (more than SIFT actually)
-        _brisk = unique_ptr<cv::BRISK>(new cv::BRISK(_thresh, _nOctaves, _patternScale));
-        return true;
-    }
-
-    NodeProperty property(PropertyID propId) const override
-    {
-        switch(static_cast<pid>(propId))
-        {
-        case pid::Threshold: return _thresh;
-        case pid::NumOctaves: return _nOctaves;
-        case pid::PatternScale: return _patternScale;
-        }
-
-        return NodeProperty();
+        addInput("Image", ENodeFlowDataType::ImageMono);
+        addOutput("Keypoints", ENodeFlowDataType::Keypoints);
+        addProperty("FAST/AGAST detection threshold score", _thresh)
+            .setValidator(make_validator<MinPropertyValidator<int>>(1))
+            // That's a bit cheating here - creating BRISK object takes time (approx. 200ms for PAL)
+            // which if done per frame makes it slowish (more than SIFT actually)
+            .setObserver(make_observer<FuncObserver>([this](const NodeProperty&) { recreateBrisk(); }))
+            .setUiHints("min:1");
+        addProperty("Number of octaves", _nOctaves)
+            .setValidator(make_validator<MinPropertyValidator<int>>(0))
+            .setObserver(make_observer<FuncObserver>([this](const NodeProperty&) { recreateBrisk(); }))
+            .setUiHints("min:0");
+        addProperty("Pattern scale", _patternScale)
+            .setValidator(make_validator<MinPropertyValidator<double>>(0.0))
+            .setObserver(make_observer<FuncObserver>([this](const NodeProperty&) { recreateBrisk(); }))
+            .setUiHints("min:0.0");
     }
 
     ExecutionStatus execute(NodeSocketReader& reader, NodeSocketWriter& writer) override
@@ -97,40 +76,17 @@ public:
             string_format("Keypoints detected: %d", (int) kp.kpoints.size()));
     }
 
-    void configuration(NodeConfig& nodeConfig) const override
+protected:
+    void recreateBrisk()
     {
-        static const InputSocketConfig in_config[] = {
-            { ENodeFlowDataType::ImageMono, "image", "Image", "" },
-            { ENodeFlowDataType::Invalid, "", "", "" }
-        };
-        static const OutputSocketConfig out_config[] = {
-            { ENodeFlowDataType::Keypoints, "keypoints", "Keypoints", "" },
-            { ENodeFlowDataType::Invalid, "", "", "" }
-        };
-        static const PropertyConfig prop_config[] = {
-            { EPropertyType::Integer, "FAST/AGAST detection threshold score", "min:1" },
-            { EPropertyType::Integer, "Number of octaves", "min:0" },
-            { EPropertyType::Double, "Pattern scale", "min:0.0" },
-            { EPropertyType::Unknown, "", "" }
-        };
-
-        nodeConfig.description = "";
-        nodeConfig.pInputSockets = in_config;
-        nodeConfig.pOutputSockets = out_config;
-        nodeConfig.pProperties = prop_config;
+        _brisk = unique_ptr<cv::BRISK>(
+            new cv::BRISK(_thresh, _nOctaves, _patternScale));
     }
 
 protected:
-    enum class pid
-    {
-        Threshold,
-        NumOctaves,
-        PatternScale
-    };
-
-    int _thresh;
-    int _nOctaves;
-    float _patternScale;
+    TypedNodeProperty<int> _thresh;
+    TypedNodeProperty<int> _nOctaves;
+    TypedNodeProperty<float> _patternScale;
     // Must be pointer since BRISK doesn't implement copy/move operator (they should have)
     unique_ptr<cv::BRISK> _brisk;
 };
@@ -141,6 +97,9 @@ public:
     BriskDescriptorExtractorNodeType()
         : _brisk(new cv::BRISK())
     {
+        addInput("Keypoints", ENodeFlowDataType::Keypoints);
+        addOutput("Keypoints", ENodeFlowDataType::Keypoints);
+        addOutput("Descriptors", ENodeFlowDataType::Array);
     }
 
     ExecutionStatus execute(NodeSocketReader& reader, NodeSocketWriter& writer) override
@@ -162,23 +121,6 @@ public:
         return ExecutionStatus(EStatus::Ok);
     }
 
-    void configuration(NodeConfig& nodeConfig) const override
-    {
-        static const InputSocketConfig in_config[] = {
-            { ENodeFlowDataType::Keypoints, "keypoints", "Keypoints", "" },
-            { ENodeFlowDataType::Invalid, "", "", "" }
-        };
-        static const OutputSocketConfig out_config[] = {
-            { ENodeFlowDataType::Keypoints, "output", "Keypoints", "" },
-            { ENodeFlowDataType::Array, "output", "Descriptors", "" },
-            { ENodeFlowDataType::Invalid, "", "", "" }
-        };
-
-        nodeConfig.description = "";
-        nodeConfig.pInputSockets = in_config;
-        nodeConfig.pOutputSockets = out_config;
-    }
-
 private:
     // Must be pointer since BRISK doesn't implement copy/move operator (they should have)
     unique_ptr<cv::BRISK> _brisk;
@@ -187,6 +129,12 @@ private:
 class BriskNodeType : public BriskFeatureDetectorNodeType
 {
 public:
+    BriskNodeType()
+    {
+        clearOutputs();
+        addOutput("Keypoints", ENodeFlowDataType::Keypoints);
+        addOutput("Descriptors", ENodeFlowDataType::Array);
+    }
 
     ExecutionStatus execute(NodeSocketReader& reader, NodeSocketWriter& writer) override
     {
@@ -205,20 +153,6 @@ public:
 
         return ExecutionStatus(EStatus::Ok, 
             string_format("Keypoints detected: %d", (int) kp.kpoints.size()));
-    }
-
-    void configuration(NodeConfig& nodeConfig) const override
-    {
-        BriskFeatureDetectorNodeType::configuration(nodeConfig);
-
-        static const OutputSocketConfig out_config[] = {
-            { ENodeFlowDataType::Keypoints, "keypoints", "Keypoints", "" },
-            { ENodeFlowDataType::Array, "output", "Descriptors", "" },
-            { ENodeFlowDataType::Invalid, "", "", "" }
-        };
-
-        nodeConfig.description = "";
-        nodeConfig.pOutputSockets = out_config;
     }
 };
 
