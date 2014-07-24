@@ -72,7 +72,7 @@ NodeTypeID NodeSystem::registerNodeType(const std::string& nodeTypeName,
         /// TODO: return invalid typeID or just override previous one?
         NodeTypeID nodeTypeID = iter->second;
 
-        std::cerr << "NodeSystem::registerNodeType: Type '" << nodeTypeName << "' Id='"
+        qDebug() << "NodeSystem::registerNodeType: Type '" << nodeTypeName.c_str() << "' Id='"
             << int(nodeTypeID) << "' is already registed, overriding with a new factory\n";
 
         // Override previous factory with a new one

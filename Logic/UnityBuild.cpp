@@ -33,7 +33,7 @@
 #include "NodeTreeSerializer.cpp"
 #include "NodeType.cpp"
 
-#include "Jai/JaiCameraNodes.cpp"
+#include "Jai/JaiCameraNode.cpp"
 #include "Jai/JaiNodeModule.cpp"
 
 #include "Nodes/ArithmeticNodes.cpp"
@@ -67,10 +67,10 @@
 #include "OpenCL/GpuBasicNodes.cpp"
 #include "OpenCL/GpuBruteForceMacherNode.cpp"
 #include "OpenCL/GpuColorConversionNodes.cpp"
-#include "OpenCL/GpuApproxGaussianBlur.cpp"
+#include "OpenCL/GpuApproxGaussianBlurNode.cpp"
 #include "OpenCL/GpuHoughLinesNode.cpp"
 #include "OpenCL/GpuKernelLibrary.cpp"
-#include "OpenCL/GpuMixtureOfGaussians.cpp"
+#include "OpenCL/GpuMixtureOfGaussiansNode.cpp"
 #include "OpenCL/GpuMorphologyOperatorNode.cpp"
 #include "OpenCL/GpuNodeModule.cpp"
 #include "OpenCL/GpuSurfNode.cpp"
