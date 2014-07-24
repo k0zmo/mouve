@@ -89,8 +89,9 @@ namespace
         static const PropertyConfig value;
     };
 
+    static NodeProperty invalidNodeProperty{};
     const PropertyConfig DefaultValue<const PropertyConfig&>::value = 
-        PropertyConfig{InvalidPropertyID, std::string{}, NodeProperty{}};
+        PropertyConfig{InvalidPropertyID, std::string{}, invalidNodeProperty};
 
     template <>
     struct DefaultValue<const SocketConfig&>

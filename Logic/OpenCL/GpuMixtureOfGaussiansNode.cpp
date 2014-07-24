@@ -58,9 +58,9 @@ public:
             .setUiHints("min:1, max:500");
         addProperty("Number of mixtures", _nmixtures)
             .setValidator(make_validator<InclRangePropertyValidator<int>>(1, 9))
-            .setObserver(make_observer<FuncObserver>([this](const NodeProperty& np) {
+            .setObserver(make_observer<FuncObserver>([this](const NodeProperty&) {
                 std::string opts = string_format("-DNMIXTURES=%d -DACCURATE_CALCULATIONS=%d",
-                    _nmixtures, ACCURATE_CALCULATIONS);
+                    (int)_nmixtures, ACCURATE_CALCULATIONS);
                 _kidGaussMix = _gpuComputeModule->registerKernel(
                     "mog_image_unorm", "mog.cl", opts);
                 _kidGaussBackground = _gpuComputeModule->registerKernel(

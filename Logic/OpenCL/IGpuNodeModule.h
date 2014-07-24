@@ -34,30 +34,6 @@ enum class EDeviceType : int
     Specific = 0xFFFF,
 };
 
-struct GpuPlatform;
-struct GpuInteractiveResult;
-struct GpuRegisteredProgram;
-
-typedef std::function<
-    GpuInteractiveResult(const std::vector<GpuPlatform>& gpuPlatforms)
-> OnCreateInteractive;
-
-class LOGIC_EXPORT IGpuNodeModule : public NodeModule
-{
-public:
-    virtual void setInteractiveInit(bool interactiveInit) = 0;
-    virtual bool isInteractiveInit() const = 0;
-
-    virtual bool createDefault() = 0;
-    virtual bool createInteractive() = 0;
-    OnCreateInteractive onCreateInteractive;
-
-    virtual std::vector<GpuPlatform> availablePlatforms() const = 0;
-
-    virtual std::vector<GpuRegisteredProgram> populateListOfRegisteredPrograms() const = 0;
-    virtual void rebuildProgram(const std::string& programName) = 0;
-};
-
 struct GpuPlatform
 {
     std::string name;
@@ -89,6 +65,25 @@ struct GpuRegisteredProgram
 
     std::string programName;
     std::vector<Build> builds;
+};
+
+using OnCreateInteractive = std::function<
+    GpuInteractiveResult(const std::vector<GpuPlatform>& gpuPlatforms)>;
+
+class LOGIC_EXPORT IGpuNodeModule : public NodeModule
+{
+public:
+    virtual void setInteractiveInit(bool interactiveInit) = 0;
+    virtual bool isInteractiveInit() const = 0;
+
+    virtual bool createDefault() = 0;
+    virtual bool createInteractive() = 0;
+    OnCreateInteractive onCreateInteractive;
+
+    virtual std::vector<GpuPlatform> availablePlatforms() const = 0;
+
+    virtual std::vector<GpuRegisteredProgram> populateListOfRegisteredPrograms() const = 0;
+    virtual void rebuildProgram(const std::string& programName) = 0;
 };
 
 LOGIC_EXPORT std::unique_ptr<IGpuNodeModule> createGpuModule();

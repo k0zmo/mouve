@@ -89,7 +89,7 @@ struct PropertyValidator
 
 // Helper method to construct property validator
 template <class T, class... Args, 
-    class = std::enable_if<std::is_base_of<PropertyValidator, T>::value>::type>
+    class = typename std::enable_if<std::is_base_of<PropertyValidator, T>::value>::type>
 std::unique_ptr<PropertyValidator> make_validator(Args&&... args)
 {
     return std::unique_ptr<PropertyValidator>(new T(std::forward<Args>(args)...));
@@ -103,7 +103,7 @@ struct PropertyObserver
 
 // Helper method to construct property observer
 template <class T, class... Args,
-    class = std::enable_if<std::is_base_of<PropertyObserver, T>::value>::type>
+    class = typename std::enable_if<std::is_base_of<PropertyObserver, T>::value>::type>
 std::unique_ptr<PropertyObserver> make_observer(Args&&... args)
 {
     return std::unique_ptr<PropertyObserver>(new T(std::forward<Args>(args)...));
@@ -176,7 +176,7 @@ private:
 template <class T>
 struct no_limit : public std::binary_function<T, T, bool>
 {
-    bool operator()(const T& left, const T& right) const { return true; }
+    bool operator()(const T&, const T&) const { return true; }
 };
 
 // Range validator for (a, b)

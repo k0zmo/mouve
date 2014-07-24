@@ -249,7 +249,7 @@ namespace
 
         template <class U>
         typename std::enable_if<!std::is_convertible<U, T>::value, T>::type
-            operator()(U& i) const
+            operator()(U&) const
         {
             throw boost::bad_get();
         }
