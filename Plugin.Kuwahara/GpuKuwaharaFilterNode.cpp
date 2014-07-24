@@ -36,6 +36,13 @@ public:
     GpuKuwaharaFilterNodeType()
         : _radius(2)
     {
+        addInput("Image", ENodeFlowDataType::DeviceImage);
+        addOutput("Output", ENodeFlowDataType::DeviceImage);
+        addProperty("Radius", _radius)
+            .setValidator(make_validator<InclRangePropertyValidator<int>>(1, 15))
+            .setUiHints("min:1, max:15");
+        setDescription("Kuwahara filter");
+        setModule("opencl");
     }
 
     bool postInit() override
@@ -46,28 +53,6 @@ public:
             && _kidKuwaharaRgb != InvalidKernelID;
     }
     
-    bool setProperty(PropertyID propId, const NodeProperty& newValue) override
-    {
-        switch(static_cast<pid>(propId))
-        {
-        case pid::Radius:
-            _radius = newValue.toInt();
-            return true;
-        }
-
-        return false;
-    }
-
-    NodeProperty property(PropertyID propId) const override
-    {
-        switch(static_cast<pid>(propId))
-        {
-        case pid::Radius: return _radius;
-        }
-
-        return NodeProperty();
-    }
-
     ExecutionStatus execute(NodeSocketReader& reader, NodeSocketWriter& writer) override
     {
         // inputs
@@ -92,32 +77,10 @@ public:
         kernelKuwahara.setRoundedGlobalWorkSize(clw::Grid(width, height));
         kernelKuwahara.setArg(0, deviceSrc);
         kernelKuwahara.setArg(1, deviceDest);
-        kernelKuwahara.setArg(2, _radius);
+        kernelKuwahara.setArg(2, (int) _radius);
         _gpuComputeModule->queue().runKernel(kernelKuwahara);
 
         return ExecutionStatus(EStatus::Ok);
-    }
-
-    void configuration(NodeConfig& nodeConfig) const override
-    {
-        static const InputSocketConfig in_config[] = {
-            { ENodeFlowDataType::DeviceImage, "source", "Source", "" },
-            { ENodeFlowDataType::Invalid, "", "", "" }
-        };
-        static const OutputSocketConfig out_config[] = {
-            { ENodeFlowDataType::DeviceImage, "output", "Output", "" },
-            { ENodeFlowDataType::Invalid, "", "", "" }
-        };
-        static const PropertyConfig prop_config[] = {
-            { EPropertyType::Integer, "Radius", "min: 1, max:15" },
-            { EPropertyType::Unknown, "", "" }
-        };
-
-        nodeConfig.description = "Kuwahara filter";
-        nodeConfig.pInputSockets = in_config;
-        nodeConfig.pOutputSockets = out_config;
-        nodeConfig.pProperties = prop_config;
-        nodeConfig.module = "opencl";
     }
 
 private:
@@ -136,12 +99,7 @@ private:
     }
 
 private:
-    enum class pid
-    {
-        Radius,
-    };
-
-    int _radius;
+    TypedNodeProperty<int> _radius;
     KernelID _kidKuwahara;
     KernelID _kidKuwaharaRgb;
 };
@@ -155,6 +113,21 @@ public:
         , _smoothing(0.3333f)
         , _recreateKernelImage(true)
     {
+        addInput("Image", ENodeFlowDataType::DeviceImage);
+        addOutput("Output", ENodeFlowDataType::DeviceImage);
+        addProperty("Radius", _radius)
+            .setValidator(make_validator<InclRangePropertyValidator<int>>(1, 20))
+            .setUiHints("min:1, max:20");
+        addProperty("N", _N)
+            .setValidator(make_validator<InclRangePropertyValidator<int>>(3, 8))
+            .setObserver(make_observer<FuncObserver>([this](const NodeProperty&) { _recreateKernelImage = true; }))
+            .setUiHints("min:3, max:8");
+        addProperty("Smoothing", _smoothing)
+            .setValidator(make_validator<InclRangePropertyValidator<double>>(0.0, 1.0))
+            .setObserver(make_observer<FuncObserver>([this](const NodeProperty&) { _recreateKernelImage = true; }))
+            .setUiHints("min:0.00, max:1.00");
+        setDescription("Generalized Kuwahara filter");
+        setModule("opencl");
     }
 
     bool postInit() override
@@ -165,39 +138,6 @@ public:
         _kidGeneralizedKuwaharaRgb = _gpuComputeModule->registerKernel("generalizedKuwaharaRgb", "kuwahara.cl", opts);
         return _kidGeneralizedKuwahara != InvalidKernelID
             && _kidGeneralizedKuwaharaRgb != InvalidKernelID;
-    }
-    
-    bool setProperty(PropertyID propId, const NodeProperty& newValue) override
-    {
-        switch(static_cast<pid>(propId))
-        {
-        case pid::Radius:
-            _radius = newValue.toInt();
-            return true;
-        case pid::N:
-            _N = newValue.toInt();
-            _recreateKernelImage = true;
-            postInit();
-            return true;
-        case pid::Smoothing:
-            _smoothing = newValue.toFloat();
-            _recreateKernelImage = true;
-            return true;
-        }
-
-        return false;
-    }
-
-    NodeProperty property(PropertyID propId) const override
-    {
-        switch(static_cast<pid>(propId))
-        {
-        case pid::Radius: return _radius;
-        case pid::N: return _N;
-        case pid::Smoothing: return _smoothing;
-        }
-
-        return NodeProperty();
     }
 
     ExecutionStatus execute(NodeSocketReader& reader, NodeSocketWriter& writer) override
@@ -235,35 +175,11 @@ public:
         kernelKuwahara.setRoundedGlobalWorkSize(clw::Grid(width, height));
         kernelKuwahara.setArg(0, deviceSrc);
         kernelKuwahara.setArg(1, deviceDest);
-        kernelKuwahara.setArg(2, _radius);
+        kernelKuwahara.setArg(2, (int) _radius);
         kernelKuwahara.setArg(3, _kernelImage);
         _gpuComputeModule->queue().runKernel(kernelKuwahara);
 
         return ExecutionStatus(EStatus::Ok);
-    }
-
-    void configuration(NodeConfig& nodeConfig) const override
-    {
-        static const InputSocketConfig in_config[] = {
-            { ENodeFlowDataType::DeviceImage, "source", "Source", "" },
-            { ENodeFlowDataType::Invalid, "", "", "" }
-        };
-        static const OutputSocketConfig out_config[] = {
-            { ENodeFlowDataType::DeviceImage, "output", "Output", "" },
-            { ENodeFlowDataType::Invalid, "", "", "" }
-        };
-        static const PropertyConfig prop_config[] = {
-            { EPropertyType::Integer, "Radius", "min: 1, max:20" },
-            { EPropertyType::Integer, "N", "min: 3, max:8" },
-            { EPropertyType::Double, "Smoothing", "min:0.00, max:1.00" },
-            { EPropertyType::Unknown, "", "" }
-        };
-
-        nodeConfig.description = "Generalized Kuwahara filter";
-        nodeConfig.pInputSockets = in_config;
-        nodeConfig.pOutputSockets = out_config;
-        nodeConfig.pProperties = prop_config;
-        nodeConfig.module = "opencl";
     }
 
 private:
@@ -282,16 +198,9 @@ private:
     }
 
 private:
-    enum class pid
-    {
-        Radius,
-        N,
-        Smoothing
-    };
-
-    int _radius;
-    int _N;
-    float _smoothing;
+    TypedNodeProperty<int> _radius;
+    TypedNodeProperty<int> _N;
+    TypedNodeProperty<float> _smoothing;
 
     KernelID _kidGeneralizedKuwahara;
     KernelID _kidGeneralizedKuwaharaRgb;
@@ -309,6 +218,21 @@ public:
         , _smoothing(0.3333f)
         , _recreateKernelImage(true)
     {
+        addInput("Image", ENodeFlowDataType::DeviceImage);
+        addOutput("Output", ENodeFlowDataType::DeviceImage);
+        addProperty("Radius", _radius)
+            .setValidator(make_validator<InclRangePropertyValidator<int>>(1, 20))
+            .setUiHints("min:1, max:20");
+        addProperty("N", _N)
+            .setValidator(make_validator<InclRangePropertyValidator<int>>(3, 8))
+            .setObserver(make_observer<FuncObserver>([this](const NodeProperty&) { _recreateKernelImage = true; }))
+            .setUiHints("min:3, max:8");
+        addProperty("Smoothing", _smoothing)
+            .setValidator(make_validator<InclRangePropertyValidator<double>>(0.0, 1.0))
+            .setObserver(make_observer<FuncObserver>([this](const NodeProperty&) { _recreateKernelImage = true; }))
+            .setUiHints("min:0.00, max:1.00");
+        setDescription("Anisotropic Kuwahara filter");
+        setModule("opencl");
     }
 
     bool postInit() override
@@ -328,39 +252,6 @@ public:
             && _kidCalcStructureTensorRgb != InvalidKernelID
             && _kidConvolutionGaussian != InvalidKernelID
             && _kidCalcOrientationAndAnisotropy != InvalidKernelID;
-    }
-    
-    bool setProperty(PropertyID propId, const NodeProperty& newValue) override
-    {
-        switch(static_cast<pid>(propId))
-        {
-        case pid::Radius:
-            _radius = newValue.toInt();
-            return true;
-        case pid::N:
-            _N = newValue.toInt();
-            _recreateKernelImage = true;
-            postInit();
-            return true;
-        case pid::Smoothing:
-            _smoothing = newValue.toFloat();
-            _recreateKernelImage = true;
-            return true;
-        }
-
-        return false;
-    }
-
-    NodeProperty property(PropertyID propId) const override
-    {
-        switch(static_cast<pid>(propId))
-        {
-        case pid::Radius: return _radius;
-        case pid::N: return _N;
-        case pid::Smoothing: return _smoothing;
-        }
-
-        return NodeProperty();
     }
 
     ExecutionStatus execute(NodeSocketReader& reader, NodeSocketWriter& writer) override
@@ -429,34 +320,10 @@ public:
         kernelKuwahara.setArg(1, _kernelImage);
         kernelKuwahara.setArg(2, _oriAni);
         kernelKuwahara.setArg(3, deviceDest);
-        kernelKuwahara.setArg(4, _radius);
+        kernelKuwahara.setArg(4, (int) _radius);
         _gpuComputeModule->queue().runKernel(kernelKuwahara);
 
         return ExecutionStatus(EStatus::Ok);
-    }
-
-    void configuration(NodeConfig& nodeConfig) const override
-    {
-        static const InputSocketConfig in_config[] = {
-            { ENodeFlowDataType::DeviceImage, "source", "Source", "" },
-            { ENodeFlowDataType::Invalid, "", "", "" }
-        };
-        static const OutputSocketConfig out_config[] = {
-            { ENodeFlowDataType::DeviceImage, "output", "Output", "" },
-            { ENodeFlowDataType::Invalid, "", "", "" }
-        };
-        static const PropertyConfig prop_config[] = {
-            { EPropertyType::Integer, "Radius", "min: 1, max:20" },
-            { EPropertyType::Integer, "N", "min: 3, max:8" },
-            { EPropertyType::Double, "Smoothing", "min:0.00, max:1.00" },
-            { EPropertyType::Unknown, "", "" }
-        };
-
-        nodeConfig.description = "Anisotropic Kuwahara filter";
-        nodeConfig.pInputSockets = in_config;
-        nodeConfig.pOutputSockets = out_config;
-        nodeConfig.pProperties = prop_config;
-        nodeConfig.module = "opencl";
     }
 
 private:
@@ -475,16 +342,9 @@ private:
     }
 
 private:
-    enum class pid
-    {
-        Radius,
-        N,
-        Smoothing
-    };
-
-    int _radius;
-    int _N;
-    float _smoothing;
+    TypedNodeProperty<int> _radius;
+    TypedNodeProperty<int> _N;
+    TypedNodeProperty<float> _smoothing;
 
     KernelID _kidAnisotropicKuwahara;
     KernelID _kidAnisotropicKuwaharaRgb;
