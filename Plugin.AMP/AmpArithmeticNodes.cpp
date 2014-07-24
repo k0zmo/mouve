@@ -38,32 +38,16 @@ public:
         : _alpha(0.5)
         , _beta(0.5)
     {
-    }
-
-    bool setProperty(PropertyID propId, const NodeProperty& newValue) override
-    {
-        switch(static_cast<pid>(propId))
-        {
-        case pid::Alpha:
-            _alpha = newValue.toDouble();
-            return true;
-        case pid::Beta:
-            _beta = newValue.toDouble();
-            return true;
-        }
-
-        return false;
-    }
-
-    NodeProperty property(PropertyID propId) const override
-    {
-        switch(static_cast<pid>(propId))
-        {
-        case pid::Alpha: return _alpha;
-        case pid::Beta: return _beta;
-        }
-
-        return NodeProperty();
+        addInput("X", ENodeFlowDataType::ImageMono);
+        addInput("Y", ENodeFlowDataType::ImageMono);
+        addOutput("Output", ENodeFlowDataType::ImageMono);
+        addProperty("Alpha", _alpha)
+            .setValidator(make_validator<InclRangePropertyValidator<double>>(0.0, 1.0))
+            .setUiHints("min:0.0, max:1.0, decimals:3, step:0.1");
+        addProperty("Beta", _beta)
+            .setValidator(make_validator<InclRangePropertyValidator<double>>(0.0, 1.0))
+            .setUiHints("min:0.0, max:1.0, decimals:3, step:0.1");
+        setDescription("Adds one image to another with specified weights: alpha * x + beta * y.");
     }
 
     ExecutionStatus execute(NodeSocketReader& reader, NodeSocketWriter& writer) override
@@ -116,38 +100,9 @@ public:
         return ExecutionStatus(EStatus::Ok);
     }
 
-    void configuration(NodeConfig& nodeConfig) const override
-    {
-        static const InputSocketConfig in_config[] = {
-            { ENodeFlowDataType::ImageMono, "source1", "X", "" },
-            { ENodeFlowDataType::ImageMono, "source2", "Y", "" },
-            { ENodeFlowDataType::Invalid, "", "", "" }
-        };
-        static const OutputSocketConfig out_config[] = {
-            { ENodeFlowDataType::ImageMono, "output", "Output", "" },
-            { ENodeFlowDataType::Invalid, "", "", "" }
-        };
-        static const PropertyConfig prop_config[] = {
-            { EPropertyType::Double, "Alpha", "min:0.0, max:1.0, decimals:3, step:0.1" },
-            { EPropertyType::Double, "Beta",  "min:0.0, max:1.0, decimals:3, step:0.1" },
-            { EPropertyType::Unknown, "", "" }
-        };
-
-        nodeConfig.description = "Adds one image to another with specified weights: alpha * x + beta * y.";
-        nodeConfig.pInputSockets = in_config;
-        nodeConfig.pOutputSockets = out_config;
-        nodeConfig.pProperties = prop_config;
-    }
-
 private:
-    enum class pid
-    {
-        Alpha,
-        Beta
-    };
-
-    double _alpha;
-    double _beta;
+    TypedNodeProperty<double> _alpha;
+    TypedNodeProperty<double> _beta;
 };
 
 void registerAmpArithmeticNodes(NodeSystem* nodeSystem)

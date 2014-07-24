@@ -36,6 +36,10 @@ class AmpMorphologyOperatorNodeType : public NodeType
 public:
     AmpMorphologyOperatorNodeType()
     {
+        addInput("Source", ENodeFlowDataType::ImageMono);
+        addInput("Structuring element", ENodeFlowDataType::ImageMono);
+        addOutput("Output", ENodeFlowDataType::Image);
+        setDescription("Performs morphological operation on a given image.");
     }
 
     ExecutionStatus execute(NodeSocketReader& reader, NodeSocketWriter& writer) override
@@ -85,23 +89,6 @@ public:
         copy(dstTx, dst.data, sizeInBytes);
 
         return ExecutionStatus(EStatus::Ok);
-    }
-
-    void configuration(NodeConfig& nodeConfig) const override
-    {
-        static const InputSocketConfig in_config[] = {
-            { ENodeFlowDataType::Image, "source", "Source", "" },
-            { ENodeFlowDataType::Image, "source", "Structuring element", "" },
-            { ENodeFlowDataType::Invalid, "", "", "" }
-        };
-        static const OutputSocketConfig out_config[] = {
-            { ENodeFlowDataType::Image, "output", "Output", "" },
-            { ENodeFlowDataType::Invalid, "", "", "" }
-        };
-
-        nodeConfig.description = "Performs morphological operation on a given image.";
-        nodeConfig.pInputSockets = in_config;
-        nodeConfig.pOutputSockets = out_config;
     }
 
 private:

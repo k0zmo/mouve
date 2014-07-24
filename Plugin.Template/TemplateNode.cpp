@@ -33,28 +33,11 @@ public:
     TemplateNodeType()
         : _property(true)
     {
-    }
-    
-    bool setProperty(PropertyID propId, const NodeProperty& newValue) override
-    {
-        switch(static_cast<pid>(propId))
-        {
-        case pid::Property:
-            _property = newValue.toBool();
-            return true;
-        }
-
-        return false;
-    }
-
-    NodeProperty property(PropertyID propId) const override
-    {
-        switch(static_cast<pid>(propId))
-        {
-        case pid::Property: return _property;
-        }
-
-        return NodeProperty();
+        addInput("Image", ENodeFlowDataType::Image);
+        addOutput("Output", ENodeFlowDataType::Image);
+        addProperty("Property", _property);
+        setDescription("Template node type");
+        setFlags(ENodeConfig::NoFlags);
     }
 
     ExecutionStatus execute(NodeSocketReader& reader, NodeSocketWriter& writer) override
@@ -77,34 +60,8 @@ public:
             string_format("Property value: %s", _property ? "true" : "false"));
     }
 
-    void configuration(NodeConfig& nodeConfig) const override
-    {
-        static const InputSocketConfig in_config[] = {
-            { ENodeFlowDataType::Image, "image", "Image", "" },
-            { ENodeFlowDataType::Invalid, "", "", "" }
-        };
-        static const OutputSocketConfig out_config[] = {
-            { ENodeFlowDataType::Image, "output", "Output", "" },
-            { ENodeFlowDataType::Invalid, "", "", "" }
-        };
-        static const PropertyConfig prop_config[] = {
-            { EPropertyType::Boolean, "Property", "" },
-            { EPropertyType::Unknown, "", "" }
-        };
-
-        nodeConfig.description = "Template node type";
-        nodeConfig.pInputSockets = in_config;
-        nodeConfig.pOutputSockets = out_config;
-        nodeConfig.pProperties = prop_config;
-    }
-
 private:
-    enum class pid
-    {
-        Property,
-    };
-
-    bool _property;
+    TypedNodeProperty<bool> _property;
 };
 
 void registerTemplate(NodeSystem* nodeSystem)

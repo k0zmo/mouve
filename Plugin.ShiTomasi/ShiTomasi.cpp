@@ -35,42 +35,24 @@ public:
         , _qualityLevel(0.01)
         , _minDistance(10)
     {
-    }
-    
-    bool setProperty(PropertyID propId, const NodeProperty& newValue) override
-    {
-        switch(static_cast<pid>(propId))
-        {
-        case pid::MaxCorners:
-            _maxCorners = newValue.toInt();
-            return true;
-        case pid::QualityLevel:
-            _qualityLevel = newValue.toDouble();
-            return true;
-        case pid::MinDistance:
-            _minDistance = newValue.toDouble();
-            return true;
-        }
-
-        return false;
-    }
-
-    NodeProperty property(PropertyID propId) const override
-    {
-        switch(static_cast<pid>(propId))
-        {
-        case pid::MaxCorners: return _maxCorners;
-        case pid::QualityLevel: return _qualityLevel;
-        case pid::MinDistance: return _minDistance;
-        }
-
-        return NodeProperty();
+        addInput("Image", ENodeFlowDataType::ImageMono);
+        addOutput("Keypoints", ENodeFlowDataType::Keypoints);
+        addProperty("Max corners", _maxCorners)
+            .setValidator(make_validator<MinPropertyValidator<int>>(0))
+            .setUiHints("min:0");
+        addProperty("Quality level of octaves", _qualityLevel)
+            .setValidator(make_validator<MinPropertyValidator<double>>(0))
+            .setUiHints("min:0");
+        addProperty("Minimum distance", _minDistance)
+            .setValidator(make_validator<MinPropertyValidator<double>>(0))
+            .setUiHints("min:0");
+        setDescription("Shi-Tomasi corner detector");
     }
 
     ExecutionStatus execute(NodeSocketReader& reader, NodeSocketWriter& writer) override
     {
         // inputs
-        const cv::Mat& src = reader.readSocket(0).getImage();
+        const cv::Mat& src = reader.readSocket(0).getImageMono();
         // outputs
         KeyPoints& kp = writer.acquireSocket(0).getKeypoints();
 
@@ -94,40 +76,10 @@ public:
             string_format("Corners detected: %d", (int) kp.kpoints.size()));
     }
 
-    void configuration(NodeConfig& nodeConfig) const override
-    {
-        static const InputSocketConfig in_config[] = {
-            { ENodeFlowDataType::Image, "image", "Image", "" },
-            { ENodeFlowDataType::Invalid, "", "", "" }
-        };
-        static const OutputSocketConfig out_config[] = {
-            { ENodeFlowDataType::Keypoints, "keypoints", "Keypoints", "" },
-            { ENodeFlowDataType::Invalid, "", "", "" }
-        };
-        static const PropertyConfig prop_config[] = {
-            { EPropertyType::Integer, "Max corners", "min:0" },
-            { EPropertyType::Double, "Quality level of octaves", "min:0" },
-            { EPropertyType::Double, "Minimum distance", "min:0" },
-            { EPropertyType::Unknown, "", "" }
-        };
-
-        nodeConfig.description = "Shi-Tomasi corner detector";
-        nodeConfig.pInputSockets = in_config;
-        nodeConfig.pOutputSockets = out_config;
-        nodeConfig.pProperties = prop_config;
-    }
-
 private:
-    enum class pid
-    {
-        MaxCorners,
-        QualityLevel,
-        MinDistance
-    };
-
-    int _maxCorners;
-    double _qualityLevel;
-    double _minDistance;
+    TypedNodeProperty<int> _maxCorners;
+    TypedNodeProperty<double> _qualityLevel;
+    TypedNodeProperty<double> _minDistance;
 };
 
 extern "C" K_DECL_EXPORT int logicVersion()

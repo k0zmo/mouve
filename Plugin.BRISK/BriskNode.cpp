@@ -34,32 +34,14 @@ public:
 		: _thresh(60)
 		, _nOctaves(4)
 	{
-	}
-
-	bool setProperty(PropertyID propId, const NodeProperty& newValue) override
-	{
-		switch(static_cast<pid>(propId))
-		{
-		case pid::Threshold:
-			_thresh = newValue.toInt();
-			return true;
-		case pid::NumOctaves:
-			_nOctaves = newValue.toInt();
-			return true;
-		}
-
-		return false;
-	}
-
-	NodeProperty property(PropertyID propId) const override
-	{
-		switch(static_cast<pid>(propId))
-		{
-		case pid::Threshold: return _thresh;
-		case pid::NumOctaves: return _nOctaves;
-		}
-
-		return NodeProperty();
+		addInput("Image", ENodeFlowDataType::ImageMono);
+		addOutput("Keypoints", ENodeFlowDataType::Keypoints);
+		addProperty("FAST/AGAST detection threshold score", _thresh)
+			.setValidator(make_validator<MinPropertyValidator<int>>(1))
+			.setUiHints("min:1");
+		addProperty("Number of octaves", _nOctaves)
+			.setValidator(make_validator<MinPropertyValidator<int>>(0))
+			.setUiHints("min:0");
 	}
 
 	ExecutionStatus execute(NodeSocketReader& reader, NodeSocketWriter& writer) override
@@ -81,37 +63,9 @@ public:
 			string_format("Keypoints detected: %d", (int) kp.kpoints.size()));
 	}
 
-	void configuration(NodeConfig& nodeConfig) const override
-	{
-		static const InputSocketConfig in_config[] = {
-			{ ENodeFlowDataType::ImageMono, "image", "Image", "" },
-			{ ENodeFlowDataType::Invalid, "", "", "" }
-		};
-		static const OutputSocketConfig out_config[] = {
-			{ ENodeFlowDataType::Keypoints, "keypoints", "Keypoints", "" },
-			{ ENodeFlowDataType::Invalid, "", "", "" }
-		};
-		static const PropertyConfig prop_config[] = {
-			{ EPropertyType::Integer, "FAST/AGAST detection threshold score", "min:1" },
-			{ EPropertyType::Integer, "Number of octaves", "min:0" },
-			{ EPropertyType::Unknown, "", "" }
-		};
-
-		nodeConfig.description = "";
-		nodeConfig.pInputSockets = in_config;
-		nodeConfig.pOutputSockets = out_config;
-		nodeConfig.pProperties = prop_config;
-	}
-
 private:
-	enum class pid
-	{
-		Threshold,
-		NumOctaves
-	};
-
-	int _thresh;
-	int _nOctaves;
+	TypedNodeProperty<int> _thresh;
+	TypedNodeProperty<int> _nOctaves;
 };
 
 class BriskDescriptorExtractorNodeType : public NodeType
@@ -123,42 +77,17 @@ public:
 		, _patternScale(1.0f)
 		, _brisk(nullptr)
 	{
-	}
-
-	bool setProperty(PropertyID propId, const NodeProperty& newValue) override
-	{
-		if(propId > underlying_cast(pid::PatternScale) || 
-			propId < underlying_cast(pid::RotationInvariant))
-			return false;
-
-		switch(static_cast<pid>(propId))
-		{
-		case pid::RotationInvariant:
-			_rotationInvariant = newValue.toBool();
-			break;
-		case pid::ScaleInvariant:
-			_scaleInvariant = newValue.toBool();
-			break;
-		case pid::PatternScale:
-			_patternScale  = newValue.toFloat();
-			break;
-		}
-
-		_brisk = nullptr;
-
-		return true;
-	}
-
-	NodeProperty property(PropertyID propId) const override
-	{
-		switch(static_cast<pid>(propId))
-		{
-		case pid::RotationInvariant: return _rotationInvariant;
-		case pid::ScaleInvariant: return _scaleInvariant;
-		case pid::PatternScale: return _patternScale;
-		}
-
-		return NodeProperty();
+		addInput("Keypoints", ENodeFlowDataType::Keypoints);
+		addOutput("Keypoints", ENodeFlowDataType::Keypoints);
+		addOutput("Descriptors", ENodeFlowDataType::Array);
+		addProperty("Rotation invariant", _rotationInvariant)
+			.setObserver(make_observer<FuncObserver>([this](const NodeProperty&) { _brisk = nullptr; }));
+		addProperty("Scale invariant", _scaleInvariant)
+			.setObserver(make_observer<FuncObserver>([this](const NodeProperty&) { _brisk = nullptr; }));
+		addProperty("Pattern scale", _patternScale)
+			.setValidator(make_validator<MinPropertyValidator<double>>(0.0))
+			.setObserver(make_observer<FuncObserver>([this](const NodeProperty&) { _brisk = nullptr; }))
+			.setUiHints("min:0.0");
 	}
 
 	ExecutionStatus execute(NodeSocketReader& reader, NodeSocketWriter& writer) override
@@ -186,41 +115,10 @@ public:
 		return ExecutionStatus(EStatus::Ok);
 	}
 
-	void configuration(NodeConfig& nodeConfig) const override
-	{
-		static const InputSocketConfig in_config[] = {
-			{ ENodeFlowDataType::Keypoints, "keypoints", "Keypoints", "" },
-			{ ENodeFlowDataType::Invalid, "", "", "" }
-		};
-		static const OutputSocketConfig out_config[] = {
-			{ ENodeFlowDataType::Keypoints, "output", "Keypoints", "" },
-			{ ENodeFlowDataType::Array, "output", "Descriptors", "" },
-			{ ENodeFlowDataType::Invalid, "", "", "" }
-		};
-		static const PropertyConfig prop_config[] = {
-			{ EPropertyType::Boolean, "Rotation invariant", "" },
-			{ EPropertyType::Boolean, "Scale invariant", "" },
-			{ EPropertyType::Double, "Pattern scale", "min:0.0" },
-			{ EPropertyType::Unknown, "", "" }
-		};
-
-		nodeConfig.description = "";
-		nodeConfig.pInputSockets = in_config;
-		nodeConfig.pOutputSockets = out_config;
-		nodeConfig.pProperties = prop_config;
-	}
-
 private:
-	enum class pid
-	{
-		RotationInvariant,
-		ScaleInvariant,
-		PatternScale
-	};
-
-	bool _rotationInvariant;
-	bool _scaleInvariant;
-	float _patternScale;
+	TypedNodeProperty<bool> _rotationInvariant;
+	TypedNodeProperty<bool> _scaleInvariant;
+	TypedNodeProperty<float> _patternScale;
 
 	// Must be pointer since BriskDescriptorExtractor doesn't implement copy/move operator
 	// and we want to cache _brisk object
@@ -238,46 +136,23 @@ public:
 		, _patternScale(1.0f)
 		, _brisk(nullptr)
 	{
-	}
-
-	bool setProperty(PropertyID propId, const NodeProperty& newValue) override
-	{
-		switch(static_cast<pid>(propId))
-		{
-		case pid::Threshold:
-			_thresh = newValue.toInt();
-			return true;
-		case pid::NumOctaves:
-			_nOctaves = newValue.toInt();
-			return true;
-		case pid::RotationInvariant:
-			_rotationInvariant = newValue.toBool();
-			break;
-		case pid::ScaleInvariant:
-			_scaleInvariant = newValue.toBool();
-			break;
-		case pid::PatternScale:
-			_patternScale  = newValue.toFloat();
-			break;
-		}
-
-		_brisk = nullptr;
-
-		return true;
-	}
-
-	NodeProperty property(PropertyID propId) const override
-	{
-		switch(static_cast<pid>(propId))
-		{
-		case pid::Threshold: return _thresh;
-		case pid::NumOctaves: return _nOctaves;
-		case pid::RotationInvariant: return _rotationInvariant;
-		case pid::ScaleInvariant: return _scaleInvariant;
-		case pid::PatternScale: return _patternScale;
-		}
-
-		return NodeProperty();
+		addInput("Image", ENodeFlowDataType::ImageMono);
+		addOutput("Keypoints", ENodeFlowDataType::Keypoints);
+		addOutput("Descriptors", ENodeFlowDataType::Array);
+		addProperty("FAST/AGAST detection threshold score", _thresh)
+			.setValidator(make_validator<MinPropertyValidator<int>>(1))
+			.setUiHints("min:1");
+		addProperty("Number of octaves", _nOctaves)
+			.setValidator(make_validator<MinPropertyValidator<int>>(0))
+			.setUiHints("min:0");
+		addProperty("Rotation invariant", _rotationInvariant)
+			.setObserver(make_observer<FuncObserver>([this](const NodeProperty&) { _brisk = nullptr; }));
+		addProperty("Scale invariant", _scaleInvariant)
+			.setObserver(make_observer<FuncObserver>([this](const NodeProperty&) { _brisk = nullptr; }));
+		addProperty("Pattern scale", _patternScale)
+			.setValidator(make_validator<MinPropertyValidator<double>>(0.0))
+			.setObserver(make_observer<FuncObserver>([this](const NodeProperty&) { _brisk = nullptr; }))
+			.setUiHints("min:0.0");
 	}
 
 	ExecutionStatus execute(NodeSocketReader& reader, NodeSocketWriter& writer) override
@@ -307,47 +182,12 @@ public:
 			string_format("Keypoints detected: %d", (int) kp.kpoints.size()));
 	}
 
-	void configuration(NodeConfig& nodeConfig) const override
-	{
-		static const InputSocketConfig in_config[] = {
-			{ ENodeFlowDataType::ImageMono, "image", "Image", "" },
-			{ ENodeFlowDataType::Invalid, "", "", "" }
-		};
-		static const OutputSocketConfig out_config[] = {
-			{ ENodeFlowDataType::Keypoints, "output", "Keypoints", "" },
-			{ ENodeFlowDataType::Array, "output", "Descriptors", "" },
-			{ ENodeFlowDataType::Invalid, "", "", "" }
-		};
-		static const PropertyConfig prop_config[] = {
-			{ EPropertyType::Integer, "FAST/AGAST detection threshold score", "min:1" },
-			{ EPropertyType::Integer, "Number of octaves", "min:0" },
-			{ EPropertyType::Boolean, "Rotation invariant", "" },
-			{ EPropertyType::Boolean, "Scale invariant", "" },
-			{ EPropertyType::Double, "Pattern scale", "min:0.0" },
-			{ EPropertyType::Unknown, "", "" }
-		};
-
-		nodeConfig.description = "";
-		nodeConfig.pInputSockets = in_config;
-		nodeConfig.pOutputSockets = out_config;
-		nodeConfig.pProperties = prop_config;
-	}
-
 private:
-	enum class pid
-	{
-		Threshold,
-		NumOctaves,
-		RotationInvariant,
-		ScaleInvariant,
-		PatternScale
-	};
-
-	int _thresh;
-	int _nOctaves;
-	bool _rotationInvariant;
-	bool _scaleInvariant;
-	float _patternScale;
+	TypedNodeProperty<int> _thresh;
+	TypedNodeProperty<int> _nOctaves;
+	TypedNodeProperty<bool> _rotationInvariant;
+	TypedNodeProperty<bool> _scaleInvariant;
+	TypedNodeProperty<float> _patternScale;
 
 	// Must be pointer since BriskDescriptorExtractor doesn't implement copy/move operator
 	// and we want to cache _brisk object
