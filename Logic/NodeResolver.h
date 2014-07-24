@@ -24,6 +24,7 @@
 #pragma once
 
 #include "Prerequisites.h"
+#include "Kommon/TypeTraits.h"
 
 class LOGIC_EXPORT NodeResolver
 {
@@ -41,23 +42,23 @@ public:
                                 const std::string& socketName);
     SocketID resolveInputSocket(const std::string& nodeName,
                                 const std::string& socketName);
-    const InputSocketConfig& inputSocketConfig(NodeID nodeID,
-                                               SocketID socketID);
-    const InputSocketConfig& inputSocketConfig(NodeID nodeID,
-                                               const std::string& socketName);
-    const InputSocketConfig& inputSocketConfig(const std::string& nodeName,
-                                               const std::string& socketName);
+    const SocketConfig& inputSocketConfig(NodeID nodeID,
+                                          SocketID socketID);
+    const SocketConfig& inputSocketConfig(NodeID nodeID,
+                                          const std::string& socketName);
+    const SocketConfig& inputSocketConfig(const std::string& nodeName,
+                                          const std::string& socketName);
 
     SocketID resolveOutputSocket(NodeID nodeID, 
                                  const std::string& socketName);
     SocketID resolveOutputSocket(const std::string& nodeName,
                                  const std::string& socketName);
-    const OutputSocketConfig& outputSocketConfig(NodeID nodeID,
-                                                 SocketID socketID);
-    const OutputSocketConfig& outputSocketConfig(NodeID nodeID,
-                                                 const std::string& socketName);
-    const OutputSocketConfig& outputSocketConfig(const std::string& nodeName,
-                                                 const std::string& socketName);
+    const SocketConfig& outputSocketConfig(NodeID nodeID,
+                                           SocketID socketID);
+    const SocketConfig& outputSocketConfig(NodeID nodeID,
+                                           const std::string& socketName);
+    const SocketConfig& outputSocketConfig(const std::string& nodeName,
+                                           const std::string& socketName);
 
     PropertyID resolveProperty(NodeID nodeID, 
                                const std::string& propertyName);
@@ -71,6 +72,11 @@ public:
 
     SocketAddress resolveSocketAddress(const std::string& uri);
     std::string socketAddressUri(const SocketAddress& socketAddr);
+
+private:
+    template <class F>
+    auto decorateConfiguration(NodeID nodeID, F&& f)
+        -> typename func_traits<F>::return_type;
 
 private:
     std::shared_ptr<NodeTree> _nodeTree;

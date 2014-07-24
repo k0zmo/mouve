@@ -24,19 +24,10 @@
 #include "NodeResolver.h"
 #include "NodeTree.h"
 #include "NodeType.h"
+#include "NodeException.h"
 #include "Kommon/TypeTraits.h"
 
 #include <regex>
-
-namespace
-{
-    const PropertyConfig& invalidPropertyConfig();
-    const InputSocketConfig& invalidInputSocketConfig();
-    const OutputSocketConfig& invalidOutputSocketConfig();
-
-    template <class RetValue, class Pred>
-    RetValue find(NodeTree& nodeTree, NodeID nodeID, Pred pred);
-}
 
 NodeResolver::NodeResolver(std::shared_ptr<NodeTree> nodeTree)
     : _nodeTree(std::move(nodeTree))
@@ -74,64 +65,137 @@ NodeID NodeResolver::resolveNode(const std::string& nodeName)
     return _nodeTree->resolveNode(nodeName);
 }
 
+namespace
+{
+    // Default values for some types
+    template <class Value>
+    struct DefaultValue;
+
+    template <>
+    struct DefaultValue<SocketID>
+    {
+        static const SocketID value = InvalidSocketID;
+    };
+
+    template <>
+    struct DefaultValue<PropertyID>
+    {
+        static const PropertyID value = InvalidPropertyID;
+    };
+
+    template <>
+    struct DefaultValue<const PropertyConfig&>
+    {
+        static const PropertyConfig value;
+    };
+
+    const PropertyConfig DefaultValue<const PropertyConfig&>::value = 
+        PropertyConfig{InvalidPropertyID, std::string{}, NodeProperty{}};
+
+    template <>
+    struct DefaultValue<const SocketConfig&>
+    {
+        static const SocketConfig value;
+    };
+
+    const SocketConfig DefaultValue<const SocketConfig&>::value = 
+        SocketConfig{InvalidSocketID, std::string{}, ENodeFlowDataType::Invalid};
+
+    template <class T>
+    typename std::vector<T>::const_iterator 
+        findConfigWithName(const std::vector<T>& container, 
+            const std::string& name) 
+    {
+        return std::find_if(container.begin(), container.end(),
+            [&name](const T& cfg) {
+                return cfg.name() == name;
+            });
+    }
+}
+
+// Helper method to "wrap" F function within try-catch and nodeConfiguration call
+template <class F>
+auto NodeResolver::decorateConfiguration(NodeID nodeID, F&& func)
+    -> typename func_traits<F>::return_type
+{
+    try
+    {
+        const NodeConfig& nodeConfig = _nodeTree->nodeConfiguration(nodeID);
+        return func(nodeConfig);
+    }
+    catch(BadNodeException&)
+    {
+        using ReturnType = typename func_traits<F>::return_type;
+        return DefaultValue<ReturnType>::value;
+    } 
+}
+
 SocketID NodeResolver::resolveInputSocket(NodeID nodeID, 
                                           const std::string& socketName)
 {
-    return find<SocketID>(*_nodeTree, nodeID, 
-        [&socketName](const InputSocketConfig& cfg) 
+    return decorateConfiguration(nodeID, 
+        [&](const NodeConfig& cfg) -> SocketID
         {
-            return socketName == cfg.name;
+            auto iter = findConfigWithName(cfg.inputs(), socketName);
+            if (iter != cfg.inputs().end())
+                return iter->socketID();
+            return DefaultValue<SocketID>::value;
         });
 }
-    
+
 SocketID NodeResolver::resolveInputSocket(const std::string& nodeName, 
                                           const std::string& socketName)
 {
     NodeID nodeID;
     if((nodeID = resolveNode(nodeName)) != InvalidNodeID)
         return resolveInputSocket(nodeID, socketName);
-    return InvalidSocketID;
+    return DefaultValue<SocketID>::value;
 }
 
-const InputSocketConfig& NodeResolver::inputSocketConfig(NodeID nodeID, 
-                                                         SocketID socketID)
+const SocketConfig& NodeResolver::inputSocketConfig(NodeID nodeID, 
+                                                    SocketID socketID)
 {
-    SocketID iter = 0;
-    auto conf = find<const InputSocketConfig*>(*_nodeTree, nodeID, 
-        [socketID,&iter](const InputSocketConfig&)
+    return decorateConfiguration(nodeID, 
+        [&](const NodeConfig& cfg) -> const SocketConfig&
         {
-            return iter++ == socketID;
+            if(socketID < cfg.inputs().size())
+                return cfg.inputs()[socketID];
+            return DefaultValue<const SocketConfig&>::value;
         });
-    return conf ? *conf : invalidInputSocketConfig();
 }
 
-const InputSocketConfig& NodeResolver::inputSocketConfig(NodeID nodeID,
-                                                         const std::string& socketName)
+const SocketConfig& NodeResolver::inputSocketConfig(NodeID nodeID,
+                                                    const std::string& socketName)
 {
-    auto conf = find<const InputSocketConfig*>(*_nodeTree, nodeID, 
-        [&socketName](const InputSocketConfig& cfg)
+    return decorateConfiguration(nodeID,
+        [&](const NodeConfig& cfg) -> const SocketConfig& 
         {
-            return socketName == cfg.name;
+            auto iter = findConfigWithName(cfg.inputs(), socketName);
+            if (iter != cfg.inputs().end())
+                return *iter;
+            return DefaultValue<const SocketConfig&>::value;
         });
-    return conf ? *conf : invalidInputSocketConfig();
 }
 
-const InputSocketConfig& NodeResolver::inputSocketConfig(const std::string& nodeName,
-                                                         const std::string& socketName)
+const SocketConfig& NodeResolver::inputSocketConfig(const std::string& nodeName,
+                                                    const std::string& socketName)
 {
     NodeID nodeID;
     if((nodeID = resolveNode(nodeName)) != InvalidNodeID)
         return inputSocketConfig(nodeID, socketName);
-    return invalidInputSocketConfig();
+    return DefaultValue<const SocketConfig&>::value;
 }
 
 SocketID NodeResolver::resolveOutputSocket(NodeID nodeID,
                                            const std::string& socketName)
 {
-    return find<SocketID>(*_nodeTree, nodeID, 
-        [&socketName](const OutputSocketConfig& cfg)
+    return decorateConfiguration(nodeID, 
+        [&](const NodeConfig& cfg) -> SocketID
         {
-            return socketName == cfg.name;
+            auto iter = findConfigWithName(cfg.outputs(), socketName);
+            if (iter != cfg.outputs().end())
+                return iter->socketID();
+            return DefaultValue<SocketID>::value;
         });
 }
 
@@ -141,48 +205,53 @@ SocketID NodeResolver::resolveOutputSocket(const std::string& nodeName,
     NodeID nodeID;
     if((nodeID = resolveNode(nodeName)) != InvalidNodeID)
         return resolveOutputSocket(nodeID, socketName);
-    return InvalidSocketID;
+    return DefaultValue<SocketID>::value;
 }
 
-const OutputSocketConfig& NodeResolver::outputSocketConfig(NodeID nodeID,
-                                                           SocketID socketID)
+const SocketConfig& NodeResolver::outputSocketConfig(NodeID nodeID,
+                                                     SocketID socketID)
 {
-    SocketID iter = 0;
-    auto conf = find<const OutputSocketConfig*>(*_nodeTree, nodeID, 
-        [socketID,&iter](const OutputSocketConfig&)
+    return decorateConfiguration(nodeID, 
+        [&](const NodeConfig& cfg) -> const SocketConfig&
         {
-            return iter++ == socketID;
+            if(socketID < cfg.outputs().size())
+                return cfg.outputs()[socketID];
+            return DefaultValue<const SocketConfig&>::value;
         });
-    return conf ? *conf : invalidOutputSocketConfig();
 }
 
-const OutputSocketConfig& NodeResolver::outputSocketConfig(NodeID nodeID,
-                                                           const std::string& socketName)
+const SocketConfig& NodeResolver::outputSocketConfig(NodeID nodeID,
+                                                     const std::string& socketName)
 {
-    auto conf = find<const OutputSocketConfig*>(*_nodeTree, nodeID, 
-        [&socketName](const OutputSocketConfig& cfg)
+    return decorateConfiguration(nodeID,
+        [&](const NodeConfig& cfg) -> const SocketConfig& 
         {
-            return socketName == cfg.name;
+            auto iter = findConfigWithName(cfg.outputs(), socketName);
+            if (iter != cfg.outputs().end())
+                return *iter;
+            return DefaultValue<const SocketConfig&>::value;
         });
-    return conf ? *conf : invalidOutputSocketConfig();
 }
 
-const OutputSocketConfig& NodeResolver::outputSocketConfig(const std::string& nodeName, 
-                                                           const std::string& socketName)
+const SocketConfig& NodeResolver::outputSocketConfig(const std::string& nodeName, 
+                                                     const std::string& socketName)
 {
     NodeID nodeID;
     if((nodeID = resolveNode(nodeName)) != InvalidNodeID)
         return outputSocketConfig(nodeID, socketName);
-    return invalidOutputSocketConfig();
+    return DefaultValue<const SocketConfig&>::value;
 }
 
 PropertyID NodeResolver::resolveProperty(NodeID nodeID, 
                                          const std::string& propertyName)
 {
-    return find<PropertyID>(*_nodeTree, nodeID, 
-        [&propertyName](const PropertyConfig& cfg) 
+    return decorateConfiguration(nodeID, 
+        [&](const NodeConfig& cfg) -> PropertyID
         {
-            return propertyName == cfg.name;
+            auto iter = findConfigWithName(cfg.properties(), propertyName);
+            if (iter != cfg.properties().end())
+                return iter->propertyID();
+            return DefaultValue<PropertyID>::value;
         });
 }
 
@@ -192,30 +261,32 @@ PropertyID NodeResolver::resolveProperty(const std::string& nodeName,
     NodeID nodeID;
     if((nodeID = resolveNode(nodeName)) != InvalidNodeID)
         return resolveProperty(nodeID, propertyName);
-    return InvalidPropertyID;
+    return DefaultValue<PropertyID>::value;
 }
 
 const PropertyConfig& NodeResolver::propertyConfig(NodeID nodeID, 
                                                    PropertyID propertyID)
 {
-    SocketID iter = 0;
-    auto conf = find<const PropertyConfig*>(*_nodeTree, nodeID, 
-        [propertyID,&iter](const PropertyConfig&)
+    return decorateConfiguration(nodeID, 
+        [&](const NodeConfig& cfg) -> const PropertyConfig&
         {
-            return iter++ == propertyID;
+            if(propertyID >= 0 && static_cast<size_t>(propertyID) < cfg.properties().size())
+                return cfg.properties()[propertyID];
+            return DefaultValue<const PropertyConfig&>::value;
         });
-    return conf ? *conf : invalidPropertyConfig();
 }
 
 const PropertyConfig& NodeResolver::propertyConfig(NodeID nodeID, 
                                                    const std::string& propertyName)
 {
-    auto conf = find<const PropertyConfig*>(*_nodeTree, nodeID, 
-        [&propertyName](const PropertyConfig& cfg)
+    return decorateConfiguration(nodeID,
+        [&](const NodeConfig& cfg) -> const PropertyConfig& 
         {
-            return propertyName == cfg.name;
+            auto iter = findConfigWithName(cfg.properties(), propertyName);
+            if (iter != cfg.properties().end())
+                return *iter;
+            return DefaultValue<const PropertyConfig&>::value;
         });
-    return conf ? *conf : invalidPropertyConfig();
 }
 
 const PropertyConfig& NodeResolver::propertyConfig(const std::string& nodeName, 
@@ -224,7 +295,7 @@ const PropertyConfig& NodeResolver::propertyConfig(const std::string& nodeName,
     NodeID nodeID;
     if((nodeID = resolveNode(nodeName)) != InvalidNodeID)
         return propertyConfig(nodeID, propertyName);
-    return invalidPropertyConfig();
+    return DefaultValue<const PropertyConfig&>::value;
 }
 
 SocketAddress NodeResolver::resolveSocketAddress(const std::string& uri)
@@ -244,19 +315,19 @@ SocketAddress NodeResolver::resolveSocketAddress(const std::string& uri)
             if (nodeID != InvalidNodeID)
             {
                 if (proto == "i")
-                    return{ nodeID, resolveInputSocket(nodeID, socket), false };
+                    return {nodeID, resolveInputSocket(nodeID, socket), false};
                 else if (proto == "o")
-                    return{ nodeID, resolveOutputSocket(nodeID, socket), true };
+                    return {nodeID, resolveOutputSocket(nodeID, socket), true};
             }
         }
     }
 
-    return{ InvalidNodeID, InvalidSocketID, false };
+    return {InvalidNodeID, InvalidSocketID, false};
 }
 
 std::string NodeResolver::socketAddressUri(const SocketAddress& socketAddr)
 {
-    if(!socketAddr.isValid()) return{};
+    if(!socketAddr.isValid()) return {};
 
     std::ostringstream strm;
 
@@ -265,102 +336,15 @@ std::string NodeResolver::socketAddressUri(const SocketAddress& socketAddr)
         strm << "o://";
         strm << _nodeTree->nodeName(socketAddr.node);
         strm << "/";
-        strm << outputSocketConfig(socketAddr.node, socketAddr.socket).name;
+        strm << outputSocketConfig(socketAddr.node, socketAddr.socket).name();
     }
     else
     {
         strm << "i://";
         strm << _nodeTree->nodeName(socketAddr.node);
         strm << "/";
-        strm << inputSocketConfig(socketAddr.node, socketAddr.socket).name;
+        strm << inputSocketConfig(socketAddr.node, socketAddr.socket).name();
     }    
 
     return strm.str();
-}
-
-namespace
-{
-    const PropertyConfig& invalidPropertyConfig()
-    {
-        static PropertyConfig instance{ EPropertyType::Unknown, {}, {} };
-        return instance;
-    }
-
-    const InputSocketConfig& invalidInputSocketConfig()
-    {
-        static InputSocketConfig instance{ ENodeFlowDataType::Invalid, {}, {}, {} };
-        return instance;
-    }
-
-    const OutputSocketConfig& invalidOutputSocketConfig()
-    {
-        static OutputSocketConfig instance{ ENodeFlowDataType::Invalid, {}, {}, {} };
-        return instance;
-    }
-
-    // Returns the iterator (no-op)
-    template <class RetValue, class Iter>
-    RetValue return_value(Iter iter, Iter begin, typename std::enable_if<std::is_pointer<RetValue>::value>::type* = 0)
-    {
-        (void)begin;
-        return iter;
-    }
-
-    // Returns the iterator's position
-    template <class RetValue, class Iter>
-    RetValue return_value(Iter iter, Iter begin, typename std::enable_if<!std::is_pointer<RetValue>::value>::type* = 0)
-    {
-        return static_cast<RetValue>(iter - begin);
-    }
-
-    // Type traits for SocketID/PropertyID
-    template <class Value>
-    struct NullValue;
-
-    template <>
-    struct NullValue<SocketID>
-    {
-        static const SocketID value = InvalidSocketID;
-    };
-
-    template <>
-    struct NullValue<PropertyID>
-    {
-        static const PropertyID value = InvalidSocketID;
-    };
-
-    template <class RetValue>
-    RetValue return_value_null(typename std::enable_if<std::is_pointer<RetValue>::value>::type* = 0)
-    {
-        return nullptr;
-    }
-
-    template <class RetValue>
-    RetValue return_value_null(typename std::enable_if<!std::is_pointer<RetValue>::value>::type* = 0)
-    {
-        return NullValue<RetValue>::value;
-    }
-
-    template <class RetValue, class Pred>
-    RetValue find(NodeTree& nodeTree, NodeID nodeID, Pred pred)
-    {
-        NodeConfig nodeConfig;
-        if (nodeTree.nodeConfiguration(nodeID, nodeConfig))
-        {
-            //using PredArg = const InputSocketConfig&;
-            using PredArg = typename func_traits<Pred>::template arg<0>::type;
-            // using Iter = InputSocketConfig
-            using Iter = typename std::remove_cv<typename std::remove_reference<PredArg>::type>::type;
-
-            const Iter* iter = begin_config<Iter>(nodeConfig);
-            while (!end_config(iter))
-            {
-                if (pred(*iter))
-                    return return_value<RetValue>(iter, begin_config<Iter>(nodeConfig));
-                ++iter;
-            }
-        }
-
-        return return_value_null<RetValue>();
-    }
 }
