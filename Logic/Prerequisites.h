@@ -64,10 +64,11 @@ static const PropertyID InvalidPropertyID = (PropertyID) ~PropertyID(0);
 static const NodeTypeID InvalidNodeTypeID = NodeTypeID(0);
 
 // Forward declarations
-struct InputSocketConfig;
-struct OutputSocketConfig;
-struct PropertyConfig;
-struct NodeConfig;
+class SocketConfig;
+class PropertyConfig;
+class NodeConfig;
+struct PropertyValidator;
+struct PropertyObserver;
 struct ExecutionStatus;
 
 class Node;

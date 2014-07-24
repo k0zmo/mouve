@@ -93,3 +93,98 @@ NodeFlowData& NodeSocketWriter::acquireSocket(SocketID socketID)
 
     return _outputs->at(socketID);
 }
+
+bool PropertyConfig::setPropertyValue(const NodeProperty& newPropertyValue)
+{
+    if(_validator)
+    {
+        if(!_validator->validate(newPropertyValue))
+            return false;
+    }
+
+    _nodeProperty = newPropertyValue;
+
+    if(_observer)
+        _observer->notifyChanged(newPropertyValue);
+
+    return true;
+}
+
+NodeConfig::NodeConfig(NodeConfig&& other)
+{
+    *this = std::move(other);
+}
+
+NodeConfig& NodeConfig::operator=(NodeConfig&& other)
+{
+    if (&other != this)
+    {
+        _inputs = std::move(other._inputs);
+        _outputs = std::move(other._outputs);
+        _properties = std::move(other._properties);
+        _description = std::move(other._description);
+        _module = std::move(other._module);
+        _flags = other._flags;
+    }
+
+    return *this;
+}
+
+SocketConfig& NodeConfig::addInput(std::string name, ENodeFlowDataType dataType)
+{
+    if(dataType == ENodeFlowDataType::Invalid)
+        throw BadConfigException();
+    if(!checkNameUniqueness(_inputs, name))
+        throw BadConfigException();
+
+    _inputs.emplace_back(static_cast<SocketID>(_inputs.size()), std::move(name), dataType);
+    return _inputs.back();
+}
+
+void NodeConfig::clearInputs()
+{
+    _inputs.clear();
+}
+
+SocketConfig& NodeConfig::addOutput(std::string name, ENodeFlowDataType dataType)
+{
+    if(dataType == ENodeFlowDataType::Invalid)
+        throw BadConfigException();
+    if(!checkNameUniqueness(_outputs, name))
+        throw BadConfigException();
+
+    _outputs.emplace_back(static_cast<SocketID>(_outputs.size()), std::move(name), dataType);
+    return _outputs.back();
+}
+
+void NodeConfig::clearOutputs()
+{
+    _outputs.clear();
+}
+
+PropertyConfig& NodeConfig::addProperty(std::string name, NodeProperty& nodeProperty)
+{
+    if(!nodeProperty.isValid())
+        throw BadConfigException();
+    if(!checkNameUniqueness(_properties, name))
+        throw BadConfigException();
+
+    _properties.emplace_back(static_cast<PropertyID>(_properties.size()), std::move(name), nodeProperty);
+    return _properties.back();
+}
+
+void NodeConfig::clearProperties()
+{
+    _properties.clear();
+}
+
+template <class T>
+bool NodeConfig::checkNameUniqueness(const std::vector<T>& containter,
+                            const std::string& name)
+{
+    return std::find_if(std::begin(containter), std::end(containter),
+        [&name](const T& cfg)
+        {
+            return cfg.name() == name;
+        }) == std::end(containter);
+}

@@ -26,9 +26,10 @@
 #include "Prerequisites.h"
 #include "NodeFlowData.h"
 #include "NodeProperty.h"
+#include "NodeException.h"
 #include "Kommon/EnumFlags.h"
 
-/// Class responsible for reading data from a node socket
+// Class responsible for reading data from a node socket
 class LOGIC_EXPORT NodeSocketReader
 {
     K_DISABLE_COPY(NodeSocketReader);
@@ -42,9 +43,9 @@ public:
     {
     }
 
-    /// Reads data from the socket of given ID
+    // Reads data from the socket of given ID
     const NodeFlowData& readSocket(SocketID socketID) const;
-    /// Reads data from the socket as an opencv image 
+    // Reads data from the socket as an opencv image 
     const cv::Mat& readSocketImage(SocketID socketID) const;
 
 private:
@@ -56,7 +57,7 @@ private:
     NodeID _nodeID;
 };
 
-/// Class responsible for writing data to a node socket
+// Class responsible for writing data to a node socket
 class LOGIC_EXPORT NodeSocketWriter
 {
     K_DISABLE_COPY(NodeSocketWriter);
@@ -68,9 +69,9 @@ public:
     {
     }
 
-    /// Writes data to the socket of given ID
+    // Writes data to the socket of given ID
     void writeSocket(SocketID socketID, NodeFlowData&& image);
-    /// Returns a reference to underlying socket data
+    // Returns a reference to underlying socket data
     NodeFlowData& acquireSocket(SocketID socketID);
 
 private:
@@ -80,171 +81,361 @@ private:
     std::vector<NodeFlowData>* _outputs;
 };
 
-/// Describes input socket parameters
-struct InputSocketConfig
+// Interface for property value validator
+struct PropertyValidator
 {
-    /// Type of underlying data
-    ENodeFlowDataType dataType;
-    /// Name of input socket
-    std::string name;
-    /// Human-readable name of socket
-    std::string humanName;
-    /// Optional description
-    std::string description;
+    virtual bool validate(const NodeProperty& value) = 0;
 };
 
-/// Describes output socket parameters
-struct OutputSocketConfig
+// Helper method to construct property validator
+template <class T, class... Args, 
+    class = std::enable_if<std::is_base_of<PropertyValidator, T>::value>::type>
+std::unique_ptr<PropertyValidator> make_validator(Args&&... args)
 {
-    /// Type of underlying data
-    ENodeFlowDataType dataType;
-    /// Name of output socket
-    std::string name;
-    /// Human-readable name of socket
-    std::string humanName;
-    /// Optional description
-    std::string description;
+    return std::unique_ptr<PropertyValidator>(new T(std::forward<Args>(args)...));
+}
+
+// Interface for property value observer
+struct PropertyObserver
+{
+    virtual void notifyChanged(const NodeProperty& value) = 0;
 };
 
-/// Describes node property parameters
-struct PropertyConfig
+// Helper method to construct property observer
+template <class T, class... Args,
+    class = std::enable_if<std::is_base_of<PropertyObserver, T>::value>::type>
+std::unique_ptr<PropertyObserver> make_observer(Args&&... args)
 {
-    /// Type of property data
-    EPropertyType type;
-    /// Human-readable property name
-    std::string name;
-    /// Optional parameters for UI engine
-    std::string uiHint;
+    return std::unique_ptr<PropertyObserver>(new T(std::forward<Args>(args)...));
+}
+
+// Property observer invoking given callable object on value changed
+class FuncObserver : public PropertyObserver
+{
+public:
+    using func = std::function<void(const NodeProperty&)>;
+
+    explicit FuncObserver(func op) : _op(std::move(op)) {}
+
+    virtual void notifyChanged(const NodeProperty& value) override
+    {
+        _op(value);
+    }
+
+private:
+    func _op;
 };
 
-/// Additional, per-node settings
+// Property validator using given callable object for validation
+class FuncValidator : public PropertyValidator
+{
+public:
+    using func = std::function<bool(const NodeProperty&)>;
+
+    explicit FuncValidator(func op) : _op(std::move(op)) {}
+
+    virtual bool validate(const NodeProperty& value) override
+    {
+        return _op(value);
+    }
+
+private:
+    func _op;
+};
+
+// Validate property value checking if new value is in given range
+template <class T, class MinOp, class MaxOp>
+class RangePropertyValidator : public PropertyValidator
+{
+public:
+    typedef T type;
+
+    explicit RangePropertyValidator(T min, T max = 0)
+        : min(min), max(max)
+    {
+        if(propertyType<T>() == EPropertyType::Unknown)
+            throw BadConfigException();
+    }
+
+    virtual bool validate(const NodeProperty& value) override
+    {
+        return validateImpl(value.cast<T>());
+    }
+
+private:
+    bool validateImpl(const T& value)
+    {
+        return MinOp()(value, min) && MaxOp()(value, max);
+    }
+
+private:
+    type min;
+    type max;
+};
+
+template <class T>
+struct no_limit : public std::binary_function<T, T, bool>
+{
+    bool operator()(const T& left, const T& right) const { return true; }
+};
+
+// Range validator for (a, b)
+template <class T>
+using ExclRangePropertyValidator
+    = RangePropertyValidator<T, std::greater<T>, std::less<T>>;
+
+// Range validator for [a, b]
+template <class T>
+using InclRangePropertyValidator
+    = RangePropertyValidator<T, std::greater_equal<T>, std::less_equal<T>>;
+
+// Range validator for [a, inf+)
+template <class T>
+using MinPropertyValidator
+    = RangePropertyValidator<T, std::greater_equal<T>, no_limit<T>>;
+
+// Range validator for (a, inf+)
+template <class T>
+using GreaterPropertyValidator
+    = RangePropertyValidator<T, std::greater<T>, no_limit<T>>;
+
+// Range validator for (-inf, b]
+template <class T>
+using MaxPropertyValidator
+    = RangePropertyValidator<T, no_limit<T>, std::less_equal<T>>;
+
+// Range validator for (-inf, b)
+template <class T>
+using LessPropertyValidator
+    = RangePropertyValidator<T, no_limit<T>, std::less<T>>;
+
+// Describes input/output socket parameters
+class LOGIC_EXPORT SocketConfig
+{
+public:
+    explicit SocketConfig(SocketID socketID,
+        std::string name, ENodeFlowDataType type)
+        : _socketID(socketID)
+        , _type(type)
+        , _name(std::move(name))
+    {
+    }
+
+    SocketConfig(const SocketConfig&) = default;
+    SocketConfig& operator=(const SocketConfig&) = delete;
+
+    SocketConfig(SocketConfig&& other)
+        : _socketID(other._socketID)
+        , _type(other._type)
+        , _name(std::move(other._name))
+        , _description(std::move(other._description))
+    {
+    }
+
+    SocketConfig& operator=(SocketConfig&& other) = delete;
+
+    SocketConfig& setDescription(std::string description)
+    {
+        _description = std::move(description);
+        return *this;
+    }
+
+    SocketID socketID() const { return _socketID; }
+    ENodeFlowDataType type() const { return _type; }
+    const std::string& name() const { return _name; }
+    const std::string& description() const { return _description; }
+    bool isValid() const { return _socketID != InvalidSocketID; }
+
+private:
+    // Socket sequential number for given node type
+    const SocketID _socketID;
+    // Type of underlying data
+    const ENodeFlowDataType _type;
+    // Name of input socket
+    const std::string _name;
+    // Optional description
+    std::string _description;
+};
+
+// Describes node property parameters
+class LOGIC_EXPORT PropertyConfig
+{
+public:
+    explicit PropertyConfig(PropertyID propertyID, 
+        std::string name, NodeProperty& nodeProperty)
+        : _propertyID(propertyID)
+        , _nodeProperty(nodeProperty)
+        , _type(nodeProperty.type())
+        , _name(std::move(name))
+    {
+    }
+
+    PropertyConfig(const PropertyConfig&) = delete;
+    PropertyConfig& operator=(const PropertyConfig&) = delete;
+
+    PropertyConfig(PropertyConfig&& other)
+        : _propertyID(other._propertyID)
+        , _nodeProperty(other._nodeProperty)
+        , _type(other._type)
+        , _name(std::move(other._name))
+        , _uiHints(std::move(other._uiHints))
+        , _description(std::move(other._description))
+        , _validator(std::move(other._validator))
+        , _observer(std::move(other._observer))
+    {
+    }
+
+    PropertyConfig& operator=(PropertyConfig&& other) = delete;
+
+    PropertyConfig& setUiHints(std::string uiHints)
+    {
+        _uiHints = std::move(uiHints);
+        return *this;
+    }
+
+    PropertyConfig& setDescription(std::string description)
+    {
+        _description = std::move(description);
+        return *this;
+    }
+
+    PropertyConfig& setValidator(std::unique_ptr<PropertyValidator> validator)
+    {
+        _validator = std::move(validator);
+        return *this;
+    }
+
+    PropertyConfig& setObserver(std::unique_ptr<PropertyObserver> observer)
+    {
+        _observer = std::move(observer);
+        return *this;
+    }
+
+    PropertyID propertyID() const { return _propertyID; }
+    EPropertyType type() const { return _type; }
+    const std::string& name() const { return _name; }
+    const std::string& uiHints() const { return _uiHints; }
+    const std::string& description() const { return _description; }
+    bool isValid() const { return _propertyID != InvalidPropertyID; }
+
+    bool setPropertyValue(const NodeProperty& newPropertyValue);
+    const NodeProperty& propertyValue() const { return _nodeProperty; }
+
+private:
+    // Property sequential number for given node type
+    const PropertyID _propertyID;
+    // Reference to actual node property
+    NodeProperty& _nodeProperty;
+    // Type of property data
+    const EPropertyType _type;
+    // Human-readable property name
+    const std::string _name;
+    // Optional parameters for UI engine
+    std::string _uiHints;
+    // Optional description
+    std::string _description;
+    // Optional property value validator
+    std::unique_ptr<PropertyValidator> _validator;
+    // Optional observer notified when property is changed
+    std::unique_ptr<PropertyObserver> _observer;
+};
+
+// Additional, per-node settings
 enum class ENodeConfig
 {
     NoFlags                  = 0,
-    /// Node markes as a stateful
+    // Node markes as a stateful
     HasState                 = K_BIT(0),
-    /// After one exec-run, node should be tagged for next one
+    // After one exec-run, node should be tagged for next one
     AutoTag                  = K_BIT(1),
-    /// Don't automatically do time computations for this node as it'll do it itself
+    // Don't automatically do time computations for this node as it'll do it itself
     OverridesTimeComputation = K_BIT(2)
 };
 typedef EnumFlags<ENodeConfig> NodeConfigFlags;
 K_DEFINE_ENUMFLAGS_OPERATORS(NodeConfigFlags)
 
-/// Describes node configuration
-struct NodeConfig
+// Describes node type with all its i/o sockets and properties
+class LOGIC_EXPORT NodeConfig
 {
-    /// Array of input socket descriptors
-    const InputSocketConfig* pInputSockets;
-    /// Array of output socket descriptors
-    const OutputSocketConfig* pOutputSockets;
-    /// Array of node property descriptors
-    const PropertyConfig* pProperties;
-    /// Optional human-readable description
-    std::string description;
-    /// Optional name of module that this node belongs to
-    std::string module;
-    /// Additional settings
-    NodeConfigFlags flags;
-
-    NodeConfig()
-        : pInputSockets(nullptr)
-        , pOutputSockets(nullptr)
-        , pProperties(nullptr)
-        , description()
-        , module()
-        , flags(ENodeConfig::NoFlags)
+public:
+    explicit NodeConfig()
+        : _flags(ENodeConfig::NoFlags)
     {
     }
+
+    NodeConfig(const NodeConfig&) = delete;
+    NodeConfig& operator=(const NodeConfig&) = delete;
+
+    NodeConfig(NodeConfig&& other);
+    NodeConfig& operator=(NodeConfig&& other);
+
+    SocketConfig& addInput(std::string name, ENodeFlowDataType dataType);
+    SocketConfig& addOutput(std::string name, ENodeFlowDataType dataType);
+    PropertyConfig& addProperty(std::string name, NodeProperty& nodeProperty);
+
+    void clearInputs();
+    void clearOutputs();
+    void clearProperties();
+
+    NodeConfig& setDescription(std::string description)
+    {
+        _description = std::move(description);
+        return *this;
+    }
+
+    NodeConfig& setModule(std::string module)
+    {
+        _module = std::move(module);
+        return *this;
+    }
+
+    NodeConfig& setFlags(NodeConfigFlags configFlags)
+    {
+        _flags = configFlags;
+        return *this;
+    }
+
+    const std::vector<SocketConfig>& inputs() const { return _inputs; }
+    const std::vector<SocketConfig>& outputs() const { return _outputs; }
+    const std::vector<PropertyConfig>& properties() const { return _properties; }
+    std::vector<PropertyConfig>& properties() { return _properties; }
+    const std::string& description() const { return _description; }
+    const std::string& module() const { return _module; }
+    NodeConfigFlags flags() const { return _flags; }
+
+private:
+    template <class T>
+    bool checkNameUniqueness(const std::vector<T>& containter,
+                             const std::string& name);
+
+private:
+    // Array of input socket descriptors
+    std::vector<SocketConfig> _inputs;
+    // Array of output socket descriptors
+    std::vector<SocketConfig> _outputs;
+    // Array of node property descriptors
+    std::vector<PropertyConfig> _properties;
+    // Optional human-readable description
+    std::string _description;
+    // Optional name of module that this node belongs to
+    std::string _module;
+    // Additional settings
+    NodeConfigFlags _flags;
 };
 
-// These allow for iterating over NodeConfig fields: input/output socket config
-// and property config
-template <class Iter>
-const Iter* begin_config(const NodeConfig&)
-{
-    return nullptr;
-}
-
-template <class Iter>
-bool end_config(const Iter*)
-{
-    return true;
-}
-
-template <class Iter>
-int pos_config(const Iter*, const NodeConfig&)
-{
-    return 0;
-}
-
-template <>
-inline const InputSocketConfig* begin_config(const NodeConfig& nodeConfig)
-{
-    return nodeConfig.pInputSockets;
-}
-
-template <>
-inline bool end_config(const InputSocketConfig* iter)
-{
-    return !iter || iter->dataType == ENodeFlowDataType::Invalid;
-}
-
-template <>
-inline int pos_config(const InputSocketConfig* iter, const NodeConfig& nodeConfig)
-{
-    return iter - nodeConfig.pInputSockets;
-}
-
-template <>
-inline const OutputSocketConfig* begin_config(const NodeConfig& nodeConfig)
-{
-    return nodeConfig.pOutputSockets;
-}
-
-template <>
-inline bool end_config(const OutputSocketConfig* iter)
-{
-    return !iter || iter->dataType == ENodeFlowDataType::Invalid;
-}
-
-template <>
-inline int pos_config(const OutputSocketConfig* iter, const NodeConfig& nodeConfig)
-{
-    return iter - nodeConfig.pOutputSockets;
-}
-
-template <>
-inline const PropertyConfig* begin_config(const NodeConfig& nodeConfig)
-{
-    return nodeConfig.pProperties;
-}
-
-template <>
-inline bool end_config(const PropertyConfig* iter)
-{
-    return !iter || iter->type == EPropertyType::Unknown;
-}
-
-template <>
-inline int pos_config(const PropertyConfig* iter, const NodeConfig& nodeConfig)
-{
-    return iter - nodeConfig.pProperties;
-}
-
-/// Node execution status 
+// Node execution status 
 enum class EStatus : int
 {
-    /// Everything was ok
+    // Everything was ok
     Ok,
-    /// There was an error during execution
+    // There was an error during execution
     Error,
-    /// Mark this node for execution for next run
-    /// (requires Node_AutoTag flag set on)
+    // Mark this node for execution for next run
+    // (requires Node_AutoTag flag set on)
     Tag
 };
 
-/// Represents execution return information
+// Represents execution return information
 struct ExecutionStatus
 {
     ExecutionStatus()
@@ -271,37 +462,32 @@ struct ExecutionStatus
     {
     }
 
-    /// If Node_OverridesTimeComputation is set on this value will be used
-    /// to display overriden time elapsed value
+    // If Node_OverridesTimeComputation is set on this value will be used
+    // to display overriden time elapsed value
     double timeElapsed;
-    /// Node execution status
+    // Node execution status
     EStatus status;
-    /// Additional message in case of an error
+    // Additional message in case of an error
     std::string message;
 };
 
-class NodeType
+class NodeType : public NodeConfig
 {
 public:
     virtual ~NodeType() {}
 
     // Required methods
-    virtual void configuration(NodeConfig& nodeConfig) const = 0;
     virtual ExecutionStatus execute(NodeSocketReader& reader, NodeSocketWriter& writer) = 0;
 
     // Optional methods
-    virtual bool setProperty(PropertyID propId, const NodeProperty& newValue);
-    virtual NodeProperty property(PropertyID propId) const;
     virtual bool restart();
     virtual void finish();
-
     virtual bool init(const std::shared_ptr<NodeModule>& module);
+
+    NodeConfig& config() { return *this; }
+    const NodeConfig& config() const { return *this; }
 };
 
-inline bool NodeType::setProperty(PropertyID, const NodeProperty&)
-{ return false; }
-inline NodeProperty NodeType::property(PropertyID) const
-{ return NodeProperty(); }
 inline bool NodeType::restart()
 { return false; }
 inline void NodeType::finish()

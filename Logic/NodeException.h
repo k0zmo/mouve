@@ -43,6 +43,15 @@ struct BadNodeException : std::exception
     }
 };
 
+struct BadConfigException : std::exception
+{
+    virtual const char* what() const throw()
+    {
+        return "BadConfigException: "
+            "bad configuration value";
+    }
+};
+
 struct ExecutionError : std::exception
 {
     ExecutionError(const std::string& nodeName, 
