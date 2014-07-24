@@ -306,9 +306,18 @@ bool NodeTreeSerializer::deserializeJsonLinks(std::shared_ptr<NodeTree>& nodeTre
             break;
         }
 
-        if(nodeTree->linkNodes(SocketAddress(mapping.at(fromNode), fromSocket, true),
-                               SocketAddress(mapping.at(toNode), toSocket, false)) != ELinkNodesResult::Ok)
+        try
         {
+            if(nodeTree->linkNodes(SocketAddress(mapping.at(fromNode), fromSocket, true),
+                                   SocketAddress(mapping.at(toNode), toSocket, false)) != ELinkNodesResult::Ok)
+            {
+                throw std::logic_error("Couldn't link given nodes");
+            }
+        }
+        catch(std::logic_error&)
+        {
+            // mapping does not contain fromNode or toNode
+            // or we just couldnt link given nodes
             qCritical() << QString("Couldn't link nodes %1:%2 with %3:%4")
                 .arg(fromNode)
                 .arg(fromSocket)
@@ -316,6 +325,7 @@ bool NodeTreeSerializer::deserializeJsonLinks(std::shared_ptr<NodeTree>& nodeTre
                 .arg(toSocket);
             break;
         }
+
         ++i;
     }
 
