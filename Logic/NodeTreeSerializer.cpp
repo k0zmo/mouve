@@ -62,18 +62,14 @@ QJsonObject NodeTreeSerializer::serializeJson(const std::shared_ptr<NodeTree>& n
         jsonNode.insert(QStringLiteral("name"), QString::fromStdString(node->nodeName()));
 
         // Save properties' values if any
-        NodeConfig nodeConfig;
-        node->configuration(nodeConfig);
+        const NodeConfig& nodeConfig = node->config();
 
         QJsonArray jsonProperties;
-        auto prop = begin_config<PropertyConfig>(nodeConfig);
-        while(!end_config(prop))
+        for(const auto& prop : nodeConfig.properties())
         {
-            PropertyID propID = static_cast<PropertyID>(pos_config(prop, nodeConfig));
-            NodeProperty propValue = node->property(propID);
-            if (propValue.isValid())
-                jsonProperties.append(serializeProperty(propID, prop, propValue));
-            ++prop;
+            NodeProperty propValue = node->property(prop.propertyID());
+            if(propValue.isValid())
+                jsonProperties.append(serializeProperty(prop.propertyID(), prop, propValue));
         }
 
         if(!jsonProperties.isEmpty())
@@ -327,14 +323,14 @@ bool NodeTreeSerializer::deserializeJsonLinks(std::shared_ptr<NodeTree>& nodeTre
 }
 
 QJsonObject NodeTreeSerializer::serializeProperty(PropertyID propID,
-                                                  const PropertyConfig* propertyConfig,
+                                                  const PropertyConfig& propertyConfig,
                                                   const NodeProperty& propValue)
 {
     QJsonObject jsonProp;
     jsonProp.insert(QStringLiteral("id"), propID);
-    jsonProp.insert(QStringLiteral("name"), QString::fromStdString(propertyConfig->name));
+    jsonProp.insert(QStringLiteral("name"), QString::fromStdString(propertyConfig.name()));
 
-    switch(propertyConfig->type)
+    switch(propertyConfig.type())
     {
     case EPropertyType::Boolean:
         jsonProp.insert(QStringLiteral("value"), propValue.toBool());
