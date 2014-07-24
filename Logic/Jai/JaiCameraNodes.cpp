@@ -42,6 +42,10 @@ public:
         , _height(0)
         , _lastTimeStamp(0)
     {
+        addOutput("Output", ENodeFlowDataType::Image);
+        setDescription("Provides video frames from JAI camera");
+        setModule("jai");
+        setFlags(ENodeConfig::HasState | ENodeConfig::AutoTag);
     }
 
     bool init(const std::shared_ptr<NodeModule>& nodeModule) override
@@ -145,29 +149,6 @@ public:
             {}// Doesn't make any sense to do anything here
             _hStreamThread = nullptr;
         }
-    }
-    
-    void configuration(NodeConfig& nodeConfig) const override
-    {
-        static const OutputSocketConfig out_config[] = {
-            { ENodeFlowDataType::Image, "output", "Output", "" },
-            { ENodeFlowDataType::Invalid, "", "", "" }
-        };
-        /// TODO: CameraID
-        /// - Rest of properties should be settable via special module menu
-        /*
-        static const PropertyConfig prop_config[] = {
-            { EPropertyType::Filepath, "Video path", "filter:Video files (*.mkv *.mp4 *.avi)" },
-            { EPropertyType::Integer, "Start frame", "min:0" },
-            { EPropertyType::Unknown, "", "" }
-        };
-        */
-
-        nodeConfig.description = "Provides video frames from JAI camera";
-        nodeConfig.pOutputSockets = out_config;
-        nodeConfig.module = "jai";
-        //nodeConfig.pProperties = prop_config;
-        nodeConfig.flags = Node_HasState | Node_AutoTag;
     }
     
 private:
