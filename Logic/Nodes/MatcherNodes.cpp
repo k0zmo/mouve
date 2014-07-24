@@ -79,68 +79,22 @@ public:
         : _distanceRatio(0.8f)
         , _symmetryTest(false)
     {
-    }
-
-    bool setProperty(PropertyID propId, const NodeProperty& newValue) override
-    {
-        switch(static_cast<pid>(propId))
-        {
-        case pid::DistanceRatio:
-            _distanceRatio = newValue.toFloat();
-            return true;
-        case pid::SymmetryTest:
-            _symmetryTest = newValue.toBool();
-            return true;
-        }
-
-        return false;
-    }
-
-    NodeProperty property(PropertyID propId) const override
-    {
-        switch(static_cast<pid>(propId))
-        {
-        case pid::DistanceRatio: return _distanceRatio;
-        case pid::SymmetryTest: return _symmetryTest;
-        }
-
-        return NodeProperty();
-    }
-
-    void configuration(NodeConfig& nodeConfig) const override
-    {
-        static const InputSocketConfig in_config[] = {
-            { ENodeFlowDataType::Keypoints, "keypoints1", "Query keypoints", "" },
-            { ENodeFlowDataType::Array, "descriptors1", "Query descriptors", "" },
-            { ENodeFlowDataType::Keypoints, "keypoints2", "Train keypoints", "" },
-            { ENodeFlowDataType::Array, "descriptors2", "Train descriptors", "" },
-            { ENodeFlowDataType::Invalid, "", "", "" }
-        };
-        static const OutputSocketConfig out_config[] = {
-            { ENodeFlowDataType::Matches, "matches", "Matches", "" },
-            { ENodeFlowDataType::Invalid, "", "", "" }
-        };
-        static const PropertyConfig prop_config[] = {
-            { EPropertyType::Double, "Distance ratio", "min:0.0, max:1.0, step:0.1, decimals:2" },
-            { EPropertyType::Boolean, "Symmetry test", "" },
-            { EPropertyType::Unknown, "", "" }
-        };
-
-        nodeConfig.description = "Finds best matches between query and train descriptors using nearest neighbour distance ratio and/or symmetry test.";
-        nodeConfig.pInputSockets = in_config;
-        nodeConfig.pOutputSockets = out_config;
-        nodeConfig.pProperties = prop_config;
+        addInput("Query keypoints", ENodeFlowDataType::Keypoints);
+        addInput("Query descriptors", ENodeFlowDataType::Array);
+        addInput("Train keypoints", ENodeFlowDataType::Keypoints);
+        addInput("Train descriptors", ENodeFlowDataType::Array);
+        addOutput("Matches", ENodeFlowDataType::Matches);
+        addProperty("Distance ratio", _distanceRatio)
+            .setValidator(make_validator<InclRangePropertyValidator<double>>(0.0, 1.0))
+            .setUiHints("min:0.0, max:1.0, step:0.1, decimals:2");
+        addProperty("Symmetry test", _symmetryTest);
+        setDescription("Finds best matches between query and train descriptors "
+            "using nearest neighbour distance ratio and/or symmetry test.");
     }
 
 protected:
-    enum class pid
-    {
-        DistanceRatio,
-        SymmetryTest,
-    };
-
-    float _distanceRatio;
-    bool _symmetryTest;
+    TypedNodeProperty<float> _distanceRatio;
+    TypedNodeProperty<bool> _symmetryTest;
 };
 
 class BruteForceMatcherNodeType : public MatcherNodeType
@@ -371,28 +325,15 @@ public:
     RadiusBruteForceMatcherNodeType()
         : _maxDistance(100.0)
     {
-    }
-
-    bool setProperty(PropertyID propId, const NodeProperty& newValue) override
-    {
-        switch(static_cast<pid>(propId))
-        {
-        case pid::MaxDistance:
-            _maxDistance = newValue.toFloat();
-            return true;
-        }
-
-        return false;
-    }
-
-    NodeProperty property(PropertyID propId) const override
-    {
-        switch(static_cast<pid>(propId))
-        {
-        case pid::MaxDistance: return _maxDistance;
-        }
-
-        return NodeProperty();
+        addInput("Query keypoints", ENodeFlowDataType::Keypoints);
+        addInput("Query descriptors", ENodeFlowDataType::Array);
+        addInput("Train keypoints", ENodeFlowDataType::Keypoints);
+        addInput("Train descriptors", ENodeFlowDataType::Array);
+        addOutput("Matches", ENodeFlowDataType::Matches);
+        addProperty("Max distance", _maxDistance)
+            .setValidator(make_validator<MinPropertyValidator<double>>(0.0))
+            .setUiHints("min:0.0, decimals:2");
+        setDescription("Finds the training descriptors not farther than the specified distance.");
     }
 
     ExecutionStatus execute(NodeSocketReader& reader, NodeSocketWriter& writer) override
@@ -456,36 +397,8 @@ public:
             string_format("Matches found: %d", (int) mt.queryPoints.size()));
     }
 
-    void configuration(NodeConfig& nodeConfig) const override
-    {
-        static const InputSocketConfig in_config[] = {
-            { ENodeFlowDataType::Keypoints, "keypoints1", "Query keypoints", "" },
-            { ENodeFlowDataType::Array, "descriptors1", "Query descriptors", "" },
-            { ENodeFlowDataType::Keypoints, "keypoints2", "Train keypoints", "" },
-            { ENodeFlowDataType::Array, "descriptors2", "Train descriptors", "" },
-            { ENodeFlowDataType::Invalid, "", "", "" }
-        };
-        static const OutputSocketConfig out_config[] = {
-            { ENodeFlowDataType::Matches, "matches", "Matches", "" },
-            { ENodeFlowDataType::Invalid, "", "", "" }
-        };
-        static const PropertyConfig prop_config[] = {
-            { EPropertyType::Double, "Max distance", "min:0.0, decimals:2" },
-            { EPropertyType::Unknown, "", "" }
-        };
-
-        nodeConfig.description = "Finds the training descriptors not farther than the specified distance.";
-        nodeConfig.pInputSockets = in_config;
-        nodeConfig.pOutputSockets = out_config;
-        nodeConfig.pProperties = prop_config;
-    }
 private:
-    enum class pid
-    {
-        MaxDistance
-    };
-
-    float _maxDistance;
+    TypedNodeProperty<float> _maxDistance;
 };
 
 REGISTER_NODE("Features/Radius BForce Matcher", RadiusBruteForceMatcherNodeType);
