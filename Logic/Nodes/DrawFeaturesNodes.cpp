@@ -79,40 +79,29 @@ class DrawSomethingLinesNodeType : public NodeType
 {
 public:
     DrawSomethingLinesNodeType()
-        : _color(cv::Scalar(255, 0, 0))
+        : _ecolor(EColor::Blue)
         , _thickness(2)
         , _type(ELineType::Line_AA)
+        , _color(getColor(_ecolor.cast<Enum>().cast<EColor>()))
+        , _intLineType(CV_AA)
     {
-    }
-
-    bool setProperty(PropertyID propId, const NodeProperty& newValue) override
-    {
-        switch(static_cast<pid>(propId))
-        {
-        case pid::LineColor:
-            _color = getColor(newValue.toEnum().cast<EColor>());
-            return true;
-        case pid::LineThickness:
-            _thickness = newValue.toInt();
-            return true;
-        case pid::LineType:
-            _type = lineType(newValue.toEnum().data());
-            return true;
-        }
-
-        return false;
-    }
-
-    NodeProperty property(PropertyID propId) const override
-    {
-        switch(static_cast<pid>(propId))
-        {
-        case pid::LineColor: return getColor(_color);
-        case pid::LineThickness: return _thickness;
-        case pid::LineType: return Enum(lineTypeIndex(_type));
-        }
-
-        return NodeProperty();
+        addInput("Image", ENodeFlowDataType::Image);
+        addInput("Shapes", ENodeFlowDataType::Array);
+        addOutput("Output", ENodeFlowDataType::ImageRgb);
+        addProperty("Line color", _ecolor)
+            .setObserver(make_observer<FuncObserver>([this](const NodeProperty& np) {
+                _color = getColor(np.cast<Enum>().cast<EColor>());
+            }))
+            .setUiHints("item: Random, item: Red, item: Green, item: Blue");
+        addProperty("Line thickness", _thickness)
+            .setValidator(make_validator<InclRangePropertyValidator<int>>(1, 5))
+            .setUiHints("step:1, min:1, max:5");
+        addProperty("Line type", _type)
+            .setObserver(make_observer<FuncObserver>([this](const NodeProperty& np) {
+                _intLineType = intLineType(np.cast<Enum>().cast<ELineType>());
+            }))
+            .setUiHints("item: 4-connected, item: 8-connected, item: AA");
+        setDescription("Draws simple geometric shapes.");
     }
 
     ExecutionStatus execute(NodeSocketReader& reader, NodeSocketWriter& writer) override
@@ -136,38 +125,7 @@ public:
         return executeImpl(circles, imageSrc, imageDst);
     }
 
-    void configuration(NodeConfig& nodeConfig) const override
-    {
-        static const InputSocketConfig in_config[] = {
-            { ENodeFlowDataType::Image, "source", "Image", "" },
-            { ENodeFlowDataType::Array, "shapes", "Shapes", "" },
-            { ENodeFlowDataType::Invalid, "", "", "" }
-        };
-        static const OutputSocketConfig out_config[] = {
-            { ENodeFlowDataType::ImageRgb, "output", "Output", "" },
-            { ENodeFlowDataType::Invalid, "", "", "" }
-        };
-        static const PropertyConfig prop_config[] = {
-            { EPropertyType::Enum, "Line color", "item: Random, item: Red, item: Green, item: Blue" },
-            { EPropertyType::Integer, "Line thickness", "step:1, min:1, max:5" },
-            { EPropertyType::Enum, "Line type", "item: 4-connected, item: 8-connected, item: AA" },
-            { EPropertyType::Unknown, "", "" }
-        };
-
-        nodeConfig.description = "Draws simple geometric shapes.";
-        nodeConfig.pInputSockets = in_config;
-        nodeConfig.pOutputSockets = out_config;
-        nodeConfig.pProperties = prop_config;
-    }
-
 protected:
-    enum class pid
-    {
-        LineColor,
-        LineThickness,
-        LineType
-    };
-
     enum class ELineType
     {
         Line_4Connected = 4,
@@ -175,33 +133,25 @@ protected:
         Line_AA         = CV_AA
     };
 
-    cv::Scalar _color;
-    int _thickness;
-    ELineType _type;
-
-protected:
-    ELineType lineType(int lineTypeIndex) const
-    {
-        switch(lineTypeIndex)
-        {
-        case 0: return ELineType::Line_4Connected;
-        case 1: return ELineType::Line_8Connected;
-        case 2: return ELineType::Line_AA;
-        }
-        return ELineType::Line_4Connected;
-    }
-
-    int lineTypeIndex(ELineType type) const
+    int intLineType(ELineType type)
     {
         switch(type)
         {
-        case ELineType::Line_4Connected: return 0;
-        case ELineType::Line_8Connected: return 1;
-        case ELineType::Line_AA: return 2;
+        case ELineType::Line_4Connected: return 4;
+        case ELineType::Line_8Connected: return 8;
+        case ELineType::Line_AA: return CV_AA;
+        default: return 8;
         }
-        return 0;
     }
 
+    TypedNodeProperty<EColor> _ecolor;
+    TypedNodeProperty<int> _thickness;
+    TypedNodeProperty<ELineType> _type;
+
+    cv::Scalar _color;
+    int _intLineType;
+
+protected:
     virtual ExecutionStatus executeImpl(const cv::Mat& objects, 
         const cv::Mat& imageSrc, cv::Mat& imageDest) = 0;
 };
@@ -228,7 +178,7 @@ public:
             cv::Scalar color = isRandColor ? cv::Scalar(rng(256), rng(256), rng(256)) : _color;
             cv::Point pt1(cvRound(x0 + alpha*(-sin_t)), cvRound(y0 + alpha*cos_t));
             cv::Point pt2(cvRound(x0 - alpha*(-sin_t)), cvRound(y0 - alpha*cos_t));
-            cv::line(imageDest, pt1, pt2, color, _thickness, int(_type));
+            cv::line(imageDest, pt1, pt2, color, _thickness, _intLineType);
         }
 
         return ExecutionStatus(EStatus::Ok);
@@ -251,9 +201,9 @@ public:
             int radius = cvRound(circle[2]);
             cv::Scalar color = isRandColor ? cv::Scalar(rng(256), rng(256), rng(256)) : _color;
             // draw the circle center
-            cv::circle(imageDest, center, 3, color, _thickness, int(_type));
+            cv::circle(imageDest, center, 3, color, _thickness, _intLineType);
             // draw the circle outline
-            cv::circle(imageDest, center, radius, color, _thickness, int(_type));
+            cv::circle(imageDest, center, radius, color, _thickness, _intLineType);
         }
 
         return ExecutionStatus(EStatus::Ok);
@@ -264,35 +214,19 @@ class DrawKeypointsNodeType : public NodeType
 {
 public:
     DrawKeypointsNodeType()
-        : _color(cv::Scalar::all(-1))
+        : _ecolor(EColor::AllRandom)
         , _richKeypoints(true)
+        , _color(getColor(_ecolor.cast<Enum>().cast<EColor>()))
     {
-    }
-
-    bool setProperty(PropertyID propId, const NodeProperty& newValue) override
-    {
-        switch(static_cast<pid>(propId))
-        {
-        case pid::Color:
-            _color = getColor(newValue.toEnum().cast<EColor>());
-            return true;
-        case pid::RichKeypoints:
-            _richKeypoints = newValue.toBool();
-            return true;
-        }
-
-        return false;
-    }
-
-    NodeProperty property(PropertyID propId) const override
-    {
-        switch(static_cast<pid>(propId))
-        {
-        case pid::Color: return getColor(_color);
-        case pid::RichKeypoints: return _richKeypoints;		
-        }
-
-        return NodeProperty();
+        addInput("Keypoints", ENodeFlowDataType::Keypoints);
+        addOutput("Output", ENodeFlowDataType::ImageRgb);
+        addProperty("Keypoints color", _ecolor)
+            .setObserver(make_observer<FuncObserver>([this](const NodeProperty& np) {
+                _color = getColor(np.cast<Enum>().cast<EColor>());
+            }))
+            .setUiHints("item: Random, item: Red, item: Green, item: Blue");
+        addProperty("Rich keypoints", _richKeypoints);
+        setDescription("Draws keypoints.");
     }
 
     ExecutionStatus execute(NodeSocketReader& reader, NodeSocketWriter& writer) override
@@ -326,28 +260,6 @@ public:
         }
 #endif
         return ExecutionStatus(EStatus::Ok);
-    }
-
-    void configuration(NodeConfig& nodeConfig) const override
-    {
-        static const InputSocketConfig in_config[] = {
-            { ENodeFlowDataType::Keypoints, "keypoints", "Keypoints", "" },
-            { ENodeFlowDataType::Invalid, "", "", "" }
-        };
-        static const OutputSocketConfig out_config[] = {
-            { ENodeFlowDataType::ImageRgb, "output", "Output", "" },
-            { ENodeFlowDataType::Invalid, "", "", "" }
-        };
-        static const PropertyConfig prop_config[] = {
-            { EPropertyType::Enum, "Keypoints color", "item: Random, item: Red, item: Green, item: Blue" },
-            { EPropertyType::Boolean, "Rich keypoints", "" },
-            { EPropertyType::Unknown, "", "" }
-        };
-
-        nodeConfig.description = "Draws keypoints.";
-        nodeConfig.pInputSockets = in_config;
-        nodeConfig.pOutputSockets = out_config;
-        nodeConfig.pProperties = prop_config;
     }
 
 private:
@@ -412,46 +324,28 @@ private:
     }
 
 private:
-    enum class pid
-    {
-        Color,
-        RichKeypoints
-    };
-
+    TypedNodeProperty<EColor> _ecolor;
+    TypedNodeProperty<bool> _richKeypoints;
     cv::Scalar _color;
-    bool _richKeypoints;
 };
 
 class DrawMatchesNodeType : public NodeType
 {
 public:
     DrawMatchesNodeType()
-        : _color(cv::Scalar::all(-1))
+        : _ecolor(EColor::AllRandom)
+        , _color(getColor(_ecolor.cast<Enum>().cast<EColor>()))
         , _kpColor(cv::Scalar::all(-1))
     {
-    }
-
-    bool setProperty(PropertyID propId, const NodeProperty& newValue) override
-    {
-        switch(static_cast<pid>(propId))
-        {
-        case pid::Color:
-            _color = getColor(newValue.toEnum().cast<EColor>());
-            _kpColor = getAltColor(newValue.toEnum().cast<EColor>());
-            return true;
-        }
-
-        return false;
-    }
-
-    NodeProperty property(PropertyID propId) const override
-    {
-        switch(static_cast<pid>(propId))
-        {
-        case pid::Color: return getColor(_color);
-        }
-
-        return NodeProperty();
+        addInput("Matches", ENodeFlowDataType::Matches);
+        addOutput("Image", ENodeFlowDataType::ImageRgb);
+        addProperty("Keypoints color", _ecolor)
+            .setObserver(make_observer<FuncObserver>([this](const NodeProperty& np) {
+                _color = getColor(np.cast<Enum>().cast<EColor>());
+                _kpColor = getAltColor(np.cast<Enum>().cast<EColor>());
+             }))
+            .setUiHints("item: Random, item: Red, item: Green, item: Blue");
+        setDescription("Draws matches.");
     }
 
     ExecutionStatus execute(NodeSocketReader& reader, NodeSocketWriter& writer) override
@@ -471,27 +365,6 @@ public:
 
         imageMatches = drawMatchesOnImage(mt);
         return ExecutionStatus(EStatus::Ok);
-    }
-
-    void configuration(NodeConfig& nodeConfig) const override
-    {
-        static const InputSocketConfig in_config[] = {
-            { ENodeFlowDataType::Matches, "matches", "Matches", "" },
-            { ENodeFlowDataType::Invalid, "", "", "" }
-        };
-        static const OutputSocketConfig out_config[] = {
-            { ENodeFlowDataType::ImageRgb, "output", "Image", "" },
-            { ENodeFlowDataType::Invalid, "", "", "" }
-        };
-        static const PropertyConfig prop_config[] = {
-            { EPropertyType::Enum, "Keypoints color", "item: Random, item: Red, item: Green, item: Blue" },
-            { EPropertyType::Unknown, "", "" }
-        };
-
-        nodeConfig.description = "Draws matches.";
-        nodeConfig.pInputSockets = in_config;
-        nodeConfig.pOutputSockets = out_config;
-        nodeConfig.pProperties = prop_config;
     }
 
 private:
@@ -547,11 +420,7 @@ private:
     }
 
 private:
-    enum class pid
-    {
-        Color
-    };
-
+    TypedNodeProperty<EColor> _ecolor;
     cv::Scalar _color;
     cv::Scalar _kpColor;
 };
@@ -559,6 +428,14 @@ private:
 class DrawHomographyNodeType : public NodeType
 {
 public:
+    DrawHomographyNodeType()
+    {
+        addInput("Homography", ENodeFlowDataType::Array);
+        addInput("Matches", ENodeFlowDataType::Matches);
+        addOutput("Output", ENodeFlowDataType::ImageRgb);
+        setDescription("Draws homography.");
+    }
+
     ExecutionStatus execute(NodeSocketReader& reader, NodeSocketWriter& writer) override
     {
         //inputs
@@ -592,53 +469,24 @@ public:
 
         return ExecutionStatus(EStatus::Ok);
     }
-
-    void configuration(NodeConfig& nodeConfig) const override
-    {
-        static const InputSocketConfig in_config[] = {
-            { ENodeFlowDataType::Array, "source", "Homography", "" },
-            { ENodeFlowDataType::Matches, "source", "Matches", "" },
-            { ENodeFlowDataType::Invalid, "", "", "" }
-        };
-        static const OutputSocketConfig out_config[] = {
-            { ENodeFlowDataType::ImageRgb, "output", "Output", "" },
-            { ENodeFlowDataType::Invalid, "", "", "" }
-        };
-
-        nodeConfig.description = "Draws homography.";
-        nodeConfig.pInputSockets = in_config;
-        nodeConfig.pOutputSockets = out_config;
-    }
 };
 
 class PaintMaskNodeType : public NodeType
 {
 public:
     PaintMaskNodeType()
-        : _color(getColor(EColor::Green))
+        : _ecolor(EColor::Green)
+        , _color(getColor(_ecolor.cast<Enum>().cast<EColor>()))
     {
-    }
-
-    bool setProperty(PropertyID propId, const NodeProperty& newValue) override
-    {
-        switch(static_cast<pid>(propId))
-        {
-        case pid::Color:
-            _color = getColor(newValue.toEnum().cast<EColor>());
-            return true;
-        }
-
-        return false;
-    }
-
-    NodeProperty property(PropertyID propId) const override
-    {
-        switch(static_cast<pid>(propId))
-        {
-        case pid::Color: return getColor(_color);
-        }
-
-        return NodeProperty();
+        addInput("Mask", ENodeFlowDataType::ImageMono);
+        addInput("Source", ENodeFlowDataType::ImageMono);
+        addOutput("Image", ENodeFlowDataType::ImageRgb);
+        addProperty("Mask color", _ecolor)
+            .setObserver(make_observer<FuncObserver>([this](const NodeProperty& np) {
+                _color = getColor(np.cast<Enum>().cast<EColor>());
+            }))
+            .setUiHints("item: Random, item: Red, item: Green, item: Blue");
+        setDescription("Paints image using binary mask.");
     }
 
     ExecutionStatus execute(NodeSocketReader& reader, NodeSocketWriter& writer) override
@@ -684,33 +532,8 @@ public:
         return ExecutionStatus(EStatus::Ok);
     }
 
-    void configuration(NodeConfig& nodeConfig) const override
-    {
-        static const InputSocketConfig in_config[] = {
-            { ENodeFlowDataType::ImageMono, "mask", "Mask", "" },
-            { ENodeFlowDataType::ImageMono, "image", "Source", "" },
-            { ENodeFlowDataType::Invalid, "", "", "" }
-        };
-        static const OutputSocketConfig out_config[] = {
-            { ENodeFlowDataType::ImageRgb, "output", "Image", "" },
-            { ENodeFlowDataType::Invalid, "", "", "" }
-        };
-        static const PropertyConfig prop_config[] = {
-            { EPropertyType::Enum, "Keypoints color", "item: Random, item: Red, item: Green, item: Blue" },
-            { EPropertyType::Unknown, "", "" }
-        };
-
-        nodeConfig.description = "Paints image using binary mask.";
-        nodeConfig.pInputSockets = in_config;
-        nodeConfig.pOutputSockets = out_config;
-        nodeConfig.pProperties = prop_config;
-    }
 private:
-    enum class pid
-    {
-        Color
-    };
-
+    TypedNodeProperty<EColor> _ecolor;
     cv::Scalar _color;
 };
 
