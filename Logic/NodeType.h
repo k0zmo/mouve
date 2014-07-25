@@ -159,7 +159,7 @@ public:
 
     virtual bool validate(const NodeProperty& value) override
     {
-        return validateImpl(value.cast<T>());
+        return validateImpl(value.cast_value<T>());
     }
 
 private:
