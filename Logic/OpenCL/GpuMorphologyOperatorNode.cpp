@@ -35,7 +35,7 @@ public:
         , _sElemHash(0)
     {
         addInput("Source", ENodeFlowDataType::DeviceImageMono);
-        addInput("Structuring element", ENodeFlowDataType::Image);
+        addInput("Structuring element", ENodeFlowDataType::ImageMono);
         addOutput("Output", ENodeFlowDataType::DeviceImageMono);
         addProperty("Operation type", _op)
             .setUiHints("item: Erode, item: Dilate, item: Open, item: Close,"
@@ -57,7 +57,7 @@ public:
     ExecutionStatus execute(NodeSocketReader& reader, NodeSocketWriter& writer) override
     {
         const clw::Image2D& deviceSrc = reader.readSocket(0).getDeviceImageMono();
-        const cv::Mat& sElem = reader.readSocket(1).getImage();
+        const cv::Mat& sElem = reader.readSocket(1).getImageMono();
         clw::Image2D& deviceDest = writer.acquireSocket(0).getDeviceImageMono();
 
         if(sElem.cols == 0 || sElem.rows == 0 || deviceSrc.width() == 0 || deviceSrc.height() == 0)
