@@ -216,7 +216,7 @@ const std::shared_ptr<NodeModule>& NodeSystem::nodeModule(const std::string& nam
     return _registeredModules[name];
 }
 
-void NodeSystem::loadPlugin(const std::string& pluginName)
+size_t NodeSystem::loadPlugin(const std::string& pluginName)
 {
     if(_plugins.find(pluginName) == _plugins.end())
     {
@@ -227,9 +227,13 @@ void NodeSystem::loadPlugin(const std::string& pluginName)
                 "Logic (%d) and plugin %s (%d) version mismatch",
                     LOGIC_VERSION, pluginName.c_str(), plugin->logicVersion()));
         }
+        size_t before = _registeredNodeTypes.size();
         plugin->registerPlugin(this);
         _plugins.emplace(pluginName, std::move(plugin));
+        return _registeredNodeTypes.size() - before;
     }
+
+    return 0U;
 }
 
 // -----------------------------------------------------------------------------

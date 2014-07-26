@@ -2510,8 +2510,9 @@ void Controller::pluginLookUp()
         QString pluginPath = pluginName.absoluteFilePath();
         try
         {
-            _nodeSystem->loadPlugin(pluginPath.toStdString());
-            qDebug() << "Plugin" << pluginBaseName << "loaded successfully";
+            size_t typesRegisted = _nodeSystem->loadPlugin(pluginPath.toStdString());
+            qDebug() << "Plugin" << pluginBaseName << "loaded successfully -" << typesRegisted
+                     << "node type(s) registered.";
         }
         catch (std::exception& ex)
         {
