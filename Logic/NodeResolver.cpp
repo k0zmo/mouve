@@ -112,13 +112,24 @@ namespace
                 return cfg.name() == name;
             });
     }
+
+    // True for all Callable with the signature RetValue F(const NodeConfig&)
+    template <class F>
+    struct is_node_config_func
+        : public std::integral_constant<
+              bool, func_traits<F>::arity == 1 &&
+                        std::is_same<typename func_traits<F>::template arg<0>::type,
+                                     const NodeConfig&>::value>
+    {
+    };
 }
 
-// Helper method to "wrap" F function within try-catch and nodeConfiguration call
 template <class F>
 auto NodeResolver::decorateConfiguration(NodeID nodeID, F&& func)
     -> typename func_traits<F>::return_type
 {
+    static_assert(is_node_config_func<F>::value,
+                  "F must have signature: RetValue F(const NodeConfig&)");
     try
     {
         const NodeConfig& nodeConfig = _nodeTree->nodeConfiguration(nodeID);
@@ -128,7 +139,7 @@ auto NodeResolver::decorateConfiguration(NodeID nodeID, F&& func)
     {
         using ReturnType = typename func_traits<F>::return_type;
         return DefaultValue<ReturnType>::value;
-    } 
+    }
 }
 
 SocketID NodeResolver::resolveInputSocket(NodeID nodeID, 
