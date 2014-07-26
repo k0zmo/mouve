@@ -716,23 +716,37 @@ void Controller::addNodeTypeTreeItem(NodeTypeID typeId, const QStringList& token
 
     Qt::ItemFlags flags = Qt::ItemIsSelectable | Qt::ItemIsEnabled;
 
-    if(tokens.count() > 1)
+    for(int level = 0; level < tokens.count() - 1; ++level)
     {
-        for(int level = 0; level < tokens.count() - 1; ++level)
+        QString parentToken = tokens[level];
+        QTreeWidgetItem* p = level == 0 
+            ? findItem(parentToken)
+            : findChild(parent, parentToken);
+        if(!p)
         {
-            QString parentToken = tokens[level];
-            QTreeWidgetItem* p = level == 0 
-                ? findItem(parentToken)
-                : findChild(parent, parentToken);
-            if(!p)
+            p = new QTreeWidgetItem(QStringList(parentToken));
+            p->setFlags(flags);
+
+            if (parent)
             {
-                p = new QTreeWidgetItem(parent, QStringList(parentToken));
-                if(level == 0)
-                    treeItems.append(p);
-                p->setFlags(flags);
+                // Find index of last non-childless tree item
+                int index = 0;
+                for (int i = 0; i < parent->childCount(); ++i)
+                {
+                    if (parent->child(i)->childCount() == 0)
+                        break;
+                    ++index;
+                }
+
+                // Insert the tree item so that all expandable items come first
+                parent->insertChild(index, p);
             }
-            parent = p;
+
+            if(level == 0)
+                treeItems.append(p);
         }
+
+        parent = p;
     }
 
     QTreeWidgetItem* item = new QTreeWidgetItem(parent);
