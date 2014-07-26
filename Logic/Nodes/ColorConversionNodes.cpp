@@ -286,6 +286,166 @@ protected:
     TypedNodeProperty<int> _bias;
 };
 
+enum class EColourSpace
+{
+    Rgb,
+    Xyz,
+    YCrCb,
+    Hsv,
+    Lab,
+    Hls,
+    Luv
+};
+
+class ChannelSplitterNodeType : public NodeType
+{
+public:
+    ChannelSplitterNodeType()
+        : _colourSpace(EColourSpace::Rgb)
+    {
+        addInput("Image", ENodeFlowDataType::ImageRgb);
+        addOutput("1st", ENodeFlowDataType::ImageMono);
+        addOutput("2nd", ENodeFlowDataType::ImageMono);
+        addOutput("3rd", ENodeFlowDataType::ImageMono);
+        addProperty("Colour space", _colourSpace)
+            .setUiHints("item: RGB, item: CIE 1931 XYZ, item: YCrCb, "
+                        "item: HSV, item: CIELAB, item: HLS, item: CIELUV");
+        setDescription("Splits colour image into three separate images/channels");
+    }
+
+    ExecutionStatus execute(NodeSocketReader& reader, NodeSocketWriter& writer) override
+    {
+        // Read input sockets
+        const cv::Mat& input = reader.readSocket(0).getImageRgb();
+        // Acquire output sockets
+        cv::Mat& first = writer.acquireSocket(0).getImageMono();
+        cv::Mat& second = writer.acquireSocket(1).getImageMono();
+        cv::Mat& third = writer.acquireSocket(2).getImageMono();
+        cv::Mat tmp;
+        int dstCode = -1;
+
+        switch (_colourSpace.cast_value<Enum>().cast<EColourSpace>())
+        {
+        case EColourSpace::Rgb:
+            dstCode = -1;
+            break;
+        case EColourSpace::Xyz:
+            dstCode = CV_BGR2XYZ;
+            break;
+        case EColourSpace::YCrCb:
+            dstCode = CV_BGR2YCrCb;
+            break;
+        case EColourSpace::Hsv:
+            dstCode = CV_BGR2HSV;
+            break;
+        case EColourSpace::Lab:
+            dstCode = CV_BGR2Lab;
+            break;
+        case EColourSpace::Hls:
+            dstCode = CV_BGR2HLS;
+            break;
+        case EColourSpace::Luv:
+            dstCode = CV_BGR2Luv;
+            break;
+        default:
+            return ExecutionStatus(EStatus::Error, "Wrong color space value");
+        }
+
+        if (dstCode > 0)
+            cv::cvtColor(input, tmp, dstCode);
+        else
+            tmp = input;
+
+        std::vector<cv::Mat> channels;
+        cv::split(tmp, channels);
+
+        first = channels.at(0);
+        second = channels.at(1);
+        third = channels.at(2);
+
+        return ExecutionStatus(EStatus::Ok);
+    }
+
+private:
+    TypedNodeProperty<EColourSpace> _colourSpace;
+};
+
+class ChannelMergerNodeType : public NodeType
+{
+public:
+    ChannelMergerNodeType()
+        : _colourSpace(EColourSpace::Rgb)
+    {
+        addInput("1st", ENodeFlowDataType::ImageMono);
+        addInput("2nd", ENodeFlowDataType::ImageMono);
+        addInput("3rd", ENodeFlowDataType::ImageMono);
+        addOutput("Image", ENodeFlowDataType::ImageRgb);
+        addProperty("Colour space", _colourSpace)
+            .setUiHints("item: RGB, item: CIE 1931 XYZ, item: YCrCb, "
+                        "item: HSV, item: CIELAB, item: HLS, item: CIELUV");
+        setDescription("Merges three separate images/channels into a final colour image");
+    }
+
+    ExecutionStatus execute(NodeSocketReader& reader, NodeSocketWriter& writer) override
+    {
+        // Read input sockets
+        const cv::Mat& first = reader.readSocket(0).getImageMono();
+        const cv::Mat& second = reader.readSocket(1).getImageMono();
+        const cv::Mat& third = reader.readSocket(2).getImageMono();
+        // Acquire output sockets
+        cv::Mat& dst = writer.acquireSocket(0).getImageRgb();
+
+        // basic check
+        if (first.size != second.size || first.size != third.size)
+            return ExecutionStatus(EStatus::Error, "Channels have different sizes");
+
+        cv::Mat tmp;
+        std::vector<cv::Mat> channels = {first, second, third};
+        cv::merge(channels, tmp);
+
+        int dstCode = -1;
+
+        switch (_colourSpace.cast_value<Enum>().cast<EColourSpace>())
+        {
+        case EColourSpace::Rgb:
+            dstCode = -1;
+            break;
+        case EColourSpace::Xyz:
+            dstCode = CV_XYZ2BGR;
+            break;
+        case EColourSpace::YCrCb:
+            dstCode = CV_YCrCb2BGR;
+            break;
+        case EColourSpace::Hsv:
+            dstCode = CV_HSV2BGR;
+            break;
+        case EColourSpace::Lab:
+            dstCode = CV_Lab2BGR;
+            break;
+        case EColourSpace::Hls:
+            dstCode = CV_HLS2BGR;
+            break;
+        case EColourSpace::Luv:
+            dstCode = CV_Luv2BGR;
+            break;
+        default:
+            return ExecutionStatus(EStatus::Error, "Wrong color space value");
+        }
+
+        if (dstCode > 0)
+            cv::cvtColor(tmp, dst, dstCode);
+        else
+            dst = tmp;
+
+        return ExecutionStatus(EStatus::Ok);
+    }
+
+private:
+    TypedNodeProperty<EColourSpace> _colourSpace;
+};
+
+REGISTER_NODE("Format conversion/Channel merger", ChannelMergerNodeType);
+REGISTER_NODE("Format conversion/Channel splitter", ChannelSplitterNodeType);
 REGISTER_NODE("Format conversion/Contrast & brightness", ContrastAndBrightnessNodeType)
 REGISTER_NODE("Format conversion/Gray de-bayer", BayerToGrayNodeType)
 REGISTER_NODE("Format conversion/RGB de-bayer", BayerToRgbNodeType)
