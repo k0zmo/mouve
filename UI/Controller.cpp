@@ -1404,10 +1404,13 @@ void Controller::updateRecentFileActions(const QString& filePath)
 
 void Controller::nodeEditorContextMenu(const QPoint& globalPos, const QPointF& scenePos)
 {
-    _ui->statusBar->showMessage(QString("Scene position: %1, %2")
-        .arg(scenePos.x())
-        .arg(scenePos.y())
-    );
+    if(treeIdle())
+    {
+        _ui->statusBar->showMessage(
+            QString("Scene position: %1, %2")
+                .arg(scenePos.x())
+                .arg(scenePos.y()));
+    }
 
     QList<QGraphicsItem*> items = _nodeScene->items(scenePos, 
         Qt::ContainsItemShape, Qt::AscendingOrder);
