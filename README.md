@@ -25,7 +25,7 @@ Open (VS2013 or higher) solution file or QtCreator project file. In order to cus
 
 ### Linux
 
-Same as windows but only QtCreator file is applicable.
+Same as windows but only QtCreator file is applicable. Successfully compiled with clang++ 3.4.2 (with tbb turned off) and g++ 4.9.
 
 ### Dependencies
 

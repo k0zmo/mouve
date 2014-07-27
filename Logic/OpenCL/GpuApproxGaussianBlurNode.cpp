@@ -140,8 +140,12 @@ private:
         return sqrt(sigma * sigma * 12.0f / numPasses + 1);
     }
 
+#if !defined(__GLIBCXX__)
     std::ostringstream kernelBuildOptionsBase()
     {
+        // GCC asserts on this ?!
+        static_assert(std::is_move_constructible<std::ostringstream>::value,
+                      "ostringstream is not move constructible");
         const size_t warpSize = _gpuComputeModule->warpSize();
         const size_t warpSizeLog2 = static_cast<size_t>(log2(static_cast<double>(warpSize)));
         std::ostringstream strm;
@@ -170,6 +174,40 @@ private:
         strm << " ";
         return strm.str();
     }
+#else
+    std::string kernelBuildOptionsBase()
+    {
+        const size_t warpSize = _gpuComputeModule->warpSize();
+        const size_t warpSizeLog2 = static_cast<size_t>(log2(static_cast<double>(warpSize)));
+        std::ostringstream strm;
+        strm << "-DWARP_SIZE=" << warpSize;
+        strm << " -DWARP_SIZE_LOG_2=" << warpSizeLog2;
+        strm << " -DNUM_THREADS=" << threadsPerGroup;
+        strm << " -DNUM_WARPS=" << threadsPerGroup / warpSize;
+        strm << " ";
+        return strm.str();
+    }
+
+    std::string kernelBuildOptionsHoriz(int imageWidth)
+    {
+        std::ostringstream strm;
+        strm << kernelBuildOptionsBase();
+        strm << "-DIMAGE_WIDTH=" << imageWidth;
+        strm << " -DTEXELS_PER_THREAD=" << (imageWidth + threadsPerGroup - 1) / threadsPerGroup;
+        strm << " ";
+        return strm.str();
+    }
+
+    std::string kernelBuildOptionsVert(int imageHeight)
+    {
+        std::ostringstream strm;
+        strm << kernelBuildOptionsBase();
+        strm << "-DIMAGE_HEIGHT=" << imageHeight;
+        strm << " -DTEXELS_PER_THREAD=" << (imageHeight + threadsPerGroup - 1) / threadsPerGroup;
+        strm << " ";
+        return strm.str();
+    }
+#endif
 
 private:
     TypedNodeProperty<double> _sigma;

@@ -24,6 +24,7 @@
 #include "konfig.h"
 #include "StringUtils.h"
 
+#include <cstdlib>
 #include <cstdarg>
 #include <memory>
 #include <cstring>
