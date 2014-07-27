@@ -179,6 +179,9 @@ void Controller::closeEvent(QCloseEvent* event)
 
 void Controller::addNode(NodeTypeID nodeTypeID, const QPointF& scenePos)
 {
+    if (!treeIdle())
+        return;
+
     // Generate unique name
     std::string nodeTitle = _nodeTree->generateNodeName(nodeTypeID);
 
