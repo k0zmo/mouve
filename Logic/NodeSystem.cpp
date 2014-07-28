@@ -56,8 +56,6 @@ NodeTypeID NodeSystem::registerNodeType(const std::string& nodeTypeName,
     auto iter = _typeNameToTypeID.find(nodeTypeName);
     if(iter == _typeNameToTypeID.end())
     {
-        /// TODO: Should we protect ourselves from too much node types being registered?
-
         // New type of node
         size_t nodeTypeID = _registeredNodeTypes.size();
         _typeNameToTypeID[nodeTypeName] = NodeTypeID(nodeTypeID);

@@ -97,9 +97,6 @@
     <ClCompile Include="Nodes\SourceNodes.cpp">
       <Filter>Nodes</Filter>
     </ClCompile>
-    <ClCompile Include="OpenCL\GpuSurfNode.cpp">
-      <Filter>OpenCL</Filter>
-    </ClCompile>
     <ClCompile Include="Nodes\MosaicingNodes.cpp">
       <Filter>Nodes</Filter>
     </ClCompile>
@@ -190,6 +187,9 @@
     </ClCompile>
     <ClCompile Include="Nodes\ksurf.cpp">
       <Filter>Nodes\Utils</Filter>
+    </ClCompile>
+    <ClCompile Include="OpenCL\GpuSurfNode.cpp">
+      <Filter>OpenCL\Nodes</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

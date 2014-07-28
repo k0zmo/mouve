@@ -44,7 +44,7 @@ enum class EDataType
 class DeviceArray
 {
 public:
-        DeviceArray();
+    DeviceArray();
 
     bool isNull() const { return _buffer.isNull(); }
 

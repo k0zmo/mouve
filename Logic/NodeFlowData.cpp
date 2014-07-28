@@ -147,120 +147,120 @@ bool NodeFlowData::isConvertible(ENodeFlowDataType from,
 
 cv::Mat& NodeFlowData::getImage()
 { 
-    return getType<ENodeFlowDataType::Image, cv::Mat>();
+    return getType<cv::Mat>(ENodeFlowDataType::Image);
 }
 
 const cv::Mat& NodeFlowData::getImage() const 
 { 
-    return getType<ENodeFlowDataType::Image, cv::Mat>();
+    return getType<cv::Mat>(ENodeFlowDataType::Image);
 }
 
 cv::Mat& NodeFlowData::getImageMono()
 {
-    return getType<ENodeFlowDataType::ImageMono, cv::Mat>();
+    return getType<cv::Mat>(ENodeFlowDataType::ImageMono);
 }
 
 const cv::Mat& NodeFlowData::getImageMono() const
 {
-    return getType<ENodeFlowDataType::ImageMono, cv::Mat>();
+    return getType<cv::Mat>(ENodeFlowDataType::ImageMono);
 }
 
 cv::Mat& NodeFlowData::getImageRgb()
 {
-    return getType<ENodeFlowDataType::ImageRgb, cv::Mat>();
+    return getType<cv::Mat>(ENodeFlowDataType::ImageRgb);
 }
 
 const cv::Mat& NodeFlowData::getImageRgb() const
 {
-    return getType<ENodeFlowDataType::ImageRgb, cv::Mat>();
+    return getType<cv::Mat>(ENodeFlowDataType::ImageRgb);
 }
 
 KeyPoints& NodeFlowData::getKeypoints()
 {
-    return getType<ENodeFlowDataType::Keypoints, KeyPoints>();
+    return getType<KeyPoints>(ENodeFlowDataType::Keypoints);
 }
 
 const KeyPoints& NodeFlowData::getKeypoints() const
 {
-    return getType<ENodeFlowDataType::Keypoints, KeyPoints>();
+    return getType<KeyPoints>(ENodeFlowDataType::Keypoints);
 }
 
 Matches& NodeFlowData::getMatches()
 {
-    return getType<ENodeFlowDataType::Matches, Matches>();
+    return getType<Matches>(ENodeFlowDataType::Matches);
 }
 
 const Matches& NodeFlowData::getMatches() const
 {
-    return getType<ENodeFlowDataType::Matches, Matches>();
+    return getType<Matches>(ENodeFlowDataType::Matches);
 }
 
 cv::Mat& NodeFlowData::getArray()
 {
-    return getType<ENodeFlowDataType::Array, cv::Mat>();
+    return getType<cv::Mat>(ENodeFlowDataType::Array);
 }
 
 const cv::Mat& NodeFlowData::getArray() const
 {
-    return getType<ENodeFlowDataType::Array, cv::Mat>();
+    return getType<cv::Mat>(ENodeFlowDataType::Array);
 }
 
 #if defined(HAVE_OPENCL)
 
 clw::Image2D& NodeFlowData::getDeviceImage()
 {
-    return getType<ENodeFlowDataType::DeviceImage, clw::Image2D>();
+    return getType<clw::Image2D>(ENodeFlowDataType::DeviceImage);
 }
 
 const clw::Image2D& NodeFlowData::getDeviceImage() const
 {
-    return getType<ENodeFlowDataType::DeviceImage, clw::Image2D>();
+    return getType<clw::Image2D>(ENodeFlowDataType::DeviceImage);
 }
 
 clw::Image2D& NodeFlowData::getDeviceImageMono()
 {
-    return getType<ENodeFlowDataType::DeviceImageMono, clw::Image2D>();
+    return getType<clw::Image2D>(ENodeFlowDataType::DeviceImageMono);
 }
 
 const clw::Image2D& NodeFlowData::getDeviceImageMono() const
 {
-    return getType<ENodeFlowDataType::DeviceImageMono, clw::Image2D>();
+    return getType<clw::Image2D>(ENodeFlowDataType::DeviceImageMono);
 }
 
 clw::Image2D& NodeFlowData::getDeviceImageRgb()
 {
-    return getType<ENodeFlowDataType::DeviceImageRgb, clw::Image2D>();
+    return getType<clw::Image2D>(ENodeFlowDataType::DeviceImageRgb);
 }
 
 const clw::Image2D& NodeFlowData::getDeviceImageRgb() const
 {
-    return getType<ENodeFlowDataType::DeviceImageRgb, clw::Image2D>();
+    return getType<clw::Image2D>(ENodeFlowDataType::DeviceImageRgb);
 }
 
 DeviceArray& NodeFlowData::getDeviceArray()
 {
-    return getType<ENodeFlowDataType::DeviceArray, DeviceArray>();
+    return getType<DeviceArray>(ENodeFlowDataType::DeviceArray);
 }
 
 const DeviceArray& NodeFlowData::getDeviceArray() const
 {
-    return getType<ENodeFlowDataType::DeviceArray, DeviceArray>();
+    return getType<DeviceArray>(ENodeFlowDataType::DeviceArray);
 }
 
 #endif
 
-template<ENodeFlowDataType RequestedType, class Type>
-Type& NodeFlowData::getType()
+template <class Type>
+Type& NodeFlowData::getType(ENodeFlowDataType requestedType)
 {
-    if(!isConvertible(_type, RequestedType))
+    if(!isConvertible(_type, requestedType))
         throw boost::bad_get();
     return boost::get<Type>(_data);
 }
 
-template<ENodeFlowDataType RequestedType, class Type> 
-const Type& NodeFlowData::getType() const
+template <class Type> 
+const Type& NodeFlowData::getType(ENodeFlowDataType requestedType) const
 {
-    if(!isConvertible(_type, RequestedType))
+    if(!isConvertible(_type, requestedType))
         throw boost::bad_get();
     return boost::get<Type>(_data);
 }

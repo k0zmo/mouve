@@ -211,14 +211,14 @@ bool NodeTreeSerializer::deserializeJsonNodes(std::shared_ptr<NodeTree>& nodeTre
         QString nodeTypeName = mapNode["class"].toString();
         if(nodeTypeName.isEmpty())
         {
-            qCritical() << QString("\"class\" is bad (id:%1)").arg(nodeId);;
+            qCritical() << QString("\"class\" is bad (id:%1)").arg(nodeId);
             break;
         }
 
         QString nodeName = mapNode["name"].toString();
         if(nodeName.isEmpty())
         {
-            qCritical() << QString("\"name\" is bad (id:%1)").arg(nodeId);;
+            qCritical() << QString("\"name\" is bad (id:%1)").arg(nodeId);
             break;
         }
 
