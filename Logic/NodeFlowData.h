@@ -159,8 +159,8 @@ private:
     bool isConvertible(ENodeFlowDataType from, 
         ENodeFlowDataType to) const;
 
-    template <class Type> Type& getType(ENodeFlowDataType requestedType);
-    template <class Type> const Type& getType(ENodeFlowDataType requestedType) const;
+    template <class Type> Type& getTyped(ENodeFlowDataType requestedType);
+    template <class Type> const Type& getTyped(ENodeFlowDataType requestedType) const;
 };
 
 inline bool NodeFlowData::isValid() const
@@ -171,5 +171,3 @@ inline bool NodeFlowData::canReturn(ENodeFlowDataType type) const
 
 inline ENodeFlowDataType NodeFlowData::type() const
 { return _type; }
-
-

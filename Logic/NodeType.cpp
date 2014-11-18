@@ -62,25 +62,9 @@ const NodeFlowData& NodeSocketReader::readSocket(SocketID socketID) const
     }
 }
 
-const cv::Mat& NodeSocketReader::readSocketImage(SocketID socketID) const
-{
-    return readSocket(socketID).getImage();
-}
-
 void NodeSocketWriter::setOutputSockets(std::vector<NodeFlowData>& outputs)
 {
     _outputs = &outputs;
-}
-
-void NodeSocketWriter::writeSocket(SocketID socketID, NodeFlowData&& image)
-{
-    assert(_outputs != nullptr);
-    assert(socketID < static_cast<int>(_outputs->size()));
-
-    if(socketID >= static_cast<int>(_outputs->size()))
-        throw BadSocketException();;
-
-    _outputs->at(socketID) = std::move(image);
 }
 
 NodeFlowData& NodeSocketWriter::acquireSocket(SocketID socketID)

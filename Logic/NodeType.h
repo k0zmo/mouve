@@ -44,9 +44,13 @@ public:
     }
 
     // Reads data from the socket of given ID
+    const NodeFlowData& operator()(SocketID socketID) const
+    {
+        return readSocket(socketID);
+    }
+
+    // Reads data from the socket of given ID
     const NodeFlowData& readSocket(SocketID socketID) const;
-    // Reads data from the socket as an opencv image 
-    const cv::Mat& readSocketImage(SocketID socketID) const;
 
 private:
     void setNode(NodeID nodeID, SocketID numInputSockets);
@@ -69,8 +73,12 @@ public:
     {
     }
 
-    // Writes data to the socket of given ID
-    void writeSocket(SocketID socketID, NodeFlowData&& image);
+    // Returns a reference to underlying socket data
+    NodeFlowData& operator()(SocketID socketID)
+    {
+        return acquireSocket(socketID);
+    }
+
     // Returns a reference to underlying socket data
     NodeFlowData& acquireSocket(SocketID socketID);
 
