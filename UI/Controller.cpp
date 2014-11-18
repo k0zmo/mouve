@@ -140,6 +140,8 @@ Controller::Controller(QWidget* parent, Qt::WindowFlags flags)
         this, &Controller::updatePreview);
     connect(_treeWorker, &TreeWorker::error,
         this, &Controller::showErrorMessage);
+    connect(_treeWorker, &TreeWorker::badConnection,
+        this, &Controller::showBadConnection);
 
     _workerThread.start();
 }
@@ -868,6 +870,35 @@ void Controller::showErrorMessage(const QString& message)
 {
     qCritical(qPrintable(message));
     QMessageBox::critical(nullptr, QApplication::applicationName(), message);
+}
+
+void Controller::showBadConnection(int node, int socket)
+{
+    const auto nodeID = static_cast<NodeID>(node);
+    const auto socketID = static_cast<SocketID>(socket);
+
+    if (!_nodeViews.contains(nodeID))
+        return;
+    const auto nodeView = _nodeViews[nodeID];
+
+    for (auto& linkView : _linkViews)
+    {
+        if (linkView->inputConnecting(nodeView))
+        {
+            if (linkView->toSocketView() != nullptr &&
+                linkView->toSocketView()->socketKey() == socket)
+            {
+                linkView->setBad(true);
+                break;
+            }
+        }
+    }
+
+    showErrorMessage(QString("Execution error in:\nNode: %1\n"
+        "Node typename: %2\n\nError message:\n%3")
+            .arg(_nodeTree->nodeName(nodeID).c_str())
+            .arg(_nodeTree->nodeTypeName(nodeID).c_str())
+            .arg("Wrong socket connection"));
 }
 
 void Controller::switchToVideoMode()

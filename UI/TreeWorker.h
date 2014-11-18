@@ -40,6 +40,7 @@ public:
 signals:
     void completed(bool res);
     void error(const QString& msg);
+    void badConnection(int node, int socket);
 
 private:
     std::shared_ptr<NodeTree> _nodeTree;

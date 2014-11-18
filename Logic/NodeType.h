@@ -27,7 +27,31 @@
 #include "NodeFlowData.h"
 #include "NodeProperty.h"
 #include "NodeException.h"
+#include "NodeLink.h"
 #include "Kommon/EnumFlags.h"
+
+class NodeSocketTracer
+{
+public:
+    NodeSocketTracer()
+        : _traced{InvalidNodeID, InvalidSocketID, false}
+    {
+    }
+
+    void setNode(NodeID nodeID) { _traced.node = nodeID; }
+    void setSocket(SocketID socketID, bool isOutput)
+    {
+        _traced.socket = socketID;
+        _traced.isOutput = isOutput;
+    }
+
+    NodeID lastNode() const { return _traced.node; }
+    SocketID lastSocket() const { return _traced.socket; }
+    bool isLastOutput() const { return _traced.isOutput; }
+
+private:
+    SocketAddress _traced;
+};
 
 // Class responsible for reading data from a node socket
 class LOGIC_EXPORT NodeSocketReader
@@ -36,8 +60,9 @@ class LOGIC_EXPORT NodeSocketReader
 
     friend class NodeTree;
 public:
-    explicit NodeSocketReader(NodeTree* tree)
-        : _nodeTree(tree)
+    explicit NodeSocketReader(NodeTree* tree, NodeSocketTracer& tracer)
+        : _tracer(tracer)
+        , _nodeTree(tree)
         , _numInputSockets(0)
         , _nodeID(InvalidNodeID)
     {
@@ -56,6 +81,7 @@ private:
     void setNode(NodeID nodeID, SocketID numInputSockets);
 
 private:
+    NodeSocketTracer& _tracer;
     NodeTree* _nodeTree;
     SocketID _numInputSockets;
     NodeID _nodeID;
@@ -68,8 +94,9 @@ class LOGIC_EXPORT NodeSocketWriter
 
     friend class Node;
 public:
-    explicit NodeSocketWriter()
-        : _outputs(nullptr)
+    explicit NodeSocketWriter(NodeSocketTracer& tracer)
+        : _tracer(tracer)
+        , _outputs(nullptr)
     {
     }
 
@@ -86,6 +113,7 @@ private:
     void setOutputSockets(std::vector<NodeFlowData>& outputs);
 
 private:
+    NodeSocketTracer& _tracer;
     std::vector<NodeFlowData>* _outputs;
 };
 

@@ -35,6 +35,7 @@ QColor NodeStyle::SceneBlockedBackground = QColor(34, 34, 34);
 
 // Link NodeStyle
 QPen NodeStyle::LinkPen = QPen(QColor(222, 222, 222), 2.0, Qt::SolidLine);
+QPen NodeStyle::BadLinkPen = QPen(QColor(200, 0, 60), 2.0, Qt::SolidLine);
 
 // TemporaryLink NodeStyle
 QPen NodeStyle::TemporaryLinkPen = QPen(QColor(244, 98, 0), 2.0, Qt::SolidLine);

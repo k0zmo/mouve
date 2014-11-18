@@ -38,6 +38,7 @@ struct NodeStyle
 
     // Link NodeStyle
     static QPen LinkPen;
+    static QPen BadLinkPen;
 
     // TemporaryLink NodeStyle
     static QPen TemporaryLinkPen;

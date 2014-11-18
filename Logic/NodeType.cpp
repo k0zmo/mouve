@@ -43,6 +43,7 @@ const NodeFlowData& NodeSocketReader::readSocket(SocketID socketID) const
     {
         SocketAddress outputAddr = 
             _nodeTree->connectedFrom(SocketAddress(_nodeID, socketID, false));
+        _tracer.setSocket(socketID, false);
 
         if(outputAddr.isValid())
         {
@@ -75,6 +76,7 @@ NodeFlowData& NodeSocketWriter::acquireSocket(SocketID socketID)
     if(socketID >= static_cast<int>(_outputs->size()))
         throw BadSocketException();;
 
+    _tracer.setSocket(socketID, true);
     return _outputs->at(socketID);
 }
 

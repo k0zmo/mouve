@@ -45,6 +45,8 @@ public:
     virtual QPainterPath shape() const;
     virtual QRectF boundingRect() const;
 
+    void setBad(bool bad);
+
     // Uaktualnia ksztlat i pozycje na podstawie gniazd do ktorych wchodzi/wychodzi
     void updateFromSocketViews();
     void updateEndPosition(const QPointF& endPosition);
@@ -75,6 +77,7 @@ private:
     mutable QPointF mc1, mc2;
     bool mDrawDebug;
     bool mInvertStartPos;
+    bool mBadConnection;
 
 private:
     // Buduje i zwraca QPainterPath 

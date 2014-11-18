@@ -76,6 +76,7 @@ class NodeType;
 class NodeSocket;
 class NodeFlowData;
 class NodeProperty;
+class NodeSocketTracer;
 class NodeSocketReader;
 class NodeSocketWriter;
 class NodeTree;

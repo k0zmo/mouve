@@ -153,7 +153,7 @@ void NodeTree::cleanUpAfterExecution(const std::vector<NodeID>& selfTagging,
         tagNode(id);
 }
 
-void NodeTree::handleException(const std::string& nodeName, const std::string& nodeTypeName)
+void NodeTree::handleException(NodeID nodeID, const NodeSocketTracer& tracer)
 {
     // Exception dispatcher pattern
     try
@@ -165,19 +165,24 @@ void NodeTree::handleException(const std::string& nodeName, const std::string& n
         // Dummy but a must - if not std::exception handler would catch it
         throw;
     }
-    catch(boost::bad_get&)
+    catch(BadConnectionException& ex)
     {
-        throw ExecutionError(nodeName, nodeTypeName, 
-            "Wrong socket connection");
+        if (tracer.isLastOutput())
+            // Means node tried to acquired socket
+            // with different type than declared in config
+            throw BadConfigException();
+        ex.node = tracer.lastNode();
+        ex.socket = tracer.lastSocket();
+        throw;
     }
     catch(cv::Exception& ex)
     {
-        throw ExecutionError(nodeName, nodeTypeName, 
+        throw ExecutionError(nodeName(nodeID), nodeTypeName(nodeID), 
             std::string("OpenCV exception - ") + ex.what());
     }
     catch(std::exception& ex)
     {
-        throw ExecutionError(nodeName, nodeTypeName, ex.what());
+        throw ExecutionError(nodeName(nodeID), nodeTypeName(nodeID), ex.what());
     }
 }
 
@@ -186,8 +191,9 @@ void NodeTree::execute(bool withInit)
     if(_executeListDirty)
         prepareList();
 
-    NodeSocketReader reader(this);
-    NodeSocketWriter writer;
+    NodeSocketTracer tracer;
+    NodeSocketReader reader(this, tracer);
+    NodeSocketWriter writer(tracer);
 
     std::vector<NodeID> selfTagging;
     std::vector<NodeID> correctlyExecutedNodes;
@@ -197,6 +203,7 @@ void NodeTree::execute(bool withInit)
     {
         Node& node = _nodes[nodeID];
 
+        tracer.setNode(nodeID);
         reader.setNode(nodeID, node.numInputSockets());
 
         try
@@ -228,7 +235,7 @@ void NodeTree::execute(bool withInit)
         catch(...)
         {
             cleanUpAfterExecution(selfTagging, correctlyExecutedNodes);
-            handleException(node.nodeName(), nodeTypeName(nodeID));
+            handleException(nodeID, tracer);
         }
     }
 

@@ -136,6 +136,7 @@ private:
 
 private slots:
     void showErrorMessage(const QString& message);
+    void showBadConnection(int node, int socket);
 
     // Slots for QGraphicsView's events
     void nodeEditorContextMenu(const QPoint& globalPos, const QPointF& scenePos);

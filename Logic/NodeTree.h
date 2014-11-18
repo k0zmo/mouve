@@ -128,7 +128,7 @@ private:
 
     void cleanUpAfterExecution(const std::vector<NodeID>& selfTagging,
         const std::vector<NodeID>& correctlyExecutedNodes);
-    void handleException(const std::string& nodeName, const std::string& nodeTypeName);
+    void handleException(NodeID nodeID, const NodeSocketTracer& tracer);
 
 private:
     std::vector<Node> _nodes;

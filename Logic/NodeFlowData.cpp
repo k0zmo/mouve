@@ -22,6 +22,7 @@
  */
 
 #include "NodeFlowData.h"
+#include "NodeException.h"
 
 #include <opencv2/highgui/highgui.hpp>
 
@@ -253,7 +254,7 @@ template <class Type>
 Type& NodeFlowData::getTyped(ENodeFlowDataType requestedType)
 {
     if(!isConvertible(_type, requestedType))
-        throw boost::bad_get();
+        throw BadConnectionException();
     return boost::get<Type>(_data);
 }
 
@@ -261,7 +262,7 @@ template <class Type>
 const Type& NodeFlowData::getTyped(ENodeFlowDataType requestedType) const
 {
     if(!isConvertible(_type, requestedType))
-        throw boost::bad_get();
+        throw BadConnectionException();
     return boost::get<Type>(_data);
 }
 

@@ -52,6 +52,30 @@ struct BadConfigException : std::exception
     }
 };
 
+struct BadConnectionException : std::exception
+{
+    BadConnectionException()
+        : node(InvalidNodeID)
+        , socket(InvalidSocketID)
+    {
+    }
+
+    BadConnectionException(NodeID node, SocketID socket)
+        : node(node)
+        , socket(socket)
+    {
+    }
+
+    virtual const char* what() const throw()
+    {
+        return "BadConnectionException: "
+            "invalid connection between two sockets";
+    }
+
+    NodeID node;
+    SocketID socket;
+};
+
 struct ExecutionError : std::exception
 {
     ExecutionError(const std::string& nodeName, 

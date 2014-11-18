@@ -35,6 +35,7 @@ NodeLinkView::NodeLinkView(NodeSocketView* fromSocketView,
     , mToSocketView(toSocketView)
     , mDrawDebug(false)
     , mInvertStartPos(false)
+    , mBadConnection(false)
 {
     setFlag(QGraphicsItem::ItemIsSelectable);
     setFlag(QGraphicsItem::ItemIsFocusable);
@@ -52,6 +53,7 @@ NodeLinkView::NodeLinkView(const QPointF& startPosition,
     , mToSocketView(nullptr)
     , mDrawDebug(false)
     , mInvertStartPos(invertStartPos)
+    , mBadConnection(false)
 {
     setPos(startPosition);
     setZValue(NodeStyle::ZValueTemporaryLink);
@@ -74,7 +76,7 @@ void NodeLinkView::paint(QPainter *painter,
     Q_UNUSED(widget);
 
     painter->setBrush(Qt::NoBrush);
-    painter->setPen(mPen);
+    painter->setPen(!mBadConnection ? mPen : NodeStyle::BadLinkPen);
     painter->drawPath(mPath);
 
     // Draw debugging red-ish rectangle
@@ -94,6 +96,15 @@ void NodeLinkView::paint(QPainter *painter,
 QRectF NodeLinkView::boundingRect() const
 {
     return mPath.controlPointRect();
+}
+
+void NodeLinkView::setBad(bool bad)
+{
+    if (mBadConnection != bad)
+    {
+        mBadConnection = bad;
+        update();
+    }
 }
 
 void NodeLinkView::setDrawDebug(bool drawDebug)

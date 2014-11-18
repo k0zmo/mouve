@@ -51,6 +51,10 @@ void TreeWorker::process(bool withInit)
             _nodeTree->execute(withInit);
         res = true;
     }
+    catch(BadConnectionException& ex)
+    {
+        emit badConnection(ex.node, ex.socket);
+    }
     catch(ExecutionError& ex)
     {
         emit error(QString("Execution error in:\nNode: %1\n"
