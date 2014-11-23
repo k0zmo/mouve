@@ -987,3 +987,81 @@ std::unique_ptr<NodeLinkIterator> NodeTree::createNodeLinkIterator()
 {
     return std::unique_ptr<NodeLinkIterator>(new NodeLinkIteratorImpl(this));
 }
+
+class NodeTree::NodeExecutorImpl : public NodeExecutor
+{
+public:
+     NodeExecutorImpl(NodeTree* nodeTree, bool withInit)
+        : _nodeTree{nodeTree}
+        , _writer{_tracer}
+        , _reader{_nodeTree, _tracer}
+        , _withInit{withInit}
+    {
+    }
+
+    ~NodeExecutorImpl() override
+    {
+        _nodeTree->cleanUpAfterExecution(_selfTagging, _correctlyExecutedNodes);
+    }
+
+    NodeID currentNode() const override
+    {
+        return _nodeTree->executeList()[_pos];
+    }
+
+    bool hasWork() const override
+    {
+        return _pos < _nodeTree->executeList().size();
+    }
+
+    void doWork() override
+    {
+        NodeID nodeID = _nodeTree->executeList()[_pos];
+        Node& node = _nodeTree->_nodes[nodeID];
+
+        _tracer.setNode(nodeID);
+        _reader.setNode(nodeID, node.numInputSockets());
+
+        if(_withInit && node.flag(ENodeFlags::StateNode))
+        {
+            // Try to restart node internal state if any
+            if(!node.restart())
+            {
+                throw ExecutionError{node.nodeName(),
+                    _nodeTree->nodeTypeName(nodeID), "Error during node state restart"};
+            }
+        }
+
+        ExecutionStatus ret = node.execute(_reader, _writer);
+        if(ret.status == EStatus::Tag)
+        {
+            _selfTagging.push_back(nodeID);
+        }
+        else if(ret.status == EStatus::Error)
+        {   // If node reported an error
+            _selfTagging.push_back(nodeID);
+            throw ExecutionError{node.nodeName(),
+                _nodeTree->nodeTypeName(nodeID), ret.message};
+        }
+
+        _correctlyExecutedNodes.push_back(nodeID);
+        ++_pos;
+    }
+private:
+    NodeTree* _nodeTree;
+    NodeSocketTracer _tracer;
+    NodeSocketWriter _writer;
+    NodeSocketReader _reader;
+    std::vector<NodeID> _selfTagging;
+    std::vector<NodeID> _correctlyExecutedNodes;
+    size_t _pos{0};
+    bool _withInit;
+};
+
+std::unique_ptr<NodeExecutor> NodeTree::createNodeExecutor(bool withInit)
+{
+    if(_executeListDirty)
+        prepareList();
+
+    return std::unique_ptr<NodeExecutor>(new NodeExecutorImpl{this, withInit});
+}

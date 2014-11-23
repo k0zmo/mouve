@@ -109,7 +109,19 @@ int main()
                 8);
 
             // Execute a node
+#if 0
             nodeTree->execute(true);
+#else
+            std::unique_ptr<NodeExecutor> executor{nodeTree->createNodeExecutor(true)};
+            while (executor->hasWork())
+            {
+                std::cout << "Executing node: "
+                    << nodeTree->nodeName(executor->currentNode())
+                    << " ...";
+                executor->doWork();
+                std::cout << " [DONE]\n";
+            }
+#endif
 
             NodeTreeSerializer nodeTreeSerializer;
             nodeTreeSerializer.serializeJsonToFile(nodeTree, "example.tree");

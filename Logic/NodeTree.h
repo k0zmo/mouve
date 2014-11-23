@@ -39,6 +39,15 @@ enum class ELinkNodesResult
     InvalidAddress
 };
 
+class NodeExecutor
+{
+public:
+    virtual ~NodeExecutor() {}
+    virtual NodeID currentNode() const = 0;
+    virtual bool hasWork() const = 0;
+    virtual void doWork() = 0;
+};
+
 class LOGIC_EXPORT NodeTree
 {
     K_DISABLE_COPY(NodeTree)
@@ -108,6 +117,7 @@ public:
 
     std::unique_ptr<NodeIterator> createNodeIterator();
     std::unique_ptr<NodeLinkIterator> createNodeLinkIterator();	
+    std::unique_ptr<NodeExecutor> createNodeExecutor(bool withInit = false);
 
 private:
     NodeID allocateNodeID();
@@ -143,4 +153,5 @@ private:
     // Interfaces implementations
     class NodeIteratorImpl;
     class NodeLinkIteratorImpl;
+    class NodeExecutorImpl;
 };
