@@ -136,8 +136,6 @@ private:
     bool validateLink(SocketAddress& from, SocketAddress& to);
     bool validateNode(NodeID nodeID) const;
 
-    void cleanUpAfterExecution(const std::vector<NodeID>& selfTagging,
-        const std::vector<NodeID>& correctlyExecutedNodes);
     void handleException(NodeID nodeID, const NodeSocketTracer& tracer);
 
 private:

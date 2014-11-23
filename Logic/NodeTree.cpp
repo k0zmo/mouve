@@ -140,24 +140,12 @@ std::vector<NodeID> NodeTree::prepareList()
     return _executeList;
 }
 
-void NodeTree::cleanUpAfterExecution(const std::vector<NodeID>& selfTagging,
-                                     const std::vector<NodeID>& correctlyExecutedNodes)
-{
-    // Only untag nodes that were correctly executed
-    for(NodeID id : correctlyExecutedNodes)
-        _nodes[id].unsetFlag(ENodeFlags::Tagged);
-    _executeListDirty = true;
-
-    // tag all self-tagging nodes
-    for(NodeID id : selfTagging)
-        tagNode(id);
-}
-
 void NodeTree::handleException(NodeID nodeID, const NodeSocketTracer& tracer)
 {
     // Exception dispatcher pattern
     try
     {
+        _executeListDirty = true;
         throw;
     }
     catch(ExecutionError&)
@@ -195,9 +183,6 @@ void NodeTree::execute(bool withInit)
     NodeSocketReader reader(this, tracer);
     NodeSocketWriter writer(tracer);
 
-    std::vector<NodeID> selfTagging;
-    std::vector<NodeID> correctlyExecutedNodes;
-
     // Traverse through just-built exec list and process each node 
     for(NodeID nodeID : _executeList)
     {
@@ -213,33 +198,39 @@ void NodeTree::execute(bool withInit)
                 // Try to restart node internal state if any
                 if(!node.restart())
                 {
-                    throw ExecutionError(node.nodeName(), 
-                        nodeTypeName(nodeID), "Error during node state restart");
+                    throw ExecutionError{node.nodeName(), nodeTypeName(nodeID), 
+                        "Error during node state restart"};
                 }
             }
 
             ExecutionStatus ret = node.execute(reader, writer);
-            if(ret.status == EStatus::Tag)
-            {
-                selfTagging.push_back(nodeID);
-            }
-            else if(ret.status == EStatus::Error)
-            {   // If node reported an error
-                selfTagging.push_back(nodeID);
-                throw ExecutionError(node.nodeName(), 
-                    nodeTypeName(nodeID), ret.message);
-            }
 
-            correctlyExecutedNodes.push_back(nodeID);
+            switch (ret.status)
+            {
+            case EStatus::Tag:
+                // Tag for next execution
+                tagNode(nodeID);
+                break;
+
+            case EStatus::Error:
+                // If node reported an error
+                tagNode(nodeID);
+                throw ExecutionError{node.nodeName(), nodeTypeName(nodeID), 
+                    ret.message};
+                break;
+
+            case EStatus::Ok:
+            default:
+                break;
+            }
         }
         catch(...)
         {
-            cleanUpAfterExecution(selfTagging, correctlyExecutedNodes);
             handleException(nodeID, tracer);
         }
     }
 
-    cleanUpAfterExecution(selfTagging, correctlyExecutedNodes);
+    _executeListDirty = true;
 }
 
 void NodeTree::notifyFinish()
@@ -1001,7 +992,7 @@ public:
 
     ~NodeExecutorImpl() override
     {
-        _nodeTree->cleanUpAfterExecution(_selfTagging, _correctlyExecutedNodes);
+        _nodeTree->_executeListDirty = true;
     }
 
     NodeID currentNode() const override
@@ -1016,44 +1007,70 @@ public:
 
     void doWork() override
     {
-        NodeID nodeID = _nodeTree->executeList()[_pos];
+        if (!hasWork()) return;
+        NodeID nodeID = currentNode();
         Node& node = _nodeTree->_nodes[nodeID];
 
         _tracer.setNode(nodeID);
         _reader.setNode(nodeID, node.numInputSockets());
 
-        if(_withInit && node.flag(ENodeFlags::StateNode))
+        try
         {
-            // Try to restart node internal state if any
-            if(!node.restart())
+            if(_withInit && node.flag(ENodeFlags::StateNode))
             {
-                throw ExecutionError{node.nodeName(),
-                    _nodeTree->nodeTypeName(nodeID), "Error during node state restart"};
+                // Try to restart node internal state if any
+                if(!node.restart())
+                {
+                    throw ExecutionError{node.nodeName(), nodeTypeName(nodeID),
+                        "Error during node state restart"};
+                }
             }
-        }
 
-        ExecutionStatus ret = node.execute(_reader, _writer);
-        if(ret.status == EStatus::Tag)
+            ExecutionStatus ret = node.execute(_reader, _writer);
+
+            switch (ret.status)
+            {
+            case EStatus::Tag:
+                // Tag for next execution
+                tagNode(nodeID);
+                break;
+
+            case EStatus::Error:
+                // If node reported an error
+                tagNode(nodeID);
+                throw ExecutionError{node.nodeName(), nodeTypeName(nodeID), 
+                    ret.message};
+                break;
+
+            case EStatus::Ok:
+            default:
+                break;
+            }
+
+            ++_pos;
+        }
+        catch (...)
         {
-            _selfTagging.push_back(nodeID);
+            _nodeTree->handleException(nodeID, _tracer);
         }
-        else if(ret.status == EStatus::Error)
-        {   // If node reported an error
-            _selfTagging.push_back(nodeID);
-            throw ExecutionError{node.nodeName(),
-                _nodeTree->nodeTypeName(nodeID), ret.message};
-        }
-
-        _correctlyExecutedNodes.push_back(nodeID);
-        ++_pos;
     }
+
+private:
+    void tagNode(NodeID nodeID)
+    {
+        _nodeTree->tagNode(nodeID);
+    }
+
+    const std::string& nodeTypeName(NodeID nodeID) const
+    {
+        return _nodeTree->nodeTypeName(nodeID);
+    }
+
 private:
     NodeTree* _nodeTree;
     NodeSocketTracer _tracer;
     NodeSocketWriter _writer;
     NodeSocketReader _reader;
-    std::vector<NodeID> _selfTagging;
-    std::vector<NodeID> _correctlyExecutedNodes;
     size_t _pos{0};
     bool _withInit;
 };
