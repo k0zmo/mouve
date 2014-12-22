@@ -190,13 +190,20 @@ GpuPerformanceMarker::GpuPerformanceMarker(const GpuActivityLogger& logger,
 
 GpuPerformanceMarker::~GpuPerformanceMarker()
 {
-    try
+    if (!std::current_exception())
     {
+        // Allow to throw if its normal destruction
         _logger.endPerfMarker();
     }
-    catch (GpuNodeException&)
+    else
     {
-        // Don't throw exception from a destructor
+        try
+        {
+            _logger.endPerfMarker();
+        }
+        catch (...)
+        { // Don't throw an exception while already handling an exception
+        }
     }
 }
 
