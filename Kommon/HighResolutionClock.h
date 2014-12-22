@@ -25,20 +25,38 @@
 
 #include "konfig.h"
 
-#if K_SYSTEM == K_SYSTEM_LINUX
-#  include <sys/time.h>
-#endif
+#include <chrono>
 
-class HighResolutionClock
+#if K_COMPILER == K_COMPILER_MSVC
+long long QueryPerfFrequency();
+long long QueryPerfCounter();
+// Till VS2015 is released this needs to suffice
+struct HighResolutionClock
 {
-public:
-	HighResolutionClock();
-	double currentTimeInSeconds();
+    using rep = long long;
+    using period = std::nano;
+    using duration = std::chrono::nanoseconds;
+    using time_point = std::chrono::time_point<HighResolutionClock>;
+    static const bool is_steady = true;
 
-private:
-#if K_SYSTEM == K_SYSTEM_WINDOWS
-	double _periodTime;
-#else
-	timeval _startTime;
-#endif
+    static time_point now() _NOEXCEPT
+    {
+        static const long long freq = QueryPerfFrequency();
+        const long long cnt = QueryPerfCounter();
+        const long long whole = (cnt / freq) * period::den;
+        const long long part = (cnt % freq) * period::den / freq;
+        return time_point{duration{whole + part}};
+    }
 };
+
+#else
+using HighResolutionClock = std::chrono::high_resolution_clock;
+#endif
+
+inline double convertToMilliseconds(HighResolutionClock::duration dur)
+{
+    using namespace std::chrono;
+    long long totalMicroseconds = duration_cast<microseconds>(dur).count();
+    return static_cast<double>((totalMicroseconds / 1000) +
+                               (totalMicroseconds % 1000) * 1e-3);
+}

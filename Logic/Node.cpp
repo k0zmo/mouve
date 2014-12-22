@@ -26,8 +26,6 @@
 #include "NodeProperty.h"
 #include "NodeException.h"
 
-HighResolutionClock Node::_stopWatch;
-
 Node::Node()
     : _nodeType(nullptr)
     , _outputSockets(0)
@@ -119,13 +117,13 @@ const NodeConfig& Node::config() const
 ExecutionStatus Node::execute(NodeSocketReader& reader, NodeSocketWriter& writer)
 {
     writer.setOutputSockets(_outputSockets);
-    double start = _stopWatch.currentTimeInSeconds();
+    HighResolutionClock::time_point start = HighResolutionClock::now();
     ExecutionStatus status = _nodeType->execute(reader, writer);
-    double stop = _stopWatch.currentTimeInSeconds();
+    HighResolutionClock::time_point stop = HighResolutionClock::now();
 
     _message = status.message;
     _timeElapsed = !flag(ENodeFlags::OverridesTimeComp)
-        ? (stop - start) * 1e3 // Save in milliseconds
+        ? convertToMilliseconds(stop - start)
         : status.timeElapsed;
 
     return status;

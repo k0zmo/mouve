@@ -93,9 +93,6 @@ private:
     uint32_t _flags;
     double _timeElapsed;
     std::string _message;
-
-    // Only one node can be executed at once
-    static HighResolutionClock _stopWatch;
 };
 
 class NodeIterator

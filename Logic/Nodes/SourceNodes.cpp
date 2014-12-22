@@ -81,7 +81,7 @@ public:
         _frameInterval = (fps != 0)
             ? int(ceil(1000.0 / fps))
             : 0;
-        _timeStamp = std::chrono::high_resolution_clock::time_point();
+        _timeStamp = HighResolutionClock::time_point{};
         _maxFrames = static_cast<int>(_capture.get(CV_CAP_PROP_FRAME_COUNT));
         _currentFrame = _startFrame > 0 ? _startFrame : 0;
 
@@ -90,7 +90,7 @@ public:
 
     ExecutionStatus execute(NodeSocketReader&, NodeSocketWriter& writer) override
     {
-        double start = _clock.currentTimeInSeconds();
+        HighResolutionClock::time_point start = HighResolutionClock::now();
 
         if(!_capture.isOpened())
             return ExecutionStatus(EStatus::Ok);
@@ -124,19 +124,19 @@ public:
             using namespace std::chrono;
 
             // This should keep FPS in sync
-            high_resolution_clock::time_point s = high_resolution_clock::now();
+            HighResolutionClock::time_point s = HighResolutionClock::now();
             milliseconds dura = duration_cast<milliseconds>(s - _timeStamp);
             if(dura.count() < _frameInterval)
             {
                 milliseconds waitDuration = milliseconds(_frameInterval) - dura;
                 std::this_thread::sleep_for(waitDuration);
                 // New start time
-                start = _clock.currentTimeInSeconds();
+                start = HighResolutionClock::now();
             }
 
             _capture.read(buffer);
 
-            _timeStamp = std::chrono::high_resolution_clock::now();
+            _timeStamp = HighResolutionClock::now();
         }
 
         if(!buffer.empty())
@@ -147,10 +147,8 @@ public:
             else
                 output = buffer;
 
-            double stop = _clock.currentTimeInSeconds();
-            double elapsed = (stop - start) * 1e3;
-
-            return ExecutionStatus(EStatus::Tag, elapsed,
+            HighResolutionClock::time_point stop = HighResolutionClock::now();
+            return ExecutionStatus(EStatus::Tag, convertToMilliseconds(stop - start),
                 string_format("Frame image width: %d\nFrame image height: %d\nFrame channels count: %d\nFrame size in kbytes: %d\nFrame: %d/%d",
                     output.cols,
                     output.rows,
@@ -174,12 +172,10 @@ private:
     int _frameInterval;
     int _currentFrame;
     int _maxFrames;
-    std::chrono::high_resolution_clock::time_point _timeStamp;
-    static HighResolutionClock _clock;
+    HighResolutionClock::time_point _timeStamp;
     TypedNodeProperty<bool> _ignoreFps;
     TypedNodeProperty<bool> _forceGrayscale;
 };
-HighResolutionClock VideoFromFileNodeType::_clock;
 
 class ImageFromFileNodeType : public NodeType
 {
