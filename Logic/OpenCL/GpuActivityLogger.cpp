@@ -190,7 +190,7 @@ GpuPerformanceMarker::GpuPerformanceMarker(const GpuActivityLogger& logger,
 
 GpuPerformanceMarker::~GpuPerformanceMarker()
 {
-    if (!std::current_exception())
+    if (!std::uncaught_exception())
     {
         // Allow to throw if its normal destruction
         _logger.endPerfMarker();
