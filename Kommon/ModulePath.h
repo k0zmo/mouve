@@ -23,27 +23,8 @@
 
 #pragma once
 
-#include <cmath>
-#include <cstddef>
+#include <string>
 
-template<typename T>
-bool fcmp(const T& a, const T& b)
-{
-    return std::fabs(a - b) < T(1e-8);
-}
-
-inline bool is64Bit()
-{
-#if K_ARCH == K_ARCH_64
-    return true;
-#else
-    return false;
-#endif
-}
-
-template <class T> struct ArraySize;
-template <class T, std::size_t N> struct ArraySize<T[N]>
-{
-    static const std::size_t value = N;
-};
-#define countof(x) (ArraySize<decltype(x)>::value)
+// Both functions returns UTF-8 encoded string
+std::string executablePath();
+std::string modulePath();

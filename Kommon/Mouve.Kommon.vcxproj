@@ -32,6 +32,7 @@
     <ClInclude Include="konfig.h" />
     <ClInclude Include="HighResolutionClock.h" />
     <ClInclude Include="MacroUtils.h" />
+    <ClInclude Include="ModulePath.h" />
     <ClInclude Include="SharedLibrary.h" />
     <ClInclude Include="Singleton.h" />
     <ClInclude Include="StlUtils.h" />
@@ -48,6 +49,7 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|x64'">true</ExcludedFromBuild>
     </ClCompile>
+    <ClCompile Include="ModulePath.cpp" />
     <ClCompile Include="StringUtils.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|x64'">true</ExcludedFromBuild>
