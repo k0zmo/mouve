@@ -24,6 +24,7 @@
 #include "Controller.h"
 
 #include "Kommon/Utils.h"
+#include "Kommon/ModulePath.h"
 
 // Model part
 #include "Logic/NodeSystem.h"
@@ -2497,43 +2498,27 @@ namespace {
 
 #if K_SYSTEM == K_SYSTEM_WINDOWS
 static const QString pluginExtensionName = QStringLiteral("*.dll");
-
-static HMODULE moduleHandle()
-{
-    static int s_somevar = 0;
-    MEMORY_BASIC_INFORMATION mbi;
-    if(!::VirtualQuery(&s_somevar, &mbi, sizeof(mbi)))
-    {
-        return NULL;
-    }
-    return static_cast<HMODULE>(mbi.AllocationBase);
-}
-
-static QString pluginDirectory()
-{
-    HMODULE hModule = moduleHandle();
-    char buffer[MAX_PATH];
-    GetModuleFileNameA(hModule, buffer, MAX_PATH);
-    QFileInfo fi(QString::fromLatin1(buffer));
-    QDir dllDir = fi.absoluteDir();
-    if(!dllDir.cd("plugins"))
-        // fallback to dll directory
-        return dllDir.absolutePath();
-    return dllDir.absolutePath();
-}
-
-}
-
 #elif K_SYSTEM == K_SYSTEM_LINUX
 static const QString pluginExtensionName = QStringLiteral("*.so");
+#endif
+
+static QString absolutePathToChildDirectory(const QString& absFilePath,
+                                            const char* childDirectoryName)
+{
+    QFileInfo fi(absFilePath);
+    QDir dir = fi.absoluteDir();
+    dir.cd(childDirectoryName); // don't mind error here
+    return dir.absolutePath();
+}
 
 static QString pluginDirectory()
 {
-    return "./plugins";
-}
+    auto execPath = executablePath();
+    return absolutePathToChildDirectory(
+        QString::fromUtf8(execPath.c_str(), execPath.size()), "plugins");
 }
 
-#endif
+}
 
 void Controller::pluginLookUp()
 {

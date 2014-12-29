@@ -26,6 +26,11 @@
 #include "GpuNodeModule.h"
 #include "GpuException.h"
 
+#include "Kommon/ModulePath.h"
+
+#include <QFileInfo>
+#include <QDir>
+
 #include <cassert>
 
 namespace {
@@ -231,55 +236,26 @@ size_t GpuNodeModule::warpSize() const
     }
 }
 
-#pragma region Kernels Directory
-
-#if K_SYSTEM == K_SYSTEM_WINDOWS
-
-#include <Windows.h>
-#include <QFileInfo>
-#include <QDir>
-
 namespace {
 
-HMODULE moduleHandle()
+static QString absolutePathToChildDirectory(const QString& absFilePath,
+                                            const char* childDirectoryName)
 {
-    static int s_somevar = 0;
-    MEMORY_BASIC_INFORMATION mbi;
-    if(!::VirtualQuery(&s_somevar, &mbi, sizeof(mbi)))
-    {
-        return NULL;
-    }
-    return static_cast<HMODULE>(mbi.AllocationBase);
+    QFileInfo fi(absFilePath);
+    QDir dir = fi.absoluteDir();
+    dir.cd(childDirectoryName); // don't mind error here
+    return dir.absolutePath();
 }
 
-string kernelsDirectory()
+static string kernelsDirectory()
 {
-    HMODULE hModule = moduleHandle();
-    char buffer[MAX_PATH];
-    /*DWORD dwSize = */GetModuleFileNameA(hModule, buffer, MAX_PATH);
-    //dwSize = GetModuleFileNameA(nullptr, buffer, MAX_PATH);
-    QFileInfo fi(QString::fromLatin1(buffer));
-    QDir dllDir = fi.absoluteDir();
-    if(!dllDir.cd("kernels"))
-        // fallback to dll directory
-        return dllDir.absolutePath().toStdString();
-    return dllDir.absolutePath().toStdString();
+    auto execPath = executablePath();
+    return absolutePathToChildDirectory(
+               QString::fromUtf8(execPath.c_str(), execPath.size()), "kernels")
+        .toStdString();
 }
 
 }
-
-#elif K_SYSTEM == K_SYSTEM_LINUX
-
-namespace {
-string kernelsDirectory()
-{
-    return "./kernels";
-}
-}
-
-#endif
-
-#pragma endregion
 
 string GpuNodeModule::additionalBuildOptions(const std::string& programName) const
 {
