@@ -23,38 +23,62 @@
 
 #include "konfig.h"
 #include "StringUtils.h"
+#include "Utils.h"
 
 #include <cstdlib>
 #include <cstdarg>
 #include <memory>
 #include <cstring>
 
-std::string string_format(std::string fmt, ...)
+std::string string_format(const char* fmt, ...)
 {
-    int n = static_cast<int>(fmt.size() * 2);
-    std::unique_ptr<char[]> formatted;
+    char stackBuffer[512]; // Try to first use memory from the stack
+    int n = static_cast<int>(countof(stackBuffer));
     va_list ap;
 
-    while(1) 
-    {
-        formatted.reset(new char[n]);
 #if K_COMPILER == K_COMPILER_MSVC
 #  pragma warning(push)
 #  pragma warning(disable : 4996)
 #endif
-        strncpy(formatted.get(), fmt.c_str(), fmt.size());
-        va_start(ap, fmt);
-        int final_n = vsnprintf(formatted.get(), n, fmt.c_str(), ap);
-        va_end(ap);
+    va_start(ap, fmt);
+    int fmtLength = vsnprintf(stackBuffer, n, fmt, ap);
+    va_end(ap);
 #if K_COMPILER == K_COMPILER_MSVC
 #  pragma warning(pop)
 #endif
-        // string truncated
-        if(final_n < 0 || final_n >= n)
-            n += std::abs(final_n - n + 1);
-        else
-            break;
-    }
 
-    return std::string(formatted.get());
+    // Output string was truncated - fallback to heap
+    if (fmtLength < 0 || fmtLength >= n)
+    {
+        n += std::abs(fmtLength - n + 1);
+        std::unique_ptr<char[]> formatted;
+
+        while (1)
+        {
+            formatted.reset(new char[n]);
+
+#if K_COMPILER == K_COMPILER_MSVC
+#  pragma warning(push)
+#  pragma warning(disable : 4996)
+#endif
+            va_start(ap, fmt);
+            fmtLength = vsnprintf(formatted.get(), n, fmt, ap);
+            va_end(ap);
+#if K_COMPILER == K_COMPILER_MSVC
+#  pragma warning(pop)
+#endif
+
+            // string truncated
+            if (fmtLength < 0 || fmtLength >= n)
+                n += std::abs(fmtLength - n + 1);
+            else
+                break;
+        }
+
+        return std::string{formatted.get()};
+    }
+    else
+    {
+        return std::string{stackBuffer};
+    }
 }
