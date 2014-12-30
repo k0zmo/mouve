@@ -79,6 +79,16 @@
 
 template<> Controller* Singleton<Controller>::_singleton = nullptr;
 
+namespace {
+void logException(const std::exception& ex)
+{
+    try { std::rethrow_if_nested(ex); }
+    catch (const std::exception& ex) { logException(ex); }
+    catch (...) {}
+    qCritical() << "Error:" << ex.what();
+}
+}
+
 Controller::Controller(QWidget* parent, Qt::WindowFlags flags)
     : QMainWindow(parent, flags)
     , _previewSelectedNodeView(nullptr)
@@ -1203,39 +1213,33 @@ bool Controller::saveTreeToFile(const QString& filePath)
 bool Controller::saveTreeToFileImpl(const QString& filePath)
 {
     // Add view part to deserialized part
-    QJsonArray jsonScene;
-    for(auto nvit = _nodeViews.begin(); nvit != _nodeViews.end(); ++nvit)
+    json11::Json::array jsonScene;
+    for (auto nvit = _nodeViews.begin(); nvit != _nodeViews.end(); ++nvit)
     {
-        QJsonObject jsonSceneElem;
-
-        QPointF nodePos = _nodeViews[nvit.key()]->scenePos();
-        jsonSceneElem.insert(QStringLiteral("nodeId"), nvit.key());
-        jsonSceneElem.insert(QStringLiteral("scenePosX"), nodePos.x());
-        jsonSceneElem.insert(QStringLiteral("scenePosY"), nodePos.y());
-
-        jsonScene.append(jsonSceneElem);
+        QPointF nodePos{_nodeViews[nvit.key()]->scenePos()};
+        jsonScene.push_back(json11::Json::object{{"nodeId", nvit.key()},
+                                                 {"scenePosX", nodePos.x()},
+                                                 {"scenePosY", nodePos.y()}});
     }
 
     try
     {
-        NodeTreeSerializer nodeTreeSerializer(QFileInfo(filePath).absolutePath().toStdString());
-        QJsonObject jsonTree = nodeTreeSerializer.serializeJson(_nodeTree);
-        jsonTree.insert(QStringLiteral("scene"), jsonScene);
-
-        QJsonDocument doc(jsonTree);
-        QByteArray textJson = doc.toJson(QJsonDocument::Indented);
-        textJson.replace("    ", "  ");
+        NodeTreeSerializer nodeTreeSerializer{
+            QFileInfo{filePath}.absolutePath().toStdString()};
+        json11::Json::object json = nodeTreeSerializer.serialize(*_nodeTree);
+        json.insert(std::make_pair("scene", jsonScene)); // atach scene part
 
         QFile file(filePath);
         if(!file.open(QIODevice::WriteOnly | QIODevice::Text))
             return false;
-        file.write(textJson);
+        // Generate JSON and pretty print it into a target file
+        file.write(json11::Json{json}.pretty_print().c_str());
         return true;
     }
     catch(std::exception& ex)
     {
-        showErrorMessage(QString("Error during serializing current node tree: %1")
-            .arg(QString::fromStdString(ex.what())));
+        logException(ex);
+        showErrorMessage("Error during serializing current node tree");
         return false;
     }
 }
@@ -1261,82 +1265,49 @@ bool Controller::openTreeFromFile(const QString& filePath)
     return res;
 }
 
-QString jsonParseError(QJsonParseError::ParseError parseError)
-{
-#define CASE(x) case QJsonParseError::x: return QStringLiteral(#x);
-    switch (parseError)
-    {
-    CASE(NoError)
-    CASE(UnterminatedObject)
-    CASE(MissingNameSeparator)
-    CASE(UnterminatedArray)
-    CASE(MissingValueSeparator)
-    CASE(IllegalValue)
-    CASE(TerminationByNumber)
-    CASE(IllegalNumber)
-    CASE(IllegalEscapeSequence)
-    CASE(IllegalUTF8String)
-    CASE(UnterminatedString)
-    CASE(MissingObject)
-    CASE(DeepNesting)
-    CASE(DocumentTooLarge)
-    default: return QStringLiteral("Unknown");
-    }
-#undef CASE
-}
-
 bool Controller::openTreeFromFileImpl(const QString& filePath)
 {
-    QFile file(filePath);
-    if(!file.open(QIODevice::ReadOnly | QIODevice::Text))
-        return false;
-
-    QByteArray fileContents = file.readAll();
-    QJsonParseError error;
-    QJsonDocument doc = QJsonDocument::fromJson(fileContents, &error);
-    if(error.error != QJsonParseError::NoError)
+    NodeTreeSerializer nodeTreeSerializer{
+        QFileInfo{filePath}.absolutePath().toStdString()};
+    json11::Json json;
+    
+    try
     {
-        showErrorMessage(QString("Couldn't open node tree from file: %1\n"
-            "Error details: %2 in %3 character (error code: %4)")
-            .arg(filePath)
-            .arg(error.errorString())
-            .arg(error.offset)
-            .arg(jsonParseError(error.error)));
-        return false;
+        json = nodeTreeSerializer.deserializeFromFile(*_nodeTree,
+                                                      filePath.toStdString());
     }
-
-    if(!doc.isObject())
+    catch (std::exception& ex)
     {
-        showErrorMessage(QString("Couldn't open node tree from file: %1\n"
-            "Error details: root value isn't JSON object")
-            .arg(filePath));
-        return false;
-    }
-
-    QJsonObject jsonTree = doc.object();
-
-    // Method used in loading nodes makes them lose their original NodeID
-    std::map<NodeID, NodeID> mapping;
-    NodeTreeSerializer nodeTreeSerializer(QFileInfo(filePath).absolutePath().toStdString());
-    if(!nodeTreeSerializer.deserializeJson(_nodeTree, jsonTree, &mapping))
-    {
-        showErrorMessage("Couldn't deserialized given JSON into node tree structure.\n"
+        logException(ex);
+        showErrorMessage(
+            "Couldn't deserialized given JSON into node tree structure.\n"
             "Check logs for more details");
         return false;
-    }		
+    }
+
+    // Check for warnings
+    for (const auto& warn : nodeTreeSerializer.warnings())
+        qWarning() << warn.c_str();
+
+    std::string err;
 
     // Deserialize view part
-    QJsonArray jsonScene = jsonTree["scene"].toArray();
-    QVariantList scene = jsonScene.toVariantList();
-
-    for(const auto& sceneElem : scene)
+    for (const auto& sceneElem : json["scene"].array_items())
     {
-        QVariantMap elemMap = sceneElem.toMap();
+        // check schema
+        if (!sceneElem.has_shape({{"nodeId", json11::Json::NUMBER},
+                                  {"scenePosX", json11::Json::NUMBER},
+                                  {"scenePosY", json11::Json::NUMBER}},
+                                 err))
+        {
+            continue;
+        }
 
-        NodeID nodeID = elemMap["nodeId"].toUInt();
-        NodeID mappedNodeID = mapping[nodeID];
-        double scenePosX = elemMap["scenePosX"].toDouble();
-        double scenePosY = elemMap["scenePosY"].toDouble();
+        NodeID nodeID = sceneElem["nodeId"].int_value();
+
+        NodeID mappedNodeID = get_or_default(nodeTreeSerializer.idMappings(), nodeID, 0);
+        double scenePosX = sceneElem["scenePosX"].number_value();
+        double scenePosY = sceneElem["scenePosY"].number_value();
 
         // Create new view associated with the model
         if(!_nodeViews.contains(mappedNodeID))
@@ -1359,14 +1330,14 @@ bool Controller::openTreeFromFileImpl(const QString& filePath)
 
     if(size_t(_nodeViews.count()) != _nodeTree->nodesCount())
     {
-        qWarning("Some scene elements were missing, adding them to scene origin."
+        qWarning("Some scene elements were missing, adding them to scene origin. "
             "You can fix it by resaving the file");
         
         auto nodeIt = _nodeTree->createNodeIterator();
         NodeID nodeID;
         while(nodeIt->next(nodeID))
         {
-            NodeID mappedNodeID = mapping[nodeID];
+            NodeID mappedNodeID = get_or_default(nodeTreeSerializer.idMappings(), nodeID, 0);
             if(!_nodeViews.contains(mappedNodeID))
             {
                 QString nodeName = QString::fromStdString(_nodeTree->nodeName(mappedNodeID));

@@ -24,49 +24,61 @@
 #pragma once
 
 #include "Prerequisites.h"
+#include "Kommon/json11.hpp"
 
-class QJsonObject;
-class QJsonArray;
-class QVariant;
+class serializer_exception : public std::runtime_error
+{
+public:
+    explicit serializer_exception(const std::string& message)
+        : std::runtime_error(message)
+    {
+    }
+
+    explicit serializer_exception(const char* message)
+        : std::runtime_error(message)
+    {
+    }
+};
 
 class LOGIC_EXPORT NodeTreeSerializer
 {
 public:
     NodeTreeSerializer(std::string rootDir = "")
         : _rootDirectory(std::move(rootDir))
-    {}
+    {
+    }
 
-    bool serializeJsonToFile(const std::shared_ptr<NodeTree>& nodeTree,
-        const std::string& filePath);
+    // Serialization - may throw on failure
+    void serializeToFile(const NodeTree& nodeTree, const std::string& filePath);
+    json11::Json::object serialize(const NodeTree& nodeTree);
 
-    // Serializes given node tree to JSON object
-    QJsonObject serializeJson(const std::shared_ptr<NodeTree>& nodeTree);
+    // Deserialization - may throw on failure
+    json11::Json deserializeFromFile(NodeTree& nodeTree, // output
+                                     const std::string& filePath);
+    void deserialize(NodeTree& nodeTree, // output
+                     const json11::Json& json);
 
-    bool deserializeJsonFromFile(std::shared_ptr<NodeTree>& nodeTree, 
-        const std::string& filePath);
-
-    // Deserializes given JSON object to nodeTree object
-    // Returns true upon a success
-    bool deserializeJson(std::shared_ptr<NodeTree>& nodeTree, 
-        const QJsonObject& jsonTree, 
-        std::map<NodeID, NodeID>* oldToNewNodeID = nullptr);
+    const std::map<NodeID, NodeID>& idMappings() const { return _idMappings; }
+    const std::vector<std::string>& warnings() const { return _warnings; }
 
 private:
-    bool deserializeJsonNodes(std::shared_ptr<NodeTree>& nodeTree,
-        const QJsonArray& jsonNodes,
-        std::map<NodeID, NodeID>& mapping);
-    bool deserializeJsonLinks(std::shared_ptr<NodeTree>& nodeTree,
-        const QJsonArray& jsonLinks,
-        const std::map<NodeID, NodeID>& mapping);
+    json11::Json serializeNodes();
+    json11::Json serializeLinks();
+    json11::Json serializeIO(const std::vector<SocketConfig>& ios);
+    json11::Json serializeProperties(const Node* node,
+                                     const std::vector<PropertyConfig>& props);
 
-    QJsonObject serializeProperty(PropertyID propID,
-        const PropertyConfig& propertyConfig,
-        const NodeProperty& propValue);
-    EPropertyType deserializePropertyType(const std::string&);
-    NodeProperty deserializeProperty(EPropertyType propType, 
-        const QVariant& qvalue);
+    void deserializeNodes(NodeTree& nodeTree, const json11::Json& jsonNodes);
+    void deserializeLinks(NodeTree& nodeTree, const json11::Json& jsonLinks);
+    void deserializeProperties(NodeTree& nodeTree, // skip on bad properties
+                               const json11::Json& jsonProps, NodeID nodeID,
+                               const std::string& nodeName);
 
 private:
     std::string _rootDirectory;
+    std::map<NodeID, NodeID> _idMappings; // contains old (read from
+                                          // JSON) node ID <-> new ID
+                                          // (given by node system
+                                          // upon deserializing)
+    std::vector<std::string> _warnings;
 };
-

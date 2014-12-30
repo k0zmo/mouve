@@ -26,449 +26,420 @@
 #include "NodeType.h"
 #include "NodeSystem.h"
 
-#include <QJsonDocument>
-#include <QJsonArray>
-#include <QJsonObject>
+#include "Kommon/StringUtils.h"
+#include "Kommon/Utils.h"
+
+#include <fstream>
+
+#include <QString>
+#include <QFileInfo>
 #include <QDir>
-#include <QDebug>
 
-bool NodeTreeSerializer::serializeJsonToFile(const std::shared_ptr<NodeTree>& nodeTree,
-                                             const std::string& filePath)
+namespace priv {
+
+static std::string relativePath(const std::string& path, // base path
+                                const std::string& relative)
 {
-    QJsonObject jsonTree = serializeJson(nodeTree);
-    QJsonDocument doc(jsonTree);
-    QByteArray textJson = doc.toJson(QJsonDocument::Indented);
-    textJson.replace("    ", "  ");
-
-    QFile file(QString::fromStdString(filePath));
-    if(!file.open(QIODevice::WriteOnly | QIODevice::Text))
-        return false;
-    file.write(textJson);
-    return true;
+    QDir rootDir{QString::fromStdString(path)};
+    if(rootDir.exists())
+        return rootDir.absoluteFilePath(QString::fromStdString(relative))
+            .toStdString();
+    return {};
 }
 
-QJsonObject NodeTreeSerializer::serializeJson(const std::shared_ptr<NodeTree>& nodeTree)
+static std::string absolutePath(const std::string& path)
 {
-    // Iterate over all nodes and serialize it as JSON value of JSON array
-    QJsonArray jsonNodes;
-    auto nodeIt = nodeTree->createNodeIterator();
-    NodeID nodeID;
-    while(const Node* node = nodeIt->next(nodeID))
-    {
-        QJsonObject jsonNode;
-
-        jsonNode.insert(QStringLiteral("id"), nodeID);
-        jsonNode.insert(QStringLiteral("class"), QString::fromStdString(nodeTree->nodeTypeName(nodeID)));
-        jsonNode.insert(QStringLiteral("name"), QString::fromStdString(node->nodeName()));
-
-        // Save properties' values if any
-        const NodeConfig& nodeConfig = node->config();
-
-        QJsonArray jsonInputSockets;
-        for(const auto& input : nodeConfig.inputs())
-        {
-            QJsonObject jsonInputSocket;
-            jsonInputSocket.insert(QStringLiteral("id"), input.socketID());
-            jsonInputSocket.insert(QStringLiteral("name"), QString::fromStdString(input.name()));
-            jsonInputSocket.insert(QStringLiteral("type"), QString::fromStdString(std::to_string(input.type())));
-            jsonInputSockets.append(jsonInputSocket);
-        }
-
-        if(!jsonInputSockets.isEmpty())
-            jsonNode.insert(QStringLiteral("inputs"), jsonInputSockets);
-
-        QJsonArray jsonOutputSockets;
-        for(const auto& output : nodeConfig.outputs())
-        {
-            QJsonObject jsonOutputSocket;
-            jsonOutputSocket.insert(QStringLiteral("id"), output.socketID());
-            jsonOutputSocket.insert(QStringLiteral("name"), QString::fromStdString(output.name()));
-            jsonOutputSocket.insert(QStringLiteral("type"), QString::fromStdString(std::to_string(output.type())));
-            jsonOutputSockets.append(jsonOutputSocket);
-        }
-
-        if(!jsonOutputSockets.isEmpty())
-            jsonNode.insert(QStringLiteral("outputs"), jsonOutputSockets);
-
-        QJsonArray jsonProperties;
-        for(const auto& prop : nodeConfig.properties())
-        {
-            NodeProperty propValue = node->property(prop.propertyID());
-            if(propValue.isValid())
-                jsonProperties.append(serializeProperty(prop.propertyID(), prop, propValue));
-        }
-
-        if(!jsonProperties.isEmpty())
-            jsonNode.insert(QStringLiteral("properties"), jsonProperties);
-
-        jsonNodes.append(jsonNode);
-    }
-
-    // Iterate over all links and serialize it as JSON value of JSON array
-    QJsonArray jsonLinks;
-    auto linkIt = nodeTree->createNodeLinkIterator();
-    NodeLink nodeLink;
-    while(linkIt->next(nodeLink))
-    {
-        QJsonObject jsonLink;
-
-        jsonLink.insert(QStringLiteral("fromNode"), nodeLink.fromNode);
-        jsonLink.insert(QStringLiteral("fromSocket"), nodeLink.fromSocket);
-        jsonLink.insert(QStringLiteral("toNode"), nodeLink.toNode);
-        jsonLink.insert(QStringLiteral("toSocket"), nodeLink.toSocket);
-
-        jsonLinks.append(jsonLink);
-    }
-
-    // Finally, add JSON arrays representing nodes and links
-    QJsonObject jsonTree;
-    jsonTree.insert(QStringLiteral("nodes"), jsonNodes);
-    jsonTree.insert(QStringLiteral("links"), jsonLinks);
-    return jsonTree;
+    return QFileInfo{path.c_str()}.absolutePath().toStdString();
 }
 
-bool NodeTreeSerializer::deserializeJsonFromFile(std::shared_ptr<NodeTree>& nodeTree, 
-                                                 const std::string& filePath)
+static std::string makeRelative(const std::string& basePath,
+                                const std::string& path)
 {
-    QString filePath_ = QString::fromStdString(filePath);
-    QFile file(filePath_);
-    if(!file.open(QIODevice::ReadOnly | QIODevice::Text))
-        return false;
+    QDir rootDir{QString::fromStdString(basePath)};
 
-    QByteArray fileContents = file.readAll();
-    QJsonParseError error;
-    QJsonDocument doc = QJsonDocument::fromJson(fileContents, &error);
-    if(error.error != QJsonParseError::NoError)
-    {
-        qWarning() << QString("Couldn't open node tree from file: %1\n"
-            "Error details: %2 in %3 character")
-            .arg(filePath_)
-            .arg(error.errorString())
-            .arg(error.offset);
-        return false;
-    }
-
-    if(!doc.isObject())
-    {
-        qWarning() << QString("Couldn't open node tree from file: %1\n"
-            "Error details: root value isn't JSON object")
-            .arg(filePath_);
-        return false;
-    }
-
-    QJsonObject jsonTree = doc.object();
-    if(_rootDirectory.empty())
-        _rootDirectory = QFileInfo(filePath_).absolutePath().toStdString();
-    return deserializeJson(nodeTree, jsonTree, nullptr);
+    if (rootDir.exists())
+        return rootDir.relativeFilePath(QString::fromStdString(path))
+            .toStdString();
+    else
+        return path;
 }
 
-bool NodeTreeSerializer::deserializeJson(std::shared_ptr<NodeTree>& nodeTree,
-                                         const QJsonObject& jsonTree, 
-                                         std::map<NodeID, NodeID>* oldToNewNodeID)
+static json11::Json serializeProperty(const PropertyConfig& propertyConfig,
+                                      const NodeProperty& propValue,
+                                      const std::string& rootDirectory)
 {
-    nodeTree->clear();
-    std::map<NodeID, NodeID> mapping;
+    json11::Json::object json{{"id", propertyConfig.propertyID()},
+                              {"name", propertyConfig.name()}};
 
-    if (!deserializeJsonNodes(nodeTree, jsonTree["nodes"].toArray(), mapping))
-    {
-        qCritical("Didn't load all saved nodes, tree will be discarded");
-        nodeTree->clear();
-        return false;
-    }
-    if (!deserializeJsonLinks(nodeTree, jsonTree["links"].toArray(), mapping))
-    {
-        qCritical("Didn't load all saved links, tree will be discarded");
-        nodeTree->clear();
-        return false;
-    }
-
-    if(oldToNewNodeID != nullptr)
-        *oldToNewNodeID = mapping;
-
-    return true;
-}
-
-bool NodeTreeSerializer::deserializeJsonNodes(std::shared_ptr<NodeTree>& nodeTree,
-                                              const QJsonArray& jsonNodes,
-                                              std::map<NodeID, NodeID>& mapping)
-{
-    QVariantList nodes = jsonNodes.toVariantList();
-    int i = 0;
-
-    // Load nodes
-    for(const auto& node : nodes)
-    {
-        QVariantMap mapNode = node.toMap();		
-
-        bool ok;
-        NodeID nodeId = mapNode["id"].toUInt(&ok);
-        if(!ok)
-        {
-            qCritical() << "\"id\" is bad";
-            break;
-        }
-
-        QString nodeTypeName = mapNode["class"].toString();
-        if(nodeTypeName.isEmpty())
-        {
-            qCritical() << QString("\"class\" is bad (id:%1)").arg(nodeId);
-            break;
-        }
-
-        QString nodeName = mapNode["name"].toString();
-        if(nodeName.isEmpty())
-        {
-            qCritical() << QString("\"name\" is bad (id:%1)").arg(nodeId);
-            break;
-        }
-
-        // Try to create new node 
-        NodeTypeID nodeTypeId = nodeTree->nodeSystem()->nodeTypeID(nodeTypeName.toStdString());
-        NodeID _nodeId = nodeTree->createNode(nodeTypeId, nodeName.toStdString());
-        if(_nodeId == InvalidNodeID)
-        {
-            qCritical() << QString("Couldn't create node of id: %1 and type name: %3")
-                .arg(nodeId)
-                .arg(nodeTypeName);
-            break;
-        }
-        mapping.insert(std::make_pair(nodeId, _nodeId));
-
-        QVariant varProperties = mapNode["properties"];
-        if(varProperties.isValid() 
-            && varProperties.type() == QVariant::List)
-        {
-            QVariantList properties = varProperties.toList();
-
-            for(const auto& prop : properties)
-            {
-                QVariantMap propMap = prop.toMap();
-
-                bool ok;
-                uint propId = propMap["id"].toUInt(&ok);
-                if(!ok)
-                {
-                    qWarning() << QString("property \"id\" is bad, property will be skipped (id:%1, name:%2)")
-                        .arg(nodeId)
-                        .arg(nodeName);
-                    continue;
-                }
-
-                QVariant qvalue = propMap["value"];
-                if(!qvalue.isValid())
-                {
-                    qWarning() << QString("\"value\" is bad, property of id %1 will be skipped (id:%2, name:%3)")
-                        .arg(propId)
-                        .arg(nodeId)
-                        .arg(nodeName);
-                    continue;
-                }
-
-                QString qpropType = propMap["type"].toString();
-                EPropertyType propType = deserializePropertyType(qpropType.toStdString());
-                if(propType == EPropertyType::Unknown)
-                {
-                    qWarning() << QString("\"type\" is bad, property of id %1 will be skipped (id:%2, name:%3)")
-                        .arg(propId)
-                        .arg(nodeId)
-                        .arg(nodeName);
-                    continue;
-                }
-
-                try
-                {
-                    if(!nodeTree->nodeSetProperty(_nodeId, propId, deserializeProperty(propType, qvalue)))
-                    {
-                        qWarning() << "Couldn't set loaded property" << propId << "to" << qvalue;
-                    }
-                }
-                catch(std::exception& ex)
-                {
-                    qWarning() << ex.what();
-                }
-            }
-        }
-
-        ++i;
-    }
-
-    return nodes.count() == i;
-}
-
-bool NodeTreeSerializer::deserializeJsonLinks(std::shared_ptr<NodeTree>& nodeTree,
-                                              const QJsonArray& jsonLinks,
-                                              const std::map<NodeID, NodeID>& mapping)
-{
-    int i = 0;
-    QVariantList links = jsonLinks.toVariantList();
-
-    for(const auto& link : links)
-    {
-        QVariantMap mapLink = link.toMap();
-        bool ok;
-
-        NodeID fromNode = mapLink["fromNode"].toUInt(&ok);
-        if(!ok)
-        {
-            qCritical() << "\"fromNode\" is bad";
-            break;
-        }
-        SocketID fromSocket = mapLink["fromSocket"].toUInt(&ok);
-        if(!ok)
-        {
-            qCritical() << "\"fromSocket\" is bad";
-            break;
-        }
-        NodeID toNode = mapLink["toNode"].toUInt(&ok);
-        if(!ok)
-        {
-            qCritical() << "\"toNode\" is bad";
-            break;
-        }
-        SocketID toSocket = mapLink["toSocket"].toUInt(&ok);
-        if(!ok)
-        {
-            qCritical() << "\"toSocket\" is bad";
-            break;
-        }
-
-        try
-        {
-            if(nodeTree->linkNodes(SocketAddress(mapping.at(fromNode), fromSocket, true),
-                                   SocketAddress(mapping.at(toNode), toSocket, false)) != ELinkNodesResult::Ok)
-            {
-                throw std::logic_error("Couldn't link given nodes");
-            }
-        }
-        catch(std::logic_error&)
-        {
-            // mapping does not contain fromNode or toNode
-            // or we just couldnt link given nodes
-            qCritical() << QString("Couldn't link nodes %1:%2 with %3:%4")
-                .arg(fromNode)
-                .arg(fromSocket)
-                .arg(toNode)
-                .arg(toSocket);
-            break;
-        }
-
-        ++i;
-    }
-
-    return links.count() == i;
-}
-
-QJsonObject NodeTreeSerializer::serializeProperty(PropertyID propID,
-                                                  const PropertyConfig& propertyConfig,
-                                                  const NodeProperty& propValue)
-{
-    QJsonObject jsonProp;
-    jsonProp.insert(QStringLiteral("id"), propID);
-    jsonProp.insert(QStringLiteral("name"), QString::fromStdString(propertyConfig.name()));
-
-    switch(propertyConfig.type())
+    switch (propertyConfig.type())
     {
     case EPropertyType::Boolean:
-        jsonProp.insert(QStringLiteral("value"), propValue.toBool());
-        jsonProp.insert(QStringLiteral("type"), QStringLiteral("boolean"));
+        json.insert(std::make_pair("value", propValue.toBool()));
+        json.insert(std::make_pair("type", "boolean"));
         break;
     case EPropertyType::Integer:
-        jsonProp.insert(QStringLiteral("value"), propValue.toInt());
-        jsonProp.insert(QStringLiteral("type"), QStringLiteral("integer"));
+        json.insert(std::make_pair("value", propValue.toInt()));
+        json.insert(std::make_pair("type", "integer"));
         break;
     case EPropertyType::Double:
-        jsonProp.insert(QStringLiteral("value"), propValue.toDouble());
-        jsonProp.insert(QStringLiteral("type"), QStringLiteral("double"));
+        json.insert(std::make_pair("value", propValue.toDouble()));
+        json.insert(std::make_pair("type", "double"));
         break;
     case EPropertyType::Enum:
-        jsonProp.insert(QStringLiteral("value"), (int) propValue.toEnum().data());
-        jsonProp.insert(QStringLiteral("type"), QStringLiteral("enum"));
+        json.insert(std::make_pair("value", (int)propValue.toEnum().data()));
+        json.insert(std::make_pair("type", "enum"));
         break;
     case EPropertyType::Matrix:
-        {
-            QJsonArray jsonMatrix;
-            Matrix3x3 matrix = propValue.toMatrix3x3();
-            for(double v : matrix.v)
-                jsonMatrix.append(v);
-            jsonProp.insert(QStringLiteral("value"), jsonMatrix);
-            jsonProp.insert(QStringLiteral("type"), QStringLiteral("matrix3x3"));
-            break;
-        }
+    {
+        json11::Json::array jsonMatrix{};
+        Matrix3x3 matrix = propValue.toMatrix3x3();
+        for (double v : matrix.v)
+            jsonMatrix.push_back(v);
+        json.insert(std::make_pair("value", jsonMatrix));
+        json.insert(std::make_pair("type", "matrix3x3"));
+        break;
+    }
     case EPropertyType::Filepath:
-        {
-            QString rootDirStr = QString::fromStdString(_rootDirectory);
-            QString filePath = QString::fromStdString(propValue.toFilepath().data());
-            QDir rootDir(rootDirStr);
-            if(rootDir.exists())
-                jsonProp.insert(QStringLiteral("value"), rootDir.relativeFilePath(filePath));
-            else
-                jsonProp.insert(QStringLiteral("value"), filePath);
-            jsonProp.insert(QStringLiteral("type"), QStringLiteral("filepath"));
-        }
+        json.insert(std::make_pair(
+            "value",
+            priv::makeRelative(rootDirectory, propValue.toFilepath().data())));
+        json.insert(std::make_pair("type", "filepath"));
         break;
     case EPropertyType::String:
-        jsonProp.insert(QStringLiteral("value"), QString::fromStdString(propValue.toString()));
-        jsonProp.insert(QStringLiteral("type"), QStringLiteral("string"));
+        json.insert(std::make_pair("value", propValue.toString()));
+        json.insert(std::make_pair("type", "string"));
         break;
     case EPropertyType::Unknown:
         break;
     }
 
-    return jsonProp;
+    return json;
 }
 
-EPropertyType NodeTreeSerializer::deserializePropertyType(const std::string& type)
+static EPropertyType convertToPropertyType(const std::string& type)
 {
-    if(type == "boolean")
+    if (type == "boolean")
         return EPropertyType::Boolean;
-    else if(type == "integer")
+    else if (type == "integer")
         return EPropertyType::Integer;
-    else if(type == "double")
+    else if (type == "double")
         return EPropertyType::Double;
-    else if(type == "enum")
+    else if (type == "enum")
         return EPropertyType::Enum;
-    else if(type == "matrix3x3")
+    else if (type == "matrix3x3")
         return EPropertyType::Matrix;
-    else if(type == "filepath")
+    else if (type == "filepath")
         return EPropertyType::Filepath;
-    else if(type == "string")
+    else if (type == "string")
         return EPropertyType::String;
     else
         return EPropertyType::Unknown;
 }
 
-NodeProperty NodeTreeSerializer::deserializeProperty(EPropertyType propType, 
-                                                     const QVariant& qvalue)
+static NodeProperty deserializeProperty(EPropertyType propType,
+                                        const json11::Json& json,
+                                        const std::string& rootDirectory)
 {
-    switch(propType)
+    switch (propType)
     {
     case EPropertyType::Boolean:
-        return NodeProperty(qvalue.toBool());
+        return NodeProperty{json.bool_value()};
     case EPropertyType::Integer:
-        return NodeProperty(qvalue.toInt());
+        return NodeProperty{json.int_value()};
     case EPropertyType::Double:
-        return NodeProperty(qvalue.toDouble());
+        return NodeProperty{json.number_value()};
     case EPropertyType::Enum:
-        return NodeProperty(Enum(qvalue.toUInt()));
+        return NodeProperty{Enum(json.int_value())};
     case EPropertyType::Matrix:
-        {
-            QVariantList matrixList = qvalue.toList();
-            Matrix3x3 matrix;
-            for(int i = 0; i < matrixList.count() && i < 9; ++i)
-                matrix.v[i] = matrixList[i].toDouble();
-            return NodeProperty(matrix);
-        }
+    {
+        auto const& matrixList = json.array_items();
+        Matrix3x3 matrix;
+        for (size_t i = 0; i < matrixList.size() && i < 9; ++i)
+            matrix.v[i] = matrixList[i].number_value();
+        return NodeProperty{matrix};
+    }
     case EPropertyType::Filepath:
-        {
-            QString rootDirStr = QString::fromStdString(_rootDirectory);
-            QDir rootDir(rootDirStr);
-            if(rootDir.exists())
-                return NodeProperty(Filepath(rootDir.absoluteFilePath(qvalue.toString()).toStdString()));
-            return NodeProperty();
-        }
+        return NodeProperty{
+            Filepath{relativePath(rootDirectory, json.string_value())}};
     case EPropertyType::String:
-        return NodeProperty(qvalue.toString().toStdString());
+        return NodeProperty{json.string_value()};
     }
 
-    return NodeProperty();
+    return NodeProperty{};
+}
+}
+
+void NodeTreeSerializer::serializeToFile(const NodeTree& nodeTree,
+                                         const std::string& filePath)
+{
+    try
+    {
+        std::ofstream file{filePath, std::ios::out};
+        file.exceptions(~std::ios::goodbit);
+        file << json11::Json{serialize(nodeTree)}.pretty_print();
+    }
+    catch (std::exception&)
+    {
+        std::throw_with_nested(serializer_exception{
+            string_format("Couldn't open target file: %s", filePath.c_str())});
+    }
+}
+
+json11::Json::object NodeTreeSerializer::serialize(const NodeTree& nodeTree)
+{
+    // Iterate over all nodes and serialize it as JSON value of JSON array
+    json11::Json::array jsonNodes;
+    auto nodeIt = nodeTree.createNodeIterator();
+    NodeID nodeID;
+    while (const Node* node = nodeIt->next(nodeID))
+    {
+        // Must fields
+        json11::Json::object jsonNode{{"id", nodeID},
+                                      {"class", nodeTree.nodeTypeName(nodeID)},
+                                      {"name", node->nodeName()}};
+
+        // Optional fields (i/o, properties)
+        auto const& nodeConfig = node->config();
+
+        jsonNode.insert(std::make_pair("inputs", serializeIO(nodeConfig.inputs())));
+        jsonNode.insert(std::make_pair("outputs", serializeIO(nodeConfig.outputs())));
+        jsonNode.insert(std::make_pair(
+            "properties", serializeProperties(node, nodeConfig.properties())));
+
+        jsonNodes.push_back(std::move(jsonNode));
+    }
+
+    // Iterate over all links and serialize it as JSON value of JSON array
+    json11::Json::array jsonLinks;
+    auto linkIt = nodeTree.createNodeLinkIterator();
+    NodeLink nodeLink;
+    while(linkIt->next(nodeLink))
+    {
+        jsonLinks.push_back(
+            json11::Json::object{{"fromNode", nodeLink.fromNode},
+                                 {"fromSocket", nodeLink.fromSocket},
+                                 {"toNode", nodeLink.toNode},
+                                 {"toSocket", nodeLink.toSocket}});
+    }
+
+    return json11::Json::object{{"nodes", jsonNodes}, {"links", jsonLinks}};
+}
+
+json11::Json NodeTreeSerializer::serializeIO(const std::vector<SocketConfig>& ios)
+{
+    json11::Json::array jsonIOs;
+    for (const auto& io : ios)
+    {
+        jsonIOs.push_back(
+            json11::Json::object{{"id", io.socketID()},
+                                 {"name", io.name()},
+                                 {"type", std::to_string(io.type())}});
+    }
+    return jsonIOs;
+}
+
+json11::Json NodeTreeSerializer::serializeProperties(
+    const Node* node, const std::vector<PropertyConfig>& props)
+{
+    json11::Json::array jsonProps;
+    for (const auto& prop : props)
+    {
+        NodeProperty propValue = node->property(prop.propertyID());
+        if (propValue.isValid())
+            jsonProps.push_back(
+                priv::serializeProperty(prop, propValue, _rootDirectory));
+    }
+    return jsonProps;
+}
+
+json11::Json
+    NodeTreeSerializer::deserializeFromFile(NodeTree& nodeTree,
+                                            const std::string& filePath)
+{
+    std::string contents;
+
+    try
+    {
+        std::ifstream file{filePath, std::ios::in};
+        file.exceptions(~std::ios::goodbit);
+
+        contents = std::string(
+            (std::istreambuf_iterator<char>(file)), // most vexing parse
+             std::istreambuf_iterator<char>());
+    }
+    catch (std::exception&)
+    {
+        std::throw_with_nested(serializer_exception{
+            string_format("Error during loading file: %s", filePath.c_str())});
+    }
+
+    std::string err;
+    json11::Json json{json11::Json::parse(contents, err)};
+    if (!err.empty())
+    {
+        throw serializer_exception(
+            string_format("Error during parsing JSON file: %s\n"
+                          "Error details: %s",
+                          filePath.c_str(), err.c_str()));
+    }
+
+    if (_rootDirectory.empty())
+        _rootDirectory = priv::absolutePath(filePath);
+    deserialize(nodeTree, json);
+    return json;
+}
+
+void NodeTreeSerializer::deserialize(NodeTree& nodeTree,
+                                     const json11::Json& json)
+{
+    std::string err;
+    auto cleanUp = [&] {
+        nodeTree.clear();
+        _idMappings.clear();
+        _warnings.clear();
+    };
+    cleanUp();
+
+    // Check basic schema
+    if (!json.is_object() || !json.has_shape({{"links", json11::Json::ARRAY},
+                                              {"nodes", json11::Json::ARRAY}},
+                                             err))
+    {
+        throw serializer_exception{
+            "Couldn't open node tree - JSON is ill-formed."};
+    }
+
+    try
+    {
+        deserializeNodes(nodeTree, json["nodes"]);
+        deserializeLinks(nodeTree, json["links"]);
+    }
+    catch (std::exception&)
+    {
+        cleanUp();
+        throw;
+    }
+}
+
+void NodeTreeSerializer::deserializeNodes(NodeTree& nodeTree,
+                                          const json11::Json& jsonNodes)
+{
+    std::string err;
+    for (const auto& node : jsonNodes.array_items()) 
+    {
+        // check schema
+        if (!node.has_shape({{"class", json11::Json::STRING},
+                             {"name", json11::Json::STRING},
+                             {"id", json11::Json::NUMBER}},
+                            err)) 
+        {
+            throw serializer_exception{
+                string_format("node fields are invalid: %s", err.c_str())};
+        }
+
+        NodeID nodeID = node["id"].int_value();
+        std::string const& nodeTypeName = node["class"].string_value();
+        std::string const& nodeName = node["name"].string_value();
+
+        // Try to create new node
+        NodeTypeID nodeTypeID = nodeTree.nodeSystem()->nodeTypeID(nodeTypeName);
+        NodeID _nodeID = nodeTree.createNode(nodeTypeID, nodeName);
+        if (_nodeID == InvalidNodeID)
+        {
+            throw serializer_exception{string_format(
+                "Couldn't create node of id: %d and type name: %s", nodeID,
+                nodeTypeName.c_str())};
+        }
+
+        _idMappings.insert(std::make_pair(nodeID, _nodeID));
+
+        // IOs in json are there for pure informational reasons
+        deserializeProperties(nodeTree, node["properties"], nodeID, nodeName);
+    }
+}
+
+void NodeTreeSerializer::deserializeLinks(NodeTree& nodeTree,
+                                          const json11::Json& jsonLinks)
+{
+    std::string err;
+    for (const auto& link : jsonLinks.array_items())
+    {
+        // check schema
+        if (!link.has_shape({{"fromNode", json11::Json::NUMBER},
+                             {"fromSocket", json11::Json::NUMBER},
+                             {"toNode", json11::Json::NUMBER},
+                             {"toSocket", json11::Json::NUMBER}},
+                            err))
+        {
+            throw serializer_exception{
+                string_format("link fields are invalid: %s", err.c_str())};
+        }
+
+        NodeID fromNode = link["fromNode"].int_value();
+        SocketID fromSocket = link["fromSocket"].int_value();
+        NodeID toNode = link["toNode"].int_value();
+        SocketID toSocket = link["toSocket"].int_value();
+
+        NodeID fromNodeRefined = get_or_default(_idMappings, fromNode, InvalidNodeID);
+        NodeID toNodeRefined = get_or_default(_idMappings, toNode, InvalidNodeID);
+
+        if (fromNodeRefined == InvalidNodeID ||
+            toNodeRefined == InvalidNodeID)
+        {
+            throw serializer_exception{string_format(
+                "No such node to link with: %d",
+                fromNodeRefined == InvalidNodeID ? fromNode : toNode)};
+        }
+
+        if (nodeTree.linkNodes(SocketAddress(fromNodeRefined, fromSocket, true),
+                               SocketAddress(toNodeRefined, toSocket, false)) !=
+            ELinkNodesResult::Ok)
+        {
+            throw serializer_exception{
+                string_format("Couldn't link nodes %d:%d with %d:%d", fromNode,
+                              fromSocket, toNode, toSocket)};
+        }
+    }
+}
+
+void NodeTreeSerializer::deserializeProperties(NodeTree& nodeTree,
+    const json11::Json& jsonProps, NodeID nodeID, const std::string& nodeName)
+{
+    std::string err;
+    for (const auto& prop : jsonProps.array_items())
+    {
+        // check schema
+        if (!prop.has_shape({{"id", json11::Json::NUMBER},
+                             {"type", json11::Json::STRING}},
+                            err))
+        {
+            throw serializer_exception{
+                string_format("property fields are invalid (id:%d, name:%s)",
+                              nodeID, nodeName.c_str())};
+        }
+
+        int propID = prop["id"].int_value();
+        std::string const& propTypeStr = prop["type"].string_value();
+        EPropertyType propType = priv::convertToPropertyType(propTypeStr);
+
+        if (propType == EPropertyType::Unknown)
+        {
+            throw serializer_exception{
+                string_format("\"type\" is bad for property of id %d "
+                              "(id:%d, name:%s)",
+                              propID, nodeID, nodeName.c_str())};
+        }
+
+        NodeProperty nodeProperty =
+            priv::deserializeProperty(propType, prop["value"], _rootDirectory);
+
+        // Non-fatal exception (contracts could've changed)
+        if (!nodeTree.nodeSetProperty(_idMappings[nodeID], propID,
+                                      nodeProperty))
+        {
+            _warnings.push_back(
+                string_format("Couldn't set loaded property %d (type: %s)",
+                              propID, propTypeStr.c_str()));
+        }
+    }
 }

@@ -124,7 +124,7 @@ int main()
 #endif
 
             NodeTreeSerializer nodeTreeSerializer;
-            nodeTreeSerializer.serializeJsonToFile(nodeTree, "example.tree");
+            nodeTreeSerializer.serializeToFile(*nodeTree, "example.tree");
 
             // Get output data
             const NodeFlowData& outData = nodeTree->outputSocket(downloadID, 
@@ -140,8 +140,7 @@ int main()
             // Load a tree from a file
             shared_ptr<NodeTree> nodeTree = nodeSystem.createNodeTree();
             NodeTreeSerializer nodeTreeSerializer;
-            if(!nodeTreeSerializer.deserializeJsonFromFile(nodeTree, "example.tree"))
-                throw runtime_error("Cannot open file example.tree");
+            nodeTreeSerializer.deserializeFromFile(*nodeTree, "example.tree");
 
             NodeResolver resolver(nodeTree);
 
