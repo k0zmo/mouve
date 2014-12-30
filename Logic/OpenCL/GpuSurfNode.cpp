@@ -59,10 +59,10 @@ struct ScaleSpaceLayer_cl
     clw::Buffer laplacian_cl;
 };
 
-string warpSizeDefine(const std::shared_ptr<GpuNodeModule>& gpuModule)
+string warpSizeDefine(GpuNodeModule& gpuModule)
 {
     ostringstream strm;
-    strm << "-DWARP_SIZE=" << gpuModule->warpSize();
+    strm << "-DWARP_SIZE=" << gpuModule.warpSize();
     return strm.str();
 }
 
@@ -104,7 +104,7 @@ public:
 
     bool postInit() override
     {
-        string opts = warpSizeDefine(_gpuComputeModule);
+        string opts = warpSizeDefine(*_gpuComputeModule);
         _kidFillImage = _gpuComputeModule->registerKernel("fill_image_uint", "fill.cl");
         _kidMultiScan_horiz = _gpuComputeModule->registerKernel("multiscan_horiz_image", "integral.cl", opts);
         _kidMultiScan_vert = _gpuComputeModule->registerKernel("multiscan_vert_image", "integral.cl", opts);
@@ -702,7 +702,7 @@ public:
             if(_gpuComputeModule->device().supportsExtension("cl_ext_atomic_counters_32"))
                 strm << " -DUSE_ATOMIC_COUNTERS";
             strm << " -DKEYPOINT_MAX=" << kKeypointsMax;
-            string opts = warpSizeDefine(_gpuComputeModule) + strm.str();
+            string opts = warpSizeDefine(*_gpuComputeModule) + strm.str();
 
             _kidBuildScaleSpace = _gpuComputeModule->registerKernel("buildScaleSpace_buffer", "surf.cl", opts);
             return _kidBuildScaleSpace != InvalidKernelID;

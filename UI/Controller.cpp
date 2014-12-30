@@ -2376,7 +2376,7 @@ void modifyLabels(QLabel* label, const RangedValue<int64_t>& rv)
     label->setText(label->text() + QString(" [%1..%2]").arg(rv.minValue).arg(rv.maxValue));
 }
 
-void queryAndFillParameters(const std::shared_ptr<IJaiNodeModule>& jaiModule,
+void queryAndFillParameters(IJaiNodeModule& jaiModule,
                             Ui::CameraDialog& ui, 
                             const CameraInfo& info, 
                             int index)
@@ -2387,7 +2387,7 @@ void queryAndFillParameters(const std::shared_ptr<IJaiNodeModule>& jaiModule,
     ui.ipAddressLineEdit->setText(QString::fromStdString(info.ipAddress));
     ui.macAddressLineEdit->setText(QString::fromStdString(info.macAddress));
 
-    CameraSettings settings = jaiModule->cameraSettings(index);
+    CameraSettings settings = jaiModule.cameraSettings(index);
 
     populateWidget(ui.offsetXLineEdit, settings.offsetX);
     populateWidget(ui.offsetYLineEdit, settings.offsetY);
@@ -2458,7 +2458,7 @@ void Controller::showDeviceSettings()
 
     for(const auto& info : cameraInfos)
         ui.cameraComboBox->addItem(QString::fromStdString(info.modelName));
-    queryAndFillParameters(_jaiModule, ui, cameraInfos[0], 0);
+    queryAndFillParameters(*_jaiModule, ui, cameraInfos[0], 0);
 
     connect(ui.cameraComboBox, static_cast<void (QComboBox::*)(int)>
         (&QComboBox::currentIndexChanged), [&](int index) {
@@ -2469,7 +2469,7 @@ void Controller::showDeviceSettings()
         ui.adcGainLabel->setText("ADC Gain");
         ui.pixelFormatLabel->setText("Pixel format");
         ui.pixelFormatComboBox->clear();
-        queryAndFillParameters(_jaiModule, ui, cameraInfos[index], index);
+        queryAndFillParameters(*_jaiModule, ui, cameraInfos[index], index);
     });
 
     connect(ui.buttonBox, &QDialogButtonBox::accepted, [&] {
