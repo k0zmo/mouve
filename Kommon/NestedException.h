@@ -82,6 +82,6 @@ void rethrow_if_nested(
 }
 }
 
-#elif
+#else
 #include <exception>
 #endif

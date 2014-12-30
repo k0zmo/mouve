@@ -131,23 +131,23 @@ void Json::dump(string &out) const {
     m_ptr->dump(out);
 }
 
-static void pretty_print(std::nullptr_t value, string &out, PrettyPrintOptions &options) {
+static void pretty_print(std::nullptr_t value, string &out, PrettyPrintOptions &) {
     dump(value, out);
 }
 
-static void pretty_print(double value, string &out, PrettyPrintOptions &options) {
+static void pretty_print(double value, string &out, PrettyPrintOptions &) {
     dump(value, out);
 }
 
-static void pretty_print(int value, string &out, PrettyPrintOptions &options) {
+static void pretty_print(int value, string &out, PrettyPrintOptions &) {
     dump(value, out);
 }
 
-static void pretty_print(bool value, string &out, PrettyPrintOptions &options) {
+static void pretty_print(bool value, string &out, PrettyPrintOptions &) {
     dump(value, out);
 }
 
-static void pretty_print(const string &value, string &out, PrettyPrintOptions &options) {
+static void pretty_print(const string &value, string &out, PrettyPrintOptions &) {
     dump(value, out);
 }
 

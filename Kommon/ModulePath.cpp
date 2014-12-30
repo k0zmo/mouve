@@ -135,7 +135,7 @@ std::string modulePath()
                    &high, perms, &offset, &devMajor, &devMinor, &inode,
                    path) == 8)
         {
-            uint64_t myAddr = (uint64_t)(intptr_t)(getModulePath);
+            uint64_t myAddr = (uint64_t)(intptr_t)(modulePath);
             if (low <= myAddr &&
                 myAddr <= high) // myAddr is between low and high
             {

@@ -898,7 +898,7 @@ void Controller::showBadConnection(int node, int socket)
         if (linkView->inputConnecting(nodeView))
         {
             if (linkView->toSocketView() != nullptr &&
-                linkView->toSocketView()->socketKey() == socket)
+                linkView->toSocketView()->socketKey() == socketID)
             {
                 linkView->setBad(true);
                 break;

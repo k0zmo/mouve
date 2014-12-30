@@ -35,6 +35,7 @@ bool tryConvert(const QString&, T&)
 {
     // Expression must be T-dependent to be evaluated at the moment of instantiation
     static_assert(sizeof(T) == 0, "Conversion doesn't exist");
+    return false;
 }
 
 template <> 

@@ -15,10 +15,16 @@ HEADERS += \
     SharedLibrary.h \
     EnumFlags.h \
     TypeTraits.h \
-    StringUtils.h
+    StringUtils.h \
+    ModulePath.h \
+    NestedException.h \
+    Utils.h \
+    json11.h 
 
 SOURCES += \
     HighResolutionClock.cpp \
     Hash.cpp \
     SharedLibrary.cpp \
-    StringUtils.cpp
+    StringUtils.cpp \
+    ModulePath.cpp \
+    json11.cpp

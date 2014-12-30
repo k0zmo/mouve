@@ -164,9 +164,8 @@ static NodeProperty deserializeProperty(EPropertyType propType,
             Filepath{relativePath(rootDirectory, json.string_value())}};
     case EPropertyType::String:
         return NodeProperty{json.string_value()};
+    default: return NodeProperty{};
     }
-
-    return NodeProperty{};
 }
 }
 

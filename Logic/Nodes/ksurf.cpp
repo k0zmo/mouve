@@ -736,14 +736,14 @@ template<size_t N>
 static inline void normalizeDescriptor(float desc[N])
 {
     float len = 0.0f;
-    for(int i = 0; i < N; ++i)
+    for(size_t i = 0; i < N; ++i)
         len += desc[i]*desc[i];
 
     if(fabsf(len) > 1e-6)
     {
         // Normalize descriptor
         len = 1.0f / sqrtf(len);
-        for(int i = 0; i < N; ++i)
+        for(size_t i = 0; i < N; ++i)
             desc[i] *= len;
     }
 }

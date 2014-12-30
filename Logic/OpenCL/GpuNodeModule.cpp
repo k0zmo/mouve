@@ -34,7 +34,7 @@
 #include <cassert>
 
 namespace {
-string kernelsDirectory();
+static string kernelsDirectory();
 }
 
 GpuNodeModule::GpuNodeModule(bool interactiveInit)
