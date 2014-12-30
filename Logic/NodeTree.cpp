@@ -914,14 +914,14 @@ bool NodeTree::validateNode(NodeID nodeID) const
 class NodeTree::NodeIteratorImpl : public NodeIterator
 {
 public:
-    NodeIteratorImpl(NodeTree* parent)
+    NodeIteratorImpl(const NodeTree* parent)
         : _parent(parent)
         , _iter(parent->_nodeNameToNodeID.begin())
     {}
 
     virtual const Node* next(NodeID& nodeID)
     {
-        Node* out = nullptr;
+        const Node* out = nullptr;
         nodeID = InvalidNodeID;
 
         if(_iter != _parent->_nodeNameToNodeID.end())
@@ -935,11 +935,11 @@ public:
     }
 
 private:
-    NodeTree* _parent;
-    std::unordered_map<std::string, NodeID>::iterator _iter;
+    const NodeTree* _parent;
+    std::unordered_map<std::string, NodeID>::const_iterator _iter;
 };
 
-std::unique_ptr<NodeIterator> NodeTree::createNodeIterator()
+std::unique_ptr<NodeIterator> NodeTree::createNodeIterator() const
 {
     return std::unique_ptr<NodeIterator>(new NodeIteratorImpl(this));
 }
@@ -947,7 +947,7 @@ std::unique_ptr<NodeIterator> NodeTree::createNodeIterator()
 class NodeTree::NodeLinkIteratorImpl : public NodeLinkIterator
 {
 public:
-    NodeLinkIteratorImpl(NodeTree* parent)
+    NodeLinkIteratorImpl(const NodeTree* parent)
         : _parent(parent)
         , _iter(parent->_links.begin())
     {}
@@ -970,11 +970,11 @@ public:
     }
 
 private:
-    NodeTree* _parent;
-    std::vector<NodeLink>::iterator _iter;
+    const NodeTree* _parent;
+    std::vector<NodeLink>::const_iterator _iter;
 };
 
-std::unique_ptr<NodeLinkIterator> NodeTree::createNodeLinkIterator()
+std::unique_ptr<NodeLinkIterator> NodeTree::createNodeLinkIterator() const
 {
     return std::unique_ptr<NodeLinkIterator>(new NodeLinkIteratorImpl(this));
 }

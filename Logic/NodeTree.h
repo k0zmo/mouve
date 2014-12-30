@@ -115,8 +115,8 @@ public:
     const std::string& nodeExecuteInformation(NodeID nodeID) const;
     double nodeTimeElapsed(NodeID nodeID) const;
 
-    std::unique_ptr<NodeIterator> createNodeIterator();
-    std::unique_ptr<NodeLinkIterator> createNodeLinkIterator();	
+    std::unique_ptr<NodeIterator> createNodeIterator() const;
+    std::unique_ptr<NodeLinkIterator> createNodeLinkIterator() const;
     std::unique_ptr<NodeExecutor> createNodeExecutor(bool withInit = false);
 
 private:
