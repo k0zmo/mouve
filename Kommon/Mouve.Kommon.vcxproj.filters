@@ -47,6 +47,9 @@
     <ClInclude Include="ModulePath.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="json11.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="HighResolutionClock.cpp">
@@ -63,6 +66,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="ModulePath.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="json11.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

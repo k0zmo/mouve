@@ -29,6 +29,7 @@
   <ItemGroup>
     <ClInclude Include="EnumFlags.h" />
     <ClInclude Include="Hash.h" />
+    <ClInclude Include="json11.hpp" />
     <ClInclude Include="konfig.h" />
     <ClInclude Include="HighResolutionClock.h" />
     <ClInclude Include="MacroUtils.h" />
@@ -49,6 +50,7 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|x64'">true</ExcludedFromBuild>
     </ClCompile>
+    <ClCompile Include="json11.cpp" />
     <ClCompile Include="ModulePath.cpp" />
     <ClCompile Include="StringUtils.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='ReleaseUnity|Win32'">true</ExcludedFromBuild>
