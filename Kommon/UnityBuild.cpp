@@ -25,3 +25,5 @@
 #include "HighResolutionClock.cpp"
 #include "SharedLibrary.cpp"
 #include "StringUtils.cpp"
+#include "json11.cpp"
+#include "ModulePath.cpp"
