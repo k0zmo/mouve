@@ -26,6 +26,7 @@
 #include "NodeType.h"
 #include "NodeSystem.h"
 
+#include "Kommon/NestedException.h"
 #include "Kommon/StringUtils.h"
 #include "Kommon/Utils.h"
 

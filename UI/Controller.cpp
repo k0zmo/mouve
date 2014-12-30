@@ -25,6 +25,7 @@
 
 #include "Kommon/Utils.h"
 #include "Kommon/ModulePath.h"
+#include "Kommon/NestedException.h"
 
 // Model part
 #include "Logic/NodeSystem.h"

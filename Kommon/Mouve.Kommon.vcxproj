@@ -34,6 +34,7 @@
     <ClInclude Include="HighResolutionClock.h" />
     <ClInclude Include="MacroUtils.h" />
     <ClInclude Include="ModulePath.h" />
+    <ClInclude Include="NestedException.h" />
     <ClInclude Include="SharedLibrary.h" />
     <ClInclude Include="Singleton.h" />
     <ClInclude Include="StlUtils.h" />

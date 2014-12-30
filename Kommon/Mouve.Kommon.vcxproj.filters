@@ -50,6 +50,9 @@
     <ClInclude Include="json11.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="NestedException.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="HighResolutionClock.cpp">
