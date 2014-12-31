@@ -53,10 +53,15 @@ public:
         if(hostImage.channels() != 1 && hostImage.channels() != 3)
             return ExecutionStatus(EStatus::Error, "Invalid number of channels (should be 1 or 3)");
 
+        auto devChannels = [](clw::Image2D& image) {
+            // Make 4 bytes per elem 3-channel image, otherwise its ok
+            return image.bytesPerElement() == 4 ? 3 : image.bytesPerElement();
+        };
+
         if(deviceImage.isNull() 
             || deviceImage.width() != hostImage.cols
             || deviceImage.height() != hostImage.rows
-            || deviceImage.bytesPerElement() != hostImage.channels())
+            || devChannels(deviceImage) != hostImage.channels())
         {
             clw::EChannelOrder channelOrder = hostImage.channels() == 1 
                 ? clw::EChannelOrder::R 
@@ -159,7 +164,6 @@ private:
     KernelID _kidConvertBufferRgbToImageRgba;
     TypedNodeProperty<bool> _usePinnedMemory;
 };
-
 
 class GpuDownloadImageNodeType : public GpuNodeType
 {
