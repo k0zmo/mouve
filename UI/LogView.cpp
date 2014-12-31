@@ -106,11 +106,15 @@ void LogView::messageHandler(QtMsgType type,
     while(it)
     {
         auto item = new QListWidgetItem(msg);
-
+#if defined(QT_DEBUG)
         QString toolTip = QString("Time: %1 (%2:%3)")
             .arg(QDateTime::currentDateTime().toString("MM.dd.yyyy hh:mm:ss.zzz"))
             .arg(context.file)
             .arg(context.line);
+#else
+        QString toolTip = QString("Time: %1")
+            .arg(QDateTime::currentDateTime().toString("MM.dd.yyyy hh:mm:ss.zzz"));
+#endif
         item->setToolTip(toolTip);
 
         switch(type)
