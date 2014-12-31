@@ -7,7 +7,6 @@ include(../Include/mouve.pri)
 
 HEADERS += \
     HighResolutionClock.h \
-    StlUtils.h \
     konfig.h \
     MacroUtils.h \
     Singleton.h \

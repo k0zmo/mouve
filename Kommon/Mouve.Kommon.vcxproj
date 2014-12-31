@@ -37,7 +37,6 @@
     <ClInclude Include="NestedException.h" />
     <ClInclude Include="SharedLibrary.h" />
     <ClInclude Include="Singleton.h" />
-    <ClInclude Include="StlUtils.h" />
     <ClInclude Include="StringUtils.h" />
     <ClInclude Include="TypeTraits.h" />
     <ClInclude Include="Utils.h" />

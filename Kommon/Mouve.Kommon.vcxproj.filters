@@ -14,9 +14,6 @@
     <ClInclude Include="Singleton.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="StlUtils.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="HighResolutionClock.h">
       <Filter>Header Files</Filter>
     </ClInclude>

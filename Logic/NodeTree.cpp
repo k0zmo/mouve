@@ -29,14 +29,11 @@
 #include "NodeModule.h"
 #include "NodeException.h"
 
-#include "Kommon/StlUtils.h"
-
-namespace
+namespace {
+static bool validateNodeName(const std::string& nodeName)
 {
-    bool validateNodeName(const std::string& nodeName)
-    {
-        return nodeName.find('/') == std::string::npos;
-    }
+    return nodeName.find('/') == std::string::npos;
+}
 }
 
 NodeTree::NodeTree(NodeSystem* nodeSystem)
