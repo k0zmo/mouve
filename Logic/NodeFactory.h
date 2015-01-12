@@ -21,11 +21,12 @@
  *
  */
 
-
 #pragma once
 
 #include "Prerequisites.h"
+#include "Kommon/Utils.h"
 
+// Abstract node factory
 class NodeFactory
 {
 public:
@@ -33,30 +34,28 @@ public:
     virtual std::unique_ptr<NodeType> create() = 0;
 };
 
+// Default, typed node factory. 
+// Used when static registering is not possible (i.e. plugins)
 template <class Type>
 class DefaultNodeFactory : public NodeFactory
 {
 public:
-    virtual std::unique_ptr<NodeType> create();
+    virtual std::unique_ptr<NodeType> create()
+    {
+        return std::make_unique<Type>();
+    }
 };
 
-class AutoRegisterNodeBase : public NodeFactory
+class AutoRegisterNodeBase : public SList<AutoRegisterNodeBase>,
+                             public NodeFactory
 {
 public:
     AutoRegisterNodeBase(const std::string& typeName)
         : typeName(typeName)
     {
-        // Append at the beginning of the list
-        // here the order doesn't really matter
-        next = head;
-        head = this;
     }
 
     std::string typeName;
-
-    // Intrusive single-linked list
-    AutoRegisterNodeBase* next;
-    static AutoRegisterNodeBase* head;
 };
 
 template <class Type>
@@ -64,19 +63,16 @@ class AutoRegisterNode : public AutoRegisterNodeBase
 {
 public:
     AutoRegisterNode(const std::string& typeName)
-        : AutoRegisterNodeBase(typeName)
-    {}
+        : AutoRegisterNodeBase{typeName}
+    {
+    }
 
-    virtual std::unique_ptr<NodeType> create();
+    virtual std::unique_ptr<NodeType> create()
+    {
+        return std::make_unique<Type>();
+    }
 };
 
+// Statically registers node type
 #define REGISTER_NODE(NodeTypeName, NodeClass) \
     AutoRegisterNode<NodeClass> __auto_registered_##NodeClass(NodeTypeName);
-
-template <class Type>
-inline std::unique_ptr<NodeType> DefaultNodeFactory<Type>::create()
-{ return std::unique_ptr<Type>(new Type()); }
-
-template <class Type>
-inline std::unique_ptr<NodeType> AutoRegisterNode<Type>::create()
-{ return std::unique_ptr<Type>(new Type()); }

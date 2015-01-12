@@ -151,12 +151,12 @@ std::string NodeSystem::defaultNodeName(NodeTypeID nodeTypeID) const
 
 void NodeSystem::registerAutoTypes()
 {
-    AutoRegisterNodeBase* autoFactory = AutoRegisterNodeBase::head;
+    AutoRegisterNodeBase* autoFactory = AutoRegisterNodeBase::head();
     while(autoFactory)
     {
         auto nodeFactory = std::unique_ptr<NodeFactory>(autoFactory);
         NodeTypeID nodeTypeID = registerNodeType(autoFactory->typeName, std::move(nodeFactory));
-        autoFactory = autoFactory->next;
+        autoFactory = autoFactory->next();
 
         // We need empty deleter as autoFactory
         // are allocated on (global) stack.
