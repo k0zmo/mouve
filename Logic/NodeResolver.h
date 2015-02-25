@@ -76,9 +76,9 @@ public:
 private:
     // Helper method to "wrap" F function within try-catch
     // and NodeTree::nodeConfiguration() call
-    template <class F>
-    auto decorateConfiguration(NodeID nodeID, F&& f)
-        -> typename func_traits<F>::return_type;
+    template <class Func>
+    auto decorateConfiguration(NodeID nodeID, Func&& func)
+        -> typename func_traits<Func>::return_type;
 
 private:
     std::shared_ptr<NodeTree> _nodeTree;

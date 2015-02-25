@@ -68,10 +68,6 @@ NodeFlowData::NodeFlowData(ENodeFlowDataType dataType)
     }
 }
 
-NodeFlowData::~NodeFlowData()
-{
-}
-
 void NodeFlowData::saveToDisk(const std::string& filename) const
 {
     if(_type == ENodeFlowDataType::Image

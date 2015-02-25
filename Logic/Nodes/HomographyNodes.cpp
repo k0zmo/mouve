@@ -28,6 +28,8 @@
 #include <fstream>
 #include <opencv2/calib3d/calib3d.hpp>
 
+using std::vector;
+
 class EstimateHomographyNodeType : public NodeType
 {
 public:

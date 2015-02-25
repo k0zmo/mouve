@@ -28,6 +28,8 @@
 #include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/features2d/features2d.hpp>
 
+using std::vector;
+
 class FastFeatureDetector : public NodeType
 {
 public:

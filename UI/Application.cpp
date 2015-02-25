@@ -33,6 +33,8 @@
 #  include <Windows.h>
 #endif
 
+#include <vector>
+
 static const QString applicationTitle = QStringLiteral("mouve");
 
 int main(int argc, char* argv[])

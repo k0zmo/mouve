@@ -133,14 +133,6 @@ public:
     }
 
 private:
-    enum class pid
-    {
-        History,
-        VarianceThreshold,
-        ShadowDetection,
-        LearningRate
-    };
-
     TypedNodeProperty<int> _history;
     TypedNodeProperty<float> _varThreshold;
     TypedNodeProperty<bool> _shadowDetection;

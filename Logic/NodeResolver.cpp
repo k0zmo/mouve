@@ -114,22 +114,23 @@ namespace
     }
 
     // True for all Callable with the signature RetValue F(const NodeConfig&)
-    template <class F>
+    template <class Func>
     struct is_node_config_func
         : public std::integral_constant<
-              bool, func_traits<F>::arity == 1 &&
-                        std::is_same<typename func_traits<F>::template arg<0>::type,
-                                     const NodeConfig&>::value>
+              bool, func_traits<Func>::arity == 1 &&
+                        std::is_same<
+                            typename func_traits<Func>::template arg<0>::type,
+                            const NodeConfig&>::value>
     {
     };
 }
 
-template <class F>
-auto NodeResolver::decorateConfiguration(NodeID nodeID, F&& func)
-    -> typename func_traits<F>::return_type
+template <class Func>
+auto NodeResolver::decorateConfiguration(NodeID nodeID, Func&& func)
+    -> typename func_traits<Func>::return_type
 {
-    static_assert(is_node_config_func<F>::value,
-                  "F must have signature: RetValue F(const NodeConfig&)");
+    static_assert(is_node_config_func<typename std::remove_reference<Func>::type>::value,
+                  "Func must have signature: RetValue F(const NodeConfig&)");
     try
     {
         const NodeConfig& nodeConfig = _nodeTree->nodeConfiguration(nodeID);
@@ -137,7 +138,7 @@ auto NodeResolver::decorateConfiguration(NodeID nodeID, F&& func)
     }
     catch(BadNodeException&)
     {
-        using ReturnType = typename func_traits<F>::return_type;
+        using ReturnType = typename func_traits<Func>::return_type;
         return DefaultValue<ReturnType>::value;
     }
 }

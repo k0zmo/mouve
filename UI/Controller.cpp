@@ -2155,18 +2155,17 @@ void Controller::initGpuModule(QMenu* menuModules)
 
     _nodeSystem->registerNodeModule(_gpuModule);
     _gpuModule->onCreateInteractive = 
-        [=](const vector<GpuPlatform>& gpuPlatforms) -> GpuInteractiveResult
-    {
-        GpuChoiceDialog dialog(gpuPlatforms);
-        dialog.exec();
+        [=](const std::vector<GpuPlatform>& gpuPlatforms) {
+            GpuChoiceDialog dialog(gpuPlatforms);
+            dialog.exec();
 
-        GpuInteractiveResult result = { 
-            dialog.result() == QDialog::Accepted
-            ? dialog.deviceType()
-            : EDeviceType::None,
-            dialog.platformID(), dialog.deviceID() };
-        return result;
-    };
+            GpuInteractiveResult result = { 
+                dialog.result() == QDialog::Accepted
+                ? dialog.deviceType()
+                : EDeviceType::None,
+                dialog.platformID(), dialog.deviceID() };
+            return result;
+        };
 
     _actionInteractiveSetup = new QAction(QStringLiteral("Init module"), this);
     _actionListPrograms = new QAction(QStringLiteral("List programs"), this);
@@ -2417,7 +2416,7 @@ void Controller::showDeviceSettings()
         return;
     }
 
-    vector<CameraInfo> cameraInfos = _jaiModule->discoverCameras(EDriverType::All);
+    std::vector<CameraInfo> cameraInfos = _jaiModule->discoverCameras(EDriverType::All);
     if(cameraInfos.empty())
     {
         showErrorMessage("JAI Module - Couldn't detect any camera devices");

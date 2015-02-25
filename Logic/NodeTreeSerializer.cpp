@@ -213,7 +213,7 @@ json11::Json::object NodeTreeSerializer::serialize(const NodeTree& nodeTree)
     json11::Json::array jsonLinks;
     auto linkIt = nodeTree.createNodeLinkIterator();
     NodeLink nodeLink;
-    while(linkIt->next(nodeLink))
+    while (linkIt->next(nodeLink))
     {
         jsonLinks.push_back(
             json11::Json::object{{"fromNode", nodeLink.fromNode},
@@ -225,7 +225,8 @@ json11::Json::object NodeTreeSerializer::serialize(const NodeTree& nodeTree)
     return json11::Json::object{{"nodes", jsonNodes}, {"links", jsonLinks}};
 }
 
-json11::Json NodeTreeSerializer::serializeIO(const std::vector<SocketConfig>& ios)
+json11::Json
+    NodeTreeSerializer::serializeIO(const std::vector<SocketConfig>& ios)
 {
     json11::Json::array jsonIOs;
     for (const auto& io : ios)
@@ -325,13 +326,13 @@ void NodeTreeSerializer::deserializeNodes(NodeTree& nodeTree,
                                           const json11::Json& jsonNodes)
 {
     std::string err;
-    for (const auto& node : jsonNodes.array_items()) 
+    for (const auto& node : jsonNodes.array_items())
     {
         // check schema
         if (!node.has_shape({{"class", json11::Json::STRING},
                              {"name", json11::Json::STRING},
                              {"id", json11::Json::NUMBER}},
-                            err)) 
+                            err))
         {
             throw serializer_exception{
                 string_format("node fields are invalid: %s", err.c_str())};
@@ -403,7 +404,9 @@ void NodeTreeSerializer::deserializeLinks(NodeTree& nodeTree,
 }
 
 void NodeTreeSerializer::deserializeProperties(NodeTree& nodeTree,
-    const json11::Json& jsonProps, NodeID nodeID, const std::string& nodeName)
+                                               const json11::Json& jsonProps,
+                                               NodeID nodeID,
+                                               const std::string& nodeName)
 {
     std::string err;
     for (const auto& prop : jsonProps.array_items())

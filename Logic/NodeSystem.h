@@ -28,10 +28,12 @@
 
 class LOGIC_EXPORT NodeSystem
 {
-    K_DISABLE_COPY(NodeSystem)
 public:
     NodeSystem();
     ~NodeSystem();
+
+    NodeSystem(NodeSystem const&) = delete;
+    NodeSystem& operator=(NodeSystem const&) = delete;
 
     NodeTypeID registerNodeType(const std::string& nodeTypeName,
                                 std::unique_ptr<NodeFactory> nodeFactory);
@@ -58,7 +60,6 @@ private:
     // That is all that NodeSystem needs for handling registered node types
     class NodeTypeInfo
     {
-        K_DISABLE_COPY(NodeTypeInfo)
     public:
         NodeTypeInfo(const std::string& nodeTypeName,
                      std::unique_ptr<NodeFactory> nodeFactory)

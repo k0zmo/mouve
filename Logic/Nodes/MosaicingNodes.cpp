@@ -26,6 +26,8 @@
 
 #include <opencv2/imgproc/imgproc.hpp>
 
+using std::vector;
+
 class SimpleMosaicNodeType : public NodeType
 {
 public:

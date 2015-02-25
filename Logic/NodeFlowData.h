@@ -38,11 +38,9 @@
 #  include "OpenCL/DeviceArray.h"
 #endif
 
-using std::vector;
-
 struct KeyPoints
 {
-    vector<cv::KeyPoint> kpoints;
+    std::vector<cv::KeyPoint> kpoints;
     // could use shared_ptr BUT cv::Mat already
     // got reference counting under a table
     cv::Mat image;
@@ -50,8 +48,8 @@ struct KeyPoints
 
 struct Matches
 {
-    vector<cv::Point2f> queryPoints;
-    vector<cv::Point2f> trainPoints;
+    std::vector<cv::Point2f> queryPoints;
+    std::vector<cv::Point2f> trainPoints;
     // same here
     cv::Mat queryImage;
     cv::Mat trainImage;
@@ -60,21 +58,21 @@ struct Matches
 enum class ENodeFlowDataType : int
 {
     Invalid,
-    /// Image - 1 or 3 channels
-    /// Node with such sockets supports both formats
+    // Image - 1 or 3 channels
+    // Node with such sockets supports both formats
     Image,
-    /// Image with only 1 channel (monochromatic)
+    // Image with only 1 channel (monochromatic)
     ImageMono,
-    /// Image with 3 channels (RGB)
+    // Image with 3 channels (RGB)
     ImageRgb,
     Array,
     Keypoints,
-    Matches
+    Matches,
 #if defined(HAVE_OPENCL)
     // Gpu part
-    /// TODO: Could merge this with above ones and add bool flag
-    ///       indicating if it's in device or host memory
-    ,DeviceImage,
+    // TODO: Could merge this with above ones and add bool flag
+    //       indicating if it's in device or host memory
+    DeviceImage,
     DeviceImageMono,
     // In fact, its RGBA (BGRA, ARGB), as RGB noone seems to support
     DeviceImageRgb,
@@ -82,9 +80,8 @@ enum class ENodeFlowDataType : int
 #endif
 };
 
-namespace std
-{
-    LOGIC_EXPORT string to_string(ENodeFlowDataType);
+namespace std {
+LOGIC_EXPORT string to_string(ENodeFlowDataType);
 }
 
 class LOGIC_EXPORT NodeFlowData
@@ -100,15 +97,8 @@ class LOGIC_EXPORT NodeFlowData
     > flow_data;
 
 public:
-    NodeFlowData();
+    NodeFlowData(); // same as ENodeFlowDataType::Invalid
     NodeFlowData(ENodeFlowDataType dataType);
-    
-    //NodeFlowData& operator=(const NodeFlowData& other);
-    //NodeFlowData& operator=(NodeFlowData&& other);
-    //NodeFlowData(const NodeFlowData& other);
-    //NodeFlowData(NodeFlowData&& other);
-
-    ~NodeFlowData();
 
     void saveToDisk(const std::string& filename) const;
     bool isValidImage() const;
@@ -153,14 +143,16 @@ public:
     ENodeFlowDataType type() const;
 
 private:
+    bool isConvertible(ENodeFlowDataType from, ENodeFlowDataType to) const;
+
+    template <class Type>
+    Type& getTyped(ENodeFlowDataType requestedType);
+    template <class Type>
+    const Type& getTyped(ENodeFlowDataType requestedType) const;
+
+private:
     ENodeFlowDataType _type;
     flow_data _data;
-
-    bool isConvertible(ENodeFlowDataType from, 
-        ENodeFlowDataType to) const;
-
-    template <class Type> Type& getTyped(ENodeFlowDataType requestedType);
-    template <class Type> const Type& getTyped(ENodeFlowDataType requestedType) const;
 };
 
 inline bool NodeFlowData::isValid() const

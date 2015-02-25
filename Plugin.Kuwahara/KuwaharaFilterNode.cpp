@@ -140,13 +140,6 @@ public:
     }
 
 protected:
-    enum class pid
-    {
-        Radius,
-        N,
-        Smoothing
-    };
-
     TypedNodeProperty<int> _radius;
     TypedNodeProperty<int> _N;
     TypedNodeProperty<float> _smoothing;
