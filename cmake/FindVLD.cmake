@@ -5,14 +5,14 @@ find_path(VLD_ROOT
         ENV VLDROOT
         "$ENV{PROGRAMFILES}/Visual Leak Detector"
         "$ENV{PROGRAMFILES\(X86\)}/Visual Leak Detector"
-    DOC "VLD root directory"
+    DOC "Visual Leak Detector root directory"
 )
 
 find_path(VLD_INCLUDE_DIR
     vld.h
     HINTS ${VLD_ROOT}
     PATH_SUFFIXES include
-    DOC "VLD include directory"
+    DOC "Visual Leak Detector include directory"
 )
 mark_as_advanced(VLD_INCLUDE_DIR)
 
@@ -27,7 +27,7 @@ find_library(VLD_LIBRARY
     NAMES vld
     HINTS ${VLD_ROOT}
     PATH_SUFFIXES ${possible_suffixes}
-    DOC "VLD library"
+    DOC "Visual Leak Detector library"
 )
 mark_as_advanced(VLD_LIBRARY)
 

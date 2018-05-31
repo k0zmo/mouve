@@ -126,6 +126,11 @@ else()
     message(STATUS "OpenCL support: NO")
 endif()
 
+if(TARGET clw::clw AND TARGET AMDT::ActivityLogger)
+    target_link_libraries(Mouve.Logic PRIVATE AMDT::ActivityLogger)
+    target_compile_definitions(Mouve.Logic PRIVATE HAVE_AMDT_ACTIVITY_LOGGER)
+endif()
+
 if(TARGET JAI::JAI)
     message(STATUS "JAI support: YES")
     target_link_libraries(Mouve.Logic PRIVATE JAI::JAI)

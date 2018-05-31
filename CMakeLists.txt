@@ -36,11 +36,13 @@ find_package(OpenGL REQUIRED)
 find_package(Threads REQUIRED)
 
 set(JAI_DYNAMIC TRUE)
-find_package(JAI QUIET)
+find_package(JAI)
 
 if(MOUVE_USE_VISUAL_LEAK_DETECTOR)
-    find_package(VLD QUIET)
+    find_package(VLD)
 endif()
+
+find_package(AMDTActivityLogger)
 
 # OpenCV devs acknowledge only Debug and Release configurations
 # We need to manually map the other two to Release.
