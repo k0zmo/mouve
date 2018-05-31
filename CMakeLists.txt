@@ -5,6 +5,11 @@ project(mouve LANGUAGES CXX VERSION 1.0)
 list(APPEND CMAKE_MODULE_PATH "${mouve_SOURCE_DIR}/cmake")
 include(mouve)
 
+option(MOUVE_USE_PRECOMPILED_HEADERS "Use precompiled headers." ON)
+if(MOUVE_USE_PRECOMPILED_HEADERS)
+    include(cotire)
+endif()
+
 # Show folders in MSVC 
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 

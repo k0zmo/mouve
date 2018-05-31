@@ -1,4 +1,6 @@
 add_library(Mouve.Logic SHARED # TEMPORARY
+    Precomp.h
+    Precomp.cpp
     Node.cpp
     Node.h
     NodeException.h
@@ -105,6 +107,14 @@ target_link_libraries(Mouve.Logic PUBLIC
     opencv_calib3d
     Qt5::Core
 )
+
+if(MOUVE_USE_PRECOMPILED_HEADERS)
+    set_target_properties(Mouve.Logic 
+        PROPERTIES
+            COTIRE_CXX_PREFIX_HEADER_INIT Precomp.h)
+    set_directory_properties(PROPERTIES COTIRE_ADD_UNITY_BUILD FALSE)
+    cotire(Mouve.Logic)
+endif()
 
 if(TARGET clw::clw)
     target_link_libraries(Mouve.Logic PUBLIC clw::clw)

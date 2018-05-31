@@ -1,23 +1,19 @@
 add_executable(Mouve.UI WIN32
+    Precomp.h
+    Precomp.cpp
     Application.cpp
-    #Camera.ui
     Controller.cpp
     Controller.h
     Editor.qrc
     GLWidget.cpp
     GLWidget.h
-    #GpuChoice.ui
     GpuChoiceDialog.cpp
     GpuChoiceDialog.h
     LogView.cpp
     LogView.h
-    #MainWindow.ui
-    #Precomp.cpp
-    #Precomp.h
     Prerequisites.h
     PreviewWidget.cpp
     PreviewWidget.h
-    #PreviewWidget.ui
     Property.cpp
     Property.h
     PropertyDelegate.cpp
@@ -67,6 +63,14 @@ set_target_properties(Mouve.UI PROPERTIES
     AUTOUIC ON
     AUTORCC ON
 )
+
+if(MOUVE_USE_PRECOMPILED_HEADERS)
+    set_target_properties(Mouve.UI 
+        PROPERTIES
+            COTIRE_CXX_PREFIX_HEADER_INIT Precomp.h)
+    set_directory_properties(PROPERTIES COTIRE_ADD_UNITY_BUILD FALSE)
+    cotire(Mouve.UI)
+endif()
 
 if(WIN32)
     target_sources(Mouve.UI PRIVATE Mouve.UI.rc)
