@@ -105,7 +105,6 @@
 #  define K_DISABLE_COPY(classname) \
     classname(const classname&); \
     classname& operator=(const classname&);
-#  define snprintf _snprintf
 #endif
 
 

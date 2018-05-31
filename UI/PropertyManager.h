@@ -27,6 +27,7 @@
 #include "Logic/NodeType.h"
 
 #include <QObject>
+#include <QHash>
 
 class PropertyManager : public QObject
 {

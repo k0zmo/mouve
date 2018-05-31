@@ -26,6 +26,8 @@
 #include "GpuActivityLogger.h"
 #include "GpuException.h"
 
+#include <cassert>
+
 #if defined(HAVE_AMDT_ACTIVITY_LOGGER)
 #  include <AMDTActivityLogger.h>
 

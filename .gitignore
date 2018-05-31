@@ -11,3 +11,5 @@ ReleaseUnity/
 *.pyc
 *.aps
 *.opensdf
+/_build*
+/build*

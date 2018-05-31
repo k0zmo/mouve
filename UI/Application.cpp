@@ -23,6 +23,7 @@
 
 #include <QApplication>
 #include <QGLFormat>
+#include <QSettings>
 #include "Controller.h"
 
 #if defined(QT_DEBUG) && defined(HAVE_VLD)

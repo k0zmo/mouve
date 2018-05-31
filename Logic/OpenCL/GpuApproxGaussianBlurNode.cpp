@@ -111,7 +111,7 @@ public:
         kernelApproxGaussianBlurHoriz.setArg(1, _tempImage_cl);
         // We need at least threadsPerGroup * 2 shared memory: in warp scan phase (scanWarpInclusive function) 
         // each thread in a warp/wavefront addresses two shared memory cells.
-        kernelApproxGaussianBlurHoriz.setArg(2, clw::TypedLocalMemorySize<cl_float>(std::max(imageWidth, threadsPerGroup * 2)));
+        kernelApproxGaussianBlurHoriz.setArg(2, clw::TypedLocalMemorySize<cl_float>((std::max)(imageWidth, threadsPerGroup * 2)));
         kernelApproxGaussianBlurHoriz.setArg(3, numApproxPasses);
         kernelApproxGaussianBlurHoriz.setArg(4, halfBoxWidth);
         kernelApproxGaussianBlurHoriz.setArg(5, fracHalfBoxWidth);
@@ -123,7 +123,7 @@ public:
         kernelApproxGaussianBlurVert.setGlobalWorkSize(threadsPerGroup, imageWidth);
         kernelApproxGaussianBlurVert.setArg(0, _tempImage_cl);
         kernelApproxGaussianBlurVert.setArg(1, output);
-        kernelApproxGaussianBlurVert.setArg(2, clw::TypedLocalMemorySize<cl_float>(std::max(imageHeight, threadsPerGroup * 2)));
+        kernelApproxGaussianBlurVert.setArg(2, clw::TypedLocalMemorySize<cl_float>((std::max)(imageHeight, threadsPerGroup * 2)));
         kernelApproxGaussianBlurVert.setArg(3, numApproxPasses);
         kernelApproxGaussianBlurVert.setArg(4, halfBoxWidth);
         kernelApproxGaussianBlurVert.setArg(5, fracHalfBoxWidth);

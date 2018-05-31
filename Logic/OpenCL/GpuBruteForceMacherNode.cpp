@@ -226,7 +226,7 @@ private:
         int matchesCount = 0;
         _gpuComputeModule->queue().writeBuffer(_matchesCount_cl, &matchesCount);
 
-        const size_t smemSize = (BLOCK_SIZE*std::max(DESCRIPTOR_LEN,BLOCK_SIZE) + BLOCK_SIZE*BLOCK_SIZE) * sizeof(int);
+        const size_t smemSize = (BLOCK_SIZE*(std::max)(DESCRIPTOR_LEN,BLOCK_SIZE) + BLOCK_SIZE*BLOCK_SIZE) * sizeof(int);
         clw::Kernel kernelNndrMatch = _gpuComputeModule->acquireKernel(kidBruteForceMatch);
         kernelNndrMatch.setLocalWorkSize(BLOCK_SIZE, BLOCK_SIZE);
         kernelNndrMatch.setRoundedGlobalWorkSize(query_dev.height(), BLOCK_SIZE);
