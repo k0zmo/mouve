@@ -34,6 +34,7 @@ find_package(OpenCV 2.4 REQUIRED
 find_package(Qt5 REQUIRED COMPONENTS Core Gui Widgets OpenGL)
 find_package(OpenGL REQUIRED)
 find_package(Threads REQUIRED)
+find_package(TBB)
 
 set(JAI_DYNAMIC TRUE)
 find_package(JAI)
