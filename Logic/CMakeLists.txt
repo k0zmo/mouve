@@ -54,7 +54,7 @@ target_sources(Mouve.Logic PRIVATE
     Nodes/VideoSegmentationNodes.cpp
     Nodes/kSurfNodes.cpp
     Nodes/ksurf.cpp
-    Nodes/ksurf.h 
+    Nodes/ksurf.h
 )
 
 target_sources(Mouve.Logic PRIVATE
@@ -109,7 +109,7 @@ target_link_libraries(Mouve.Logic PUBLIC
 )
 
 if(MOUVE_USE_PRECOMPILED_HEADERS)
-    set_target_properties(Mouve.Logic 
+    set_target_properties(Mouve.Logic
         PROPERTIES
             COTIRE_CXX_PREFIX_HEADER_INIT Precomp.h)
     set_directory_properties(PROPERTIES COTIRE_ADD_UNITY_BUILD FALSE)
@@ -117,13 +117,24 @@ if(MOUVE_USE_PRECOMPILED_HEADERS)
 endif()
 
 if(TARGET clw::clw)
+    message(STATUS "OpenCL support: YES")
     target_link_libraries(Mouve.Logic PUBLIC clw::clw)
     target_compile_definitions(Mouve.Logic PUBLIC HAVE_OPENCL)
 
     install(DIRECTORY OpenCL/kernels DESTINATION bin FILES_MATCHING PATTERN *.cl)
+else()
+    message(STATUS "OpenCL support: NO")
 endif()
 
-install(TARGETS Mouve.Logic 
+if(TARGET JAI::JAI)
+    message(STATUS "JAI support: YES")
+    target_link_libraries(Mouve.Logic PRIVATE JAI::JAI)
+    target_compile_definitions(Mouve.Logic PUBLIC HAVE_JAI)
+else()
+    message(STATUS "JAI support: NO")
+endif()
+
+install(TARGETS Mouve.Logic
     RUNTIME DESTINATION bin
     LIBRARY DESTINATION lib
     ARCHIVE DESTINATION lib

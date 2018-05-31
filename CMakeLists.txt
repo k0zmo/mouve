@@ -10,7 +10,7 @@ if(MOUVE_USE_PRECOMPILED_HEADERS)
     include(cotire)
 endif()
 
-# Show folders in MSVC 
+# Show folders in MSVC
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
 if(NOT BUILD_SHARED_LIBS)
@@ -33,9 +33,12 @@ find_package(Qt5 REQUIRED COMPONENTS Core Gui Widgets OpenGL)
 find_package(OpenGL REQUIRED)
 find_package(Threads REQUIRED)
 
+set(JAI_DYNAMIC TRUE)
+find_package(JAI QUIET)
+
 # OpenCV devs acknowledge only Debug and Release configurations
 # We need to manually map the other two to Release.
-# Otherwise CMake will try to link with Debug binaries when building 
+# Otherwise CMake will try to link with Debug binaries when building
 # with MinSizeRel and RelWithDebInfo config causing ABI mismatch with MSVCRT
 set_target_properties(${OpenCV_LIBS} PROPERTIES
     MAP_IMPORTED_CONFIG_RELWITHDEBINFO Release
