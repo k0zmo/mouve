@@ -6,6 +6,8 @@ list(APPEND CMAKE_MODULE_PATH "${mouve_SOURCE_DIR}/cmake")
 include(mouve)
 
 option(MOUVE_USE_PRECOMPILED_HEADERS "Use precompiled headers." ON)
+option(MOUVE_USE_VISUAL_LEAK_DETECTOR "Use Visual Leak Detector in debug build." OFF)
+
 if(MOUVE_USE_PRECOMPILED_HEADERS)
     include(cotire)
 endif()
@@ -35,6 +37,10 @@ find_package(Threads REQUIRED)
 
 set(JAI_DYNAMIC TRUE)
 find_package(JAI QUIET)
+
+if(MOUVE_USE_VISUAL_LEAK_DETECTOR)
+    find_package(VLD QUIET)
+endif()
 
 # OpenCV devs acknowledge only Debug and Release configurations
 # We need to manually map the other two to Release.

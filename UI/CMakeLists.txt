@@ -64,6 +64,14 @@ set_target_properties(Mouve.UI PROPERTIES
     AUTORCC ON
 )
 
+if(TARGET VLD::VLD)
+    message(STATUS "Visual Leak Detector supported: YES")
+    target_link_libraries(Mouve.UI PRIVATE VLD)
+    target_compile_definitions(Mouve.UI PRIVATE $<$<CONFIG:DEBUG>:HAVE_VLD>)
+else()
+    message(STATUS "Visual Leak Detector supported: NO")
+endif()
+
 if(MOUVE_USE_PRECOMPILED_HEADERS)
     set_target_properties(Mouve.UI 
         PROPERTIES
