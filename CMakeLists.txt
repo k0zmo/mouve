@@ -12,7 +12,6 @@ if(NOT BUILD_SHARED_LIBS)
     set(Boost_USE_STATIC_LIBS ON)
 endif()
 
-find_package(clw QUIET)
 find_package(Boost 1.55.0 REQUIRED COMPONENTS)
 find_package(OpenCV 2.4 REQUIRED
     COMPONENTS
@@ -37,6 +36,8 @@ set_target_properties(${OpenCV_LIBS} PROPERTIES
     MAP_IMPORTED_CONFIG_RELWITHDEBINFO Release
     MAP_IMPORTED_CONFIG_MINSIZEREL Release
 )
+
+add_subdirectory(external/clw)
 
 add_subdirectory(Kommon)
 add_subdirectory(Logic)
