@@ -1,4 +1,4 @@
-add_library(Plugin.BRISK MODULE
+mouve_add_plugin(Plugin.BRISK
     brisk.cpp
     brisk.h
     BriskNode.cpp
@@ -19,19 +19,9 @@ add_library(Plugin.BRISK MODULE
     agast/oast9_16.cc
     agast/oast9_16.h
 )
-target_link_libraries(Plugin.BRISK PRIVATE
-    Mouve.Logic
-)
-target_include_directories(Plugin.BRISK PRIVATE ${mouve_SOURCE_DIR})
 
 include(CheckCXXCompilerFlag)
 check_cxx_compiler_flag(-mssse3 ssse3_supported)
 if(ssse3_supported)
-    string(APPEND CMAKE_CXX_FLAGS " -mssse3")
+    target_compile_options(Plugin.BRISK PRIVATE -mssse3)
 endif()
-
-install(TARGETS Plugin.BRISK
-    RUNTIME DESTINATION bin/plugins
-    LIBRARY DESTINATION bin/plugins
-    ARCHIVE DESTINATION lib/plugins
-)
