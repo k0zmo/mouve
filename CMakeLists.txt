@@ -60,8 +60,11 @@ add_subdirectory(Kommon)
 add_subdirectory(Logic)
 add_subdirectory(Console)
 add_subdirectory(UI)
+
 add_subdirectory(Plugin.AMP)
 add_subdirectory(Plugin.BRISK)
 add_subdirectory(Plugin.Kuwahara)
 add_subdirectory(Plugin.ShiTomasi)
 add_subdirectory(Plugin.Template)
+
+set_directory_properties(PROPERTIES VS_STARTUP_PROJECT Mouve.UI)
