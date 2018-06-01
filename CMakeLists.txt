@@ -32,9 +32,10 @@ find_package(OpenCV 2.4 REQUIRED
         opencv_calib3d
 )
 find_package(Qt5 REQUIRED COMPONENTS Core Gui Widgets OpenGL)
+set(OpenGL_GL_PREFERENCE GLVND)
 find_package(OpenGL REQUIRED)
 find_package(Threads REQUIRED)
-find_package(TBB)
+find_package(TBB QUIET)
 
 set(JAI_DYNAMIC TRUE)
 find_package(JAI)
