@@ -58,10 +58,12 @@ target_link_libraries(Mouve.UI PUBLIC
     OpenGL::GL
     Threads::Threads
 )
-set_target_properties(Mouve.UI PROPERTIES
-    AUTOMOC ON
-    AUTOUIC ON
-    AUTORCC ON
+set_target_properties(Mouve.UI 
+    PROPERTIES
+        AUTOMOC ON
+        AUTOUIC ON
+        AUTORCC ON
+        RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
 )
 
 if(TARGET VLD::VLD)

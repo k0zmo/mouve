@@ -108,6 +108,11 @@ target_link_libraries(Mouve.Logic PUBLIC
     Qt5::Core
 )
 
+set_target_properties(Mouve.Logic
+    PROPERTIES
+        RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin    
+)
+
 if(MOUVE_USE_PRECOMPILED_HEADERS)
     set_target_properties(Mouve.Logic
         PROPERTIES
