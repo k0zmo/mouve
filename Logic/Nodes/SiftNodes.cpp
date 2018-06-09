@@ -23,8 +23,8 @@
 
 #include "Logic/NodeType.h"
 #include "Logic/NodeFactory.h"
-#include "Kommon/StringUtils.h"
 
+#include <fmt/core.h>
 #include <opencv2/nonfree/features2d.hpp>
 
 class SiftFeatureDetectorNodeType : public NodeType
@@ -68,8 +68,8 @@ public:
         detector.detect(src, kp.kpoints);
         kp.image = src;
 
-        return ExecutionStatus(EStatus::Ok, 
-            string_format("Keypoints detected: %d", (int) kp.kpoints.size()));
+        return ExecutionStatus(EStatus::Ok,
+                               fmt::format("Keypoints detected: {}", kp.kpoints.size()));
     }
 
 protected:
@@ -145,8 +145,8 @@ public:
         sift(src, cv::noArray(), kp.kpoints, descriptors);
         kp.image = src;
 
-        return ExecutionStatus(EStatus::Ok, 
-            string_format("Keypoints detected: %d", (int) kp.kpoints.size()));
+        return ExecutionStatus(EStatus::Ok,
+                               fmt::format("Keypoints detected: {}", kp.kpoints.size()));
     }
 };
 

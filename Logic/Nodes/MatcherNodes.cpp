@@ -24,8 +24,8 @@
 #include "Logic/NodeType.h"
 #include "Logic/NodeFactory.h"
 #include "Kommon/Utils.h"
-#include "Kommon/StringUtils.h"
 
+#include <fmt/core.h>
 #include <opencv2/features2d/features2d.hpp>
 
 using std::vector;
@@ -152,8 +152,8 @@ public:
             mt.trainPoints.push_back(trainKp.kpoints[match.trainIdx].pt);
         }
 
-        return ExecutionStatus(EStatus::Ok, 
-            string_format("Matches found: %d", (int) mt.queryPoints.size()));
+        return ExecutionStatus(EStatus::Ok,
+                               fmt::format("Matches found: {}", mt.queryPoints.size()));
     }
 
 private:
@@ -313,8 +313,8 @@ public:
         mt.queryImage = queryKp.image;
         mt.trainImage = trainKp.image;
 
-        return ExecutionStatus(EStatus::Ok, 
-            string_format("Matches found: %d", (int) mt.queryPoints.size()));
+        return ExecutionStatus(EStatus::Ok,
+                               fmt::format("Matches found: {}", mt.queryPoints.size()));
     }
 };
 
@@ -393,8 +393,8 @@ public:
         mt.queryImage = queryKp.image;
         mt.trainImage = trainKp.image;
 
-        return ExecutionStatus(EStatus::Ok, 
-            string_format("Matches found: %d", (int) mt.queryPoints.size()));
+        return ExecutionStatus(EStatus::Ok,
+                               fmt::format("Matches found: {}", mt.queryPoints.size()));
     }
 
 private:

@@ -23,8 +23,8 @@
 
 #include "Logic/NodeType.h"
 #include "Logic/NodeFactory.h"
-#include "Kommon/StringUtils.h"
 
+#include <fmt/core.h>
 #include <opencv2/core/core.hpp>
 
 class AddNodeType : public NodeType
@@ -207,7 +207,7 @@ public:
         // Do stuff
         int n = cv::countNonZero(src);
 
-        return ExecutionStatus(EStatus::Ok, string_format("Non-zero elements: %d\n", n));
+        return ExecutionStatus(EStatus::Ok, fmt::format("Non-zero elements: {}\n", n));
     }
 };
 

@@ -27,6 +27,7 @@
 #include "NodeException.h"
 #include "Kommon/TypeTraits.h"
 
+#include <fmt/core.h>
 #include <regex>
 
 NodeResolver::NodeResolver(std::shared_ptr<NodeTree> nodeTree)
@@ -340,24 +341,17 @@ SocketAddress NodeResolver::resolveSocketAddress(const std::string& uri)
 
 std::string NodeResolver::socketAddressUri(const SocketAddress& socketAddr)
 {
-    if(!socketAddr.isValid()) return {};
+    if (!socketAddr.isValid())
+        return {};
 
-    std::ostringstream strm;
-
-    if(socketAddr.isOutput)
+    if (socketAddr.isOutput)
     {
-        strm << "o://";
-        strm << _nodeTree->nodeName(socketAddr.node);
-        strm << "/";
-        strm << outputSocketConfig(socketAddr.node, socketAddr.socket).name();
+        return fmt::format("o://{}/{}", _nodeTree->nodeName(socketAddr.node),
+                           outputSocketConfig(socketAddr.node, socketAddr.socket).name());
     }
     else
     {
-        strm << "i://";
-        strm << _nodeTree->nodeName(socketAddr.node);
-        strm << "/";
-        strm << inputSocketConfig(socketAddr.node, socketAddr.socket).name();
-    }    
-
-    return strm.str();
+        return fmt::format("i://{}/{}", _nodeTree->nodeName(socketAddr.node),
+                           inputSocketConfig(socketAddr.node, socketAddr.socket).name());
+    }
 }

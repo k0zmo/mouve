@@ -107,6 +107,7 @@ target_link_libraries(Mouve.Logic PUBLIC
     opencv_flann
     opencv_calib3d
     Qt5::Core
+    fmt::fmt
 )
 
 set_target_properties(Mouve.Logic

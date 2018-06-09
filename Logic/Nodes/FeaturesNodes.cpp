@@ -23,8 +23,8 @@
 
 #include "Logic/NodeType.h"
 #include "Logic/NodeFactory.h"
-#include "Kommon/StringUtils.h"
 
+#include <fmt/core.h>
 #include <opencv2/core/core.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
 
@@ -108,8 +108,7 @@ public:
             linesPtr += 2;
         }
 
-        return ExecutionStatus(EStatus::Ok,
-            string_format("Lines detected: %d", (int) linesVector.size()));
+        return ExecutionStatus(EStatus::Ok, fmt::format("Lines detected: {}", linesVector.size()));
     }
 
 private:
@@ -163,8 +162,7 @@ public:
         cv::HoughCircles(src, circles, CV_HOUGH_GRADIENT, _dp, 
             src.rows/8, _cannyThreshold, _accThreshold, _minRadius, _maxRadius);
 
-        return ExecutionStatus(EStatus::Ok, 
-            string_format("Circles detected: %d", circles.cols));
+        return ExecutionStatus(EStatus::Ok, fmt::format("Circles detected: {}", circles.cols));
     }
 
 private:

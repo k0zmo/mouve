@@ -23,7 +23,8 @@
 
 #include "Logic/NodeType.h"
 #include "Logic/NodeFactory.h"
-#include "Kommon/StringUtils.h"
+
+#include <fmt/core.h>
 
 class RetainBestFeaturesNodeType : public NodeType
 {
@@ -53,14 +54,13 @@ public:
         // Prepare output structure
         dst.image = src.image;
         dst.kpoints.clear();
-        std::copy(std::begin(src.kpoints), std::end(src.kpoints), 
-            std::back_inserter(dst.kpoints));
+        std::copy(std::begin(src.kpoints), std::end(src.kpoints), std::back_inserter(dst.kpoints));
 
         // Do stuff
         cv::KeyPointsFilter::retainBest(dst.kpoints, _n);
 
-        return ExecutionStatus(EStatus::Ok, 
-            string_format("Keypoints retained: %d", (int) dst.kpoints.size()));
+        return ExecutionStatus(EStatus::Ok,
+                               fmt::format("Keypoints retained: {}", dst.kpoints.size()));
     }
 
 private:

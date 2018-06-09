@@ -23,8 +23,8 @@
 
 #include "Logic/NodeType.h"
 #include "Logic/NodeFactory.h"
-#include "Kommon/StringUtils.h"
 
+#include <fmt/core.h>
 #include <opencv2/imgproc/imgproc.hpp>
 
 class RotateImageNodeType : public NodeType
@@ -96,9 +96,9 @@ public:
         cv::Size dstSize(int(input.cols * _scale), int(input.rows * _scale));
         cv::resize(input, output, dstSize, 0, 0, _inter.cast<Enum>().data());
 
-        return ExecutionStatus(EStatus::Ok, 
-            string_format("Output image width: %d\nOutput image height: %d",
-                output.cols, output.rows));
+        return ExecutionStatus(EStatus::Ok,
+                               fmt::format("Output image width: {}\nOutput image height: {}",
+                                           output.cols, output.rows));
     }
 
 private:
@@ -140,8 +140,7 @@ public:
         // Do stuff
         cv::pyrDown(src, dst, cv::Size(src.cols/2, src.rows/2));
 
-        return ExecutionStatus(EStatus::Ok, 
-            string_format("Image size: %dx%d\n", dst.cols, dst.rows));
+        return ExecutionStatus(EStatus::Ok, fmt::format("Image size: {}x{}\n", dst.cols, dst.rows));
     }
 };
 
@@ -169,8 +168,7 @@ public:
         // Do stuff
         cv::pyrUp(src, dst, cv::Size(src.cols*2, src.rows*2));
 
-        return ExecutionStatus(EStatus::Ok, 
-            string_format("Image size: %dx%d\n", dst.cols, dst.rows));
+        return ExecutionStatus(EStatus::Ok, fmt::format("Image size: {}x{}\n", dst.cols, dst.rows));
     }
 };
 

@@ -25,7 +25,8 @@
 
 #include "GpuNode.h"
 #include "Logic/NodeFactory.h"
-#include "Kommon/StringUtils.h"
+
+#include <fmt/core.h>
 
 class GpuHoughLinesNodeType : public GpuNodeType
 {
@@ -119,8 +120,8 @@ public:
         else if(!deviceAccumImage.isNull())
             deviceAccumImage = clw::Image2D();
 
-        return ExecutionStatus(EStatus::Ok, 
-            string_format("Detected lines: %d (max: %d)", linesCount, maxLines));
+        return ExecutionStatus(EStatus::Ok,
+                               fmt::format("Detected lines: {} (max: {})", linesCount, maxLines));
     }
 
 private:

@@ -25,7 +25,8 @@
 
 #include "GpuNode.h"
 #include "Logic/NodeFactory.h"
-#include "Kommon/StringUtils.h"
+
+#include <fmt/core.h>
 
 // Define as 1 to use more accurate calcuations
 #define ACCURATE_CALCULATIONS 0
@@ -59,8 +60,8 @@ public:
         addProperty("Number of mixtures", _nmixtures)
             .setValidator(make_validator<InclRangePropertyValidator<int>>(1, 9))
             .setObserver(make_observer<FuncObserver>([this](const NodeProperty&) {
-                std::string opts = string_format("-DNMIXTURES=%d -DACCURATE_CALCULATIONS=%d",
-                    (int)_nmixtures, ACCURATE_CALCULATIONS);
+                std::string opts = fmt::format("-DNMIXTURES={} -DACCURATE_CALCULATIONS={}",
+                    _nmixtures, ACCURATE_CALCULATIONS);
                 _kidGaussMix = _gpuComputeModule->registerKernel(
                     "mog_image_unorm", "mog.cl", opts);
                 _kidGaussBackground = _gpuComputeModule->registerKernel(
@@ -80,8 +81,8 @@ public:
 
     bool postInit() override
     {
-        std::string opts = string_format("-DNMIXTURES=%d -DACCURATE_CALCULATIONS=%d",
-            _nmixtures.cast_value<int>(), ACCURATE_CALCULATIONS);
+        std::string opts = fmt::format("-DNMIXTURES={} -DACCURATE_CALCULATIONS={}", _nmixtures,
+                                       ACCURATE_CALCULATIONS);
 
         _kidGaussMix = _gpuComputeModule->registerKernel(
             "mog_image_unorm", "mog.cl", opts);

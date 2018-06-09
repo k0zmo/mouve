@@ -27,6 +27,8 @@
 #include "GpuException.h"
 #include "Logic/NodeFactory.h"
 
+#include <fmt/format.h>
+
 class GpuApproxGaussianBlurNodeType : public GpuNodeType
 {
 public:
@@ -48,9 +50,9 @@ public:
     bool postInit() override
     {
         _kidApproxGaussianBlurHoriz = _gpuComputeModule->registerKernel("approxGaussian_horiz_image",
-            "approx_gaussian.cl", kernelBuildOptionsHoriz(512) + "-DAPPROX_GAUSSIAN_PASS=0");
+            "approx_gaussian.cl", kernelBuildOptionsHoriz(512));
         _kidApproxGaussianBlurVert = _gpuComputeModule->registerKernel("approxGaussian_vert_image",
-            "approx_gaussian.cl", kernelBuildOptionsVert(512) + "-DAPPROX_GAUSSIAN_PASS=1");
+            "approx_gaussian.cl", kernelBuildOptionsVert(512));
 
         return _kidApproxGaussianBlurHoriz != InvalidKernelID
             && _kidApproxGaussianBlurVert != InvalidKernelID;
@@ -79,9 +81,9 @@ public:
 
             // _tempImage's size is kept in sync with defines for both of kernels
             _kidApproxGaussianBlurHoriz = _gpuComputeModule->registerKernel("approxGaussian_horiz_image",
-                "approx_gaussian.cl", kernelBuildOptionsHoriz(imageWidth) + "-DAPPROX_GAUSSIAN_PASS=0");
+                "approx_gaussian.cl", kernelBuildOptionsHoriz(imageWidth));
             _kidApproxGaussianBlurVert = _gpuComputeModule->registerKernel("approxGaussian_vert_image",
-                "approx_gaussian.cl", kernelBuildOptionsVert(imageHeight) + "-DAPPROX_GAUSSIAN_PASS=1");
+                "approx_gaussian.cl", kernelBuildOptionsVert(imageHeight));
         }
 
         // Ensure output image size is enough
@@ -140,74 +142,31 @@ private:
         return sqrt(sigma * sigma * 12.0f / numPasses + 1);
     }
 
-#if !defined(__GLIBCXX__)
-    std::ostringstream kernelBuildOptionsBase()
+    fmt::memory_buffer kernelBuildOptionsBase()
     {
-        // GCC asserts on this ?!
-        static_assert(std::is_move_constructible<std::ostringstream>::value,
-                      "ostringstream is not move constructible");
         const size_t warpSize = _gpuComputeModule->warpSize();
         const size_t warpSizeLog2 = static_cast<size_t>(log2(static_cast<double>(warpSize)));
-        std::ostringstream strm;
-        strm << "-DWARP_SIZE=" << warpSize;
-        strm << " -DWARP_SIZE_LOG_2=" << warpSizeLog2;
-        strm << " -DNUM_THREADS=" << threadsPerGroup;
-        strm << " -DNUM_WARPS=" << threadsPerGroup / warpSize;
-        strm << " ";
-        return strm;
+        fmt::memory_buffer buf;
+        fmt::format_to(buf, "-DWARP_SIZE={} -DWARP_SIZE_LOG_2={} -DNUM_THREADS={} -DNUM_WARPS={}",
+                       warpSize, warpSizeLog2, threadsPerGroup, threadsPerGroup / warpSize);
+        return buf;
     }
 
     std::string kernelBuildOptionsHoriz(int imageWidth)
     {
-        std::ostringstream strm = kernelBuildOptionsBase();
-        strm << "-DIMAGE_WIDTH=" << imageWidth;
-        strm << " -DTEXELS_PER_THREAD=" << (imageWidth + threadsPerGroup - 1) / threadsPerGroup;
-        strm << " ";
-        return strm.str();
+        fmt::memory_buffer buf = kernelBuildOptionsBase();
+        fmt::format_to(buf, " -DIMAGE_WIDTH={} -DTEXELS_PER_THREAD={} -DAPPROX_GAUSSIAN_PASS=0",
+                       imageWidth, (imageWidth + threadsPerGroup - 1) / threadsPerGroup);
+        return to_string(buf);
     }
 
     std::string kernelBuildOptionsVert(int imageHeight)
     {
-        std::ostringstream strm = kernelBuildOptionsBase();
-        strm << "-DIMAGE_HEIGHT=" << imageHeight;
-        strm << " -DTEXELS_PER_THREAD=" << (imageHeight + threadsPerGroup - 1) / threadsPerGroup;
-        strm << " ";
-        return strm.str();
+        fmt::memory_buffer buf = kernelBuildOptionsBase();
+        fmt::format_to(buf, " -DIMAGE_HEIGHT={} -DTEXELS_PER_THREAD={} -DAPPROX_GAUSSIAN_PASS=1",
+                       imageHeight, (imageHeight + threadsPerGroup - 1) / threadsPerGroup);
+        return to_string(buf);
     }
-#else
-    std::string kernelBuildOptionsBase()
-    {
-        const size_t warpSize = _gpuComputeModule->warpSize();
-        const size_t warpSizeLog2 = static_cast<size_t>(log2(static_cast<double>(warpSize)));
-        std::ostringstream strm;
-        strm << "-DWARP_SIZE=" << warpSize;
-        strm << " -DWARP_SIZE_LOG_2=" << warpSizeLog2;
-        strm << " -DNUM_THREADS=" << threadsPerGroup;
-        strm << " -DNUM_WARPS=" << threadsPerGroup / warpSize;
-        strm << " ";
-        return strm.str();
-    }
-
-    std::string kernelBuildOptionsHoriz(int imageWidth)
-    {
-        std::ostringstream strm;
-        strm << kernelBuildOptionsBase();
-        strm << "-DIMAGE_WIDTH=" << imageWidth;
-        strm << " -DTEXELS_PER_THREAD=" << (imageWidth + threadsPerGroup - 1) / threadsPerGroup;
-        strm << " ";
-        return strm.str();
-    }
-
-    std::string kernelBuildOptionsVert(int imageHeight)
-    {
-        std::ostringstream strm;
-        strm << kernelBuildOptionsBase();
-        strm << "-DIMAGE_HEIGHT=" << imageHeight;
-        strm << " -DTEXELS_PER_THREAD=" << (imageHeight + threadsPerGroup - 1) / threadsPerGroup;
-        strm << " ";
-        return strm.str();
-    }
-#endif
 
 private:
     TypedNodeProperty<double> _sigma;

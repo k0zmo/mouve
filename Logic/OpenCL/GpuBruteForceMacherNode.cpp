@@ -25,7 +25,8 @@
 
 #include "GpuNode.h"
 #include "Logic/NodeFactory.h"
-#include "Kommon/StringUtils.h"
+
+#include <fmt/core.h>
 
 struct DMatch
 {
@@ -163,8 +164,8 @@ public:
         mt.queryImage = queryKp.image;
         mt.trainImage = trainKp.image;
 
-        return ExecutionStatus(EStatus::Ok, 
-            string_format("Matches found: %d", (int) mt.queryPoints.size()));
+        return ExecutionStatus(EStatus::Ok,
+                               fmt::format("Matches found: {}", mt.queryPoints.size()));
     }
 
 private:

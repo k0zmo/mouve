@@ -26,8 +26,7 @@
 #include "Logic/NodeType.h"
 #include "Logic/NodeFactory.h"
 
-#include "Kommon/StringUtils.h"
-
+#include <fmt/core.h>
 #include <opencv2/features2d/features2d.hpp>
 using std::unique_ptr;
 
@@ -72,8 +71,8 @@ public:
         _brisk->detect(src, kp.kpoints);
         kp.image = src;
 
-        return ExecutionStatus(EStatus::Ok, 
-            string_format("Keypoints detected: %d", (int) kp.kpoints.size()));
+        return ExecutionStatus(EStatus::Ok,
+            fmt::format("Keypoints detected: {}", kp.kpoints.size()));
     }
 
 protected:
@@ -151,8 +150,9 @@ public:
         (*_brisk)(src, cv::noArray(), kp.kpoints, descriptors);
         kp.image = src;
 
-        return ExecutionStatus(EStatus::Ok, 
-            string_format("Keypoints detected: %d", (int) kp.kpoints.size()));
+        return ExecutionStatus(
+            EStatus::Ok,
+            fmt::format("Keypoints detected: {}", kp.kpoints.size()));
     }
 };
 

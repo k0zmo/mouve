@@ -29,8 +29,6 @@
 #include "Logic/NodeSystem.h"
 #include "Logic/NodeType.h"
 
-#include "Kommon/StringUtils.h"
-
 class AmpAddNodeType : public NodeType
 {
 public:

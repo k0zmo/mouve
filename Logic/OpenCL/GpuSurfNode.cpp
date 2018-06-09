@@ -25,12 +25,10 @@
 
 #include "GpuNode.h"
 #include "Logic/NodeFactory.h"
-#include "Kommon/StringUtils.h"
-
-#include <sstream>
-#include <opencv2/imgproc/imgproc.hpp>
-
 #include "Logic/Nodes/ksurf.h"
+
+#include <fmt/format.h>
+#include <opencv2/imgproc/imgproc.hpp>
 
 using namespace std;
 
@@ -54,17 +52,10 @@ struct ScaleSpaceLayer_cl
     // Size of box filter this layer was blurred with
     int filterSize;
     // determinant of Hesse's matrix
-    clw::Buffer hessian_cl; 
+    clw::Buffer hessian_cl;
     // trace (Lxx + Lyy) of Hesse's matrix - which is Laplacian
     clw::Buffer laplacian_cl;
 };
-
-string warpSizeDefine(GpuNodeModule& gpuModule)
-{
-    ostringstream strm;
-    strm << "-DWARP_SIZE=" << gpuModule.warpSize();
-    return strm.str();
-}
 
 class GpuSurfNodeType : public GpuNodeType
 {
@@ -104,12 +95,14 @@ public:
 
     bool postInit() override
     {
-        string opts = warpSizeDefine(*_gpuComputeModule);
+        std::string opts; opts.reserve(32);
+        fmt::format_to(std::back_inserter(opts), "-DWARP_SIZE={}", _gpuComputeModule->warpSize());
+
         _kidFillImage = _gpuComputeModule->registerKernel("fill_image_uint", "fill.cl");
         _kidMultiScan_horiz = _gpuComputeModule->registerKernel("multiscan_horiz_image", "integral.cl", opts);
         _kidMultiScan_vert = _gpuComputeModule->registerKernel("multiscan_vert_image", "integral.cl", opts);
 
-        opts += string_format(" -DKEYPOINT_MAX=%d", kKeypointsMax);
+        fmt::format_to(std::back_inserter(opts), " -DKEYPOINT_MAX={}", kKeypointsMax);
         _kidBuildScaleSpace = _gpuComputeModule->registerKernel("buildScaleSpace", "surf.cl", opts);
         _kidFindScaleSpaceMaxima = _gpuComputeModule->registerKernel("findScaleSpaceMaxima", "surf.cl", opts);
         _kidUprightKeypointOrientation = _gpuComputeModule->registerKernel("uprightKeypointOrientation", "surf.cl", opts);
@@ -117,7 +110,7 @@ public:
         _kidCalculateDescriptors = _gpuComputeModule->registerKernel("calculateDescriptors", "surf.cl", opts);
         _kidCalculateDescriptorsMSurf = _gpuComputeModule->registerKernel("calculateDescriptorsMSURF", "surf.cl", opts);
         _kidNormalizeDescriptors = _gpuComputeModule->registerKernel("normalizeDescriptors", "surf.cl", opts);
-            
+
         return _kidFillImage != InvalidKernelID &&
             _kidMultiScan_horiz != InvalidKernelID &&
             _kidMultiScan_vert != InvalidKernelID &&
@@ -258,8 +251,8 @@ public:
             descriptors_dev = DeviceArray();
         }
 
-        return ExecutionStatus(EStatus::Ok, 
-            string_format("Keypoints detected: %d", (int) kp.kpoints.size()));
+        return ExecutionStatus(EStatus::Ok,
+                               fmt::format("Keypoints detected: {}", kp.kpoints.size()));
     }
 
 protected:
@@ -696,15 +689,16 @@ public:
     bool postInit() override
     {
         bool res = GpuSurfNodeType::postInit();
-        if(res)
-        {	
-            ostringstream strm;
-            if(_gpuComputeModule->device().supportsExtension("cl_ext_atomic_counters_32"))
-                strm << " -DUSE_ATOMIC_COUNTERS";
-            strm << " -DKEYPOINT_MAX=" << kKeypointsMax;
-            string opts = warpSizeDefine(*_gpuComputeModule) + strm.str();
+        if (res)
+        {
+            fmt::memory_buffer buf;
+            if (_gpuComputeModule->device().supportsExtension("cl_ext_atomic_counters_32"))
+                fmt::format_to(buf, " -DUSE_ATOMIC_COUNTERS");
+            fmt::format_to(buf, " -DKEYPOINT_MAX={}", kKeypointsMax);
+            fmt::format_to(buf, " -DWARP_SIZE={}", _gpuComputeModule->warpSize());
 
-            _kidBuildScaleSpace = _gpuComputeModule->registerKernel("buildScaleSpace_buffer", "surf.cl", opts);
+            _kidBuildScaleSpace = _gpuComputeModule->registerKernel("buildScaleSpace_buffer",
+                                                                    "surf.cl", to_string(buf));
             return _kidBuildScaleSpace != InvalidKernelID;
         }
         return res;

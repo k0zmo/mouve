@@ -201,7 +201,7 @@ bool GpuNodeModule::createAfterContext()
 
     clw::installErrorHandler([=](cl_int error_id, const std::string& message)
     {
-        if(error_id != CL_BUILD_PROGRAM_FAILURE)
+        if(error_id != CL_BUILD_PROGRAM_FAILURE && error_id != CL_INVALID_KERNEL_NAME)
             throw GpuNodeException(error_id, message);
     });
 

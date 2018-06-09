@@ -23,10 +23,11 @@
 
 #include "Logic/NodeType.h"
 #include "Logic/NodeFactory.h"
-#include "Kommon/StringUtils.h"
+
+#include <fmt/core.h>
+#include <opencv2/calib3d/calib3d.hpp>
 
 #include <fstream>
-#include <opencv2/calib3d/calib3d.hpp>
 
 using std::vector;
 
@@ -117,12 +118,12 @@ public:
             }
         }
 
-        return ExecutionStatus(EStatus::Ok, 
-            string_format("Inliers: %d\nOutliers: %d\nPercent of correct matches: %f%%",
-                (int) outMt.queryPoints.size(), 
-                (int) (mt.queryPoints.size() - outMt.queryPoints.size()), 
-                (double) outMt.queryPoints.size() / mt.queryPoints.size() * 100.0)
-            );
+        return ExecutionStatus(
+            EStatus::Ok,
+            fmt::format("Inliers: {}\nOutliers: {}\nPercent of correct matches: {}%",
+                        outMt.queryPoints.size(), mt.queryPoints.size() - outMt.queryPoints.size(),
+                        static_cast<double>(outMt.queryPoints.size()) / mt.queryPoints.size() *
+                            100.0));
     }
 
 private:
@@ -163,10 +164,14 @@ public:
             return ExecutionStatus(EStatus::Error, 
             "Points from one images doesn't correspond to key points in another one");
 
-        // Do stuff - Load real homography 
+        // Do stuff - Load real homography
         std::ifstream homographyFile(_homographyPath.cast<Filepath>().data(), std::ios::in);
-        if(!homographyFile.is_open())
-            return ExecutionStatus(EStatus::Error, string_format("Can't load %s\n", _homographyPath.cast<Filepath>().data().c_str()));
+        if (!homographyFile.is_open())
+        {
+            return ExecutionStatus(
+                EStatus::Error,
+                fmt::format("Can't load {}\n", _homographyPath.cast<Filepath>().data()));
+        }
 
         cv::Mat homography(3, 3, CV_32F);
         homographyFile >> homography.at<float>(0, 0) >> homography.at<float>(0, 1) >> homography.at<float>(0, 2);
@@ -210,12 +215,12 @@ public:
 
         H = homography;
 
-        return ExecutionStatus(EStatus::Ok, 
-            string_format("Inliers: %d\nOutliers: %d\nPercent of correct matches: %f%%",
-                (int) outMt.queryPoints.size(), 
-                (int) (mt.queryPoints.size() - outMt.queryPoints.size()), 
-                (double) outMt.queryPoints.size() / mt.queryPoints.size() * 100.0)
-            );
+        return ExecutionStatus(
+            EStatus::Ok,
+            fmt::format("Inliers: {}\nOutliers: {}\nPercent of correct matches: {}%",
+                        outMt.queryPoints.size(), mt.queryPoints.size() - outMt.queryPoints.size(),
+                        static_cast<double>(outMt.queryPoints.size()) / mt.queryPoints.size() *
+                            100.0));
     }
 
 private:

@@ -26,7 +26,8 @@
 #include "NodeTree.h"
 #include "NodeModule.h"
 #include "NodePlugin.h"
-#include "Kommon/StringUtils.h"
+
+#include <fmt/core.h>
 
 /// TODO: Change this to some neat logging system
 #include <QDebug>
@@ -219,11 +220,11 @@ size_t NodeSystem::loadPlugin(const std::string& pluginName)
     if(_plugins.find(pluginName) == _plugins.end())
     {
         auto plugin = std::unique_ptr<NodePlugin>(new NodePlugin(pluginName));
-        if(plugin->logicVersion() != LOGIC_VERSION)
+        if (plugin->logicVersion() != LOGIC_VERSION)
         {
-            throw std::runtime_error(string_format(
-                "Logic (%d) and plugin %s (%d) version mismatch",
-                    LOGIC_VERSION, pluginName.c_str(), plugin->logicVersion()));
+            throw std::runtime_error(fmt::format("Logic ({}) and plugin {} ({}) version mismatch",
+                                                 LOGIC_VERSION, pluginName,
+                                                 plugin->logicVersion()));
         }
         size_t before = _registeredNodeTypes.size();
         plugin->registerPlugin(this);

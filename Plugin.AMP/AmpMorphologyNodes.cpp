@@ -29,8 +29,6 @@
 #include "Logic/NodeSystem.h"
 #include "Logic/NodeType.h"
 
-#include "Kommon/StringUtils.h"
-
 class AmpMorphologyOperatorNodeType : public NodeType
 {
 public:

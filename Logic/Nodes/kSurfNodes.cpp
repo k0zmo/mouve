@@ -23,9 +23,10 @@
 
 #include "Logic/NodeType.h"
 #include "Logic/NodeFactory.h"
-#include "Kommon/StringUtils.h"
 
 #include "ksurf.h"
+
+#include <fmt/core.h>
 
 class kSurfFeatureDetectorNodeType : public NodeType
 {
@@ -67,8 +68,8 @@ public:
         surf(src, cv::noArray(), kp.kpoints);
         kp.image = src;
 
-        return ExecutionStatus(EStatus::Ok, 
-            string_format("Keypoints detected: %d", (int) kp.kpoints.size()));
+        return ExecutionStatus(EStatus::Ok,
+            fmt::format("Keypoints detected: {}", kp.kpoints.size()));
     }
 
 protected:
@@ -166,8 +167,8 @@ public:
         surf(src, cv::noArray(), kp.kpoints, descriptors);
         kp.image = src;
 
-        return ExecutionStatus(EStatus::Ok, 
-            string_format("Keypoints detected: %d", (int) kp.kpoints.size()));
+        return ExecutionStatus(EStatus::Ok,
+                               fmt::format("Keypoints detected: {}", kp.kpoints.size()));
     }
 
 private:

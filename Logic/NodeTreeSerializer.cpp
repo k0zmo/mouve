@@ -27,14 +27,15 @@
 #include "NodeSystem.h"
 
 #include "Kommon/NestedException.h"
-#include "Kommon/StringUtils.h"
 #include "Kommon/Utils.h"
 
-#include <fstream>
+#include <fmt/core.h>
 
 #include <QString>
 #include <QFileInfo>
 #include <QDir>
+
+#include <fstream>
 
 namespace priv {
 
@@ -180,8 +181,8 @@ void NodeTreeSerializer::serializeToFile(const NodeTree& nodeTree,
     }
     catch (std::exception&)
     {
-        std::throw_with_nested(serializer_exception{
-            string_format("Couldn't open target file: %s", filePath.c_str())});
+        std::throw_with_nested(
+            serializer_exception{fmt::format("Couldn't open target file: {}", filePath)});
     }
 }
 
@@ -271,17 +272,16 @@ json11::Json
     catch (std::exception&)
     {
         std::throw_with_nested(serializer_exception{
-            string_format("Error during loading file: %s", filePath.c_str())});
+            fmt::format("Error during loading file: {}", filePath)});
     }
 
     std::string err;
     json11::Json json{json11::Json::parse(contents, err)};
     if (!err.empty())
     {
-        throw serializer_exception(
-            string_format("Error during parsing JSON file: %s\n"
-                          "Error details: %s",
-                          filePath.c_str(), err.c_str()));
+        throw serializer_exception(fmt::format("Error during parsing JSON file: {}\n"
+                                               "Error details: {}",
+                                               filePath, err));
     }
 
     if (_rootDirectory.empty())
@@ -334,8 +334,7 @@ void NodeTreeSerializer::deserializeNodes(NodeTree& nodeTree,
                              {"id", json11::Json::NUMBER}},
                             err))
         {
-            throw serializer_exception{
-                string_format("node fields are invalid: %s", err.c_str())};
+            throw serializer_exception{fmt::format("node fields are invalid: {}", err)};
         }
 
         NodeID nodeID = node["id"].int_value();
@@ -347,9 +346,8 @@ void NodeTreeSerializer::deserializeNodes(NodeTree& nodeTree,
         NodeID _nodeID = nodeTree.createNode(nodeTypeID, nodeName);
         if (_nodeID == InvalidNodeID)
         {
-            throw serializer_exception{string_format(
-                "Couldn't create node of id: %d and type name: %s", nodeID,
-                nodeTypeName.c_str())};
+            throw serializer_exception{fmt::format(
+                "Couldn't create node of id: {} and type name: {}", nodeID, nodeTypeName)};
         }
 
         _idMappings.insert(std::make_pair(nodeID, _nodeID));
@@ -372,8 +370,7 @@ void NodeTreeSerializer::deserializeLinks(NodeTree& nodeTree,
                              {"toSocket", json11::Json::NUMBER}},
                             err))
         {
-            throw serializer_exception{
-                string_format("link fields are invalid: %s", err.c_str())};
+            throw serializer_exception{fmt::format("link fields are invalid: {}", err)};
         }
 
         NodeID fromNode = link["fromNode"].int_value();
@@ -387,18 +384,17 @@ void NodeTreeSerializer::deserializeLinks(NodeTree& nodeTree,
         if (fromNodeRefined == InvalidNodeID ||
             toNodeRefined == InvalidNodeID)
         {
-            throw serializer_exception{string_format(
-                "No such node to link with: %d",
-                fromNodeRefined == InvalidNodeID ? fromNode : toNode)};
+            throw serializer_exception{
+                fmt::format("No such node to link with: {}",
+                            fromNodeRefined == InvalidNodeID ? fromNode : toNode)};
         }
 
         if (nodeTree.linkNodes(SocketAddress(fromNodeRefined, fromSocket, true),
                                SocketAddress(toNodeRefined, toSocket, false)) !=
             ELinkNodesResult::Ok)
         {
-            throw serializer_exception{
-                string_format("Couldn't link nodes %d:%d with %d:%d", fromNode,
-                              fromSocket, toNode, toSocket)};
+            throw serializer_exception{fmt::format("Couldn't link nodes {}:{} with {}:{}", fromNode,
+                                                   fromSocket, toNode, toSocket)};
         }
     }
 }
@@ -412,13 +408,10 @@ void NodeTreeSerializer::deserializeProperties(NodeTree& nodeTree,
     for (const auto& prop : jsonProps.array_items())
     {
         // check schema
-        if (!prop.has_shape({{"id", json11::Json::NUMBER},
-                             {"type", json11::Json::STRING}},
-                            err))
+        if (!prop.has_shape({{"id", json11::Json::NUMBER}, {"type", json11::Json::STRING}}, err))
         {
             throw serializer_exception{
-                string_format("property fields are invalid (id:%d, name:%s)",
-                              nodeID, nodeName.c_str())};
+                fmt::format("property fields are invalid (id:{}, name:{})", nodeID, nodeName)};
         }
 
         int propID = prop["id"].int_value();
@@ -427,10 +420,9 @@ void NodeTreeSerializer::deserializeProperties(NodeTree& nodeTree,
 
         if (propType == EPropertyType::Unknown)
         {
-            throw serializer_exception{
-                string_format("\"type\" is bad for property of id %d "
-                              "(id:%d, name:%s)",
-                              propID, nodeID, nodeName.c_str())};
+            throw serializer_exception{fmt::format("\"type\" is bad for property of id {} "
+                                                   "(id:{}, name:{})",
+                                                   propID, nodeID, nodeName)};
         }
 
         NodeProperty nodeProperty =
@@ -441,8 +433,7 @@ void NodeTreeSerializer::deserializeProperties(NodeTree& nodeTree,
                                       nodeProperty))
         {
             _warnings.push_back(
-                string_format("Couldn't set loaded property %d (type: %s)",
-                              propID, propTypeStr.c_str()));
+                fmt::format("Couldn't set loaded property {} (type: {})", propID, propTypeStr));
         }
     }
 }

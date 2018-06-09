@@ -24,13 +24,13 @@
 #include "Logic/NodeType.h"
 #include "Logic/NodeFactory.h"
 #include "Kommon/HighResolutionClock.h"
-#include "Kommon/StringUtils.h"
+
+#include <fmt/core.h>
+#include <opencv2/imgproc/imgproc.hpp>
+#include <opencv2/highgui/highgui.hpp>
 
 #include <chrono>
 #include <thread>
-
-#include <opencv2/imgproc/imgproc.hpp>
-#include <opencv2/highgui/highgui.hpp>
 
 class VideoFromFileNodeType : public NodeType
 {
@@ -99,17 +99,16 @@ public:
 
         ++_currentFrame;
 
-        if(_endFrame > 0 && _currentFrame >= _endFrame)
+        if (_endFrame > 0 && _currentFrame >= _endFrame)
         {
             // No more data (for us)
-            return ExecutionStatus(EStatus::Ok,
-                string_format("Frame image width: %d\nFrame image height: %d\nFrame channels count: %d\nFrame size in kbytes: %d\nFrame: %d/%d",
-                    output.cols, 
-                    output.rows,
-                    output.channels(),
-                    output.cols * output.rows * sizeof(uchar) * output.channels() / 1024, 
-                    _currentFrame - 1,
-                    _maxFrames));
+            return ExecutionStatus(
+                EStatus::Ok,
+                fmt::format(
+                    "Frame image width: {}\nFrame image height:{}\nFrame channels count: {}\nFrame size in kbytes: {}\nFrame: {}/{}",
+                    output.cols, output.rows, output.channels(),
+                    output.cols * output.rows * sizeof(uchar) * output.channels() / 1024,
+                    _currentFrame - 1, _maxFrames));
         }
 
         // We need this so we won't replace previous good frame with current bad (for instance - end of video)
@@ -148,18 +147,17 @@ public:
                 output = buffer;
 
             HighResolutionClock::time_point stop = HighResolutionClock::now();
-            return ExecutionStatus(EStatus::Tag, convertToMilliseconds(stop - start),
-                string_format("Frame image width: %d\nFrame image height: %d\nFrame channels count: %d\nFrame size in kbytes: %d\nFrame: %d/%d",
-                    output.cols,
-                    output.rows,
-                    output.channels(),
+            return ExecutionStatus(
+                EStatus::Tag, convertToMilliseconds(stop - start),
+                fmt::format(
+                    "Frame image width: {}\nFrame image height: {}\nFrame channels count: {}\nFrame size in kbytes: {}\nFrame: {}/{}",
+                    output.cols, output.rows, output.channels(),
                     output.cols * output.rows * sizeof(uchar) * output.channels() / 1024,
-                    _currentFrame,
-                    _maxFrames));
+                    _currentFrame, _maxFrames));
         }
         else
         {
-            // No more data 
+            // No more data
             return ExecutionStatus(EStatus::Ok);
         }
     }
@@ -214,11 +212,11 @@ public:
 
         if(output.empty())
             return ExecutionStatus(EStatus::Error, "File not found");
-        return ExecutionStatus(EStatus::Ok, 
-            string_format("Image image width: %d\nImage image height: %d\nImage channels count: %d\nImage size in kbytes: %d",
-                output.cols, 
-                output.rows,
-                output.channels(),
+        return ExecutionStatus(
+            EStatus::Ok,
+            fmt::format(
+                "Image image width: {}\nImage image height: {}\nImage channels count: {}\nImage size in kbytes: {}",
+                output.cols, output.rows, output.channels(),
                 output.cols * output.rows * sizeof(uchar) * output.channels() / 1024));
     }
 
@@ -250,11 +248,11 @@ public:
 
         output = _img;
 
-        return ExecutionStatus(EStatus::Tag, 
-            string_format("Image image width: %d\nImage image height: %d\nImage channels count: %d\nImage size in kbytes: %d",
-                output.cols, 
-                output.rows,
-                output.channels(),
+        return ExecutionStatus(
+            EStatus::Tag,
+            fmt::format(
+                "Image image width: {}\nImage image height: {}\nImage channels count: {}\nImage size in kbytes: {}",
+                output.cols, output.rows, output.channels(),
                 output.cols * output.rows * sizeof(uchar) * output.channels() / 1024));
     }
 
@@ -301,11 +299,11 @@ public:
         else
             output = tmp;
 
-        return ExecutionStatus(EStatus::Tag, 
-            string_format("Frame image width: %d\nFrame image height: %d\nFrame channels count: %d\nFrame size in kbytes: %d",
-                output.cols,
-                output.rows, 
-                output.channels(),
+        return ExecutionStatus(
+            EStatus::Tag,
+            fmt::format(
+                "Frame image width: {}\nFrame image height: {}\nFrame channels count: {}\nFrame size in kbytes: {}",
+                output.cols, output.rows, output.channels(),
                 output.cols * output.rows * sizeof(uchar) * output.channels() / 1024));
     }
 

@@ -27,7 +27,8 @@
 #include "GpuKernelLibrary.h"
 #include "GpuException.h"
 
-#include <sstream>
+#include <fmt/format.h>
+
 #include <stdexcept>
 
 KernelLibrary::KernelLibrary()
@@ -298,20 +299,18 @@ void KernelLibrary::updateKernelEntry(const clw::Program& program,
 {
     /// TODO: reuse kernels if possible? (we got referencing counting after all)
     clw::Kernel kernel = program.createKernel(entry.kernelName.c_str());
-    if(kernel.isNull())
+    if (kernel.isNull())
     {
-        std::ostringstream strm;
-        strm << "Kernel " << entry.kernelName << " doesn't exist in program "
-            << entry.programName << ".\n\nList of kernels: \n";
-        auto kernels = program.createKernels();
-        string kernelNames;
-        for(const auto& k : kernels)
-            strm << "\t" << k.name() << "\n";
-        throw GpuBuildException(strm.str());
+        fmt::memory_buffer buf;
+        fmt::format_to(buf, "Kernel {} doesn't exist in program {}.\n\nList of kernels:\n",
+                       entry.kernelName, entry.programName);
+        for (const auto& k : program.createKernels())
+            fmt::format_to(buf, "\t{}\n", k.name());
+        throw GpuBuildException(to_string(buf));
     }
 
     entry.buildOptions = buildOptions;
-    entry.kernel = kernel;	
+    entry.kernel = kernel;
 }
 
 #endif

@@ -23,8 +23,8 @@
 
 #include "Logic/NodePlugin.h"
 #include "Logic/NodeSystem.h"
-#include "Kommon/StringUtils.h"
 
+#include <fmt/core.h>
 #include <opencv2/imgproc/imgproc.hpp>
 
 class ShiTomasiCornerDetectorNodeType : public NodeType
@@ -72,8 +72,7 @@ public:
             kp.kpoints.emplace_back(corner, 8.0f);
         kp.image = src;
 
-        return ExecutionStatus(EStatus::Ok, 
-            string_format("Corners detected: %d", (int) kp.kpoints.size()));
+        return ExecutionStatus(EStatus::Ok, fmt::format("Corners detected: {}", kp.kpoints.size()));
     }
 
 private:

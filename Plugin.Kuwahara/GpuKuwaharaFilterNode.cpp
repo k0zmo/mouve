@@ -23,12 +23,13 @@
 
 #if defined(HAVE_OPENCL)
 
-#include "Kommon/StringUtils.h"
 #include "Logic/NodePlugin.h"
 #include "Logic/NodeSystem.h"
 #include "Logic/OpenCL/GpuNode.h"
 
 #include "cvu.h"
+
+#include <fmt/core.h>
 
 class GpuKuwaharaFilterNodeType : public GpuNodeType
 {
@@ -132,7 +133,7 @@ public:
 
     bool postInit() override
     {
-        string opts = string_format("-DN_SECTORS=%d", (int)_N);
+        string opts = fmt::format("-DN_SECTORS={}", _N);
 
         _kidGeneralizedKuwahara = _gpuComputeModule->registerKernel("generalizedKuwahara", "kuwahara.cl", opts);
         _kidGeneralizedKuwaharaRgb = _gpuComputeModule->registerKernel("generalizedKuwaharaRgb", "kuwahara.cl", opts);
@@ -237,7 +238,7 @@ public:
 
     bool postInit() override
     {
-        string opts = string_format("-DN_SECTORS=%d", (int)_N);
+        string opts = fmt::format("-DN_SECTORS={}", _N);
 
         _kidAnisotropicKuwahara = _gpuComputeModule->registerKernel("anisotropicKuwahara", "kuwahara.cl", opts);
         _kidAnisotropicKuwaharaRgb = _gpuComputeModule->registerKernel("anisotropicKuwaharaRgb", "kuwahara.cl", opts);

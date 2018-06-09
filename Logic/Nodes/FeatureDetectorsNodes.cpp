@@ -23,8 +23,8 @@
 
 #include "Logic/NodeType.h"
 #include "Logic/NodeFactory.h"
-#include "Kommon/StringUtils.h"
 
+#include <fmt/core.h>
 #include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/features2d/features2d.hpp>
 
@@ -64,8 +64,8 @@ public:
         cv::FASTX(src, kp.kpoints, _threshold, _nonmaxSupression, _type.cast<Enum>().data());
         kp.image = src;
 
-        return ExecutionStatus(EStatus::Ok, 
-            string_format("Keypoints detected: %d", (int) kp.kpoints.size()));
+        return ExecutionStatus(EStatus::Ok,
+                               fmt::format("Keypoints detected: {}", kp.kpoints.size()));
     }
 
 private:
@@ -108,7 +108,7 @@ public:
             cv::RotatedRect box = cv::fitEllipse(msers[i]);
             box.angle = (float)CV_PI/2 - box.angle;
             cv::ellipse(img, box, cv::Scalar(196,255,255), 1, CV_AA);
-        }		
+        }
 
         return ExecutionStatus(EStatus::Ok);
     }
@@ -140,8 +140,8 @@ public:
         star(src, kp.kpoints);
         kp.image = src;
 
-        return ExecutionStatus(EStatus::Ok, 
-            string_format("Keypoints detected: %d", (int) kp.kpoints.size()));
+        return ExecutionStatus(EStatus::Ok,
+                               fmt::format("Keypoints detected: {}", kp.kpoints.size()));
     }
 };
 

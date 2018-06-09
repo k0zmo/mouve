@@ -25,7 +25,7 @@
 #include "Logic/NodeSystem.h"
 #include "Logic/NodeType.h"
 
-#include "Kommon/StringUtils.h"
+#include <fmt/core.h>
 
 class TemplateNodeType : public NodeType
 {
@@ -56,8 +56,8 @@ public:
             dst = src;
         }
 
-        return ExecutionStatus(EStatus::Ok, 
-            string_format("Property value: %s", _property ? "true" : "false"));
+        return ExecutionStatus(EStatus::Ok,
+                               fmt::format("Property value: {}", _property ? "true" : "false"));
     }
 
 private:

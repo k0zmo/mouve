@@ -11,8 +11,6 @@ add_library(Mouve.Kommon
     SharedLibrary.cpp
     SharedLibrary.h
     Singleton.h
-    StringUtils.cpp
-    StringUtils.h
     TypeTraits.h
     Utils.h
     json11.cpp

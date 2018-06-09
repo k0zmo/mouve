@@ -23,8 +23,8 @@
 
 #include "Logic/NodeType.h"
 #include "Logic/NodeFactory.h"
-#include "Kommon/StringUtils.h"
 
+#include <fmt/core.h>
 #include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/highgui/highgui.hpp>
 
@@ -88,9 +88,12 @@ public:
         {
             bool isColor = input.channels() == 3;
             _writer.open(_filename.cast<Filepath>().data(), getFOURCC(_fourcc), _fps, input.size(), isColor);
-            if(!_writer.isOpened())
-                return ExecutionStatus(EStatus::Error, 
-                    string_format("Couldn't open video writer for file %s", _filename.cast<Filepath>().data().c_str()));
+            if (!_writer.isOpened())
+            {
+                return ExecutionStatus(EStatus::Error,
+                                       fmt::format("Couldn't open video writer for file {}",
+                                                   _filename.cast<Filepath>().data()));
+            }
         }
 
         _writer << input;
