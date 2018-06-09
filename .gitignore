@@ -1,16 +1,2 @@
-/Win32
-/x64
-/ipch
-*.sdf
-*.suo
-*.user
-GeneratedFiles/
-Debug/
-Release/
-ReleaseUnity/
-*.pyc
-*.aps
-*.opensdf
-/_build*
-/build*
+/*build*
 /.vs
