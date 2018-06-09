@@ -17,20 +17,42 @@ The vast majority of nodes are just thin wrappers for OpenCV algorithms.
 
 Computer vision algorithms are not just about images but also about data extracted from them - such as image keypoints. Consequently, mouve defines couple of node data types: images (gray, rgb, mono, any), keypoints, generic (1 or 2d) arrays, matching results and OpenCL device-located data.
 
+## Dependencies
+
+Mouve depends on:
+
+- CMake 3.9+
+- OpenCV 2.4.x,
+- Boost 1.55+,
+- Qt5 (mainly for UI part),
+- Intel Threading Building Blocks (Optional),
+- JAI SDK (Optional for JAI's GigE cameras support)
+
 ## Building
 
-### Windows 
-
-Open (VS2013 or higher) solution file or QtCreator project file. In order to customize include and library paths you need to modify project property files (.props or .pri, depending on used IDE) located in Include directory. 
+Successfully built using MS Visual Studio 2017 on Windows 7 and GCC 5.4 on Ubuntu 16.04 LTS.
 
 ### Linux
 
-Same as windows but only QtCreator file is applicable. Successfully compiled with clang++ 3.4.2 (with tbb turned off) and g++ 4.9.
+```
+mkdir _build
+cd _build
+cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo ..
+cmake --build .
+```
 
-### Dependencies
+OpenCV installed via system package manager (i.e. aptitude) won't probably work since it doesn't come with nonfree module which currently is unconditionally used.
 
-Mouve depends on `OpenCV`, `boost` (`variant` module), `Qt` (mainly for UI part), `Intel tbb` and [`clw`](https://github.com/k0zmo/clw) which is a thin OpenCL wrapper.
-OpenCL support is optionally and can be turned off by removing its project property file. Same thing concerns `Intel tbb` library. 
+### Windows
+
+```
+mkdir _build
+cd _build
+cmake ..
+cmake --build . --config RelWithDebInfo
+```
+
+Most likely you'd have to manually provide a path to Boost, OpenCV and Qt5 libraries because on Windows there aren't any meaningful defaults.
 
 ## Screenshot
 
