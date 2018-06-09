@@ -55,7 +55,7 @@ set_target_properties(${OpenCV_LIBS} PROPERTIES
     MAP_IMPORTED_CONFIG_MINSIZEREL Release
 )
 
-add_subdirectory(external/clw EXCLUDE_FROM_ALL)
+add_subdirectory(vendor/clw EXCLUDE_FROM_ALL)
 set_target_properties(clw PROPERTIES FOLDER vendor)
 
 add_subdirectory(Kommon)
