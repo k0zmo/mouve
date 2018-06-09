@@ -56,6 +56,7 @@ set_target_properties(${OpenCV_LIBS} PROPERTIES
 )
 
 add_subdirectory(external/clw EXCLUDE_FROM_ALL)
+set_target_properties(clw PROPERTIES FOLDER vendor)
 
 add_subdirectory(Kommon)
 add_subdirectory(Logic)

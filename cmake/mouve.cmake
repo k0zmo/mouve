@@ -43,6 +43,7 @@ function(mouve_add_plugin _name)
     add_library(${_name} MODULE ${ARGN})
     target_link_libraries(${_name} PRIVATE Mouve.Logic)
     target_include_directories(${_name} PRIVATE ${mouve_SOURCE_DIR})
+    set_target_properties(${_name} PROPERTIES FOLDER plugins)
 
     if(MSVC) # We should really check for multi-config generator
         foreach(config ${CMAKE_CONFIGURATION_TYPES})
