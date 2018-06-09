@@ -6,6 +6,39 @@ macro(mouve_bin_directory _config _directory)
     endif()
 endmacro()
 
+function(mouve_add_kernels _target)
+    set(boolean "")
+    set(one_value_args SUBDIR)
+    set(multi_value_args KERNELS)
+    cmake_parse_arguments(options "${options}" "${one_value_args}" "${multi_value_args}" ${ARGN})
+
+    # Show these kernel files in IDE, under "Kernel Files" group (only in VS)
+    target_sources(${_target} PRIVATE ${options_KERNELS})
+    source_group("Kernel Files" FILES ${options_KERNELS})
+
+    # Optional subdir inside kernels/
+    set(outdir kernels)
+    if(options_SUBDIR)
+        string(APPEND outdir /${options_SUBDIR})
+    endif()
+
+    # Build POST_BUILD command event that copies all kernel files to bin/$<CONFIG>/kernels directory
+    set(cmd "")
+    foreach(file ${options_KERNELS})
+        get_filename_component(fileabs ${file} ABSOLUTE)
+        get_filename_component(filename ${file} NAME)
+        list(APPEND cmd 
+            COMMAND ${CMAKE_COMMAND} -E copy_if_different
+                ${fileabs}
+                $<TARGET_FILE_DIR:Mouve.Logic>/${outdir}/${filename}
+        )
+    endforeach()
+    add_custom_command(TARGET ${_target} POST_BUILD ${cmd})
+
+    # Also, add these kernel files to INSTALL target
+    install(FILES ${options_KERNELS} DESTINATION bin/${outdir})
+endfunction()
+
 function(mouve_add_plugin _name)
     add_library(${_name} MODULE ${ARGN})
     target_link_libraries(${_name} PRIVATE Mouve.Logic)

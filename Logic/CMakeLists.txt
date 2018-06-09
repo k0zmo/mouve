@@ -135,7 +135,19 @@ if(TARGET clw::clw)
     target_link_libraries(Mouve.Logic PUBLIC clw::clw)
     target_compile_definitions(Mouve.Logic PUBLIC HAVE_OPENCL)
 
-    install(DIRECTORY OpenCL/kernels DESTINATION bin FILES_MATCHING PATTERN *.cl)
+    mouve_add_kernels(Mouve.Logic KERNELS
+        OpenCL/kernels/approx_gaussian.cl
+        OpenCL/kernels/bayer.cl
+        OpenCL/kernels/bfmatcher.cl
+        OpenCL/kernels/bfmatcher_macros.cl
+        OpenCL/kernels/color.cl
+        OpenCL/kernels/fill.cl
+        OpenCL/kernels/hough.cl
+        OpenCL/kernels/integral.cl
+        OpenCL/kernels/mog.cl
+        OpenCL/kernels/morphOp.cl
+        OpenCL/kernels/surf.cl
+    )
 else()
     message(STATUS "OpenCL support: NO")
 endif()

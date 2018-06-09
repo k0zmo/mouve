@@ -7,5 +7,5 @@ mouve_add_plugin(Plugin.Kuwahara
 )
 
 if(TARGET clw::clw)
-    install(DIRECTORY kernels DESTINATION bin FILES_MATCHING PATTERN *.cl)
+    mouve_add_kernels(Plugin.Kuwahara KERNELS kernels/kuwahara.cl)
 endif()
