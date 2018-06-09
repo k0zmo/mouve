@@ -2,7 +2,6 @@ add_library(Mouve.Kommon
     EnumFlags.h
     Hash.cpp
     Hash.h
-    MacroUtils.h
     ModulePath.cpp
     ModulePath.h
     NestedException.h
