@@ -26,11 +26,11 @@
 
 #if defined(HAVE_JAI)
 
-// Needed for PathIsDirectory() used in Jai_Factory_Dynamic.h
-#pragma comment(lib, "ShLwApi.lib")
+#if JAI_SDK_DYNAMIC_LOAD == 1
 // Needed for _T() macros and other _t* macros
-#include <tchar.h>
-#include "Jai_Factory_Dynamic.h"
+#  include <tchar.h>
+#  include "Jai_Factory_Dynamic.h"
+#endif
 
 template<typename T> void setNodeValue(CAM_HANDLE hCamera, const char* nodeName, T value);
 template<> void setNodeValue<int64_t>(CAM_HANDLE hCamera, const char* nodeName, int64_t value);

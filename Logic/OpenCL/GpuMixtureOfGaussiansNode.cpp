@@ -168,7 +168,7 @@ public:
         ++_nframe;
         float alpha = _learningRate >= 0 && _nframe > 1 
             ? _learningRate
-            : 1.0f/std::min(_nframe, _history.cast<int>());
+            : 1.0f/(std::min)(_nframe, _history.cast<int>());
 
         kernelGaussMix.setLocalWorkSize(16, 16);
         kernelGaussMix.setRoundedGlobalWorkSize(srcWidth, srcHeight);

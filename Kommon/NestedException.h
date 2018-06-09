@@ -7,7 +7,7 @@
 #include "konfig.h"
 
 // Only for MSVC
-#if K_COMPILER == K_COMPILER_MSVC
+#if defined(_MSC_VER) && _MSC_VER < 1910
 
 #include <exception>
 #include <type_traits>

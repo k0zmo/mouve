@@ -23,14 +23,25 @@
 
 #if defined(HAVE_JAI)
 
-#include "NodeType.h"
-#include "NodeFactory.h"
+#include "Logic/NodeType.h"
+#include "Logic/NodeFactory.h"
 
 #include "JaiNodeModule.h"
 #include "JaiException.h"
 
 #include <opencv2/core/core.hpp>
 #include <mutex>
+
+#if defined(_MSC_VER)
+// https://social.msdn.microsoft.com/Forums/vstudio/en-US/a9cfa5c4-d90b-4c33-89b1-9366e5fbae74/strange-error-while-casting-pointers-to-member-functions?forum=vclanguage
+// VS compiler violates the standard in the name of optimization. It makes
+// pointers-to-members have different size depending on the complexity of the
+// class hierarchy.
+//
+// Without this pragma we couldn't cast our cameraStreamCallback function to
+// J_IMG_CALLBACK_FUNCTION type, required by J_Image_OpenStream function
+#pragma pointers_to_members(full_generality, multiple_inheritance)
+#endif
 
 class JaiCameraNodeType : public NodeType
 {

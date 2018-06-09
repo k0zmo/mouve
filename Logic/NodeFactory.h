@@ -42,7 +42,7 @@ class DefaultNodeFactory : public NodeFactory
 public:
     virtual std::unique_ptr<NodeType> create()
     {
-        return std::make_unique<Type>();
+        return std::unique_ptr<Type>(new Type());
     }
 };
 
@@ -69,7 +69,7 @@ public:
 
     virtual std::unique_ptr<NodeType> create()
     {
-        return std::make_unique<Type>();
+        return std::unique_ptr<Type>(new Type());
     }
 };
 

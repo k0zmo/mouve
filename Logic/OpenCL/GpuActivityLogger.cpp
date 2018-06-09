@@ -26,32 +26,30 @@
 #include "GpuActivityLogger.h"
 #include "GpuException.h"
 
+#include <cassert>
+
 #if defined(HAVE_AMDT_ACTIVITY_LOGGER)
-#  include <AMDTActivityLogger.h>
+#  include <CXLActivityLogger.h>
 
 namespace amdt
 {
     using InitializeActivityLoggerFuncPtr = int (AL_API_CALL*)();
-    using BeginMarkerFuncPtr = int (AL_API_CALL*)(const char* szMarkerName, 
+    using BeginMarkerFuncPtr = int (AL_API_CALL*)(const char* szMarkerName,
                                                   const char* szGroupName,
                                                   const char* szUserString);
     using EndMarkerFuncPtr = int (AL_API_CALL*)();
     using FinalizeActivityLoggerFuncPtr = int (AL_API_CALL*)();
-    using StopTraceFuncPtr = int (AL_API_CALL*)();
-    using ResumeTraceFuncPtr = int (AL_API_CALL*)();
 
     InitializeActivityLoggerFuncPtr InitializeActivityLogger;
     BeginMarkerFuncPtr BeginMarker;
     EndMarkerFuncPtr EndMarker;
     FinalizeActivityLoggerFuncPtr FinalizeActivityLogger;
-    StopTraceFuncPtr StopTrace;
-    ResumeTraceFuncPtr ResumeTrace;
 
     std::string ActivityLoggerErrorString(int error)
     {
         switch(error)
         {
-        case AL_UNINITIALIZED_ACTIVITY_LOGGER: 
+        case AL_UNINITIALIZED_ACTIVITY_LOGGER:
             return "Unintialized performance marker";
         case AL_FINALIZED_ACTIVITY_LOGGER:
             return "Finalized performance marker";
@@ -63,38 +61,30 @@ namespace amdt
             return "Null marker name";
         case AL_INTERNAL_ERROR:
             return "Internal error";
-        case AL_OUT_OF_MEMORY: 
+        case AL_OUT_OF_MEMORY:
             return "Out of memory";
         case AL_FAILED_TO_OPEN_OUTPUT_FILE:
             return "Failed to open output file";
         case AL_FAILED_TO_ATTACH_TO_PROFILER:
             return "Failed to attact to profiler";
-        default: 
+        default:
             return "Unknown error";
         }
     }
 
     LibraryHandle LoadSharedLibrary()
     {
-        try
-        {
-
-            return SharedLibrary::loadLibrary(
+        return SharedLibrary::loadLibrary(
 #if K_SYSTEM == K_SYSTEM_WINDOWS
 #  if K_ARCH == K_ARCH_64
-                "AMDTActivityLogger-x64.dll"
+            "CXLActivityLogger-x64.dll"
 #  else
-                "AMDTActivityLogger.dll"
+            "CXLActivityLogger.dll"
 #  endif
 #else
-                "libAMDTActivityLogger.so"
+            "libCXLActivityLogger.so"
 #endif
-                );
-        }
-        catch (std::exception&)
-        {
-            return static_cast<LibraryHandle>(nullptr);
-        }
+            );
     }
 }
 
@@ -105,33 +95,28 @@ GpuActivityLogger::GpuActivityLogger()
     , _amdtActivityLoggerInitialized(false)
 {
 #if defined(HAVE_AMDT_ACTIVITY_LOGGER)
-    _libraryHandle = amdt::LoadSharedLibrary();
-    if (!_libraryHandle) return;
-
-    amdt::InitializeActivityLogger =
-        SharedLibrary::getFunctionAddress<amdt::InitializeActivityLoggerFuncPtr>(
-            _libraryHandle, "amdtInitializeActivityLogger");
-    amdt::BeginMarker = 
-        SharedLibrary::getFunctionAddress<amdt::BeginMarkerFuncPtr>(
-            _libraryHandle, "amdtBeginMarker");
-    amdt::EndMarker = 
-        SharedLibrary::getFunctionAddress<amdt::EndMarkerFuncPtr>(
-            _libraryHandle, "amdtEndMarker");
-    amdt::FinalizeActivityLogger = 
-        SharedLibrary::getFunctionAddress<amdt::FinalizeActivityLoggerFuncPtr>(
-            _libraryHandle, "amdtFinalizeActivityLogger");
-    amdt::StopTrace = 
-        SharedLibrary::getFunctionAddress<amdt::StopTraceFuncPtr>(
-            _libraryHandle, "amdtStopTrace");
-    amdt::ResumeTrace = 
-        SharedLibrary::getFunctionAddress<amdt::ResumeTraceFuncPtr>(
-            _libraryHandle, "amdtResumeTrace");
-
-    if (amdt::InitializeActivityLogger && amdt::BeginMarker && amdt::EndMarker && 
-        amdt::FinalizeActivityLogger && amdt::StopTrace && amdt::ResumeTrace)
+    try
     {
-        if(amdt::InitializeActivityLogger() == AL_SUCCESS)
+        _libraryHandle = amdt::LoadSharedLibrary();
+
+        amdt::InitializeActivityLogger =
+            SharedLibrary::getFunctionAddress<amdt::InitializeActivityLoggerFuncPtr>(
+                _libraryHandle, "amdtInitializeActivityLogger");
+        amdt::BeginMarker =
+            SharedLibrary::getFunctionAddress<amdt::BeginMarkerFuncPtr>(
+                _libraryHandle, "amdtBeginMarker");
+        amdt::EndMarker =
+            SharedLibrary::getFunctionAddress<amdt::EndMarkerFuncPtr>(
+                _libraryHandle, "amdtEndMarker");
+        amdt::FinalizeActivityLogger =
+            SharedLibrary::getFunctionAddress<amdt::FinalizeActivityLoggerFuncPtr>(
+                _libraryHandle, "amdtFinalizeActivityLogger");
+
+        if (amdt::InitializeActivityLogger() == AL_SUCCESS)
             _amdtActivityLoggerInitialized = true;
+    }
+    catch (std::exception& ex)
+    {
     }
 #endif
 }
@@ -156,7 +141,7 @@ void GpuActivityLogger::beginPerfMarker(const char* markerName,
     {
         int error;
         if((error = amdt::BeginMarker(markerName, groupName, userString)) != AL_SUCCESS)
-            throw GpuNodeException(error, "Error on OpenCL performance marker beginning: " + 
+            throw GpuNodeException(error, "Error on OpenCL performance marker beginning: " +
                 std::string(markerName) + ", " + amdt::ActivityLoggerErrorString(error));
     }
 #else

@@ -26,7 +26,6 @@
 #include "Utils.h"
 
 #if K_SYSTEM == K_SYSTEM_WINDOWS
-#  define WIN32_LEAN_AND_MEAN
 #  define VC_EXTRALEAN
 #  include <windows.h>
 

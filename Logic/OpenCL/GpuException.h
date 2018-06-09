@@ -27,6 +27,7 @@
 #include "Kommon/StringUtils.h"
 
 #include <exception>
+#include <sstream>
 
 struct GpuNodeException : public std::exception
 {
