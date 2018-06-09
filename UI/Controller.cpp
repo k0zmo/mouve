@@ -1861,7 +1861,11 @@ void Controller::updatePreview(bool res)
     double totalTimeElapsed = 0.0;
     for(auto nodeID : execList)
     {
-        double elapsed = _nodeTree->nodeTimeElapsed(nodeID);
+        using namespace std::chrono;
+        long long totalMicroseconds =
+            duration_cast<microseconds>(_nodeTree->nodeTimeElapsed(nodeID)).count();
+        const auto elapsed =
+            static_cast<double>((totalMicroseconds / 1000) + (totalMicroseconds % 1000) * 1e-3);
         totalTimeElapsed += elapsed;
         QString text = QString::number(elapsed, 'f', 3);
         text += QStringLiteral(" ms");

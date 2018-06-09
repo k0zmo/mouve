@@ -30,6 +30,8 @@
 #include "NodeLink.h"
 #include "Kommon/EnumFlags.h"
 
+#include <chrono>
+
 class NodeSocketTracer
 {
 public:
@@ -490,7 +492,7 @@ struct ExecutionStatus
     }
 
     ExecutionStatus(EStatus status,
-        double timeElapsed,
+        std::chrono::high_resolution_clock::duration timeElapsed,
         const std::string& message = std::string())
         : timeElapsed(timeElapsed)
         , status(status)
@@ -500,7 +502,7 @@ struct ExecutionStatus
 
     // If Node_OverridesTimeComputation is set on this value will be used
     // to display overriden time elapsed value
-    double timeElapsed;
+    std::chrono::high_resolution_clock::duration timeElapsed;
     // Node execution status
     EStatus status;
     // Additional message in case of an error

@@ -671,10 +671,10 @@ const std::string& NodeTree::nodeExecuteInformation(NodeID nodeID) const
     return _nodes[nodeID].executeInformation();
 }
 
-double NodeTree::nodeTimeElapsed(NodeID nodeID) const
+std::chrono::high_resolution_clock::duration NodeTree::nodeTimeElapsed(NodeID nodeID) const
 {
     if(!validateNode(nodeID))
-        return 0.0;
+        return {};
 
     return _nodes[nodeID].timeElapsed();
 }

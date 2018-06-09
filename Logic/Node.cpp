@@ -116,15 +116,17 @@ const NodeConfig& Node::config() const
 
 ExecutionStatus Node::execute(NodeSocketReader& reader, NodeSocketWriter& writer)
 {
+    using namespace std::chrono;
+
     writer.setOutputSockets(_outputSockets);
-    HighResolutionClock::time_point start = HighResolutionClock::now();
+    const auto start = high_resolution_clock::now();
     ExecutionStatus status = _nodeType->execute(reader, writer);
-    HighResolutionClock::time_point stop = HighResolutionClock::now();
+    const auto stop = high_resolution_clock::now();
 
     _message = status.message;
     _timeElapsed = !flag(ENodeFlags::OverridesTimeComp)
-        ? convertToMilliseconds(stop - start)
-        : status.timeElapsed;
+                       ? stop - start
+                       : status.timeElapsed;
 
     return status;
 }

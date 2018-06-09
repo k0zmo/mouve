@@ -24,7 +24,8 @@
 #pragma once
 
 #include "Prerequisites.h"
-#include "Kommon/HighResolutionClock.h"
+
+#include <chrono>
 
 enum class ENodeFlags : int
 {
@@ -67,7 +68,7 @@ public:
     SocketID numInputSockets() const;
     SocketID numOutputSockets() const;
     NodeTypeID nodeTypeID() const;
-    double timeElapsed() const;
+    std::chrono::high_resolution_clock::duration timeElapsed() const;
 
     // Below methods are thin wrapper for held NodeType interface
     const NodeConfig& config() const;
@@ -91,7 +92,7 @@ private:
     SocketID _numOutputs;
     NodeTypeID _nodeTypeID;
     uint32_t _flags;
-    double _timeElapsed;
+    std::chrono::high_resolution_clock::duration _timeElapsed;
     std::string _message;
 };
 
@@ -126,7 +127,7 @@ inline SocketID Node::numOutputSockets() const
 inline NodeTypeID Node::nodeTypeID() const
 { return _nodeTypeID; }
 
-inline double Node::timeElapsed() const
+inline std::chrono::high_resolution_clock::duration Node::timeElapsed() const
 { return _timeElapsed; }
 
 inline bool Node::flag(ENodeFlags flag) const

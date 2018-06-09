@@ -2,8 +2,6 @@ add_library(Mouve.Kommon
     EnumFlags.h
     Hash.cpp
     Hash.h
-    HighResolutionClock.cpp
-    HighResolutionClock.h
     MacroUtils.h
     ModulePath.cpp
     ModulePath.h
