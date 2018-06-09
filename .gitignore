@@ -13,3 +13,4 @@ ReleaseUnity/
 *.opensdf
 /_build*
 /build*
+/.vs
