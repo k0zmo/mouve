@@ -24,7 +24,7 @@
 #pragma once
 
 #include "Prerequisites.h"
-#include "Kommon/Singleton.h"
+#include "Singleton.h"
 
 #include <QMainWindow>
 #include <QThread>

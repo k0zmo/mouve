@@ -2,7 +2,6 @@ add_library(Mouve.Kommon
     EnumFlags.h
     Hash.cpp
     Hash.h
-    Singleton.h
     TypeTraits.h
     Utils.h
     json11.cpp

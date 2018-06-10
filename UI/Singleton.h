@@ -23,7 +23,7 @@
 
 #pragma once
 
-#include "konfig.h"
+#include "Kommon/konfig.h"
 #include <cassert>
 
 template <class Type>
@@ -61,4 +61,3 @@ template <class Type> inline Type& Singleton<Type>::instance()
 
 template <class Type> inline Type* Singleton<Type>::instancePtr()
 { return _singleton; }
-

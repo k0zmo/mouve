@@ -24,6 +24,7 @@ add_executable(Mouve.UI WIN32
     PropertyModel.h
     PropertyWidgets.cpp
     PropertyWidgets.h
+    Singleton.h
     TreeWorker.cpp
     TreeWorker.h
 )
