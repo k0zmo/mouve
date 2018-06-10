@@ -29,6 +29,17 @@
 #include <opencv2/imgproc/imgproc.hpp>
 #include "CV.h"
 
+#include <cmath>
+
+namespace {
+
+template <typename T>
+bool fcmp(const T& a, const T& b)
+{
+    return std::fabs(a - b) < T(1e-8);
+}
+} // namespace
+
 class GrayToRgbNodeType : public NodeType
 {
 public:
