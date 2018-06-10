@@ -4,7 +4,6 @@ add_library(Mouve.Kommon
     Hash.h
     ModulePath.cpp
     ModulePath.h
-    NestedException.h
     SharedLibrary.cpp
     SharedLibrary.h
     Singleton.h

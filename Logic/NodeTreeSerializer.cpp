@@ -26,7 +26,6 @@
 #include "NodeType.h"
 #include "NodeSystem.h"
 
-#include "Kommon/NestedException.h"
 #include "Kommon/Utils.h"
 
 #include <fmt/core.h>
@@ -35,6 +34,7 @@
 #include <QFileInfo>
 #include <QDir>
 
+#include <exception>
 #include <fstream>
 
 namespace priv {

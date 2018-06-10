@@ -25,7 +25,6 @@
 
 #include "Kommon/Utils.h"
 #include "Kommon/ModulePath.h"
-#include "Kommon/NestedException.h"
 
 // Model part
 #include "Logic/NodeSystem.h"
@@ -77,6 +76,7 @@
 
 #include <future>
 #include <thread>
+#include <exception>
 
 template<> Controller* Singleton<Controller>::_singleton = nullptr;
 
