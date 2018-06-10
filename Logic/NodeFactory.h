@@ -24,7 +24,6 @@
 #pragma once
 
 #include "Prerequisites.h"
-#include "Kommon/Utils.h"
 
 // Abstract node factory
 class NodeFactory
@@ -52,7 +51,31 @@ std::unique_ptr<DefaultNodeFactory<Type>> makeDefaultNodeFactory()
     return std::make_unique<DefaultNodeFactory<Type>>();
 }
 
-class AutoRegisterNodeBase : public SList<AutoRegisterNodeBase>,
+namespace detail {
+
+template <class T>
+class SList
+{
+public:
+    SList()
+    {
+        _next = _head;
+        _head = this;
+    }
+
+    static T* head() { return static_cast<T*>(_head); }
+    T* next() const { return static_cast<T*>(_next); }
+
+private:
+    static SList* _head;
+    SList* _next;
+};
+
+template <class T>
+SList<T>* SList<T>::_head = nullptr;
+} // namespace detail
+
+class AutoRegisterNodeBase : public detail::SList<AutoRegisterNodeBase>,
                              public NodeFactory
 {
 public:

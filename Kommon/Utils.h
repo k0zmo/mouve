@@ -41,22 +41,3 @@ auto get_or_default(const Map& m, const typename Map::key_type& key,
         return defval;
     return it->second;
 }
-
-template <class T>
-class SList
-{
-public:
-    SList()
-    {
-        _next = _head;
-        _head = this;
-    }
-
-    static T* head() { return static_cast<T*>(_head); }
-    T* next() const { return static_cast<T*>(_next); }
-
-private:
-    static SList* _head;
-    SList* _next;
-};
-template <class T> SList<T>* SList<T>::_head = nullptr;
