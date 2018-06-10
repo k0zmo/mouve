@@ -26,6 +26,7 @@
 #include "Logic/NodeType.h"
 
 #include <fmt/core.h>
+#include <opencv2/core/mat.hpp>
 
 class TemplateNodeType : public NodeType
 {
@@ -64,9 +65,15 @@ private:
     TypedNodeProperty<bool> _property;
 };
 
-void registerTemplate(NodeSystem* nodeSystem)
+class TemplatePlugin : public NodePlugin
 {
-    typedef DefaultNodeFactory<TemplateNodeType> TemplateFactory;
-    nodeSystem->registerNodeType("Test/Template",
-        std::unique_ptr<NodeFactory>(new TemplateFactory()));
-}
+    MOUVE_DECLARE_PLUGIN(1);
+
+public:
+    void registerPlugin(NodeSystem& system) override
+    {
+        system.registerNodeType("Test/Template", makeDefaultNodeFactory<TemplateNodeType>());
+    }
+};
+
+MOUVE_INSTANTIATE_PLUGIN(TemplatePlugin)

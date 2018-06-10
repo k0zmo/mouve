@@ -110,17 +110,15 @@ private:
     }
 };
 
-void registerAmpMorphologyNodes(NodeSystem* nodeSystem)
+void registerAmpMorphologyNodes(NodeSystem& system)
 {
-    typedef DefaultNodeFactory<AmpMorphologyOperatorNodeType> AmpMorphologyOperatorFactory;
-
-    nodeSystem->registerNodeType("Morphology/Operator AMP",
-        std::unique_ptr<NodeFactory>(new AmpMorphologyOperatorFactory()));
+    system.registerNodeType("Morphology/Operator AMP",
+                            makeDefaultNodeFactory<AmpMorphologyOperatorNodeType>());
 }
 
 #else
 
-void registerAmpMorphologyNodes(class NodeSystem*)
+void registerAmpMorphologyNodes(NodeSystem&)
 {
 }
 

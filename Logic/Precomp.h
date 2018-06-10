@@ -23,32 +23,43 @@
 
 #pragma once
 
-// CRT
-#include <cstdio>
-#include <cstdint>
-#include <cstddef>
-#include <cstdarg>
-#include <exception>
-
-// STL
-#include <string>
-#include <vector>
-#include <unordered_map>
-#include <memory>
-#include <functional>
 #include <algorithm>
+#include <cassert>
+#include <chrono>
+#include <cmath>
+#include <cstdarg>
+#include <cstddef>
+#include <cstdint>
+#include <cstdio>
+#include <cstdlib>
+#include <exception>
+#include <fstream>
+#include <functional>
+#include <initializer_list>
+#include <limits>
+#include <map>
+#include <memory>
+#include <mutex>
+#include <regex>
+#include <stdexcept>
+#include <string>
+#include <thread>
+#include <tuple>
+#include <type_traits>
+#include <unordered_map>
+#include <vector>
 
-// boost
-// workaround for "Macro argument mismatch" warning/error
-#ifndef Q_MOC_RUN
+#include <clw/clw.h>
+
+#include <fmt/core.h>
+#include <fmt/format.h>
+
 #include <boost/variant.hpp>
-#endif
 
-// OpenCV
-#include <opencv2/core/core.hpp>
-#include <opencv2/imgproc/imgproc.hpp>
-#include <opencv2/highgui/highgui.hpp>
-#include <opencv2/video/video.hpp>
-#include <opencv2/features2d/features2d.hpp>
-#include <opencv2/nonfree/features2d.hpp>
 #include <opencv2/calib3d/calib3d.hpp>
+#include <opencv2/core/core.hpp>
+#include <opencv2/features2d/features2d.hpp>
+#include <opencv2/highgui/highgui.hpp>
+#include <opencv2/imgproc/imgproc.hpp>
+#include <opencv2/nonfree/features2d.hpp>
+#include <opencv2/video/video.hpp>

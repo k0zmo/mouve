@@ -72,45 +72,34 @@ namespace amdt
         }
     }
 
-    LibraryHandle LoadSharedLibrary()
-    {
-        return SharedLibrary::loadLibrary(
+    constexpr const char* libraryName =
 #if K_SYSTEM == K_SYSTEM_WINDOWS
 #  if K_ARCH == K_ARCH_64
-            "CXLActivityLogger-x64.dll"
+        "CXLActivityLogger-x64.dll";
 #  else
-            "CXLActivityLogger.dll"
+        "CXLActivityLogger.dll";
 #  endif
 #else
-            "libCXLActivityLogger.so"
+        "libCXLActivityLogger.so";
 #endif
-            );
-    }
 }
 
 #endif
 
 GpuActivityLogger::GpuActivityLogger()
-    : _libraryHandle(nullptr)
-    , _amdtActivityLoggerInitialized(false)
+    : _amdtActivityLoggerInitialized(false)
 {
 #if defined(HAVE_AMDT_ACTIVITY_LOGGER)
     try
     {
-        _libraryHandle = amdt::LoadSharedLibrary();
+        _library.load(amdt::libraryName);
 
         amdt::InitializeActivityLogger =
-            SharedLibrary::getFunctionAddress<amdt::InitializeActivityLoggerFuncPtr>(
-                _libraryHandle, "amdtInitializeActivityLogger");
-        amdt::BeginMarker =
-            SharedLibrary::getFunctionAddress<amdt::BeginMarkerFuncPtr>(
-                _libraryHandle, "amdtBeginMarker");
-        amdt::EndMarker =
-            SharedLibrary::getFunctionAddress<amdt::EndMarkerFuncPtr>(
-                _libraryHandle, "amdtEndMarker");
+            _library.get<amdt::InitializeActivityLoggerFuncPtr>("amdtInitializeActivityLogger");
+        amdt::BeginMarker = _library.get<amdt::BeginMarkerFuncPtr>("amdtBeginMarker");
+        amdt::EndMarker = _library.get<amdt::EndMarkerFuncPtr>("amdtEndMarker");
         amdt::FinalizeActivityLogger =
-            SharedLibrary::getFunctionAddress<amdt::FinalizeActivityLoggerFuncPtr>(
-                _libraryHandle, "amdtFinalizeActivityLogger");
+            _library.get<amdt::FinalizeActivityLoggerFuncPtr>("amdtFinalizeActivityLogger");
 
         if (amdt::InitializeActivityLogger() == AL_SUCCESS)
             _amdtActivityLoggerInitialized = true;
@@ -126,8 +115,13 @@ GpuActivityLogger::~GpuActivityLogger()
 #if defined(HAVE_AMDT_ACTIVITY_LOGGER)
     if(_amdtActivityLoggerInitialized)
         amdt::FinalizeActivityLogger();
-    if (_libraryHandle)
-        SharedLibrary::unloadLibrary(_libraryHandle);
+
+    amdt::InitializeActivityLogger = nullptr;
+    amdt::BeginMarker = nullptr;
+    amdt::EndMarker = nullptr;
+    amdt::FinalizeActivityLogger = nullptr;
+
+    _library.unload();
 #endif
 }
 

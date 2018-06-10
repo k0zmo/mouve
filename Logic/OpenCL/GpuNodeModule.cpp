@@ -26,7 +26,9 @@
 #include "GpuNodeModule.h"
 #include "GpuException.h"
 
-#include "Kommon/ModulePath.h"
+#include <boost/dll/runtime_symbol_info.hpp>
+#include <boost/filesystem/path.hpp>
+#include <boost/filesystem/operations.hpp>
 
 #include <QFileInfo>
 #include <QDir>
@@ -238,23 +240,11 @@ size_t GpuNodeModule::warpSize() const
 
 namespace {
 
-static QString absolutePathToChildDirectory(const QString& absFilePath,
-                                            const char* childDirectoryName)
+string kernelsDirectory()
 {
-    QFileInfo fi(absFilePath);
-    QDir dir = fi.absoluteDir();
-    dir.cd(childDirectoryName); // don't mind error here
-    return dir.absolutePath();
+    const auto dir = boost::dll::program_location().parent_path() / "kernels";
+    return boost::filesystem::absolute(dir).string();
 }
-
-static string kernelsDirectory()
-{
-    auto execPath = executablePath();
-    return absolutePathToChildDirectory(
-               QString::fromUtf8(execPath.c_str(), execPath.size()), "kernels")
-        .toStdString();
-}
-
 }
 
 string GpuNodeModule::additionalBuildOptions(const std::string& programName) const

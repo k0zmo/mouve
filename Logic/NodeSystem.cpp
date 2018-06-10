@@ -28,6 +28,7 @@
 #include "NodePlugin.h"
 
 #include <fmt/core.h>
+#include <boost/dll/import.hpp>
 
 /// TODO: Change this to some neat logging system
 #include <QDebug>
@@ -217,9 +218,10 @@ const std::shared_ptr<NodeModule>& NodeSystem::nodeModule(const std::string& nam
 
 size_t NodeSystem::loadPlugin(const std::string& pluginName)
 {
-    if(_plugins.find(pluginName) == _plugins.end())
+    if (_plugins.find(pluginName) == _plugins.end())
     {
-        auto plugin = std::unique_ptr<NodePlugin>(new NodePlugin(pluginName));
+        auto plugin = boost::dll::import<NodePlugin>(pluginName, "plugin_instance",
+                                                     boost::dll::load_mode::default_mode);
         if (plugin->logicVersion() != LOGIC_VERSION)
         {
             throw std::runtime_error(fmt::format("Logic ({}) and plugin {} ({}) version mismatch",
@@ -227,8 +229,11 @@ size_t NodeSystem::loadPlugin(const std::string& pluginName)
                                                  plugin->logicVersion()));
         }
         size_t before = _registeredNodeTypes.size();
-        plugin->registerPlugin(this);
-        _plugins.emplace(pluginName, std::move(plugin));
+        plugin->registerPlugin(*this);
+
+        _plugins.emplace(pluginName,
+                         std::shared_ptr<NodePlugin>(
+                             plugin.get(), [plugin](NodePlugin*) mutable { plugin.reset(); }));
         return _registeredNodeTypes.size() - before;
     }
 

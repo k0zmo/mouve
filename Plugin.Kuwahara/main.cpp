@@ -21,16 +21,21 @@
  *
  */
 
-#include "Logic/NodeSystem.h"
+#include "Logic/NodePlugin.h"
 
-extern "C" K_DECL_EXPORT int logicVersion() { return LOGIC_VERSION; }
-extern "C" K_DECL_EXPORT int pluginVersion() { return 1; }
+void registerKuwaharaFilter(NodeSystem& system);
+void registerGpuKuwaharaFilter(NodeSystem& system);
 
-extern void registerKuwaharaFilter(NodeSystem* nodeSystem);
-extern void registerGpuKuwaharaFilter(NodeSystem* nodeSystem);
-
-extern "C" K_DECL_EXPORT void registerPlugin(NodeSystem* nodeSystem)
+class KuwaharaPlugin : public NodePlugin
 {
-    registerKuwaharaFilter(nodeSystem);
-    registerGpuKuwaharaFilter(nodeSystem);
-}
+    MOUVE_DECLARE_PLUGIN(1);
+
+public:
+    void registerPlugin(NodeSystem& system) override
+    {
+        registerKuwaharaFilter(system);
+        registerGpuKuwaharaFilter(system);
+    }
+};
+
+MOUVE_INSTANTIATE_PLUGIN(KuwaharaPlugin)

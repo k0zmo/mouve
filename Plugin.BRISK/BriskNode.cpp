@@ -22,6 +22,7 @@
  */
 
 #include "Logic/NodePlugin.h"
+#include "Logic/NodeType.h"
 #include "Logic/NodeSystem.h"
 
 #include "brisk.h"
@@ -195,26 +196,19 @@ private:
     std::unique_ptr<cv::BriskDescriptorExtractor> _brisk;
 };
 
-extern "C" K_DECL_EXPORT int logicVersion()
+class BriskPlugin : public NodePlugin
 {
-    return LOGIC_VERSION;
-}
+    MOUVE_DECLARE_PLUGIN(1);
 
-extern "C" K_DECL_EXPORT int pluginVersion()
-{
-    return 1;
-}
+public:
+    void registerPlugin(NodeSystem& system) override
+    {
+        system.registerNodeType("Features/Detectors/BRISK",
+                                makeDefaultNodeFactory<BriskFeatureDetectorNodeType>());
+        system.registerNodeType("Features/Descriptors/BRISK",
+                                makeDefaultNodeFactory<BriskDescriptorExtractorNodeType>());
+        system.registerNodeType("Features/BRISK", makeDefaultNodeFactory<BriskNodeType>());
+    }
+};
 
-extern "C" K_DECL_EXPORT void registerPlugin(NodeSystem* nodeSystem)
-{
-    typedef DefaultNodeFactory<BriskFeatureDetectorNodeType> BriskFeatureDetectorFactory;
-    typedef DefaultNodeFactory<BriskDescriptorExtractorNodeType> BriskDescriptorExtractorFactory;
-    typedef DefaultNodeFactory<BriskNodeType> BriskFactory;
-
-    nodeSystem->registerNodeType("Features/Detectors/BRISK", 
-        std::unique_ptr<NodeFactory>(new BriskFeatureDetectorFactory()));
-    nodeSystem->registerNodeType("Features/Descriptors/BRISK", 
-        std::unique_ptr<NodeFactory>(new BriskDescriptorExtractorFactory()));
-    nodeSystem->registerNodeType("Features/BRISK",
-        std::unique_ptr<NodeFactory>(new BriskFactory()));
-}
+MOUVE_INSTANTIATE_PLUGIN(BriskPlugin)

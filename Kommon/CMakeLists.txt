@@ -2,10 +2,6 @@ add_library(Mouve.Kommon
     EnumFlags.h
     Hash.cpp
     Hash.h
-    ModulePath.cpp
-    ModulePath.h
-    SharedLibrary.cpp
-    SharedLibrary.h
     Singleton.h
     TypeTraits.h
     Utils.h

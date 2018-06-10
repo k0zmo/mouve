@@ -24,7 +24,6 @@
 #include "Controller.h"
 
 #include "Kommon/Utils.h"
-#include "Kommon/ModulePath.h"
 
 // Model part
 #include "Logic/NodeSystem.h"
@@ -73,6 +72,10 @@
 
 #include "ui_MainWindow.h"
 #include "TreeWorker.h"
+
+#include <boost/dll/runtime_symbol_info.hpp>
+#include <boost/filesystem/path.hpp>
+#include <boost/filesystem/operations.hpp>
 
 #include <future>
 #include <thread>
@@ -2472,25 +2475,18 @@ void Controller::showDeviceSettings()
 namespace {
 
 #if K_SYSTEM == K_SYSTEM_WINDOWS
-static const QString pluginExtensionName = QStringLiteral("*.dll");
+const QString pluginExtensionName = QStringLiteral("*.dll");
 #elif K_SYSTEM == K_SYSTEM_LINUX
-static const QString pluginExtensionName = QStringLiteral("*.so");
+const QString pluginExtensionName = QStringLiteral("*.so");
 #endif
 
-static QString absolutePathToChildDirectory(const QString& absFilePath,
-                                            const char* childDirectoryName)
+// TODO Move this to logic (base)
+QString pluginDirectory()
 {
-    QFileInfo fi(absFilePath);
-    QDir dir = fi.absoluteDir();
-    dir.cd(childDirectoryName); // don't mind error here
-    return dir.absolutePath();
-}
-
-static QString pluginDirectory()
-{
-    auto execPath = executablePath();
-    return absolutePathToChildDirectory(
-        QString::fromUtf8(execPath.c_str(), execPath.size()), "plugins");
+    // Note that we don't necessary need CWD here
+    boost::filesystem::current_path();
+    const auto executableDirectory = boost::dll::program_location().parent_path();
+    return QString::fromStdString((executableDirectory / "plugins").string());
 }
 
 }

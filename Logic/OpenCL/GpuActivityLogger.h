@@ -26,7 +26,8 @@
 #if defined(HAVE_OPENCL)
 
 #include "../Prerequisites.h"
-#include "Kommon/SharedLibrary.h"
+
+#include <boost/dll/shared_library.hpp>
 
 class LOGIC_EXPORT GpuActivityLogger
 {
@@ -45,7 +46,7 @@ public:
     }
 
 private:
-    LibraryHandle _libraryHandle;
+    boost::dll::shared_library _library;
     bool _amdtActivityLoggerInitialized;
 };
 

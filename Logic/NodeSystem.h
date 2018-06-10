@@ -82,7 +82,7 @@ private:
     std::vector<NodeTypeInfo> _registeredNodeTypes;
     std::unordered_map<std::string, NodeTypeID> _typeNameToTypeID;
     std::unordered_map<std::string, std::shared_ptr<NodeModule>> _registeredModules;
-    std::unordered_map<std::string, std::unique_ptr<NodePlugin>> _plugins;
+    std::unordered_map<std::string, std::shared_ptr<NodePlugin>> _plugins;
 
 private:
     class NodeTypeIteratorImpl;

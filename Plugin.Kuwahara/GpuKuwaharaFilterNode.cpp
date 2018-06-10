@@ -364,18 +364,14 @@ private:
 
 #endif
 
-void registerGpuKuwaharaFilter(NodeSystem* nodeSystem)
+void registerGpuKuwaharaFilter(NodeSystem& system)
 {
 #if defined(HAVE_OPENCL)
-    typedef DefaultNodeFactory<GpuKuwaharaFilterNodeType> GpuKuwaharaFilterFactory;
-    typedef DefaultNodeFactory<GpuGeneralizedKuwaharaFilterNodeType> GpuGeneralizedKuwaharaFilterFactory;
-    typedef DefaultNodeFactory<GpuAnisotropicKuwaharaFilterNodeType> GpuAnisotropicKuwaharaFilterFactory;
-
-    nodeSystem->registerNodeType("OpenCL/Filters/Kuwahara filter", 
-        std::unique_ptr<NodeFactory>(new GpuKuwaharaFilterFactory()));
-    nodeSystem->registerNodeType("OpenCL/Filters/Generalized Kuwahara filter", 
-        std::unique_ptr<NodeFactory>(new GpuGeneralizedKuwaharaFilterFactory()));
-    nodeSystem->registerNodeType("OpenCL/Filters/Anisotropic Kuwahara filter", 
-        std::unique_ptr<NodeFactory>(new GpuAnisotropicKuwaharaFilterFactory()));
+    system.registerNodeType("OpenCL/Filters/Kuwahara filter",
+                            makeDefaultNodeFactory<GpuKuwaharaFilterNodeType>());
+    system.registerNodeType("OpenCL/Filters/Generalized Kuwahara filter",
+                            makeDefaultNodeFactory<GpuGeneralizedKuwaharaFilterNodeType>());
+    system.registerNodeType("OpenCL/Filters/Anisotropic Kuwahara filter",
+                            makeDefaultNodeFactory<GpuAnisotropicKuwaharaFilterNodeType>());
 #endif
 }

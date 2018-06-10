@@ -34,7 +34,7 @@ public:
     virtual std::unique_ptr<NodeType> create() = 0;
 };
 
-// Default, typed node factory. 
+// Default, typed node factory.
 // Used when static registering is not possible (i.e. plugins)
 template <class Type>
 class DefaultNodeFactory : public NodeFactory
@@ -42,9 +42,15 @@ class DefaultNodeFactory : public NodeFactory
 public:
     virtual std::unique_ptr<NodeType> create()
     {
-        return std::unique_ptr<Type>(new Type());
+        return std::make_unique<Type>();
     }
 };
+
+template <class Type>
+std::unique_ptr<DefaultNodeFactory<Type>> makeDefaultNodeFactory()
+{
+    return std::make_unique<DefaultNodeFactory<Type>>();
+}
 
 class AutoRegisterNodeBase : public SList<AutoRegisterNodeBase>,
                              public NodeFactory
@@ -69,7 +75,7 @@ public:
 
     virtual std::unique_ptr<NodeType> create()
     {
-        return std::unique_ptr<Type>(new Type());
+        return std::make_unique<Type>();
     }
 };
 

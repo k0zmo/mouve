@@ -10,7 +10,6 @@ add_library(Mouve.Logic SHARED # TEMPORARY
     NodeLink.cpp
     NodeLink.h
     NodeModule.h
-    NodePlugin.cpp
     NodePlugin.h
     NodeProperty.cpp
     NodeProperty.h
@@ -93,11 +92,12 @@ source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR}/.. FILES ${sources_list})
 target_include_directories(Mouve.Logic PRIVATE ${mouve_SOURCE_DIR})
 target_link_libraries(Mouve.Logic PUBLIC Mouve.Kommon)
 target_compile_definitions(Mouve.Logic PRIVATE LOGIC_LIB) # Building DLL
-target_compile_features(Mouve.Logic PUBLIC cxx_std_11)
+target_compile_features(Mouve.Logic PUBLIC cxx_std_14)
 
 target_link_libraries(Mouve.Logic PUBLIC
     Boost::boost
     Boost::disable_autolinking
+    Boost::filesystem
     opencv_core
     opencv_imgproc
     opencv_highgui

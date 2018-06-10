@@ -123,7 +123,7 @@ public:
             .setUiHints("min:0.00, max:1.00");
         setDescription("Anisotropic Kuwahara filter");
     }
-    
+
     ExecutionStatus execute(NodeSocketReader& reader, NodeSocketWriter& writer) override
     {
         // inputs
@@ -145,16 +145,12 @@ protected:
     TypedNodeProperty<float> _smoothing;
 };
 
-void registerKuwaharaFilter(NodeSystem* nodeSystem)
+void registerKuwaharaFilter(NodeSystem& system)
 {
-    typedef DefaultNodeFactory<KuwaharaFilterNodeType> KuwaharaFilterFactory;
-    typedef DefaultNodeFactory<GeneralizedKuwaharaFilterNodeType> GeneralizedKuwaharaFilterFactory;
-    typedef DefaultNodeFactory<AnisotropicKuwaharaFilterNodeType> AnisotropicKuwaharaFilterFactory;
-
-    nodeSystem->registerNodeType("Filters/Kuwahara filter", 
-        std::unique_ptr<NodeFactory>(new KuwaharaFilterFactory()));
-    nodeSystem->registerNodeType("Filters/Generalized Kuwahara filter", 
-        std::unique_ptr<NodeFactory>(new GeneralizedKuwaharaFilterFactory()));
-    nodeSystem->registerNodeType("Filters/Anisotropic Kuwahara filter",
-        std::unique_ptr<NodeFactory>(new AnisotropicKuwaharaFilterFactory()));
+    system.registerNodeType("Filters/Kuwahara filter",
+                            makeDefaultNodeFactory<KuwaharaFilterNodeType>());
+    system.registerNodeType("Filters/Generalized Kuwahara filter",
+                            makeDefaultNodeFactory<GeneralizedKuwaharaFilterNodeType>());
+    system.registerNodeType("Filters/Anisotropic Kuwahara filter",
+                            makeDefaultNodeFactory<AnisotropicKuwaharaFilterNodeType>());
 }

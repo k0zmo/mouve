@@ -103,17 +103,14 @@ private:
     TypedNodeProperty<double> _beta;
 };
 
-void registerAmpArithmeticNodes(NodeSystem* nodeSystem)
+void registerAmpArithmeticNodes(NodeSystem& system)
 {
-    typedef DefaultNodeFactory<AmpAddNodeType> AmpAddFactory;
-
-    nodeSystem->registerNodeType("Arithmetic/Add AMP",
-        std::unique_ptr<NodeFactory>(new AmpAddFactory()));
+    system.registerNodeType("Arithmetic/Add AMP", makeDefaultNodeFactory<AmpAddNodeType>());
 }
 
 #else
 
-void registerAmpArithmeticNodes(class NodeSystem*)
+void registerAmpArithmeticNodes(NodeSystem&)
 {
 }
 

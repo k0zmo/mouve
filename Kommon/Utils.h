@@ -41,13 +41,6 @@ inline bool is64Bit()
 #endif
 }
 
-template <class T> struct ArraySize;
-template <class T, std::size_t N> struct ArraySize<T[N]>
-{
-    static const std::size_t value = N;
-};
-#define countof(x) (ArraySize<decltype(x)>::value)
-
 template <class Map>
 auto get_or_default(const Map& m, const typename Map::key_type& key,
                     const typename Map::mapped_type& defval) -> decltype(defval)

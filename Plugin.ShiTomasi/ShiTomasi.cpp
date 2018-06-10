@@ -22,6 +22,7 @@
  */
 
 #include "Logic/NodePlugin.h"
+#include "Logic/NodeType.h"
 #include "Logic/NodeSystem.h"
 
 #include <fmt/core.h>
@@ -81,19 +82,16 @@ private:
     TypedNodeProperty<double> _minDistance;
 };
 
-extern "C" K_DECL_EXPORT int logicVersion()
+class ShiTomasiPlugin : public NodePlugin
 {
-    return LOGIC_VERSION;
-}
+    MOUVE_DECLARE_PLUGIN(1);
 
-extern "C" K_DECL_EXPORT int pluginVersion()
-{
-    return 1;
-}
+public:
+    void registerPlugin(NodeSystem& system) override
+    {
+        system.registerNodeType("Features/Shi-Tomasi corner detector",
+                                makeDefaultNodeFactory<ShiTomasiCornerDetectorNodeType>());
+    }
+};
 
-extern "C" K_DECL_EXPORT void registerPlugin(NodeSystem* nodeSystem)
-{
-    typedef DefaultNodeFactory<ShiTomasiCornerDetectorNodeType> ShiTomasiFactory;
-    nodeSystem->registerNodeType("Features/Shi-Tomasi corner detector", 
-        std::unique_ptr<NodeFactory>(new ShiTomasiFactory()));
-}
+MOUVE_INSTANTIATE_PLUGIN(ShiTomasiPlugin)

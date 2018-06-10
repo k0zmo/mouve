@@ -21,16 +21,21 @@
  *
  */
 
-#include "Logic/NodeSystem.h"
+#include "Logic/NodePlugin.h"
 
-extern "C" K_DECL_EXPORT int logicVersion() { return LOGIC_VERSION; }
-extern "C" K_DECL_EXPORT int pluginVersion() { return 1; }
+void registerAmpMorphologyNodes(NodeSystem& system);
+void registerAmpArithmeticNodes(NodeSystem& system);
 
-extern void registerAmpMorphologyNodes(NodeSystem* nodeSystem);
-extern void registerAmpArithmeticNodes(NodeSystem* nodeSystem);
-
-extern "C" K_DECL_EXPORT void registerPlugin(NodeSystem* nodeSystem)
+class AMPPlugin : public NodePlugin
 {
-    registerAmpArithmeticNodes(nodeSystem);
-    registerAmpMorphologyNodes(nodeSystem);
-}
+    MOUVE_DECLARE_PLUGIN(1);
+
+public:
+    void registerPlugin(NodeSystem& system) override
+    {
+        registerAmpArithmeticNodes(system);
+        registerAmpMorphologyNodes(system);
+    }
+};
+
+MOUVE_INSTANTIATE_PLUGIN(AMPPlugin)

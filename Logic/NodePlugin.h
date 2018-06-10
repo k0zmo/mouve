@@ -23,38 +23,48 @@
 
 #pragma once
 
-#include "NodeType.h"
-#include "NodeFactory.h"
+#include "NodeSystem.h"
 
-#include "Kommon/SharedLibrary.h"
+#include <boost/config.hpp>
+#include <memory>
 
 class LOGIC_EXPORT NodePlugin
 {
-    K_DISABLE_COPY(NodePlugin);
 public:
-    NodePlugin(const std::string& fileName);
-    virtual ~NodePlugin();
+    virtual ~NodePlugin() {}
 
-    int logicVersion() const;
-    int pluginVersion() const;
-    void registerPlugin(NodeSystem* nodeSystem);	
+    virtual int logicVersion() const = 0;
+    virtual int pluginVersion() const = 0;
 
-private:
-    typedef int (*LogicVersionFunc)();
-    typedef int (*PluginVersionFunc)();
-    typedef void (*RegisterPluginFunc)(NodeSystem*);
-
-    LibraryHandle _sharedLibraryHandle;
-    LogicVersionFunc _logicVersionFunc;
-    PluginVersionFunc _pluginVersionFunc;
-    RegisterPluginFunc _registerPluginFunc;
+    // TODO Rename to registerNodeTypes
+    virtual void registerPlugin(NodeSystem& system) = 0;
 };
 
-inline int NodePlugin::logicVersion() const
-{ return _logicVersionFunc(); }
+//std::unique_ptr<NodeType>
 
-inline int NodePlugin::pluginVersion() const
-{ return _pluginVersionFunc(); }
+#define MOUVE_DECLARE_PLUGIN(version)                                                              \
+private:                                                                                           \
+    int logicVersion() const override { return LOGIC_VERSION; }                                    \
+    int pluginVersion() const override { return version; }
 
-inline void NodePlugin::registerPlugin(NodeSystem* nodeSystem)
-{ _registerPluginFunc(nodeSystem); }
+#define MOUVE_INSTANTIATE_PLUGIN(name)                                                             \
+    extern "C" BOOST_SYMBOL_EXPORT name plugin_instance;                                           \
+    name plugin_instance;
+
+/*
+ * Example of usage:
+ *
+ * class XPlugin : public NodePlugin
+ * {
+ *     MOUVE_DECLARE_PLUGIN(1); // plugin version
+ *
+ * public:
+ *     void registerPlugin(NodeSystem& system) override
+ *     {
+ *         system.registerNodeType("a/b/c", makeDefaultNodeFactory<YNodeType>());
+ *     }
+ * };
+ *
+ * MOUVE_INSTANTIATE_PLUGIN(XPlugin)
+ *
+ */
