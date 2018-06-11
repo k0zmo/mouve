@@ -81,10 +81,10 @@ enum class ENodeFlowDataType : int
 };
 
 namespace std {
-LOGIC_EXPORT string to_string(ENodeFlowDataType);
+MOUVE_EXPORT string to_string(ENodeFlowDataType);
 }
 
-class LOGIC_EXPORT NodeFlowData
+class MOUVE_EXPORT NodeFlowData
 {
     typedef boost::variant<
         cv::Mat,

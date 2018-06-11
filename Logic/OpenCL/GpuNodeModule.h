@@ -32,7 +32,7 @@
 using std::vector;
 using std::string;
 
-class LOGIC_EXPORT GpuNodeModule : public IGpuNodeModule
+class MOUVE_EXPORT GpuNodeModule : public IGpuNodeModule
 {
 public:
     explicit GpuNodeModule(bool interactiveInit);

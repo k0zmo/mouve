@@ -36,13 +36,13 @@ enum class EPropertyType : int
 {
     Unknown,
     Boolean,
-    // Available UI hints: 
+    // Available UI hints:
     // * min: minimum value that property can hold
     // * max: maximum value that property can hold
     // * step: step value used when spin box value is incremented/decremented
     // * wrap: is spin box circular (stepping up from max takes min and vice versa)
     Integer,
-    // Available UI hints: 
+    // Available UI hints:
     // * min: minimum value that property can hold
     // * max: maximum value that property can hold
     // * step: step value used when spin box value is incremented/decremented
@@ -61,7 +61,7 @@ enum class EPropertyType : int
 
 namespace std
 {
-    LOGIC_EXPORT string to_string(EPropertyType);
+    MOUVE_EXPORT string to_string(EPropertyType);
 }
 
 // Simple class representing 3x3 matrix
@@ -155,7 +155,7 @@ private:
     filepath_data _v;
 };
 
-class LOGIC_EXPORT NodeProperty
+class MOUVE_EXPORT NodeProperty
 {
     typedef boost::variant<
         bool,
@@ -171,14 +171,14 @@ public:
     NodeProperty();
     NodeProperty(bool value);
     NodeProperty(Enum value);
-    NodeProperty(int value);	
+    NodeProperty(int value);
     NodeProperty(double value);
     NodeProperty(float value);
     NodeProperty(const Matrix3x3& value);
     NodeProperty(const Filepath& value);
     NodeProperty(const std::string& value);
 
-    template <typename EnumType, 
+    template <typename EnumType,
         class = typename std::enable_if<std::is_enum<EnumType>::value>::type>
     NodeProperty(EnumType v)
         : NodeProperty{Enum{v}}
@@ -236,7 +236,7 @@ namespace
     class convert_visitor : public boost::static_visitor<T>
     {
     private:
-        // Used to specialize template member function (for bool type) of template class 
+        // Used to specialize template member function (for bool type) of template class
         template <class C> struct type_wrap {};
 
     public:
@@ -302,7 +302,7 @@ T NodeProperty::cast_value() const
 template <class T>
 class TypedNodeProperty : public NodeProperty
 {
-    static_assert(std::is_constructible<NodeProperty, T>::value || 
+    static_assert(std::is_constructible<NodeProperty, T>::value ||
                   std::is_convertible<T, NodeProperty>::value,
                   "NodeProperty is not constructible from T");
 public:

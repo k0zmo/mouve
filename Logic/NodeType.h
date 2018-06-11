@@ -56,7 +56,7 @@ private:
 };
 
 // Class responsible for reading data from a node socket
-class LOGIC_EXPORT NodeSocketReader
+class MOUVE_EXPORT NodeSocketReader
 {
     K_DISABLE_COPY(NodeSocketReader);
 
@@ -90,7 +90,7 @@ private:
 };
 
 // Class responsible for writing data to a node socket
-class LOGIC_EXPORT NodeSocketWriter
+class MOUVE_EXPORT NodeSocketWriter
 {
     K_DISABLE_COPY(NodeSocketWriter);
 
@@ -248,7 +248,7 @@ using LessPropertyValidator
     = RangePropertyValidator<T, no_limit<T>, std::less<T>>;
 
 // Describes input/output socket parameters
-class LOGIC_EXPORT SocketConfig
+class MOUVE_EXPORT SocketConfig
 {
 public:
     explicit SocketConfig(SocketID socketID,
@@ -296,7 +296,7 @@ private:
 };
 
 // Describes node property parameters
-class LOGIC_EXPORT PropertyConfig
+class MOUVE_EXPORT PropertyConfig
 {
 public:
     explicit PropertyConfig(PropertyID propertyID, 
@@ -393,7 +393,7 @@ typedef EnumFlags<ENodeConfig> NodeConfigFlags;
 K_DEFINE_ENUMFLAGS_OPERATORS(NodeConfigFlags)
 
 // Describes node type with all its i/o sockets and properties
-class LOGIC_EXPORT NodeConfig
+class MOUVE_EXPORT NodeConfig
 {
 public:
     explicit NodeConfig()
@@ -542,6 +542,6 @@ public:
         std::string typeName;
     };
 
-    virtual ~NodeTypeIterator() {} 
+    virtual ~NodeTypeIterator() {}
     virtual bool next(NodeTypeInfo& nodeTypeInfo) = 0;
 };

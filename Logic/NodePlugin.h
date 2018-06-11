@@ -28,7 +28,7 @@
 #include <boost/config.hpp>
 #include <memory>
 
-class LOGIC_EXPORT NodePlugin
+class NodePlugin
 {
 public:
     virtual ~NodePlugin() {}

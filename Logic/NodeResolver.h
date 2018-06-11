@@ -26,7 +26,7 @@
 #include "Prerequisites.h"
 #include "Kommon/TypeTraits.h"
 
-class LOGIC_EXPORT NodeResolver
+class MOUVE_EXPORT NodeResolver
 {
 public:
     NodeResolver(std::shared_ptr<NodeTree> nodeTree);
@@ -38,7 +38,7 @@ public:
 
     NodeID resolveNode(const std::string& nodeName);
 
-    SocketID resolveInputSocket(NodeID nodeID, 
+    SocketID resolveInputSocket(NodeID nodeID,
                                 const std::string& socketName);
     SocketID resolveInputSocket(const std::string& nodeName,
                                 const std::string& socketName);
@@ -49,7 +49,7 @@ public:
     const SocketConfig& inputSocketConfig(const std::string& nodeName,
                                           const std::string& socketName);
 
-    SocketID resolveOutputSocket(NodeID nodeID, 
+    SocketID resolveOutputSocket(NodeID nodeID,
                                  const std::string& socketName);
     SocketID resolveOutputSocket(const std::string& nodeName,
                                  const std::string& socketName);
@@ -60,7 +60,7 @@ public:
     const SocketConfig& outputSocketConfig(const std::string& nodeName,
                                            const std::string& socketName);
 
-    PropertyID resolveProperty(NodeID nodeID, 
+    PropertyID resolveProperty(NodeID nodeID,
                                const std::string& propertyName);
     PropertyID resolveProperty(const std::string& nodeName,
                                const std::string& propertyName);

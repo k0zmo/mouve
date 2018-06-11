@@ -40,7 +40,7 @@ public:
     }
 };
 
-class LOGIC_EXPORT NodeTreeSerializer
+class MOUVE_EXPORT NodeTreeSerializer
 {
 public:
     NodeTreeSerializer(std::string rootDir = "")
@@ -62,8 +62,6 @@ public:
     const std::vector<std::string>& warnings() const { return _warnings; }
 
 private:
-    json11::Json serializeNodes();
-    json11::Json serializeLinks();
     json11::Json serializeIO(const std::vector<SocketConfig>& ios);
     json11::Json serializeProperties(const Node* node,
                                      const std::vector<PropertyConfig>& props);

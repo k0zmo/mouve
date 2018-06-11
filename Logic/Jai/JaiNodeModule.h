@@ -35,12 +35,12 @@ using std::string;
 using std::vector;
 using std::tuple;
 
-/// TODO: 
+/// TODO:
 /// * Support for 10-bit bayer formats
 /// * White-balance RGB gain finder
 /// * (LONG) Use lower primitives (StreamThread instead of StreamCallback)
 
-class LOGIC_EXPORT JaiNodeModule : public IJaiNodeModule
+class MOUVE_EXPORT JaiNodeModule : public IJaiNodeModule
 {
 public:
     JaiNodeModule();
@@ -63,7 +63,7 @@ private:
     FACTORY_HANDLE _factoryHandle;
     vector<CAM_HANDLE> _camHandles;
 };
-    
+
 #define NODE_NAME_OFFSETX "OffsetX"
 #define NODE_NAME_OFFSETY "OffsetY"
 #define NODE_NAME_WIDTH "Width"

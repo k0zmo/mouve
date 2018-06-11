@@ -89,8 +89,24 @@ target_sources(Mouve.Logic PRIVATE
 get_target_property(sources_list Mouve.Logic SOURCES)
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR}/.. FILES ${sources_list})
 
-target_include_directories(Mouve.Logic PRIVATE ${mouve_SOURCE_DIR})
-target_link_libraries(Mouve.Logic PUBLIC Mouve.Kommon)
+# We're going to export symbols explicitly each one by one
+include(GenerateExportHeader)
+generate_export_header(Mouve.Logic BASE_NAME Mouve)
+target_sources(Mouve.Logic PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/mouve_export.h)
+set_target_properties(Mouve.Logic PROPERTIES CXX_VISIBILITY_PRESET hidden)
+
+if(BUILD_SHARED_LIBS)
+    if(MSVC)
+        # Disable warning: 'X' needs to have dll-interface to be used by clients of class
+        target_compile_options(Mouve.Logic PUBLIC /wd4251 /wd4275)
+    endif()
+endif()
+
+target_include_directories(Mouve.Logic 
+    PRIVATE ${mouve_SOURCE_DIR} 
+    PUBLIC ${CMAKE_CURRENT_BINARY_DIR}
+)
+target_link_libraries(Mouve.Logic PUBLIC Mouve.Kommon) ## Add when Kommon is no more: ${CMAKE_DL_LIBS}
 target_compile_definitions(Mouve.Logic PRIVATE LOGIC_LIB) # Building DLL
 target_compile_features(Mouve.Logic PUBLIC cxx_std_14)
 
@@ -106,13 +122,13 @@ target_link_libraries(Mouve.Logic PUBLIC
     opencv_nonfree
     opencv_flann
     opencv_calib3d
-    Qt5::Core
+    Qt5::Core # Remove it in near future
     fmt::fmt
 )
 
 set_target_properties(Mouve.Logic
     PROPERTIES
-        RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin    
+        RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
 )
 
 if(MOUVE_USE_PRECOMPILED_HEADERS)

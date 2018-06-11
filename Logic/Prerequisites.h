@@ -24,12 +24,7 @@
 #pragma once
 
 #include "Kommon/konfig.h"
-
-#if defined(LOGIC_LIB)
-#  define LOGIC_EXPORT K_DECL_EXPORT
-#else
-#  define LOGIC_EXPORT K_DECL_IMPORT
-#endif
+#include "mouve_export.h"
 
 #define LOGIC_VERSION 1
 

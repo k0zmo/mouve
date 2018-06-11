@@ -26,7 +26,7 @@
 #include "Prerequisites.h"
 #include "NodeFactory.h"
 
-class LOGIC_EXPORT NodeSystem
+class MOUVE_EXPORT NodeSystem
 {
 public:
     NodeSystem();

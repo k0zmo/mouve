@@ -48,7 +48,7 @@ public:
     virtual void doWork() = 0;
 };
 
-class LOGIC_EXPORT NodeTree
+class MOUVE_EXPORT NodeTree
 {
     K_DISABLE_COPY(NodeTree)
 public:

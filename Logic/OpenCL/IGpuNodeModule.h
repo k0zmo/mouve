@@ -70,7 +70,7 @@ struct GpuRegisteredProgram
 using OnCreateInteractive = std::function<
     GpuInteractiveResult(const std::vector<GpuPlatform>& gpuPlatforms)>;
 
-class LOGIC_EXPORT IGpuNodeModule : public NodeModule
+class MOUVE_EXPORT IGpuNodeModule : public NodeModule
 {
 public:
     virtual void setInteractiveInit(bool interactiveInit) = 0;
@@ -86,4 +86,4 @@ public:
     virtual void rebuildProgram(const std::string& programName) = 0;
 };
 
-LOGIC_EXPORT std::unique_ptr<IGpuNodeModule> createGpuModule();
+MOUVE_EXPORT std::unique_ptr<IGpuNodeModule> createGpuModule();

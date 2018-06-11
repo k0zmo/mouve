@@ -29,7 +29,7 @@
 
 #include <boost/dll/shared_library.hpp>
 
-class LOGIC_EXPORT GpuActivityLogger
+class MOUVE_EXPORT GpuActivityLogger
 {
 public:
     GpuActivityLogger();

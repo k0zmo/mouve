@@ -62,7 +62,7 @@ struct CameraInfo
 
 enum class EDriverType { All, Filter, Socket };
 
-class LOGIC_EXPORT IJaiNodeModule : public NodeModule
+class MOUVE_EXPORT IJaiNodeModule : public NodeModule
 {
 public:
     virtual int cameraCount() const = 0;
@@ -72,4 +72,4 @@ public:
 };
 
 // Will return null if Logic wasn't compiled with support of JAI cameras
-LOGIC_EXPORT std::unique_ptr<IJaiNodeModule> createJaiModule();
+MOUVE_EXPORT std::unique_ptr<IJaiNodeModule> createJaiModule();

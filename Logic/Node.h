@@ -37,7 +37,7 @@ enum class ENodeFlags : int
     Disabled           = K_BIT(6)
 };
 
-class LOGIC_EXPORT Node
+class Node
 {
     K_DISABLE_COPY(Node)
 public:
