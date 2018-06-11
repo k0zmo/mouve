@@ -28,7 +28,7 @@
 #include "NodePlugin.h"
 
 #include <fmt/core.h>
-#include <boost/dll/import.hpp>
+#include <boost/dll/shared_library.hpp>
 
 /// TODO: Change this to some neat logging system
 #include <QDebug>
@@ -220,8 +220,14 @@ size_t NodeSystem::loadPlugin(const std::string& pluginName)
 {
     if (_plugins.find(pluginName) == _plugins.end())
     {
-        auto plugin = boost::dll::import<NodePlugin>(pluginName, "plugin_instance",
-                                                     boost::dll::load_mode::default_mode);
+        // Below is the same as:
+        //   boost::dll::import<NodePlugin>(pluginName, "plugin_instance")
+        // but it uses std::shared_ptr instead of boost's one
+        auto library = std::make_shared<boost::dll::shared_library>(
+            pluginName, boost::dll::load_mode::default_mode);
+        auto plugin = std::shared_ptr<NodePlugin>{
+            library, std::addressof(library->get<NodePlugin>("plugin_instance"))};
+
         if (plugin->logicVersion() != LOGIC_VERSION)
         {
             throw std::runtime_error(fmt::format("Logic ({}) and plugin {} ({}) version mismatch",
@@ -231,9 +237,7 @@ size_t NodeSystem::loadPlugin(const std::string& pluginName)
         size_t before = _registeredNodeTypes.size();
         plugin->registerPlugin(*this);
 
-        _plugins.emplace(pluginName,
-                         std::shared_ptr<NodePlugin>(
-                             plugin.get(), [plugin](NodePlugin*) mutable { plugin.reset(); }));
+        _plugins.emplace(pluginName, std::move(plugin));
         return _registeredNodeTypes.size() - before;
     }
 
