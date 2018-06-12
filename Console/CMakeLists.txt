@@ -1,6 +1,8 @@
 add_executable(Mouve.Console main.cpp)
-
-target_link_libraries(Mouve.Console Mouve.Logic)
+target_link_libraries(Mouve.Console PUBLIC
+    Mouve.Logic
+    opencv_highgui
+)
 target_include_directories(Mouve.Console PRIVATE ${mouve_SOURCE_DIR})
 
 set_target_properties(Mouve.Console

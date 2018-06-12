@@ -5,6 +5,7 @@ mouve_add_plugin(Plugin.Kuwahara
     KuwaharaFilterNode.cpp
     main.cpp
 )
+target_link_libraries(Plugin.Kuwahara PRIVATE opencv_imgproc)
 
 if(TARGET clw::clw)
     mouve_add_kernels(Plugin.Kuwahara KERNELS kernels/kuwahara.cl)

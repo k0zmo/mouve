@@ -113,20 +113,22 @@ target_link_libraries(Mouve.Logic PUBLIC Mouve.Kommon PRIVATE ${CMAKE_DL_LIBS})
 target_compile_definitions(Mouve.Logic PRIVATE LOGIC_LIB) # Building DLL
 target_compile_features(Mouve.Logic PUBLIC cxx_std_14)
 
-target_link_libraries(Mouve.Logic PUBLIC
-    Boost::boost
-    Boost::disable_autolinking
-    Boost::filesystem
-    opencv_core
-    opencv_imgproc
-    opencv_highgui
-    opencv_video
-    opencv_features2d
-    opencv_nonfree
-    opencv_flann
-    opencv_calib3d
-    Qt5::Core # Remove it in near future
-    fmt::fmt
+target_link_libraries(Mouve.Logic 
+    PUBLIC
+        Boost::boost
+        opencv_core
+        fmt::fmt
+    PRIVATE
+        Boost::disable_autolinking
+        Boost::filesystem
+        opencv_imgproc
+        opencv_highgui
+        opencv_video
+        opencv_features2d
+        opencv_nonfree
+        opencv_flann
+        opencv_calib3d
+        Qt5::Core # Remove it in near future
 )
 
 set_target_properties(Mouve.Logic
@@ -136,7 +138,7 @@ set_target_properties(Mouve.Logic
 
 if(TARGET TBB::tbb)
     message(STATUS "Intel TBB support: YES")
-    target_link_libraries(Mouve.Logic PUBLIC TBB::tbb)
+    target_link_libraries(Mouve.Logic PRIVATE TBB::tbb)
     target_compile_definitions(Mouve.Logic PRIVATE HAVE_TBB)
 else()
     message(STATUS "Intel TBB support: NO")

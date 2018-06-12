@@ -73,6 +73,7 @@
 #include "ui_MainWindow.h"
 #include "TreeWorker.h"
 
+// TEMPORARY
 #include <boost/dll/runtime_symbol_info.hpp>
 #include <boost/filesystem/path.hpp>
 #include <boost/filesystem/operations.hpp>
