@@ -131,14 +131,6 @@ set_target_properties(Mouve.Logic
         RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
 )
 
-if(MOUVE_USE_PRECOMPILED_HEADERS)
-    set_target_properties(Mouve.Logic
-        PROPERTIES
-            COTIRE_CXX_PREFIX_HEADER_INIT Precomp.h)
-    set_directory_properties(PROPERTIES COTIRE_ADD_UNITY_BUILD FALSE)
-    cotire(Mouve.Logic)
-endif()
-
 if(TARGET TBB::tbb)
     message(STATUS "Intel TBB support: YES")
     target_link_libraries(Mouve.Logic PUBLIC TBB::tbb)
@@ -180,6 +172,14 @@ if(TARGET JAI::JAI)
     target_compile_definitions(Mouve.Logic PUBLIC HAVE_JAI)
 else()
     message(STATUS "JAI support: NO")
+endif()
+
+if(MOUVE_USE_PRECOMPILED_HEADERS)
+    set_target_properties(Mouve.Logic
+        PROPERTIES
+            COTIRE_CXX_PREFIX_HEADER_INIT Precomp.h)
+    set_directory_properties(PROPERTIES COTIRE_ADD_UNITY_BUILD FALSE)
+    cotire(Mouve.Logic)
 endif()
 
 install(TARGETS Mouve.Logic
