@@ -118,7 +118,7 @@ void registerAmpMorphologyNodes(NodeSystem& system)
 
 #else
 
-void registerAmpMorphologyNodes(NodeSystem&)
+void registerAmpMorphologyNodes(class NodeSystem&)
 {
 }
 

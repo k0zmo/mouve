@@ -110,7 +110,7 @@ void registerAmpArithmeticNodes(NodeSystem& system)
 
 #else
 
-void registerAmpArithmeticNodes(NodeSystem&)
+void registerAmpArithmeticNodes(class NodeSystem&)
 {
 }
 

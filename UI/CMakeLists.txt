@@ -52,6 +52,7 @@ source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR}/.. FILES ${sources_list})
 target_include_directories(Mouve.UI PRIVATE ${mouve_SOURCE_DIR} ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries(Mouve.UI PUBLIC Mouve.Logic)
 target_compile_features(Mouve.UI PUBLIC cxx_std_11)
+target_link_libraries(Mouve.UI PRIVATE ${CMAKE_DL_LIBS})
 
 target_link_libraries(Mouve.UI PUBLIC
     Qt5::Core
