@@ -25,6 +25,7 @@
 
 #include "GpuNodeModule.h"
 #include "GpuException.h"
+#include "AmdtActivityLogger.h"
 
 #include <boost/dll/runtime_symbol_info.hpp>
 #include <boost/filesystem/path.hpp>
@@ -65,6 +66,7 @@ bool GpuNodeModule::initialize()
     {
         static string allKernelsDirectory = kernelsDirectory() + "/";
         _library.create(_context, allKernelsDirectory);
+        _logger = makeActivityLogger();
     }
 
     return res;

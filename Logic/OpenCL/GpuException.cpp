@@ -23,47 +23,43 @@
 
 #pragma once
 
-#if defined(HAVE_OPENCL)
+#include "GpuException.h"
 
-#include "../Prerequisites.h"
+#include <fmt/core.h>
 
-class GpuActivityLogger
+namespace {
+
+std::string formatMessage(const std::string& log)
 {
-public:
-    virtual ~GpuActivityLogger() {}
-
-    virtual void beginPerfMarker(const char* markerName,
-                                 const char* groupName = nullptr,
-                                 const char* userString = nullptr) const = 0;
-    virtual void endPerfMarker() const = 0;
-};
-
-class NullActivityLogger : public GpuActivityLogger
-{
-public:
-    void beginPerfMarker(const char* markerName,
-                         const char* groupName = nullptr,
-                         const char* userString = nullptr) const override
+    std::string logMessage = log;
+    if (logMessage.size() > 1024)
     {
-        K_UNREFERENCED(markerName);
-        K_UNREFERENCED(groupName);
-        K_UNREFERENCED(userString);
+        logMessage.erase(1024, std::string::npos);
+        logMessage.append("\n...");
     }
-    void endPerfMarker() const override {}
-};
 
-// RAII styled performance marker for activity logger
-class GpuPerformanceMarker
+    return fmt::format("Building program failed: \n{}", logMessage);
+}
+} // namespace
+
+GpuNodeException::GpuNodeException(int error, const std::string& message)
+    : error(error),
+      message(message),
+      formatted(fmt::format("OpenCL error ({}): {}", error, message))
 {
-public:
-    GpuPerformanceMarker(const GpuActivityLogger& logger,
-                         const char* markerName,
-                         const char* groupName = nullptr,
-                         const char* userString = nullptr);
-    ~GpuPerformanceMarker();
+}
 
-private:
-    const GpuActivityLogger& _logger;
-};
+const char* GpuNodeException::what() const throw()
+{
+    return formatted.c_str();
+}
 
-#endif
+GpuBuildException::GpuBuildException(const std::string& log)
+    : log(log), formatted(formatMessage(log))
+{
+}
+
+const char* GpuBuildException::what() const throw()
+{
+    return formatted.c_str();
+}

@@ -25,23 +25,13 @@
 
 #include "../Prerequisites.h"
 
-#include <fmt/core.h>
-
 #include <exception>
 
 struct GpuNodeException : public std::exception
 {
-    GpuNodeException(int error, const std::string& message)
-        : error(error),
-          message(message),
-          formatted(fmt::format("OpenCL error ({}): {}", error, message))
-    {
-    }
+    GpuNodeException(int error, const std::string& message);
 
-    virtual const char* what() const throw()
-    {
-        return formatted.c_str();
-    }
+    virtual const char* what() const throw();
 
     int error;
     std::string message;
@@ -50,29 +40,10 @@ struct GpuNodeException : public std::exception
 
 struct GpuBuildException : public std::exception
 {
-    GpuBuildException(const std::string& log)
-        : log(log), formatted(formatMessage())
-    {
-    }
+    explicit GpuBuildException(const std::string& log);
 
-    virtual const char* what() const throw()
-    {
-        return formatted.c_str();
-    }
+    virtual const char* what() const throw();
 
     std::string log;
     std::string formatted;
-
-private:
-    std::string formatMessage()
-    {
-        std::string logMessage = log;
-        if (logMessage.size() > 1024)
-        {
-            logMessage.erase(1024, std::string::npos);
-            logMessage.append("\n...");
-        }
-
-        return fmt::format("Building program failed: \n{}", logMessage);
-    }
 };

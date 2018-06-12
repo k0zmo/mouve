@@ -29,6 +29,8 @@
 #include "GpuKernelLibrary.h"
 #include "GpuActivityLogger.h"
 
+#include <memory>
+
 using std::vector;
 using std::string;
 
@@ -87,7 +89,7 @@ private:
     uint64_t _maxLocalMemory;
 
     KernelLibrary _library;
-    GpuActivityLogger _logger;
+    std::unique_ptr<GpuActivityLogger> _logger;
 
     bool _interactiveInit;
 };
@@ -117,6 +119,6 @@ inline clw::CommandQueue& GpuNodeModule::dataQueue()
 inline const clw::CommandQueue& GpuNodeModule::dataQueue() const
 { return _dataQueue; }
 inline const GpuActivityLogger& GpuNodeModule::activityLogger() const
-{ return _logger; }
+{ return *_logger; }
 
 #endif

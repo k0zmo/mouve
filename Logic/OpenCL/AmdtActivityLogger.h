@@ -25,45 +25,8 @@
 
 #if defined(HAVE_OPENCL)
 
-#include "../Prerequisites.h"
+#include "GpuActivityLogger.h"
 
-class GpuActivityLogger
-{
-public:
-    virtual ~GpuActivityLogger() {}
-
-    virtual void beginPerfMarker(const char* markerName,
-                                 const char* groupName = nullptr,
-                                 const char* userString = nullptr) const = 0;
-    virtual void endPerfMarker() const = 0;
-};
-
-class NullActivityLogger : public GpuActivityLogger
-{
-public:
-    void beginPerfMarker(const char* markerName,
-                         const char* groupName = nullptr,
-                         const char* userString = nullptr) const override
-    {
-        K_UNREFERENCED(markerName);
-        K_UNREFERENCED(groupName);
-        K_UNREFERENCED(userString);
-    }
-    void endPerfMarker() const override {}
-};
-
-// RAII styled performance marker for activity logger
-class GpuPerformanceMarker
-{
-public:
-    GpuPerformanceMarker(const GpuActivityLogger& logger,
-                         const char* markerName,
-                         const char* groupName = nullptr,
-                         const char* userString = nullptr);
-    ~GpuPerformanceMarker();
-
-private:
-    const GpuActivityLogger& _logger;
-};
+std::unique_ptr<GpuActivityLogger> makeActivityLogger();
 
 #endif

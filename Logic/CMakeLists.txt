@@ -57,6 +57,8 @@ target_sources(Mouve.Logic PRIVATE
 )
 
 target_sources(Mouve.Logic PRIVATE
+    OpenCL/AmdtActivityLogger.cpp
+    OpenCL/AmdtActivityLogger.h
     OpenCL/DeviceArray.cpp
     OpenCL/DeviceArray.h
     OpenCL/GpuActivityLogger.cpp
@@ -65,6 +67,7 @@ target_sources(Mouve.Logic PRIVATE
     OpenCL/GpuBasicNodes.cpp
     OpenCL/GpuBruteForceMacherNode.cpp
     OpenCL/GpuColorConversionNodes.cpp
+    OpenCL/GpuException.cpp
     OpenCL/GpuException.h
     OpenCL/GpuHoughLinesNode.cpp
     OpenCL/GpuKernelLibrary.cpp
