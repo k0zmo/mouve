@@ -45,9 +45,9 @@ public:
                          const char* groupName = nullptr,
                          const char* userString = nullptr) const override
     {
-        K_UNREFERENCED(markerName);
-        K_UNREFERENCED(groupName);
-        K_UNREFERENCED(userString);
+        (void)(markerName);
+        (void)(groupName);
+        (void)(userString);
     }
     void endPerfMarker() const override {}
 };

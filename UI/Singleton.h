@@ -23,7 +23,6 @@
 
 #pragma once
 
-#include "Kommon/konfig.h"
 #include <cassert>
 
 template <class Type>
@@ -33,21 +32,14 @@ public:
     Singleton();
     virtual ~Singleton();
 
+    Singleton(const Singleton<Type>&) = delete;
+    Singleton& operator=(const Singleton<Type>&) = delete;
+
     static Type& instance();
     static Type* instancePtr();
 
 protected:
     static Type* _singleton;
-
-#if K_COMPILER == K_COMPILER_MSVC
-private:
-    Singleton(const Singleton<Type>&);
-    Singleton& operator=(const Singleton<Type>&);
-#elif K_COMPILER == K_COMPILER_GCC
-public:
-    Singleton(const Singleton<Type>&) = delete;
-    Singleton& operator=(const Singleton<Type>&) = delete;
-#endif
 };
 
 template <class Type> inline Singleton<Type>::Singleton()

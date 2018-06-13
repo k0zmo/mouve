@@ -59,36 +59,10 @@ Node::Node(std::unique_ptr<NodeType> nodeType,
         setFlag(ENodeFlags::OverridesTimeComp);
 
     _numInputs = static_cast<SocketID>(config.inputs().size());
-    
+
     for(const SocketConfig& output : config.outputs())
         _outputSockets.emplace_back(output.type());
     _numOutputs = static_cast<SocketID>(_outputSockets.size());
-}
-
-Node::~Node()
-{
-}
-
-Node::Node(Node&& rhs)
-{
-    operator=(std::forward<Node>(rhs));
-}
-
-Node& Node::operator=(Node&& rhs)
-{ 
-    if(&rhs != this)
-    {
-        _outputSockets = std::move(rhs._outputSockets);
-        _nodeType = std::move(rhs._nodeType);
-        _nodeName = std::move(rhs._nodeName);
-        _numInputs = rhs._numInputs;
-        _numOutputs = rhs._numOutputs;
-        _nodeTypeID = rhs._nodeTypeID;
-        _flags = rhs._flags;
-        _timeElapsed = rhs._timeElapsed;
-        _message = rhs._message;
-    }
-    return *this;
 }
 
 NodeFlowData& Node::outputSocket(SocketID socketID)

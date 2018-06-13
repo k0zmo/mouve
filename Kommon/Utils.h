@@ -23,15 +23,6 @@
 
 #pragma once
 
-inline bool is64Bit()
-{
-#if K_ARCH == K_ARCH_64
-    return true;
-#else
-    return false;
-#endif
-}
-
 template <class Map>
 auto get_or_default(const Map& m, const typename Map::key_type& key,
                     const typename Map::mapped_type& defval) -> decltype(defval)

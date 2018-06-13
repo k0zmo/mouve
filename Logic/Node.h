@@ -29,31 +29,31 @@
 
 enum class ENodeFlags : int
 {
-    Tagged             = K_BIT(1),
-    StateNode          = K_BIT(2),
-    AutoTag            = K_BIT(3),
-    NotFullyConnected  = K_BIT(4),
-    OverridesTimeComp  = K_BIT(5),
-    Disabled           = K_BIT(6)
+    Tagged             = 1 << 1,
+    StateNode          = 1 << 2,
+    AutoTag            = 1 << 3,
+    NotFullyConnected  = 1 << 4,
+    OverridesTimeComp  = 1 << 5,
+    Disabled           = 1 << 6
 };
 
 class Node
 {
-    K_DISABLE_COPY(Node)
 public:
     Node();
     Node(std::unique_ptr<NodeType> nodeType,
          const std::string& nodeName,
          NodeTypeID nodeTypeID);
-    ~Node();
 
-    // Move operators
-    Node(Node&& rhs);
-    Node& operator=(Node&& rhs);
+    Node(const Node& rhs) = delete;
+    Node& operator=(const Node& rhs) = delete;
 
-    // Is internal data valid 
+    Node(Node&& rhs) = default;
+    Node& operator=(Node&& rhs) = default;
+
+    // Is internal data valid
     bool isValid() const;
-    // Does given socket exists 
+    // Does given socket exists
     bool validateSocket(SocketID socketID, bool isOutput) const;
 
     // Returns underlying NodeType implementation (supplied by the user)
@@ -84,7 +84,6 @@ public:
     void unsetFlag(ENodeFlags flag);
 
 private:
-    // NOTE: If you add any new fields be sure to also handle them in move constructor/operator
     std::unique_ptr<NodeType> _nodeType;
     std::vector<NodeFlowData> _outputSockets;
     std::string _nodeName;

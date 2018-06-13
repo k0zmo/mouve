@@ -23,7 +23,6 @@
 
 #pragma once
 
-#include "Kommon/konfig.h"
 #include "mouve_export.h"
 
 #define LOGIC_VERSION 1

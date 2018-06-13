@@ -58,8 +58,6 @@ private:
 // Class responsible for reading data from a node socket
 class MOUVE_EXPORT NodeSocketReader
 {
-    K_DISABLE_COPY(NodeSocketReader);
-
     friend class NodeTree;
 public:
     explicit NodeSocketReader(NodeTree* tree, NodeSocketTracer& tracer)
@@ -69,6 +67,9 @@ public:
         , _nodeID(InvalidNodeID)
     {
     }
+
+    NodeSocketReader(const NodeSocketReader&) = delete;
+    NodeSocketReader& operator=(const NodeSocketReader&) = delete;
 
     // Reads data from the socket of given ID
     const NodeFlowData& operator()(SocketID socketID) const
@@ -92,8 +93,6 @@ private:
 // Class responsible for writing data to a node socket
 class MOUVE_EXPORT NodeSocketWriter
 {
-    K_DISABLE_COPY(NodeSocketWriter);
-
     friend class Node;
 public:
     explicit NodeSocketWriter(NodeSocketTracer& tracer)
@@ -101,6 +100,9 @@ public:
         , _outputs(nullptr)
     {
     }
+
+    NodeSocketWriter(const NodeSocketWriter&) = delete;
+    NodeSocketWriter& operator=(const NodeSocketWriter&) = delete;
 
     // Returns a reference to underlying socket data
     NodeFlowData& operator()(SocketID socketID)
@@ -383,11 +385,11 @@ enum class ENodeConfig
 {
     NoFlags                  = 0,
     // Node markes as a stateful
-    HasState                 = K_BIT(0),
+    HasState                 = 1,
     // After one exec-run, node should be tagged for next one
-    AutoTag                  = K_BIT(1),
+    AutoTag                  = 2,
     // Don't automatically do time computations for this node as it'll do it itself
-    OverridesTimeComputation = K_BIT(2)
+    OverridesTimeComputation = 4
 };
 typedef EnumFlags<ENodeConfig> NodeConfigFlags;
 K_DEFINE_ENUMFLAGS_OPERATORS(NodeConfigFlags)

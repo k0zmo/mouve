@@ -6,7 +6,6 @@ add_library(Mouve.Kommon
     Utils.h
     json11.cpp
     json11.hpp
-    konfig.h
 )
 
 get_target_property(sources_list Mouve.Kommon SOURCES)

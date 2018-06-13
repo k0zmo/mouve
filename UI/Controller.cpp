@@ -77,6 +77,8 @@
 #include <boost/dll/runtime_symbol_info.hpp>
 #include <boost/filesystem/path.hpp>
 #include <boost/filesystem/operations.hpp>
+#include <boost/predef/architecture/x86.h>
+#include <boost/predef/os/windows.h>
 
 #include <future>
 #include <thread>
@@ -663,7 +665,7 @@ void Controller::setupUiAbout()
         QString translatedTextAboutCaption = QString(
             "<h3>About %1 (%2)</h3>")
             .arg(QApplication::applicationName())
-            .arg(is64Bit() ? "x64" : "x86");
+            .arg(BOOST_ARCH_X86_64 ? "x64" : "x86");
         // Doesn't work on gcc 4.7.4
         QString translatedTextAboutText = QString::fromWCharArray(
             L"<p>Author: Kajetan Świerk</p>"
@@ -2290,7 +2292,7 @@ void Controller::showProgramsList()
                     // Exception propagate to main thread
                     exception = std::current_exception();
                 }
-                QMetaObject::invokeMethod(&progress, "close", Qt::QueuedConnection);				
+                QMetaObject::invokeMethod(&progress, "close", Qt::QueuedConnection);
             });
 
             progress.exec();
@@ -2475,9 +2477,9 @@ void Controller::showDeviceSettings()
 
 namespace {
 
-#if K_SYSTEM == K_SYSTEM_WINDOWS
+#if BOOST_OS_WINDOWS
 const QString pluginExtensionName = QStringLiteral("*.dll");
-#elif K_SYSTEM == K_SYSTEM_LINUX
+#else
 const QString pluginExtensionName = QStringLiteral("*.so");
 #endif
 

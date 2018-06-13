@@ -55,10 +55,12 @@ class Controller
     , public Singleton<Controller>
 {
     Q_OBJECT
-    K_DISABLE_COPY(Controller)
 public:
     explicit Controller(QWidget* parent = nullptr, Qt::WindowFlags flags = 0);
     ~Controller() override;
+
+    Controller(const Controller&) = delete;
+    Controller& operator=(const Controller&) = delete;
 
     void addNode(NodeTypeID nodeTypeID, const QPointF& scenePos);
     void linkNodes(NodeID fromNodeID, SocketID fromSocketID,
