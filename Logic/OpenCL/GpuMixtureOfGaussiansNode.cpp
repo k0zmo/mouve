@@ -75,7 +75,7 @@ public:
             .setValidator(make_validator<InclRangePropertyValidator<double>>(-1.0, 1.0))
             .setUiHints("min:-1, max:1, step:0.01, decimals:3");
         addProperty("Show background", _showBackground);
-        setFlags(ENodeConfig::HasState);
+        setFlags(kl::make_flags(ENodeConfig::HasState));
         setModule("opencl");
     }
 

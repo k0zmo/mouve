@@ -64,7 +64,6 @@ foreach(vendor clw;fmt;kl)
     set_target_properties(${vendor} PROPERTIES FOLDER vendor)
 endforeach()
 
-add_subdirectory(Kommon)
 add_subdirectory(Logic)
 add_subdirectory(Console)
 add_subdirectory(UI)

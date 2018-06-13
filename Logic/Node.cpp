@@ -51,11 +51,11 @@ Node::Node(std::unique_ptr<NodeType> nodeType,
 {
     const NodeConfig& config = _nodeType->config();
 
-    if(config.flags().testFlag(ENodeConfig::HasState))
+    if(config.flags().test(ENodeConfig::HasState))
         setFlag(ENodeFlags::StateNode);
-    if(config.flags().testFlag(ENodeConfig::AutoTag))
+    if(config.flags().test(ENodeConfig::AutoTag))
         setFlag(ENodeFlags::AutoTag);
-    if(config.flags().testFlag(ENodeConfig::OverridesTimeComputation))
+    if(config.flags().test(ENodeConfig::OverridesTimeComputation))
         setFlag(ENodeFlags::OverridesTimeComp);
 
     _numInputs = static_cast<SocketID>(config.inputs().size());

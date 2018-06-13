@@ -52,7 +52,7 @@ public:
             .setValidator(make_validator<InclRangePropertyValidator<double>>(-1.0, 1.0))
             .setUiHints("min:-1, max:1, step:0.01, decimals:3");
         setDescription("Gaussian Mixture-based image sequence background/foreground segmentation.");
-        setFlags(ENodeConfig::HasState);
+        setFlags(kl::make_flags(ENodeConfig::HasState));
     }
 
     bool restart() override
@@ -106,7 +106,7 @@ public:
             .setValidator(make_validator<InclRangePropertyValidator<double>>(-1.0, 1.0))
             .setUiHints("min:-1, max:1, step:0.01, decimals:3");
         setDescription("Improved adaptive Gausian mixture model for background subtraction.");
-        setFlags(ENodeConfig::HasState);
+        setFlags(kl::make_flags(ENodeConfig::HasState));
     }
 
     bool restart() override
@@ -152,7 +152,7 @@ public:
             .setValidator(make_validator<InclRangePropertyValidator<double>>(-1, 1))
             .setUiHints("min:-1, max:1, step:0.01, decimals:3");
         setDescription("GMG background subtractor.");
-        setFlags(ENodeConfig::HasState);
+        setFlags(kl::make_flags(ENodeConfig::HasState));
     }
 
     bool restart() override
@@ -201,7 +201,7 @@ public:
         addProperty("Threshold coeff.", _threshCoeff)
             .setValidator(make_validator<MinPropertyValidator<double>>(0.0))
             .setUiHints("min:0.0, decimals:3");
-        setFlags(ENodeConfig::HasState);
+        setFlags(kl::make_flags(ENodeConfig::HasState));
     }
 
     bool restart() override

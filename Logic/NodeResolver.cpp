@@ -25,9 +25,10 @@
 #include "NodeTree.h"
 #include "NodeType.h"
 #include "NodeException.h"
-#include "Kommon/TypeTraits.h"
 
+#include <kl/type_traits.hpp>
 #include <fmt/core.h>
+
 #include <regex>
 
 NodeResolver::NodeResolver(std::shared_ptr<NodeTree> nodeTree)
@@ -118,17 +119,16 @@ namespace
     template <class Func>
     struct is_node_config_func
         : public std::integral_constant<
-              bool, func_traits<Func>::arity == 1 &&
-                        std::is_same<
-                            typename func_traits<Func>::template arg<0>::type,
-                            const NodeConfig&>::value>
+              bool, kl::func_traits<Func>::arity == 1 &&
+                        std::is_same<typename kl::func_traits<Func>::template arg<0>::type,
+                                     const NodeConfig&>::value>
     {
     };
 }
 
 template <class Func>
 auto NodeResolver::decorateConfiguration(NodeID nodeID, Func&& func)
-    -> typename func_traits<Func>::return_type
+    -> typename kl::func_traits<Func>::return_type
 {
     static_assert(is_node_config_func<typename std::remove_reference<Func>::type>::value,
                   "Func must have signature: RetValue F(const NodeConfig&)");
@@ -139,7 +139,7 @@ auto NodeResolver::decorateConfiguration(NodeID nodeID, Func&& func)
     }
     catch(BadNodeException&)
     {
-        using ReturnType = typename func_traits<Func>::return_type;
+        using ReturnType = typename kl::func_traits<Func>::return_type;
         return DefaultValue<ReturnType>::value;
     }
 }

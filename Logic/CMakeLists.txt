@@ -107,7 +107,7 @@ target_include_directories(Mouve.Logic
     PRIVATE ${mouve_SOURCE_DIR} 
     PUBLIC ${CMAKE_CURRENT_BINARY_DIR}
 )
-target_link_libraries(Mouve.Logic PUBLIC Mouve.Kommon PRIVATE ${CMAKE_DL_LIBS})
+target_link_libraries(Mouve.Logic PRIVATE ${CMAKE_DL_LIBS})
 target_compile_definitions(Mouve.Logic PRIVATE LOGIC_LIB) # Building DLL
 target_compile_features(Mouve.Logic PUBLIC cxx_std_14)
 
@@ -116,6 +116,7 @@ target_link_libraries(Mouve.Logic
         Boost::boost
         opencv_core
         fmt::fmt
+        kl::kl
     PRIVATE
         Boost::disable_autolinking
         Boost::filesystem
@@ -127,7 +128,6 @@ target_link_libraries(Mouve.Logic
         opencv_flann
         opencv_calib3d
         Qt5::Core # Remove it in near future
-        kl::kl
 )
 
 set_target_properties(Mouve.Logic

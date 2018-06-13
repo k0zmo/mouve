@@ -28,7 +28,8 @@
 #include "NodeProperty.h"
 #include "NodeException.h"
 #include "NodeLink.h"
-#include "Kommon/EnumFlags.h"
+
+#include <kl/enum_flags.hpp>
 
 #include <chrono>
 
@@ -391,8 +392,7 @@ enum class ENodeConfig
     // Don't automatically do time computations for this node as it'll do it itself
     OverridesTimeComputation = 4
 };
-typedef EnumFlags<ENodeConfig> NodeConfigFlags;
-K_DEFINE_ENUMFLAGS_OPERATORS(NodeConfigFlags)
+using NodeConfigFlags = kl::enum_flags<ENodeConfig>;
 
 // Describes node type with all its i/o sockets and properties
 class MOUVE_EXPORT NodeConfig
