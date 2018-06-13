@@ -98,11 +98,9 @@ generate_export_header(Mouve.Logic BASE_NAME Mouve)
 target_sources(Mouve.Logic PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/mouve_export.h)
 set_target_properties(Mouve.Logic PROPERTIES CXX_VISIBILITY_PRESET hidden)
 
-if(BUILD_SHARED_LIBS)
-    if(MSVC)
-        # Disable warning: 'X' needs to have dll-interface to be used by clients of class
-        target_compile_options(Mouve.Logic PUBLIC /wd4251 /wd4275)
-    endif()
+if(MSVC)
+    # Disable warning: 'X' needs to have dll-interface to be used by clients of class
+    target_compile_options(Mouve.Logic PUBLIC /wd4251 /wd4275)
 endif()
 
 target_include_directories(Mouve.Logic 
