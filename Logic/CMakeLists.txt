@@ -127,6 +127,7 @@ target_link_libraries(Mouve.Logic
         opencv_flann
         opencv_calib3d
         Qt5::Core # Remove it in near future
+        kl::kl
 )
 
 set_target_properties(Mouve.Logic

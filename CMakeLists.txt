@@ -59,7 +59,7 @@ set_target_properties(${OpenCV_LIBS} PROPERTIES
     MAP_IMPORTED_CONFIG_MINSIZEREL Release
 )
 
-foreach(vendor clw;fmt)
+foreach(vendor clw;fmt;kl)
     add_subdirectory(vendor/${vendor} EXCLUDE_FROM_ALL)
     set_target_properties(${vendor} PROPERTIES FOLDER vendor)
 endforeach()
