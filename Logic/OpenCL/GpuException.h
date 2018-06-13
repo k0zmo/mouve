@@ -38,7 +38,7 @@ struct GpuNodeException : public std::exception
     std::string formatted;
 };
 
-struct GpuBuildException : public std::exception
+struct MOUVE_EXPORT GpuBuildException : public std::exception
 {
     explicit GpuBuildException(const std::string& log);
 

@@ -21,8 +21,6 @@
  *
  */
 
-#pragma once
-
 #include "GpuException.h"
 
 #include <fmt/core.h>
