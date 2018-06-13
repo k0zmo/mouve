@@ -23,7 +23,6 @@
 
 #include "Logic/NodeType.h"
 #include "Logic/NodeFactory.h"
-#include "Kommon/Utils.h"
 
 #include <fmt/core.h>
 #include <opencv2/features2d/features2d.hpp>

@@ -23,8 +23,6 @@
 
 #include "Controller.h"
 
-#include "Kommon/Utils.h"
-
 // Model part
 #include "Logic/NodeSystem.h"
 #include "Logic/NodeTree.h"
@@ -1312,7 +1310,14 @@ bool Controller::openTreeFromFileImpl(const QString& filePath)
 
         NodeID nodeID = sceneElem["nodeId"].int_value();
 
-        NodeID mappedNodeID = get_or_default(nodeTreeSerializer.idMappings(), nodeID, 0);
+        const auto mappedIt = nodeTreeSerializer.idMappings().find(nodeID);
+        if (mappedIt == nodeTreeSerializer.idMappings().end())
+        {
+            qWarning() << "Scene element with the unknown node id: " << nodeID;
+            continue;
+        }
+
+        NodeID mappedNodeID = mappedIt->second;
         double scenePosX = sceneElem["scenePosX"].number_value();
         double scenePosY = sceneElem["scenePosY"].number_value();
 
@@ -1339,21 +1344,21 @@ bool Controller::openTreeFromFileImpl(const QString& filePath)
     {
         qWarning("Some scene elements were missing, adding them to scene origin. "
             "You can fix it by resaving the file");
-        
+
         auto nodeIt = _nodeTree->createNodeIterator();
         NodeID nodeID;
         while(nodeIt->next(nodeID))
         {
-            NodeID mappedNodeID = get_or_default(nodeTreeSerializer.idMappings(), nodeID, 0);
-            if(!_nodeViews.contains(mappedNodeID))
+            //NodeID mappedNodeID = get_or_default(nodeTreeSerializer.idMappings(), nodeID, 0);
+            if(!_nodeViews.contains(nodeID))
             {
-                QString nodeName = QString::fromStdString(_nodeTree->nodeName(mappedNodeID));
-                addNodeView(nodeName, mappedNodeID, QPointF(0, 0));
+                QString nodeName = QString::fromStdString(_nodeTree->nodeName(nodeID));
+                addNodeView(nodeName, nodeID, QPointF(0, 0));
             }
         }
     }
 
-    // Add link views to the scene 
+    // Add link views to the scene
     auto linkIt = _nodeTree->createNodeLinkIterator();
     NodeLink nodeLink;
     while(linkIt->next(nodeLink))

@@ -3,7 +3,6 @@ add_library(Mouve.Kommon
     Hash.cpp
     Hash.h
     TypeTraits.h
-    Utils.h
     json11.cpp
     json11.hpp
 )
