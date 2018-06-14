@@ -61,7 +61,7 @@ public:
         addProperty("FOURCC", _fourcc)
             .setUiHints("item: IYUV, item: MJPG");
         setDescription("Saves incoming images as a video");
-        setFlags(ENodeConfig::HasState);
+        setFlags(kl::make_flags(ENodeConfig::HasState));
     }
 
     bool restart() override

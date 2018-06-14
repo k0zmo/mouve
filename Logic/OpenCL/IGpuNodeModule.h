@@ -28,9 +28,9 @@
 enum class EDeviceType : int
 {
     None     = 0,
-    Default  = K_BIT(0),
-    Cpu      = K_BIT(1),
-    Gpu      = K_BIT(2),
+    Default  = 1,
+    Cpu      = 2,
+    Gpu      = 4,
     Specific = 0xFFFF,
 };
 

@@ -23,8 +23,6 @@
 
 #include "Controller.h"
 
-#include "Kommon/Utils.h"
-
 // Model part
 #include "Logic/NodeSystem.h"
 #include "Logic/NodeTree.h"
@@ -77,6 +75,8 @@
 #include <boost/dll/runtime_symbol_info.hpp>
 #include <boost/filesystem/path.hpp>
 #include <boost/filesystem/operations.hpp>
+#include <boost/predef/architecture/x86.h>
+#include <boost/predef/os/windows.h>
 
 #include <future>
 #include <thread>
@@ -283,7 +283,7 @@ void Controller::addNodeView(const QString& nodeTitle,
     _nodeScene->addItem(nodeView);
     nodeView->setData(NodeDataIndex::NodeKey, nodeID);
     nodeView->setPos(scenePos);
-    nodeView->setNodeWithStateMark(nodeConfig->flags().testFlag(ENodeConfig::HasState));
+    nodeView->setNodeWithStateMark(nodeConfig->flags().test(ENodeConfig::HasState));
     _nodeViews[nodeID] = nodeView;
 
     // Set time info visibility on new nodes
@@ -663,7 +663,7 @@ void Controller::setupUiAbout()
         QString translatedTextAboutCaption = QString(
             "<h3>About %1 (%2)</h3>")
             .arg(QApplication::applicationName())
-            .arg(is64Bit() ? "x64" : "x86");
+            .arg(BOOST_ARCH_X86_64 ? "x64" : "x86");
         // Doesn't work on gcc 4.7.4
         QString translatedTextAboutText = QString::fromWCharArray(
             L"<p>Author: Kajetan Świerk</p>"
@@ -1310,7 +1310,14 @@ bool Controller::openTreeFromFileImpl(const QString& filePath)
 
         NodeID nodeID = sceneElem["nodeId"].int_value();
 
-        NodeID mappedNodeID = get_or_default(nodeTreeSerializer.idMappings(), nodeID, 0);
+        const auto mappedIt = nodeTreeSerializer.idMappings().find(nodeID);
+        if (mappedIt == nodeTreeSerializer.idMappings().end())
+        {
+            qWarning() << "Scene element with the unknown node id: " << nodeID;
+            continue;
+        }
+
+        NodeID mappedNodeID = mappedIt->second;
         double scenePosX = sceneElem["scenePosX"].number_value();
         double scenePosY = sceneElem["scenePosY"].number_value();
 
@@ -1337,21 +1344,21 @@ bool Controller::openTreeFromFileImpl(const QString& filePath)
     {
         qWarning("Some scene elements were missing, adding them to scene origin. "
             "You can fix it by resaving the file");
-        
+
         auto nodeIt = _nodeTree->createNodeIterator();
         NodeID nodeID;
         while(nodeIt->next(nodeID))
         {
-            NodeID mappedNodeID = get_or_default(nodeTreeSerializer.idMappings(), nodeID, 0);
-            if(!_nodeViews.contains(mappedNodeID))
+            //NodeID mappedNodeID = get_or_default(nodeTreeSerializer.idMappings(), nodeID, 0);
+            if(!_nodeViews.contains(nodeID))
             {
-                QString nodeName = QString::fromStdString(_nodeTree->nodeName(mappedNodeID));
-                addNodeView(nodeName, mappedNodeID, QPointF(0, 0));
+                QString nodeName = QString::fromStdString(_nodeTree->nodeName(nodeID));
+                addNodeView(nodeName, nodeID, QPointF(0, 0));
             }
         }
     }
 
-    // Add link views to the scene 
+    // Add link views to the scene
     auto linkIt = _nodeTree->createNodeLinkIterator();
     NodeLink nodeLink;
     while(linkIt->next(nodeLink))
@@ -2290,7 +2297,7 @@ void Controller::showProgramsList()
                     // Exception propagate to main thread
                     exception = std::current_exception();
                 }
-                QMetaObject::invokeMethod(&progress, "close", Qt::QueuedConnection);				
+                QMetaObject::invokeMethod(&progress, "close", Qt::QueuedConnection);
             });
 
             progress.exec();
@@ -2475,9 +2482,9 @@ void Controller::showDeviceSettings()
 
 namespace {
 
-#if K_SYSTEM == K_SYSTEM_WINDOWS
+#if BOOST_OS_WINDOWS
 const QString pluginExtensionName = QStringLiteral("*.dll");
-#elif K_SYSTEM == K_SYSTEM_LINUX
+#else
 const QString pluginExtensionName = QStringLiteral("*.so");
 #endif
 

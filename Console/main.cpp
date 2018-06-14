@@ -31,7 +31,9 @@
 
 #include "Logic/OpenCL/IGpuNodeModule.h"
 
+#include <boost/predef/os/windows.h>
 #include <opencv2/highgui/highgui.hpp>
+
 #include <stdexcept>
 #include <iostream>
 
@@ -62,7 +64,7 @@ int main()
         nodeSystem.registerNodeModule(gpuModule);
 
         // Register Kuwahara plugin
-#if K_SYSTEM == K_SYSTEM_WINDOWS
+#if BOOST_OS_WINDOWS
         nodeSystem.loadPlugin("plugins/Plugin.Kuwahara.dll");
 #else
         nodeSystem.loadPlugin("plugins/libPlugin.Kuwahara.so");
@@ -77,7 +79,7 @@ int main()
 
         {
             shared_ptr<NodeTree> nodeTree = nodeSystem.createNodeTree();
-        
+
             NodeID inputImageID = nodeTree->createNode("Sources/Image from file", "Input image");
             NodeID uploadID = nodeTree->createNode("OpenCL/Upload image", "Upload");
             NodeID akfID = nodeTree->createNode("OpenCL/Filters/Anisotropic Kuwahara filter", "AKF");

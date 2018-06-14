@@ -58,7 +58,8 @@ public:
         addProperty("Ignore FPS", _ignoreFps);
         addProperty("Force grayscale", _forceGrayscale);
         setDescription("Provides video frames from specified stream.");
-        setFlags(ENodeConfig::HasState | ENodeConfig::AutoTag | ENodeConfig::OverridesTimeComputation);
+        setFlags(kl::make_flags(ENodeConfig::HasState) | ENodeConfig::AutoTag |
+                 ENodeConfig::OverridesTimeComputation);
     }
 
     bool restart() override
@@ -231,7 +232,7 @@ public:
     ImageFromFileStreamNodeType()
         : ImageFromFileNodeType()
     {
-        setFlags(ENodeConfig::AutoTag | ENodeConfig::HasState);
+        setFlags(kl::make_flags(ENodeConfig::AutoTag) | ENodeConfig::HasState);
     }
 
     bool restart() override
@@ -271,7 +272,7 @@ public:
             .setUiHints("min:0")
             .setValidator(make_validator<MinPropertyValidator<int>>(0));
         setDescription("Provides video frames from specified camera device.");
-        setFlags(ENodeConfig::HasState | ENodeConfig::AutoTag);
+        setFlags(kl::make_flags(ENodeConfig::HasState) | ENodeConfig::AutoTag);
     }
 
     bool restart() override

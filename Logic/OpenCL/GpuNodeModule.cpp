@@ -30,11 +30,17 @@
 #include <boost/dll/runtime_symbol_info.hpp>
 #include <boost/filesystem/path.hpp>
 #include <boost/filesystem/operations.hpp>
+#include <boost/predef/compiler/visualc.h>
 
 #include <QFileInfo>
 #include <QDir>
 
 #include <cassert>
+
+ // Debug flag
+#if defined(_DEBUG) || defined(DEBUG) && !defined(NDEBUG)
+#  define DEBUG_CONFIG
+#endif
 
 namespace {
 static string kernelsDirectory();
@@ -55,7 +61,7 @@ GpuNodeModule::~GpuNodeModule()
 bool GpuNodeModule::initialize()
 {
     bool res;
-#if !defined(K_DEBUG)
+#if !defined(DEBUG_CONFIG)
     if(_interactiveInit)
         res = createInteractive();
     else
@@ -252,12 +258,12 @@ string kernelsDirectory()
 string GpuNodeModule::additionalBuildOptions(const std::string& programName) const
 {
     string opts;
-#if defined(K_DEBUG) && K_COMPILER == K_COMPILER_MSVC
+#if defined(DEBUG_CONFIG) && BOOST_COMP_MSVC
     // Enable kernel debugging if device is CPU and it's Intel platform
     if(_device.platform().vendorEnum() == clw::EPlatformVendor::Intel
         && _device.deviceType() == clw::EDeviceType::Cpu)
     {
-        QFileInfo thisFile(K_FILE);
+        QFileInfo thisFile(__FILE__);
         QDir thisDirectory = thisFile.dir();
         QString s = thisDirectory.dirName();
         if(thisDirectory.cd("kernels"))

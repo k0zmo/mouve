@@ -31,6 +31,9 @@
 #if defined(HAVE_AMDT_ACTIVITY_LOGGER)
 
 #include <boost/dll/shared_library.hpp>
+#include <boost/predef/os/windows.h>
+#include <boost/predef/architecture/x86.h>
+
 #include <fmt/core.h>
 #include <CXLActivityLogger.h>
 
@@ -76,8 +79,8 @@ namespace amdt
     }
 
     constexpr const char* libraryName =
-#if K_SYSTEM == K_SYSTEM_WINDOWS
-#  if K_ARCH == K_ARCH_64
+#if BOOST_OS_WINDOWS
+#  if BOOST_ARCH_X86_64
         "CXLActivityLogger-x64.dll";
 #  else
         "CXLActivityLogger.dll";

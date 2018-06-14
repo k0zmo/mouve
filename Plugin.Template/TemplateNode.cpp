@@ -38,7 +38,7 @@ public:
         addOutput("Output", ENodeFlowDataType::Image);
         addProperty("Property", _property);
         setDescription("Template node type");
-        setFlags(ENodeConfig::NoFlags);
+        setFlags(kl::make_flags(ENodeConfig::NoFlags));
     }
 
     ExecutionStatus execute(NodeSocketReader& reader, NodeSocketWriter& writer) override

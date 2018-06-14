@@ -24,7 +24,8 @@
 #pragma once
 
 #include "Prerequisites.h"
-#include "Kommon/json11.hpp"
+
+#include <json11/json11.hpp>
 
 class serializer_exception : public std::runtime_error
 {

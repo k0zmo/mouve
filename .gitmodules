@@ -1,7 +1,10 @@
-[submodule "external/clw"]
+[submodule "vendor/clw"]
 	path = vendor/clw
 	url = git@github.com:k0zmo/clw.git
 [submodule "vendor/fmt"]
 	path = vendor/fmt
 	url = https://github.com/fmtlib/fmt.git
 	branch = master
+[submodule "vendor/kl"]
+	path = vendor/kl
+	url = https://github.com/k0zmo/kl.git

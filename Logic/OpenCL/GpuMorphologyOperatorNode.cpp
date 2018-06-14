@@ -25,7 +25,8 @@
 
 #include "GpuNode.h"
 #include "Logic/NodeFactory.h"
-#include "Kommon/Hash.h"
+
+#include <kl/hash.hpp>
 
 class GpuMorphologyOperatorNodeType : public GpuNodeType
 {
@@ -176,10 +177,10 @@ private:
         return coords;
     }
 
-    uint32_t calculateStructuringElemCoordsHash(const vector<cl_int2>& sElemCoords) 
+    uint32_t calculateStructuringElemCoordsHash(const vector<cl_int2>& sElemCoords)
     {
-        return SuperFastHash(reinterpret_cast<const char*>(sElemCoords.data()), 
-            static_cast<int>(sElemCoords.size() * sizeof(cl_int2)));
+        return kl::hash::hsieh(reinterpret_cast<const char*>(sElemCoords.data()),
+                               sElemCoords.size() * sizeof(cl_int2));
     }
 
     void uploadStructuringElement(const vector<cl_int2>& sElemCoords)

@@ -26,8 +26,6 @@
 #include "NodeType.h"
 #include "NodeSystem.h"
 
-#include "Kommon/Utils.h"
-
 #include <fmt/core.h>
 
 #include <QString>
@@ -168,7 +166,17 @@ static NodeProperty deserializeProperty(EPropertyType propType,
     default: return NodeProperty{};
     }
 }
+
+template <class Map>
+auto get_or_default(const Map& m, const typename Map::key_type& key,
+                    const typename Map::mapped_type& defval) -> decltype(defval)
+{
+    auto it = m.find(key);
+    if (it == m.end())
+        return defval;
+    return it->second;
 }
+} // namespace priv
 
 void NodeTreeSerializer::serializeToFile(const NodeTree& nodeTree,
                                          const std::string& filePath)
@@ -378,8 +386,8 @@ void NodeTreeSerializer::deserializeLinks(NodeTree& nodeTree,
         NodeID toNode = link["toNode"].int_value();
         SocketID toSocket = link["toSocket"].int_value();
 
-        NodeID fromNodeRefined = get_or_default(_idMappings, fromNode, InvalidNodeID);
-        NodeID toNodeRefined = get_or_default(_idMappings, toNode, InvalidNodeID);
+        NodeID fromNodeRefined = priv::get_or_default(_idMappings, fromNode, InvalidNodeID);
+        NodeID toNodeRefined = priv::get_or_default(_idMappings, toNode, InvalidNodeID);
 
         if (fromNodeRefined == InvalidNodeID ||
             toNodeRefined == InvalidNodeID)

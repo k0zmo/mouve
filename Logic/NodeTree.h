@@ -50,10 +50,12 @@ public:
 
 class MOUVE_EXPORT NodeTree
 {
-    K_DISABLE_COPY(NodeTree)
 public:
     NodeTree(NodeSystem* nodeSystem);
     ~NodeTree();
+
+    NodeTree(const NodeTree&) = delete;
+    NodeTree& operator=(const NodeTree&) = delete;
 
     void clear();
     size_t nodesCount() const;

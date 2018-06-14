@@ -24,7 +24,8 @@
 #pragma once
 
 #include "Prerequisites.h"
-#include "Kommon/TypeTraits.h"
+
+#include <kl/type_traits.hpp>
 
 class MOUVE_EXPORT NodeResolver
 {
@@ -78,7 +79,7 @@ private:
     // and NodeTree::nodeConfiguration() call
     template <class Func>
     auto decorateConfiguration(NodeID nodeID, Func&& func)
-        -> typename func_traits<Func>::return_type;
+        -> typename kl::func_traits<Func>::return_type;
 
 private:
     std::shared_ptr<NodeTree> _nodeTree;
