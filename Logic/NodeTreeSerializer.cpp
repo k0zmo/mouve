@@ -26,41 +26,34 @@
 #include "NodeType.h"
 #include "NodeSystem.h"
 
+#include <boost/filesystem/path.hpp>
+#include <boost/filesystem/operations.hpp>
 #include <fmt/core.h>
-
-#include <QString>
-#include <QFileInfo>
-#include <QDir>
 
 #include <exception>
 #include <fstream>
 
+namespace filesystem = boost::filesystem;
+
 namespace {
 
-std::string relativePath(const std::string& path, // base path
-                         const std::string& relative)
+Filepath fromRelativePath(const std::string& path, const std::string& relative)
 {
-    QDir rootDir{QString::fromStdString(path)};
-    if(rootDir.exists())
-        return rootDir.absoluteFilePath(QString::fromStdString(relative))
-            .toStdString();
+    filesystem::path root{path};
+    if (filesystem::exists(root))
+    {
+        filesystem::path p{filesystem::absolute(root / filesystem::path{relative})};
+        return Filepath{p.lexically_normal().string()};
+    }
     return {};
-}
-
-std::string absolutePath(const std::string& path)
-{
-    return QFileInfo{path.c_str()}.absolutePath().toStdString();
 }
 
 std::string makeRelative(const std::string& basePath, const std::string& path)
 {
-    QDir rootDir{QString::fromStdString(basePath)};
-
-    if (rootDir.exists())
-        return rootDir.relativeFilePath(QString::fromStdString(path))
-            .toStdString();
-    else
-        return path;
+    filesystem::path root{basePath};
+    if (filesystem::exists(root))
+        return filesystem::relative(path, basePath).generic_path().string();
+    return path;
 }
 
 json11::Json serializeProperty(const PropertyConfig& propertyConfig, const NodeProperty& propValue,
@@ -140,27 +133,27 @@ NodeProperty deserializeProperty(EPropertyType propType, const json11::Json& jso
     switch (propType)
     {
     case EPropertyType::Boolean:
-        return NodeProperty{json.bool_value()};
+        return json.bool_value();
     case EPropertyType::Integer:
-        return NodeProperty{json.int_value()};
+        return json.int_value();
     case EPropertyType::Double:
-        return NodeProperty{json.number_value()};
+        return json.number_value();
     case EPropertyType::Enum:
-        return NodeProperty{Enum(json.int_value())};
+        return Enum(json.int_value());
     case EPropertyType::Matrix:
     {
         auto const& matrixList = json.array_items();
         Matrix3x3 matrix;
         for (size_t i = 0; i < matrixList.size() && i < 9; ++i)
             matrix.v[i] = matrixList[i].number_value();
-        return NodeProperty{matrix};
+        return matrix;
     }
     case EPropertyType::Filepath:
-        return NodeProperty{
-            Filepath{relativePath(rootDirectory, json.string_value())}};
+        return fromRelativePath(rootDirectory, json.string_value());
     case EPropertyType::String:
-        return NodeProperty{json.string_value()};
-    default: return NodeProperty{};
+        return json.string_value();
+    default:
+        return NodeProperty{};
     }
 }
 
@@ -290,7 +283,7 @@ json11::Json
     }
 
     if (_rootDirectory.empty())
-        _rootDirectory = absolutePath(filePath);
+        _rootDirectory = filesystem::absolute(filesystem::path{filePath}).parent_path().string();
     deserialize(nodeTree, json);
     return json;
 }
