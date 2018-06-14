@@ -30,20 +30,13 @@
 #include <boost/dll/runtime_symbol_info.hpp>
 #include <boost/filesystem/path.hpp>
 #include <boost/filesystem/operations.hpp>
-#include <boost/predef/compiler/visualc.h>
 
-#include <QFileInfo>
-#include <QDir>
-
-#include <cassert>
-
- // Debug flag
-#if defined(_DEBUG) || defined(DEBUG) && !defined(NDEBUG)
-#  define DEBUG_CONFIG
-#endif
+// Set to one if you need to debug the kernels using OpenCL Intel runtime (only CPU)
+#define INTEL_DEBUGGING 0
 
 namespace {
-static string kernelsDirectory();
+
+boost::filesystem::path kernelsDirectory();
 }
 
 GpuNodeModule::GpuNodeModule(bool interactiveInit)
@@ -61,7 +54,7 @@ GpuNodeModule::~GpuNodeModule()
 bool GpuNodeModule::initialize()
 {
     bool res;
-#if !defined(DEBUG_CONFIG)
+#if !(defined(_DEBUG) || defined(DEBUG) && !defined(NDEBUG))
     if(_interactiveInit)
         res = createInteractive();
     else
@@ -70,8 +63,8 @@ bool GpuNodeModule::initialize()
 
     if(res)
     {
-        static string allKernelsDirectory = kernelsDirectory() + "/";
-        _library.create(_context, allKernelsDirectory);
+        // TODO Use filesystem::path inside library too
+        _library.create(_context, kernelsDirectory().string() + "/");
         _logger = makeActivityLogger();
     }
 
@@ -88,13 +81,13 @@ std::string GpuNodeModule::moduleName() const
     return "opencl";
 }
 
-#define INTEL_DEBUGGING 0
+
 
 bool GpuNodeModule::createDefault()
 {
 #if INTEL_DEBUGGING == 1
     auto devs = clw::deviceFiltered(
-        clw::Filter::PlatformVendor(clw::EPlatformVendor::Intel) 
+        clw::Filter::PlatformVendor(clw::EPlatformVendor::Intel)
         && clw::Filter::DeviceType(clw::EDeviceType::Cpu));
     if(!_context.create(devs) || _context.numDevices() == 0)
         return false;
@@ -102,7 +95,7 @@ bool GpuNodeModule::createDefault()
     if(!_context.create(clw::EDeviceType::Default) || _context.numDevices() == 0)
         return false;
 #endif
-        
+
     return createAfterContext();
 }
 
@@ -248,34 +241,28 @@ size_t GpuNodeModule::warpSize() const
 
 namespace {
 
-string kernelsDirectory()
+boost::filesystem::path kernelsDirectory()
 {
     const auto dir = boost::dll::program_location().parent_path() / "kernels";
-    return boost::filesystem::absolute(dir).string();
+    return boost::filesystem::absolute(dir);
 }
-}
+} // namespace
 
 string GpuNodeModule::additionalBuildOptions(const std::string& programName) const
 {
-    string opts;
-#if defined(DEBUG_CONFIG) && BOOST_COMP_MSVC
+#if INTEL_DEBUGGING == 1
     // Enable kernel debugging if device is CPU and it's Intel platform
-    if(_device.platform().vendorEnum() == clw::EPlatformVendor::Intel
-        && _device.deviceType() == clw::EDeviceType::Cpu)
+    if (_device.platform().vendorEnum() == clw::EPlatformVendor::Intel &&
+        _device.deviceType() == clw::EDeviceType::Cpu)
     {
-        QFileInfo thisFile(__FILE__);
-        QDir thisDirectory = thisFile.dir();
-        QString s = thisDirectory.dirName();
-        if(thisDirectory.cd("kernels"))
-        {
-            QString fullKernelsPath = thisDirectory.absoluteFilePath(QString::fromStdString(programName));
-            opts += " -g -s " + fullKernelsPath.toStdString();
-        }
+        const static auto dir = kernelsDirectory();
+        return fmt::format(" -g -s \"{}\"",
+                           boost::filesystem::absolute(dir / programName).string());
     }
 #else
-    (void) programName;
+    (void)programName;
 #endif
-    return opts;
+    return {};
 }
 
 std::unique_ptr<IGpuNodeModule> createGpuModule()
