@@ -35,10 +35,10 @@
 #include <exception>
 #include <fstream>
 
-namespace priv {
+namespace {
 
-static std::string relativePath(const std::string& path, // base path
-                                const std::string& relative)
+std::string relativePath(const std::string& path, // base path
+                         const std::string& relative)
 {
     QDir rootDir{QString::fromStdString(path)};
     if(rootDir.exists())
@@ -47,13 +47,12 @@ static std::string relativePath(const std::string& path, // base path
     return {};
 }
 
-static std::string absolutePath(const std::string& path)
+std::string absolutePath(const std::string& path)
 {
     return QFileInfo{path.c_str()}.absolutePath().toStdString();
 }
 
-static std::string makeRelative(const std::string& basePath,
-                                const std::string& path)
+std::string makeRelative(const std::string& basePath, const std::string& path)
 {
     QDir rootDir{QString::fromStdString(basePath)};
 
@@ -64,9 +63,8 @@ static std::string makeRelative(const std::string& basePath,
         return path;
 }
 
-static json11::Json serializeProperty(const PropertyConfig& propertyConfig,
-                                      const NodeProperty& propValue,
-                                      const std::string& rootDirectory)
+json11::Json serializeProperty(const PropertyConfig& propertyConfig, const NodeProperty& propValue,
+                               const std::string& rootDirectory)
 {
     json11::Json::object json{{"id", propertyConfig.propertyID()},
                               {"name", propertyConfig.name()}};
@@ -102,7 +100,7 @@ static json11::Json serializeProperty(const PropertyConfig& propertyConfig,
     case EPropertyType::Filepath:
         json.insert(std::make_pair(
             "value",
-            priv::makeRelative(rootDirectory, propValue.toFilepath().data())));
+            makeRelative(rootDirectory, propValue.toFilepath().data())));
         json.insert(std::make_pair("type", "filepath"));
         break;
     case EPropertyType::String:
@@ -116,7 +114,7 @@ static json11::Json serializeProperty(const PropertyConfig& propertyConfig,
     return json;
 }
 
-static EPropertyType convertToPropertyType(const std::string& type)
+EPropertyType convertToPropertyType(const std::string& type)
 {
     if (type == "boolean")
         return EPropertyType::Boolean;
@@ -136,9 +134,8 @@ static EPropertyType convertToPropertyType(const std::string& type)
         return EPropertyType::Unknown;
 }
 
-static NodeProperty deserializeProperty(EPropertyType propType,
-                                        const json11::Json& json,
-                                        const std::string& rootDirectory)
+NodeProperty deserializeProperty(EPropertyType propType, const json11::Json& json,
+                                 const std::string& rootDirectory)
 {
     switch (propType)
     {
@@ -176,7 +173,7 @@ auto get_or_default(const Map& m, const typename Map::key_type& key,
         return defval;
     return it->second;
 }
-} // namespace priv
+} // namespace
 
 void NodeTreeSerializer::serializeToFile(const NodeTree& nodeTree,
                                          const std::string& filePath)
@@ -257,7 +254,7 @@ json11::Json NodeTreeSerializer::serializeProperties(
         NodeProperty propValue = node->property(prop.propertyID());
         if (propValue.isValid())
             jsonProps.push_back(
-                priv::serializeProperty(prop, propValue, _rootDirectory));
+                serializeProperty(prop, propValue, _rootDirectory));
     }
     return jsonProps;
 }
@@ -293,7 +290,7 @@ json11::Json
     }
 
     if (_rootDirectory.empty())
-        _rootDirectory = priv::absolutePath(filePath);
+        _rootDirectory = absolutePath(filePath);
     deserialize(nodeTree, json);
     return json;
 }
@@ -386,8 +383,8 @@ void NodeTreeSerializer::deserializeLinks(NodeTree& nodeTree,
         NodeID toNode = link["toNode"].int_value();
         SocketID toSocket = link["toSocket"].int_value();
 
-        NodeID fromNodeRefined = priv::get_or_default(_idMappings, fromNode, InvalidNodeID);
-        NodeID toNodeRefined = priv::get_or_default(_idMappings, toNode, InvalidNodeID);
+        NodeID fromNodeRefined = get_or_default(_idMappings, fromNode, InvalidNodeID);
+        NodeID toNodeRefined = get_or_default(_idMappings, toNode, InvalidNodeID);
 
         if (fromNodeRefined == InvalidNodeID ||
             toNodeRefined == InvalidNodeID)
@@ -424,7 +421,7 @@ void NodeTreeSerializer::deserializeProperties(NodeTree& nodeTree,
 
         int propID = prop["id"].int_value();
         std::string const& propTypeStr = prop["type"].string_value();
-        EPropertyType propType = priv::convertToPropertyType(propTypeStr);
+        EPropertyType propType = convertToPropertyType(propTypeStr);
 
         if (propType == EPropertyType::Unknown)
         {
@@ -434,7 +431,7 @@ void NodeTreeSerializer::deserializeProperties(NodeTree& nodeTree,
         }
 
         NodeProperty nodeProperty =
-            priv::deserializeProperty(propType, prop["value"], _rootDirectory);
+            deserializeProperty(propType, prop["value"], _rootDirectory);
 
         // Non-fatal exception (contracts could've changed)
         if (!nodeTree.nodeSetProperty(_idMappings[nodeID], propID,
