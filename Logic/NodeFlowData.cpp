@@ -119,6 +119,7 @@ bool NodeFlowData::isConvertible(ENodeFlowDataType from,
     case ENodeFlowDataType::Array:
     case ENodeFlowDataType::Keypoints:
     case ENodeFlowDataType::Matches:
+        break;
 #if defined(HAVE_OPENCL)
     case ENodeFlowDataType::DeviceImage:
         if(to == ENodeFlowDataType::DeviceImageMono)
@@ -135,8 +136,8 @@ bool NodeFlowData::isConvertible(ENodeFlowDataType from,
             return boost::get<clw::Image2D>(_data).bytesPerElement() == 4;
         break;
     case ENodeFlowDataType::DeviceArray:
-#endif
         break;
+#endif
     }
 
     return false;
