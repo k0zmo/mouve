@@ -29,11 +29,12 @@ find_package(OpenCV 2.4 REQUIRED
         opencv_core
         opencv_imgproc
         opencv_highgui
-        opencv_video
         opencv_features2d
         opencv_nonfree
         opencv_flann
         opencv_calib3d
+    OPTIONAL_COMPONENTS
+        opencv_video
 )
 find_package(Qt5 REQUIRED COMPONENTS Core Gui Widgets OpenGL)
 set(OpenGL_GL_PREFERENCE GLVND)

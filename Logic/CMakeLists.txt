@@ -50,7 +50,6 @@ target_sources(Mouve.Logic PRIVATE
     Nodes/SourceNodes.cpp
     Nodes/SurfNodes.cpp
     Nodes/TransformationNodes.cpp
-    Nodes/VideoSegmentationNodes.cpp
     Nodes/kSurfNodes.cpp
     Nodes/ksurf.cpp
     Nodes/ksurf.h
@@ -121,7 +120,6 @@ target_link_libraries(Mouve.Logic
         Boost::filesystem
         opencv_imgproc
         opencv_highgui
-        opencv_video
         opencv_features2d
         opencv_nonfree
         opencv_flann
