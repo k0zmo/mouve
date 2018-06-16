@@ -1,4 +1,4 @@
-mouve_add_plugin(Plugin.BRISK
+mouve_add_plugin(brisk
     brisk.cpp
     brisk.h
     BriskNode.cpp
@@ -19,10 +19,10 @@ mouve_add_plugin(Plugin.BRISK
     agast/oast9_16.cc
     agast/oast9_16.h
 )
-target_link_libraries(Plugin.BRISK PRIVATE opencv_features2d)
+target_link_libraries(brisk PRIVATE opencv_features2d)
 
 include(CheckCXXCompilerFlag)
 check_cxx_compiler_flag(-mssse3 ssse3_supported)
 if(ssse3_supported)
-    target_compile_options(Plugin.BRISK PRIVATE -mssse3)
+    target_compile_options(brisk PRIVATE -mssse3)
 endif()

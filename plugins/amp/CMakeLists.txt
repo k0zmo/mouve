@@ -1,4 +1,4 @@
-mouve_add_plugin(Plugin.AMP
+mouve_add_plugin(amp
     AmpArithmeticNodes.cpp
     AmpMorphologyNodes.cpp
     main.cpp
