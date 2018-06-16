@@ -56,3 +56,8 @@ function(mouve_add_plugin _name)
         ARCHIVE DESTINATION lib/plugins
     )
 endfunction()
+
+function(mouve_source_group _target)
+    get_target_property(sources_list ${_target} SOURCES)
+    source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR}/.. FILES ${sources_list})
+endfunction()

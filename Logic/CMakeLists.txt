@@ -86,9 +86,7 @@ target_sources(Mouve.Logic PRIVATE
     Jai/JaiNodeModule.cpp
     Jai/JaiNodeModule.h
 )
-
-get_target_property(sources_list Mouve.Logic SOURCES)
-source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR}/.. FILES ${sources_list})
+mouve_source_group(Mouve.Logic)
 
 # We're going to export symbols explicitly each one by one
 include(GenerateExportHeader)

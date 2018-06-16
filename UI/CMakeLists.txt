@@ -45,9 +45,7 @@ target_sources(Mouve.UI PRIVATE
     NodeEditor/NodeView.cpp
     NodeEditor/NodeView.h
 )
-
-get_target_property(sources_list Mouve.UI SOURCES)
-source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR}/.. FILES ${sources_list})
+mouve_source_group(Mouve.UI)
 
 target_include_directories(Mouve.UI PRIVATE ${mouve_SOURCE_DIR} ${CMAKE_CURRENT_SOURCE_DIR})
 target_compile_features(Mouve.UI PUBLIC cxx_std_14)

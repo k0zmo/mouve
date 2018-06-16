@@ -9,3 +9,4 @@ mouve_add_plugin(video-segmentation dllmain.cpp
     Nodes/MOG.cpp
 )
 target_link_libraries(video-segmentation PRIVATE opencv_video)
+mouve_source_group(video-segmentation)
