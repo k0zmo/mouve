@@ -52,7 +52,8 @@ public:
     bool registerNodeModule(const std::shared_ptr<NodeModule>& module);
     const std::shared_ptr<NodeModule>& nodeModule(const std::string& name);
 
-    size_t loadPlugin(const std::string& pluginName);
+    size_t loadPlugin(const std::string& pluginPath);
+    void loadPlugins();
 
     int numRegisteredNodeTypes() const;
 

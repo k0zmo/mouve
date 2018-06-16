@@ -63,12 +63,7 @@ int main()
         gpuModule->setInteractiveInit(false); // Just use default device
         nodeSystem.registerNodeModule(gpuModule);
 
-        // Register Kuwahara plugin
-#if BOOST_OS_WINDOWS
-        nodeSystem.loadPlugin("plugins/Plugin.Kuwahara.dll");
-#else
-        nodeSystem.loadPlugin("plugins/libPlugin.Kuwahara.so");
-#endif
+        nodeSystem.loadPlugins();
 
         // Print out all registered node types
         cout << "Available node types: \n";

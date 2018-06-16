@@ -50,14 +50,10 @@ get_target_property(sources_list Mouve.UI SOURCES)
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR}/.. FILES ${sources_list})
 
 target_include_directories(Mouve.UI PRIVATE ${mouve_SOURCE_DIR} ${CMAKE_CURRENT_SOURCE_DIR})
-target_link_libraries(Mouve.UI PUBLIC 
-    Mouve.Logic
-    Boost::filesystem # Until we stop loading modules in UI
-)
 target_compile_features(Mouve.UI PUBLIC cxx_std_14)
-target_link_libraries(Mouve.UI PRIVATE ${CMAKE_DL_LIBS}) # Until we stop loading modules in UI
 
 target_link_libraries(Mouve.UI PUBLIC
+    Mouve.Logic
     Qt5::Core
     Qt5::Widgets
     Qt5::OpenGL

@@ -28,7 +28,11 @@
 #include "NodePlugin.h"
 
 #include <fmt/core.h>
+#include <boost/filesystem/path.hpp>
+#include <boost/filesystem/operations.hpp>
 #include <boost/dll/shared_library.hpp>
+#include <boost/dll/runtime_symbol_info.hpp>
+#include <boost/predef/os/windows.h>
 
 static const std::string InvalidType("InvalidType");
 
@@ -210,32 +214,63 @@ const std::shared_ptr<NodeModule>& NodeSystem::nodeModule(const std::string& nam
     return _registeredModules[name];
 }
 
-size_t NodeSystem::loadPlugin(const std::string& pluginName)
+namespace filesystem = boost::filesystem;
+
+size_t NodeSystem::loadPlugin(const std::string& pluginPath)
 {
-    if (_plugins.find(pluginName) == _plugins.end())
+    if (_plugins.find(pluginPath) == _plugins.end())
     {
         // Below is the same as:
-        //   boost::dll::import<NodePlugin>(pluginName, "plugin_instance")
+        //   boost::dll::import<NodePlugin>(pluginPath, "plugin_instance")
         // but it uses std::shared_ptr instead of boost's one
         auto library = std::make_shared<boost::dll::shared_library>(
-            pluginName, boost::dll::load_mode::default_mode);
+            pluginPath, boost::dll::load_mode::default_mode);
         auto plugin = std::shared_ptr<NodePlugin>{
             library, std::addressof(library->get<NodePlugin>("plugin_instance"))};
 
         if (plugin->logicVersion() != LOGIC_VERSION)
         {
-            throw std::runtime_error(fmt::format("Logic ({}) and plugin {} ({}) version mismatch",
-                                                 LOGIC_VERSION, pluginName,
-                                                 plugin->logicVersion()));
+            throw std::runtime_error(fmt::format(
+                "Logic ({}) and plugin {} ({}) version mismatch", LOGIC_VERSION,
+                filesystem::path{pluginPath}.filename().string(), plugin->logicVersion()));
         }
         size_t before = _registeredNodeTypes.size();
         plugin->registerPlugin(*this);
 
-        _plugins.emplace(pluginName, std::move(plugin));
+        _plugins.emplace(pluginPath, std::move(plugin));
         return _registeredNodeTypes.size() - before;
     }
 
     return 0U;
+}
+
+void NodeSystem::loadPlugins()
+{
+    const auto lookUpDir = boost::dll::program_location().parent_path() / "plugins";
+    if (!filesystem::exists(lookUpDir))
+        return;
+
+    for (const filesystem::directory_entry& entry : filesystem::directory_iterator{lookUpDir})
+    {
+#if BOOST_OS_WINDOWS
+        static constexpr auto pluginExtension = ".dll";
+#else
+        static constexpr auto pluginExtension = ".so";
+#endif
+
+        if (entry.path().extension() != pluginExtension)
+            continue;
+
+        try
+        {
+            loadPlugin(entry.path().string());
+            // TODO: (debug) Log all registered nodes if possible
+        }
+        catch (std::exception&)
+        {
+            // TODO: Log error
+        }
+    }
 }
 
 // -----------------------------------------------------------------------------

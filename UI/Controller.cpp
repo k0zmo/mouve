@@ -71,12 +71,7 @@
 #include "ui_MainWindow.h"
 #include "TreeWorker.h"
 
-// TEMPORARY
-#include <boost/dll/runtime_symbol_info.hpp>
-#include <boost/filesystem/path.hpp>
-#include <boost/filesystem/operations.hpp>
 #include <boost/predef/architecture/x86.h>
-#include <boost/predef/os/windows.h>
 
 #include <future>
 #include <thread>
@@ -102,7 +97,7 @@ Controller::Controller(QWidget* parent, Qt::WindowFlags flags)
     , _propManager(new PropertyManager(this))
     , _nodeSystem(new NodeSystem())
     , _nodeTree(nullptr)
-    // odd: below crashes in gcc 
+    // odd: below crashes in gcc
     //, _workerThread(QThread())
     , _treeWorker(new TreeWorker())
     , _progressBar(nullptr)
@@ -123,8 +118,7 @@ Controller::Controller(QWidget* parent, Qt::WindowFlags flags)
 {
     setupUi();
 
-    // Lookup for plugins in ./plugins directory
-    pluginLookUp();
+    _nodeSystem->loadPlugins();
     qDebug() << "Number of available nodes: " << _nodeSystem->numRegisteredNodeTypes();
 
     setupNodeTypesUi();
@@ -2486,49 +2480,4 @@ void Controller::showDeviceSettings()
     });
 
     dialog.exec();
-}
-
-////////////////////////////////////////////////////////////////////////////////////////////////////
-
-namespace {
-
-#if BOOST_OS_WINDOWS
-const QString pluginExtensionName = QStringLiteral("*.dll");
-#else
-const QString pluginExtensionName = QStringLiteral("*.so");
-#endif
-
-// TODO Move this to logic (base)
-QString pluginDirectory()
-{
-    // Note that we don't necessary need CWD here
-    boost::filesystem::current_path();
-    const auto executableDirectory = boost::dll::program_location().parent_path();
-    return QString::fromStdString((executableDirectory / "plugins").string());
-}
-
-}
-
-void Controller::pluginLookUp()
-{
-    QDir pluginDir(pluginDirectory());
-    QList<QFileInfo> list = pluginDir.entryInfoList(
-        QStringList(pluginExtensionName), QDir::Files);
-
-    for(const auto& pluginName : list)
-    {
-        QString pluginBaseName = pluginName.completeBaseName();
-        QString pluginPath = pluginName.absoluteFilePath();
-        try
-        {
-            size_t typesRegisted = _nodeSystem->loadPlugin(pluginPath.toStdString());
-            qDebug() << "Plugin" << pluginBaseName << "loaded successfully -" << typesRegisted
-                     << "node type(s) registered.";
-        }
-        catch (std::exception& ex)
-        {
-            // Silent error
-            qCritical() << "Couldn't load plugin" << pluginBaseName << "- details:" << ex.what();
-        }
-    }
 }
