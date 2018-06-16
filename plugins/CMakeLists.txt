@@ -1,3 +1,4 @@
+add_subdirectory(morphology)
 add_subdirectory(video-segmentation)
 
 add_subdirectory(amp)

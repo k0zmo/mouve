@@ -29,13 +29,6 @@
 
 namespace cvu  {
 
-enum class EStructuringElementType
-{
-    Rectangle,
-    Ellipse,
-    Cross
-};
-
 enum class EBayerCode
 {
     BG,
@@ -46,9 +39,6 @@ enum class EBayerCode
 
 int bayerCodeGray(EBayerCode code);
 int bayerCodeRgb(EBayerCode code);
-
-cv::Mat standardStructuringElement(int xradius, int yradius, 
-    EStructuringElementType type, int rotation);
 
 enum class EPredefinedConvolutionType
 {
