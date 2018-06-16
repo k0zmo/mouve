@@ -30,9 +30,6 @@
 #include <fmt/core.h>
 #include <boost/dll/shared_library.hpp>
 
-/// TODO: Change this to some neat logging system
-#include <QDebug>
-
 static const std::string InvalidType("InvalidType");
 
 NodeSystem::NodeSystem()
@@ -69,11 +66,8 @@ NodeTypeID NodeSystem::registerNodeType(const std::string& nodeTypeName,
     }
     else
     {
-        /// TODO: return invalid typeID or just override previous one?
+        /// TODO: return invalid typeID or just override previous one - make it configurable with a return status
         NodeTypeID nodeTypeID = iter->second;
-
-        qDebug() << "NodeSystem::registerNodeType: Type '" << nodeTypeName.c_str() << "' Id='"
-            << int(nodeTypeID) << "' is already registed, overriding with a new factory\n";
 
         // Override previous factory with a new one
         if(_registeredNodeTypes[nodeTypeID].automaticallyRegistered)
@@ -84,6 +78,9 @@ NodeTypeID NodeSystem::registerNodeType(const std::string& nodeTypeName,
 
         return nodeTypeID;
     }
+
+    // TODO: Create temporary node here and decide if its OK. Also, store its description and so on
+    // so we don't need to do it later
 }
 
 std::unique_ptr<NodeType> NodeSystem::createNode(NodeTypeID nodeTypeID) const
@@ -99,14 +96,11 @@ std::unique_ptr<NodeType> NodeSystem::createNode(NodeTypeID nodeTypeID) const
     {
         try
         {
-            // Can throw (for example: bad configuration)
+            // Can throw because of bad configuration
             return nodeFactory->create();
         }
-        catch (std::exception& ex)
+        catch (std::exception&)
         {
-            qCritical() << "Failed to create node type:" << 
-                _registeredNodeTypes[nodeTypeID].nodeTypeName.c_str() << 
-                "details:" << ex.what();
         }
     }
 

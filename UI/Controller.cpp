@@ -773,8 +773,18 @@ void Controller::addNodeTypeTreeItem(NodeTypeID typeId, const QStringList& token
     QTreeWidgetItem* item = new QTreeWidgetItem(parent);
     item->setText(0, tokens.last());
     item->setData(0, Qt::UserRole, typeId);
-    item->setToolTip(0, QString::fromStdString(_nodeSystem->nodeDescription(typeId)));
-    item->setFlags(flags | Qt::ItemIsDragEnabled);
+
+    // TEMP: Decide if node is invalid based on its description
+    const auto desc = _nodeSystem->nodeDescription(typeId);
+    if (desc != "InvalidType")
+    {
+        item->setFlags(flags | Qt::ItemIsDragEnabled);
+    }
+    else
+    {
+        item->setBackgroundColor(0, QColor{255, 0, 0});
+    }
+    item->setToolTip(0, QString::fromStdString(desc));
 
     treeItems.append(item);
 }

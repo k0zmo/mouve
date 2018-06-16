@@ -108,7 +108,6 @@ target_include_directories(Mouve.Logic
     PUBLIC ${CMAKE_CURRENT_BINARY_DIR}
 )
 target_link_libraries(Mouve.Logic PRIVATE ${CMAKE_DL_LIBS})
-target_compile_definitions(Mouve.Logic PRIVATE LOGIC_LIB) # Building DLL
 target_compile_features(Mouve.Logic PUBLIC cxx_std_14)
 
 target_link_libraries(Mouve.Logic 
@@ -127,7 +126,6 @@ target_link_libraries(Mouve.Logic
         opencv_nonfree
         opencv_flann
         opencv_calib3d
-        Qt5::Core # Remove it in near future
 )
 
 set_target_properties(Mouve.Logic
