@@ -71,7 +71,6 @@ target_sources(Mouve.Logic PRIVATE
     OpenCL/GpuKernelLibrary.cpp
     OpenCL/GpuKernelLibrary.h
     OpenCL/GpuMixtureOfGaussiansNode.cpp
-    OpenCL/GpuMorphologyOperatorNode.cpp
     OpenCL/GpuNode.h
     OpenCL/GpuNodeModule.cpp
     OpenCL/GpuNodeModule.h
@@ -152,7 +151,6 @@ if(TARGET clw::clw)
         OpenCL/kernels/hough.cl
         OpenCL/kernels/integral.cl
         OpenCL/kernels/mog.cl
-        OpenCL/kernels/morphOp.cl
         OpenCL/kernels/surf.cl
     )
 else()

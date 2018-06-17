@@ -23,7 +23,18 @@
 
 #pragma once
 
-namespace cv { class Mat; }
+#include <opencv2/imgproc/imgproc.hpp>
+
+enum class EMorphologyOperation
+{
+    Erode = cv::MORPH_ERODE,
+    Dilate = cv::MORPH_DILATE,
+    Open = cv::MORPH_OPEN,
+    Close = cv::MORPH_CLOSE,
+    Gradient = cv::MORPH_GRADIENT,
+    TopHat = cv::MORPH_TOPHAT,
+    BlackHat = cv::MORPH_BLACKHAT
+};
 
 enum class EStructuringElementShape
 {

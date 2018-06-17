@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2014 Kajetan Swierk <k0zmo@outlook.com>
+ * Copyright (c) 2013-2018 Kajetan Swierk <k0zmo@outlook.com>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,36 +23,36 @@
 
 #if defined(HAVE_OPENCL)
 
-#include "GpuNode.h"
-#include "Logic/NodeFactory.h"
+#include "Logic/NodeType.h"
+#include "Logic/NodeSystem.h"
+#include "Logic/OpenCL/GpuNode.h"
+
+#include "Utils.h"
 
 #include <kl/hash.hpp>
 
 class GpuMorphologyOperatorNodeType : public GpuNodeType
 {
 public:
-    GpuMorphologyOperatorNodeType()
-        : _op(EMorphologyOperation::Erode)
-        , _sElemHash(0)
+    GpuMorphologyOperatorNodeType() : _op(EMorphologyOperation::Erode), _sElemHash(0)
     {
         addInput("Source", ENodeFlowDataType::DeviceImageMono);
         addInput("Structuring element", ENodeFlowDataType::ImageMono);
         addOutput("Output", ENodeFlowDataType::DeviceImageMono);
         addProperty("Operation type", _op)
             .setUiHints("item: Erode, item: Dilate, item: Open, item: Close,"
-                "item: Gradient, item: Top Hat, item: Black Hat");
+                        "item: Gradient, item: Top Hat, item: Black Hat");
         setDescription("Performs a morphology operation on a given image");
         setModule("opencl");
     }
 
     bool postInit() override
     {
-        _kidErode = _gpuComputeModule->registerKernel(
-            "morphOp_image_unorm_local_unroll2", "morphOp.cl", "-DERODE_OP");
-        _kidDilate = _gpuComputeModule->registerKernel(
-            "morphOp_image_unorm_local_unroll2", "morphOp.cl", "-DDILATE_OP");
-        return _kidErode != InvalidKernelID
-            && _kidDilate != InvalidKernelID;
+        _kidErode = _gpuComputeModule->registerKernel("morphOp_image_unorm_local_unroll2",
+                                                      "morphOp.cl", "-DERODE_OP");
+        _kidDilate = _gpuComputeModule->registerKernel("morphOp_image_unorm_local_unroll2",
+                                                       "morphOp.cl", "-DDILATE_OP");
+        return _kidErode != InvalidKernelID && _kidDilate != InvalidKernelID;
     }
 
     ExecutionStatus execute(NodeSocketReader& reader, NodeSocketWriter& writer) override
@@ -61,11 +61,11 @@ public:
         const cv::Mat& sElem = reader.readSocket(1).getImageMono();
         clw::Image2D& deviceDest = writer.acquireSocket(0).getDeviceImageMono();
 
-        if(sElem.cols == 0 || sElem.rows == 0 || deviceSrc.width() == 0 || deviceSrc.height() == 0)
+        if (sElem.cols == 0 || sElem.rows == 0 || deviceSrc.width() == 0 || deviceSrc.height() == 0)
             return ExecutionStatus(EStatus::Ok);
 
         // Podfunkcje ktore zwracac beda ExecutionStatus
-        // ExecutionStatus dilate(), erode(), 
+        // ExecutionStatus dilate(), erode(),
 
         int width = deviceSrc.width();
         int height = deviceSrc.height();
@@ -74,86 +74,94 @@ public:
         ensureSizeIsEnough(deviceDest, width, height);
 
         int sElemCoordsSize = prepareStructuringElement(sElem);
-        if(!sElemCoordsSize)
-            return ExecutionStatus(EStatus::Error, "Structuring element is too big to fit in constant memory");
+        if (!sElemCoordsSize)
+            return ExecutionStatus(EStatus::Error,
+                                   "Structuring element is too big to fit in constant memory");
 
         EMorphologyOperation op = _op.cast<Enum>().cast<EMorphologyOperation>();
 
         // Prepare if necessary buffer for temporary result
-        if(op > EMorphologyOperation::Dilate)
+        if (op > EMorphologyOperation::Dilate)
             ensureSizeIsEnough(_tmpImage, width, height);
 
         // Acquire kernel(s)
         clw::Kernel kernelErode, kernelDilate, kernelSubtract;
-        
-        if(op != EMorphologyOperation::Dilate)
+
+        if (op != EMorphologyOperation::Dilate)
             kernelErode = _gpuComputeModule->acquireKernel(_kidErode);
-        if(op > EMorphologyOperation::Erode)
+        if (op > EMorphologyOperation::Erode)
             kernelDilate = _gpuComputeModule->acquireKernel(_kidDilate);
-        //if(op > EMorphologyOperation::Close)
+        // if(op > EMorphologyOperation::Close)
         //	kernelSubtract = _gpuComputeModule->acquireKernel(_kidSubtract);
 
         clw::Event evt;
 
         // Calculate metrics
         int kradx = (sElem.cols - 1) >> 1;
-        int krady = (sElem.rows - 1) >> 1;		
+        int krady = (sElem.rows - 1) >> 1;
         clw::Grid grid(deviceSrc.width(), deviceSrc.height());
 
-        switch(op)
+        switch (op)
         {
         case EMorphologyOperation::Erode:
-            evt = runMorphologyKernel(kernelErode, grid, deviceSrc, deviceDest, sElemCoordsSize, kradx, krady);
+            evt = runMorphologyKernel(kernelErode, grid, deviceSrc, deviceDest, sElemCoordsSize,
+                                      kradx, krady);
             break;
         case EMorphologyOperation::Dilate:
-            evt = runMorphologyKernel(kernelDilate, grid, deviceSrc, deviceDest, sElemCoordsSize, kradx, krady);
+            evt = runMorphologyKernel(kernelDilate, grid, deviceSrc, deviceDest, sElemCoordsSize,
+                                      kradx, krady);
             break;
         case EMorphologyOperation::Open:
-            evt = runMorphologyKernel(kernelErode, grid, deviceSrc, _tmpImage, sElemCoordsSize, kradx, krady);
-            evt = runMorphologyKernel(kernelDilate, grid, _tmpImage, deviceDest, sElemCoordsSize, kradx, krady);
+            evt = runMorphologyKernel(kernelErode, grid, deviceSrc, _tmpImage, sElemCoordsSize,
+                                      kradx, krady);
+            evt = runMorphologyKernel(kernelDilate, grid, _tmpImage, deviceDest, sElemCoordsSize,
+                                      kradx, krady);
             break;
         case EMorphologyOperation::Close:
-            evt = runMorphologyKernel(kernelDilate, grid, deviceSrc, _tmpImage, sElemCoordsSize, kradx, krady);
-            evt = runMorphologyKernel(kernelErode, grid, _tmpImage, deviceDest, sElemCoordsSize, kradx, krady);
+            evt = runMorphologyKernel(kernelDilate, grid, deviceSrc, _tmpImage, sElemCoordsSize,
+                                      kradx, krady);
+            evt = runMorphologyKernel(kernelErode, grid, _tmpImage, deviceDest, sElemCoordsSize,
+                                      kradx, krady);
             break;
         case EMorphologyOperation::Gradient:
         case EMorphologyOperation::TopHat:
         case EMorphologyOperation::BlackHat:
-            return ExecutionStatus(EStatus::Error, "Gradient, TopHat and BlackHat not yet implemented for GPU module");
+            return ExecutionStatus(
+                EStatus::Error, "Gradient, TopHat and BlackHat not yet implemented for GPU module");
         }
 
-        // Execute it 
+        // Execute it
         _gpuComputeModule->queue().finish();
 
         return ExecutionStatus(EStatus::Ok);
     }
 
 private:
-    int prepareStructuringElement(const cv::Mat& sElem) 
+    int prepareStructuringElement(const cv::Mat& sElem)
     {
         vector<cl_int2> sElemCoords = structuringElementCoordinates(sElem);
         size_t bmuSize = sizeof(cl_int2) * sElemCoords.size();
-        if(!_gpuComputeModule->isConstantMemorySufficient(bmuSize))
+        if (!_gpuComputeModule->isConstantMemorySufficient(bmuSize))
             return 0;
 
         // Check if this is the same structuring element by hashing
-        if(!_deviceStructuringElement.isNull() && _deviceStructuringElement.size() == bmuSize)
+        if (!_deviceStructuringElement.isNull() && _deviceStructuringElement.size() == bmuSize)
         {
             uint32_t hash = calculateStructuringElemCoordsHash(sElemCoords);
 
-            if(hash != _sElemHash)
+            if (hash != _sElemHash)
             {
-                uploadStructuringElement(sElemCoords);	
+                uploadStructuringElement(sElemCoords);
                 _sElemHash = calculateStructuringElemCoordsHash(sElemCoords);
             }
         }
         else
         {
-            uploadStructuringElement(sElemCoords);	
+            uploadStructuringElement(sElemCoords);
             _sElemHash = calculateStructuringElemCoordsHash(sElemCoords);
         }
 
-        return (int) sElemCoords.size();
+        return (int)sElemCoords.size();
     }
 
     vector<cl_int2> structuringElementCoordinates(const cv::Mat& sElem)
@@ -161,12 +169,12 @@ private:
         vector<cl_int2> coords;
         int seRadiusX = (sElem.cols - 1) / 2;
         int seRadiusY = (sElem.rows - 1) / 2;
-        for(int y = 0; y < sElem.rows; ++y)
+        for (int y = 0; y < sElem.rows; ++y)
         {
-            const uchar* krow = sElem.ptr<uchar>(y);;
-            for(int x = 0; x < sElem.cols; ++x)
+            const uchar* krow = sElem.ptr<uchar>(y);
+            for (int x = 0; x < sElem.cols; ++x)
             {
-                if(krow[x] == 0)
+                if (krow[x] == 0)
                     continue;
                 cl_int2 c = {{x, y}};
                 c.s[0] -= seRadiusX;
@@ -186,8 +194,7 @@ private:
     void uploadStructuringElement(const vector<cl_int2>& sElemCoords)
     {
         size_t bmuSize = sizeof(cl_int2) * sElemCoords.size();
-        if(_deviceStructuringElement.isNull() ||
-            _deviceStructuringElement.size() != bmuSize)
+        if (_deviceStructuringElement.isNull() || _deviceStructuringElement.size() != bmuSize)
         {
             _deviceStructuringElement = _gpuComputeModule->context().createBuffer(
                 clw::EAccess::ReadOnly, clw::EMemoryLocation::Device, bmuSize);
@@ -200,25 +207,24 @@ private:
             _pinnedStructuringElement, clw::EMapAccess::Write));
         memcpy(ptr, sElemCoords.data(), bmuSize);
         _gpuComputeModule->queue().asyncUnmap(_pinnedStructuringElement, ptr);
-        _gpuComputeModule->queue().asyncCopyBuffer(_pinnedStructuringElement, _deviceStructuringElement);
+        _gpuComputeModule->queue().asyncCopyBuffer(_pinnedStructuringElement,
+                                                   _deviceStructuringElement);
     }
 
     void ensureSizeIsEnough(clw::Image2D& image, int width, int height)
     {
-        if(image.isNull() 
-            || image.width() != width
-            || image.height() != height)
+        if (image.isNull() || image.width() != width || image.height() != height)
         {
             image = _gpuComputeModule->context().createImage2D(
                 clw::EAccess::ReadWrite, clw::EMemoryLocation::Device,
-                clw::ImageFormat(clw::EChannelOrder::R, clw::EChannelType::Normalized_UInt8),
-                width, height);
+                clw::ImageFormat(clw::EChannelOrder::R, clw::EChannelType::Normalized_UInt8), width,
+                height);
         }
     }
 
     clw::Event runMorphologyKernel(clw::Kernel& kernel, const clw::Grid& grid,
-        const clw::Image2D& deviceSrc, clw::Image2D& deviceDst, int sElemCoordsSize,
-        int kradx, int krady)
+                                   const clw::Image2D& deviceSrc, clw::Image2D& deviceDst,
+                                   int sElemCoordsSize, int kradx, int krady)
     {
         // Prepare it for execution
         kernel.setLocalWorkSize(clw::Grid(16, 16));
@@ -246,23 +252,19 @@ private:
     clw::Image2D _tmpImage;
     KernelID _kidErode;
     KernelID _kidDilate;
-    ///KernelID _kidSubtract;
-
-    enum class EMorphologyOperation
-    {
-        Erode,
-        Dilate,
-        Open,
-        Close,
-        Gradient,
-        TopHat,
-        BlackHat
-    };
 
     TypedNodeProperty<EMorphologyOperation> _op;
     uint32_t _sElemHash;
 };
 
-REGISTER_NODE("OpenCL/Morphology/Operator", GpuMorphologyOperatorNodeType)
+void registerGpuMorphologyOperator(NodeSystem& system)
+{
+    system.registerNodeType("OpenCL/Morphology/Operator",
+                            makeDefaultNodeFactory<GpuMorphologyOperatorNodeType>());
+}
+
+#else
+
+void registerGpuMorphologyOperator(class NodeSystem&) {}
 
 #endif

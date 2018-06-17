@@ -24,6 +24,8 @@
 #include "Logic/NodeType.h"
 #include "Logic/NodeSystem.h"
 
+#include "Utils.h"
+
 #include <opencv2/imgproc/imgproc.hpp>
 
 class MorphologyOperatorNodeType : public NodeType
@@ -59,17 +61,6 @@ public:
     }
 
 private:
-    enum class EMorphologyOperation
-    {
-        Erode = cv::MORPH_ERODE,
-        Dilate = cv::MORPH_DILATE,
-        Open = cv::MORPH_OPEN,
-        Close = cv::MORPH_CLOSE,
-        Gradient = cv::MORPH_GRADIENT,
-        TopHat = cv::MORPH_TOPHAT,
-        BlackHat = cv::MORPH_BLACKHAT
-    };
-
     TypedNodeProperty<EMorphologyOperation> _op;
 };
 
