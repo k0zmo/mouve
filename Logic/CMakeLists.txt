@@ -70,7 +70,6 @@ target_sources(Mouve.Logic PRIVATE
     OpenCL/GpuHoughLinesNode.cpp
     OpenCL/GpuKernelLibrary.cpp
     OpenCL/GpuKernelLibrary.h
-    OpenCL/GpuMixtureOfGaussiansNode.cpp
     OpenCL/GpuNode.h
     OpenCL/GpuNodeModule.cpp
     OpenCL/GpuNodeModule.h
@@ -150,7 +149,6 @@ if(TARGET clw::clw)
         OpenCL/kernels/fill.cl
         OpenCL/kernels/hough.cl
         OpenCL/kernels/integral.cl
-        OpenCL/kernels/mog.cl
         OpenCL/kernels/surf.cl
     )
 else()

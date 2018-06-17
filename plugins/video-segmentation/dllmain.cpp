@@ -27,6 +27,7 @@ void registerAdaptiveMOG(NodeSystem& system);
 void registerBackgroundSubtractor(NodeSystem& system);
 void registerGMG(NodeSystem& system);
 void registerMOG(NodeSystem& system);
+void registerGpuMOG(NodeSystem& system);
 
 class VideoSegmentationPlugin : public NodePlugin
 {
@@ -39,6 +40,7 @@ public:
         registerBackgroundSubtractor(system);
         registerGMG(system);
         registerMOG(system);
+        registerGpuMOG(system);
     }
 };
 

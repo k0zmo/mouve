@@ -23,7 +23,6 @@
 
 #if defined(HAVE_OPENCL)
 
-#include "Logic/NodeType.h"
 #include "Logic/NodeSystem.h"
 #include "Logic/OpenCL/GpuNode.h"
 

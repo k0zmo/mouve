@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2014 Kajetan Swierk <k0zmo@outlook.com>
+ * Copyright (c) 2013-2018 Kajetan Swierk <k0zmo@outlook.com>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,8 +23,8 @@
 
 #if defined(HAVE_OPENCL)
 
-#include "GpuNode.h"
-#include "Logic/NodeFactory.h"
+#include "Logic/NodeSystem.h"
+#include "Logic/OpenCL/GpuNode.h"
 
 #include <fmt/core.h>
 
@@ -35,20 +35,20 @@ class GpuMixtureOfGaussiansNodeType : public GpuNodeType
 {
 public:
     GpuMixtureOfGaussiansNodeType()
-        : _history(200)
-        , _nmixtures(5)
-        , _backgroundRatio(0.7f)
-        , _learningRate(-1)
-        , _showBackground(false)
-        , _nframe(0)
-        , _varianceThreshold(6.25f)
-        , _initialWeight(0.05f)
+        : _history(200),
+          _nmixtures(5),
+          _backgroundRatio(0.7f),
+          _learningRate(-1),
+          _showBackground(false),
+          _nframe(0),
+          _varianceThreshold(6.25f),
+          _initialWeight(0.05f),
 #if ACCURATE_CALCULATIONS != 1
-        , _initialVariance(15*15*4)
-        , _minVariance(15*15)
+          _initialVariance(15 * 15 * 4),
+          _minVariance(15 * 15)
 #else
-        , _initialVariance(500)
-        , _minVariance(0.4f)
+          _initialVariance(500),
+          _minVariance(0.4f)
 #endif
     {
         addInput("Image", ENodeFlowDataType::DeviceImageMono);
@@ -61,11 +61,10 @@ public:
             .setValidator(make_validator<InclRangePropertyValidator<int>>(1, 9))
             .setObserver(make_observer<FuncObserver>([this](const NodeProperty&) {
                 std::string opts = fmt::format("-DNMIXTURES={} -DACCURATE_CALCULATIONS={}",
-                    _nmixtures, ACCURATE_CALCULATIONS);
-                _kidGaussMix = _gpuComputeModule->registerKernel(
-                    "mog_image_unorm", "mog.cl", opts);
-                _kidGaussBackground = _gpuComputeModule->registerKernel(
-                    "mog_background_image_unorm", "mog.cl", opts);
+                                               _nmixtures, ACCURATE_CALCULATIONS);
+                _kidGaussMix = _gpuComputeModule->registerKernel("mog_image_unorm", "mog.cl", opts);
+                _kidGaussBackground =
+                    _gpuComputeModule->registerKernel("mog_background_image_unorm", "mog.cl", opts);
             }))
             .setUiHints("min:1, max:9");
         addProperty("Background ratio", _backgroundRatio)
@@ -84,12 +83,10 @@ public:
         std::string opts = fmt::format("-DNMIXTURES={} -DACCURATE_CALCULATIONS={}", _nmixtures,
                                        ACCURATE_CALCULATIONS);
 
-        _kidGaussMix = _gpuComputeModule->registerKernel(
-            "mog_image_unorm", "mog.cl", opts);
-        _kidGaussBackground = _gpuComputeModule->registerKernel(
-            "mog_background_image_unorm", "mog.cl", opts);
-        return _kidGaussMix != InvalidKernelID &&
-            _kidGaussBackground != InvalidKernelID;
+        _kidGaussMix = _gpuComputeModule->registerKernel("mog_image_unorm", "mog.cl", opts);
+        _kidGaussBackground =
+            _gpuComputeModule->registerKernel("mog_background_image_unorm", "mog.cl", opts);
+        return _kidGaussMix != InvalidKernelID && _kidGaussBackground != InvalidKernelID;
     }
 
     bool restart() override
@@ -99,10 +96,11 @@ public:
         // TUTAJ inicjalizuj bufory???
         // TODO: Uzyc asyncow
 
-        if(!_mixtureDataBuffer.isNull())
+        if (!_mixtureDataBuffer.isNull())
         {
             // Wyzerowanie
-            void* ptr = _gpuComputeModule->queue().mapBuffer(_mixtureDataBuffer, clw::EMapAccess::Write);
+            void* ptr =
+                _gpuComputeModule->queue().mapBuffer(_mixtureDataBuffer, clw::EMapAccess::Write);
             memset(ptr, 0, _mixtureDataBuffer.size());
             _gpuComputeModule->queue().asyncUnmap(_mixtureDataBuffer, ptr);
         }
@@ -112,20 +110,20 @@ public:
         {
             float varThreshold;
             float backgroundRatio;
-            float w0; // waga dla nowej mikstury
-            float var0; // wariancja dla nowej mikstury
+            float w0;     // waga dla nowej mikstury
+            float var0;   // wariancja dla nowej mikstury
             float minVar; // dolny prog mozliwej wariancji
         };
 
         // Create mixture parameter buffer
-        if(_mixtureParamsBuffer.isNull())
+        if (_mixtureParamsBuffer.isNull())
         {
             _mixtureParamsBuffer = _gpuComputeModule->context().createBuffer(
                 clw::EAccess::ReadOnly, clw::EMemoryLocation::Device, sizeof(MogParams));
         }
 
-        MogParams* ptr = (MogParams*) _gpuComputeModule->queue().mapBuffer(
-            _mixtureParamsBuffer, clw::EMapAccess::Write);
+        MogParams* ptr = (MogParams*)_gpuComputeModule->queue().mapBuffer(_mixtureParamsBuffer,
+                                                                          clw::EMapAccess::Write);
         ptr->varThreshold = _varianceThreshold;
         ptr->backgroundRatio = _backgroundRatio;
         ptr->w0 = _initialWeight;
@@ -144,7 +142,7 @@ public:
         int srcWidth = deviceImage.width();
         int srcHeight = deviceImage.height();
 
-        if(srcWidth == 0 || srcHeight == 0)
+        if (srcWidth == 0 || srcHeight == 0)
             return ExecutionStatus(EStatus::Ok);
 
         clw::Kernel kernelGaussMix = _gpuComputeModule->acquireKernel(_kidGaussMix);
@@ -154,9 +152,8 @@ public:
         */
         resetMixturesState(srcWidth * srcHeight);
 
-        if(deviceDest.isNull()
-            || deviceDest.width() != srcWidth
-            || deviceDest.height() != srcHeight)
+        if (deviceDest.isNull() || deviceDest.width() != srcWidth ||
+            deviceDest.height() != srcHeight)
         {
             // Obraz (w zasadzie maska) pierwszego planu
             deviceDest = _gpuComputeModule->context().createImage2D(
@@ -167,9 +164,9 @@ public:
 
         // Calculate dynamic learning rate (if necessary)
         ++_nframe;
-        float alpha = _learningRate >= 0 && _nframe > 1 
-            ? _learningRate
-            : 1.0f/(std::min)(_nframe, _history.cast<int>());
+        float alpha = _learningRate >= 0 && _nframe > 1
+                          ? _learningRate
+                          : 1.0f / (std::min)(_nframe, _history.cast<int>());
 
         kernelGaussMix.setLocalWorkSize(16, 16);
         kernelGaussMix.setRoundedGlobalWorkSize(srcWidth, srcHeight);
@@ -180,12 +177,11 @@ public:
         kernelGaussMix.setArg(4, alpha);
         _gpuComputeModule->queue().asyncRunKernel(kernelGaussMix);
 
-        if(_showBackground)
+        if (_showBackground)
         {
             clw::Image2D& deviceDestBackground = writer.acquireSocket(1).getDeviceImageMono();
-            if(deviceDestBackground.isNull()
-                || deviceDestBackground.width() != srcWidth
-                || deviceDestBackground.height() != srcHeight)
+            if (deviceDestBackground.isNull() || deviceDestBackground.width() != srcWidth ||
+                deviceDestBackground.height() != srcHeight)
             {
                 // Obraz (w zasadzie maska) pierwszego planu
                 deviceDestBackground = _gpuComputeModule->context().createImage2D(
@@ -214,14 +210,14 @@ private:
         // Dane mikstur (stan wewnetrzny estymatora tla)
         const size_t mixtureDataSize = _nmixtures * pixNumbers * 3 * sizeof(float);
 
-        if(_mixtureDataBuffer.isNull()
-            || _mixtureDataBuffer.size() != mixtureDataSize)
+        if (_mixtureDataBuffer.isNull() || _mixtureDataBuffer.size() != mixtureDataSize)
         {
             _mixtureDataBuffer = _gpuComputeModule->context().createBuffer(
                 clw::EAccess::ReadWrite, clw::EMemoryLocation::Device, mixtureDataSize);
 
             // Wyzerowanie
-            void* ptr = _gpuComputeModule->queue().mapBuffer(_mixtureDataBuffer, clw::EMapAccess::Write);
+            void* ptr =
+                _gpuComputeModule->queue().mapBuffer(_mixtureDataBuffer, clw::EMapAccess::Write);
             memset(ptr, 0, mixtureDataSize);
             _gpuComputeModule->queue().unmap(_mixtureDataBuffer, ptr);
         }
@@ -246,6 +242,14 @@ private:
     float _minVariance;
 };
 
-REGISTER_NODE("OpenCL/Video segmentation/Mixture of Gaussians", GpuMixtureOfGaussiansNodeType)
+void registerGpuMOG(NodeSystem& system)
+{
+    system.registerNodeType("OpenCL/Video segmentation/Mixture of Gaussians",
+                            makeDefaultNodeFactory<GpuMixtureOfGaussiansNodeType>());
+}
+
+#else
+
+void registerGpuMOG(class NodeSystem&) {}
 
 #endif
