@@ -23,23 +23,21 @@
 
 #include "Logic/NodePlugin.h"
 
-void registerAdaptiveMOG(NodeSystem& system);
-void registerBackgroundSubtractor(NodeSystem& system);
-void registerGMG(NodeSystem& system);
-void registerMOG(NodeSystem& system);
+void registerGpuKuwaharaFilter(NodeSystem& system);
+void registerGpuGeneralizedKuwaharaFilter(NodeSystem& system);
+void registerGpuAnisotropicKuwaharaFilter(NodeSystem& system);
 
-class VideoSegmentationPlugin : public NodePlugin
+class KuwaharaOpenCLPlugin : public NodePlugin
 {
     MOUVE_DECLARE_PLUGIN(1);
 
 public:
     void registerPlugin(NodeSystem& system) override
     {
-        registerAdaptiveMOG(system);
-        registerBackgroundSubtractor(system);
-        registerGMG(system);
-        registerMOG(system);
+        registerGpuKuwaharaFilter(system);
+        registerGpuGeneralizedKuwaharaFilter(system);
+        registerGpuAnisotropicKuwaharaFilter(system);
     }
 };
 
-MOUVE_INSTANTIATE_PLUGIN(VideoSegmentationPlugin)
+MOUVE_INSTANTIATE_PLUGIN(KuwaharaOpenCLPlugin)

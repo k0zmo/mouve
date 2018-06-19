@@ -24,7 +24,7 @@
 #include "Logic/NodeType.h"
 #include "Logic/NodeSystem.h"
 
-#include "Utils.h"
+#include "impl/Utils.h"
 
 class StructuringElementNodeType : public NodeType
 {

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2014 Kajetan Swierk <k0zmo@outlook.com>
+ * Copyright (c) 2013-2018 Kajetan Swierk <k0zmo@outlook.com>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,13 +21,11 @@
  *
  */
 
-#include "Prerequisites.h"
-
-#if defined(CPP_AMP_SUPPORTED)
-
 #include "Logic/NodePlugin.h"
-#include "Logic/NodeSystem.h"
 #include "Logic/NodeType.h"
+
+#include <amp.h>
+#include <amp_graphics.h>
 
 class AmpMorphologyOperatorNodeType : public NodeType
 {
@@ -49,7 +47,7 @@ public:
         cv::Mat& dst = writer.acquireSocket(0).getImageMono();
 
         // Validate inputs
-        if(se.empty() || src.empty())
+        if (se.empty() || src.empty())
             return ExecutionStatus(EStatus::Ok);
 
         using namespace concurrency;
@@ -61,27 +59,26 @@ public:
         uint coordsSize = static_cast<uint>(coords.size());
 
         extent<2> image_extent(src.rows, src.cols);
-        unsigned int sizeInBytes = static_cast<unsigned int>(src.cols * src.rows * sizeof(uchar) * src.channels());
+        unsigned int sizeInBytes =
+            static_cast<unsigned int>(src.cols * src.rows * sizeof(uchar) * src.channels());
 
         texture<uint, 2> srcTx(image_extent, const_cast<const uchar*>(src.data), sizeInBytes, 8U);
         texture<uint, 2> dstTx(image_extent, 8U);
         texture_view<uint, 2> dstTv(dstTx);
 
-        parallel_for_each(image_extent, 
-            [&srcTx, dstTv, coordsAv, coordsSize]
-            (index<2> idx) restrict(amp)
-        {
-            uint maxv = 0;
+        parallel_for_each(image_extent,
+                          [&srcTx, dstTv, coordsAv, coordsSize](index<2> idx) restrict(amp) {
+                              uint maxv = 50;
 
-            for(uint i = 0; i < coordsSize; ++i)
-            {
-                index<2> coord = coordsAv[i] + idx;
-                uint pix = srcTx[coord];
-                maxv = concurrency::direct3d::imax(maxv, pix);
-            }
+                              for (uint i = 0; i < coordsSize; ++i)
+                              {
+                                  index<2> coord = coordsAv[i] + idx;
+                                  const uint pix = srcTx[coord];
+                                  maxv = concurrency::direct3d::imax(maxv, pix);
+                              }
 
-            dstTv.set(idx, maxv);
-        });
+                              dstTv.set(idx, maxv);
+                          });
 
         dst.create(src.size(), src.type());
         copy(dstTx, dst.data, sizeInBytes);
@@ -95,12 +92,13 @@ private:
         std::vector<concurrency::index<2>> coords;
         int seRadiusX = (sElem.cols - 1) / 2;
         int seRadiusY = (sElem.rows - 1) / 2;
-        for(int y = 0; y < sElem.rows; ++y)
+        for (int y = 0; y < sElem.rows; ++y)
         {
-            const uchar* krow = sElem.ptr<uchar>(y);;
-            for(int x = 0; x < sElem.cols; ++x)
+            const uchar* krow = sElem.ptr<uchar>(y);
+            ;
+            for (int x = 0; x < sElem.cols; ++x)
             {
-                if(krow[x] == 0)
+                if (krow[x] == 0)
                     continue;
                 concurrency::index<2> c(x - seRadiusX, y - seRadiusY);
                 coords.push_back(c);
@@ -110,16 +108,8 @@ private:
     }
 };
 
-void registerAmpMorphologyNodes(NodeSystem& system)
+void registerAmpMorphology(NodeSystem& system)
 {
     system.registerNodeType("Morphology/Operator AMP",
                             makeDefaultNodeFactory<AmpMorphologyOperatorNodeType>());
 }
-
-#else
-
-void registerAmpMorphologyNodes(class NodeSystem&)
-{
-}
-
-#endif

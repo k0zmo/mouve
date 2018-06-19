@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2014 Kajetan Swierk <k0zmo@outlook.com>
+ * Copyright (c) 2013-2018 Kajetan Swierk <k0zmo@outlook.com>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,21 +21,11 @@
  *
  */
 
-#include "Logic/NodePlugin.h"
+#pragma once
 
-void registerAmpMorphologyNodes(NodeSystem& system);
-void registerAmpArithmeticNodes(NodeSystem& system);
+#include <opencv2/core/core.hpp>
 
-class AMPPlugin : public NodePlugin
-{
-    MOUVE_DECLARE_PLUGIN(1);
+namespace cvu {
 
-public:
-    void registerPlugin(NodeSystem& system) override
-    {
-        registerAmpArithmeticNodes(system);
-        registerAmpMorphologyNodes(system);
-    }
-};
-
-MOUVE_INSTANTIATE_PLUGIN(AMPPlugin)
+void getGeneralizedKuwaharaKernel(cv::OutputArray kernel, int N, float smoothing);
+} // namespace cvu

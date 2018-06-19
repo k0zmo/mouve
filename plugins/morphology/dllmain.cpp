@@ -26,7 +26,6 @@
 void registerHitMissOperator(NodeSystem& system);
 void registerMorphologyOperator(NodeSystem& system);
 void registerStructuringElement(NodeSystem& system);
-void registerGpuMorphologyOperator(NodeSystem& system);
 
 class MorphologyPlugin : public NodePlugin
 {
@@ -38,7 +37,6 @@ public:
         registerHitMissOperator(system);
         registerMorphologyOperator(system);
         registerStructuringElement(system);
-        registerGpuMorphologyOperator(system);
     }
 };
 

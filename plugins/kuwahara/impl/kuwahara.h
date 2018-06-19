@@ -21,25 +21,21 @@
  *
  */
 
-#include "Logic/NodePlugin.h"
+#pragma once
 
-void registerAdaptiveMOG(NodeSystem& system);
-void registerBackgroundSubtractor(NodeSystem& system);
-void registerGMG(NodeSystem& system);
-void registerMOG(NodeSystem& system);
+#include <opencv2/core/core.hpp>
 
-class VideoSegmentationPlugin : public NodePlugin
-{
-    MOUVE_DECLARE_PLUGIN(1);
+namespace cvu {
 
-public:
-    void registerPlugin(NodeSystem& system) override
-    {
-        registerAdaptiveMOG(system);
-        registerBackgroundSubtractor(system);
-        registerGMG(system);
-        registerMOG(system);
-    }
-};
+void KuwaharaFilter(cv::InputArray src, cv::OutputArray dst, int radius);
+// Based on paper Artistic edge and corner enhancing smoothing, G. Papari, N. Petkov, P. Campisi
+void generalizedKuwaharaFilter(cv::InputArray src_, cv::OutputArray dst_, int radius = 6, int N = 8,
+                               float smoothing = 0.3333f);
+// Based on paper Image and Video Abstraction by Anisotropic Kuwahara Filtering,
+// J. E. Kyprianidis, H. Kang, J. Dollner
+void anisotropicKuwaharaFilter(cv::InputArray src_, cv::OutputArray dst_, int radius = 6, int N = 8,
+                               float smoothing = 0.3333f);
 
-MOUVE_INSTANTIATE_PLUGIN(VideoSegmentationPlugin)
+void getGeneralizedKuwaharaKernel(cv::OutputArray kernel, int N, float smoothing);
+
+} // namespace cvu

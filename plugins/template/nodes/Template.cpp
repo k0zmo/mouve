@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2014 Kajetan Swierk <k0zmo@outlook.com>
+ * Copyright (c) 2013-2018 Kajetan Swierk <k0zmo@outlook.com>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,7 +21,6 @@
  *
  */
 
-#include "Logic/NodePlugin.h"
 #include "Logic/NodeSystem.h"
 #include "Logic/NodeType.h"
 
@@ -31,8 +30,7 @@
 class TemplateNodeType : public NodeType
 {
 public:
-    TemplateNodeType()
-        : _property(true)
+    TemplateNodeType() : _property(true)
     {
         addInput("Image", ENodeFlowDataType::Image);
         addOutput("Output", ENodeFlowDataType::Image);
@@ -49,10 +47,10 @@ public:
         cv::Mat& dst = writer.acquireSocket(0).getImage();
 
         // validate inputs
-        if(src.empty())
+        if (src.empty())
             return ExecutionStatus(EStatus::Ok);
 
-        if(_property)
+        if (_property)
         {
             dst = src;
         }
@@ -65,15 +63,7 @@ private:
     TypedNodeProperty<bool> _property;
 };
 
-class TemplatePlugin : public NodePlugin
+void registerTemplate(NodeSystem& system)
 {
-    MOUVE_DECLARE_PLUGIN(1);
-
-public:
-    void registerPlugin(NodeSystem& system) override
-    {
-        system.registerNodeType("Test/Template", makeDefaultNodeFactory<TemplateNodeType>());
-    }
-};
-
-MOUVE_INSTANTIATE_PLUGIN(TemplatePlugin)
+    system.registerNodeType("Test/Template", makeDefaultNodeFactory<TemplateNodeType>());
+}

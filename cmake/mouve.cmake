@@ -6,7 +6,7 @@ function(mouve_add_kernels _target)
 
     # Show these kernel files in IDE, under "Kernel Files" group (only in VS)
     target_sources(${_target} PRIVATE ${options_KERNELS})
-    source_group("Kernel Files" FILES ${options_KERNELS})
+    source_group("kernels" FILES ${options_KERNELS})
 
     # Optional subdir inside kernels/
     set(outdir kernels)

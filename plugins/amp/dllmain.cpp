@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2014 Kajetan Swierk <k0zmo@outlook.com>
+ * Copyright (c) 2013-2018 Kajetan Swierk <k0zmo@outlook.com>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,23 +21,21 @@
  *
  */
 
-#pragma once
+#include "Logic/NodePlugin.h"
 
-#include <opencv2/core/core.hpp>
+void registerAmpMorphology(NodeSystem& system);
+void registerAmpArithmetic(NodeSystem& system);
 
-namespace cvu
+class AMPPlugin : public NodePlugin
 {
-void KuwaharaFilter(cv::InputArray src, cv::OutputArray dst, int radius);
-// Based on paper Artistic edge and corner enhancing smoothing, G. Papari, N. Petkov, P. Campisi
-void generalizedKuwaharaFilter(cv::InputArray src_, cv::OutputArray dst_,
-                               int radius = 6, int N = 8,
-                               float smoothing = 0.3333f);
-// Based on paper Image and Video Abstraction by Anisotropic Kuwahara Filtering,
-// J. E. Kyprianidis, H. Kang, J. Dollner
-void anisotropicKuwaharaFilter(cv::InputArray src_, cv::OutputArray dst_,
-                               int radius = 6, int N = 8,
-                               float smoothing = 0.3333f);
+    MOUVE_DECLARE_PLUGIN(1);
 
-void getGeneralizedKuwaharaKernel(cv::OutputArray kernel, int N, float smoothing);
+public:
+    void registerPlugin(NodeSystem& system) override
+    {
+        registerAmpArithmetic(system);
+        registerAmpMorphology(system);
+    }
+};
 
-}
+MOUVE_INSTANTIATE_PLUGIN(AMPPlugin)

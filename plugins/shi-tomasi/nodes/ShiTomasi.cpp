@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2014 Kajetan Swierk <k0zmo@outlook.com>
+ * Copyright (c) 2013-2018 Kajetan Swierk <k0zmo@outlook.com>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,7 +21,6 @@
  *
  */
 
-#include "Logic/NodePlugin.h"
 #include "Logic/NodeType.h"
 #include "Logic/NodeSystem.h"
 
@@ -31,10 +30,7 @@
 class ShiTomasiCornerDetectorNodeType : public NodeType
 {
 public:
-    ShiTomasiCornerDetectorNodeType()
-        : _maxCorners(100)
-        , _qualityLevel(0.01)
-        , _minDistance(10)
+    ShiTomasiCornerDetectorNodeType() : _maxCorners(100), _qualityLevel(0.01), _minDistance(10)
     {
         addInput("Image", ENodeFlowDataType::ImageMono);
         addOutput("Keypoints", ENodeFlowDataType::Keypoints);
@@ -58,7 +54,7 @@ public:
         KeyPoints& kp = writer.acquireSocket(0).getKeypoints();
 
         // validate inputs
-        if(src.empty())
+        if (src.empty())
             return ExecutionStatus(EStatus::Ok);
 
         std::vector<cv::Point2f> corners;
@@ -66,10 +62,10 @@ public:
         bool useHarrisDetector = false;
         double k = 0.04;
 
-        cv::goodFeaturesToTrack(src, corners, _maxCorners, _qualityLevel, 
-            _minDistance, cv::noArray(), blockSize, useHarrisDetector, k);
+        cv::goodFeaturesToTrack(src, corners, _maxCorners, _qualityLevel, _minDistance,
+                                cv::noArray(), blockSize, useHarrisDetector, k);
 
-        for(const auto& corner : corners)
+        for (const auto& corner : corners)
             kp.kpoints.emplace_back(corner, 8.0f);
         kp.image = src;
 
@@ -82,16 +78,8 @@ private:
     TypedNodeProperty<double> _minDistance;
 };
 
-class ShiTomasiPlugin : public NodePlugin
+void registerShiTomasi(NodeSystem& system)
 {
-    MOUVE_DECLARE_PLUGIN(1);
-
-public:
-    void registerPlugin(NodeSystem& system) override
-    {
-        system.registerNodeType("Features/Shi-Tomasi corner detector",
-                                makeDefaultNodeFactory<ShiTomasiCornerDetectorNodeType>());
-    }
-};
-
-MOUVE_INSTANTIATE_PLUGIN(ShiTomasiPlugin)
+    system.registerNodeType("Features/Shi-Tomasi corner detector",
+                            makeDefaultNodeFactory<ShiTomasiCornerDetectorNodeType>());
+}

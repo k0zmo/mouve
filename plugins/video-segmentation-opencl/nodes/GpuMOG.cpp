@@ -21,8 +21,6 @@
  *
  */
 
-#if defined(HAVE_OPENCL)
-
 #include "Logic/NodeSystem.h"
 #include "Logic/OpenCL/GpuNode.h"
 
@@ -247,9 +245,3 @@ void registerGpuMOG(NodeSystem& system)
     system.registerNodeType("OpenCL/Video segmentation/Mixture of Gaussians",
                             makeDefaultNodeFactory<GpuMixtureOfGaussiansNodeType>());
 }
-
-#else
-
-void registerGpuMOG(class NodeSystem&) {}
-
-#endif

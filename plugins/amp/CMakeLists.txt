@@ -1,6 +1,6 @@
 mouve_add_plugin(amp
-    AmpArithmeticNodes.cpp
-    AmpMorphologyNodes.cpp
-    main.cpp
-    Prerequisites.h
+    dllmain.cpp
+    nodes/AmpArithmetic.cpp
+    nodes/AmpMorphology.cpp
 )
+mouve_source_group(amp)

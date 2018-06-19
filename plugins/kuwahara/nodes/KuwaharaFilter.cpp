@@ -24,48 +24,42 @@
 #include "Logic/NodeType.h"
 #include "Logic/NodeSystem.h"
 
-#include "impl/Utils.h"
+#include "impl/kuwahara.h"
 
-#include <opencv2/imgproc/imgproc.hpp>
-
-class MorphologyOperatorNodeType : public NodeType
+class KuwaharaFilterNodeType : public NodeType
 {
 public:
-    MorphologyOperatorNodeType() : _op(EMorphologyOperation::Erode)
+    KuwaharaFilterNodeType() : _radius(2)
     {
-        addInput("Source", ENodeFlowDataType::Image);
-        addInput("Structuring element", ENodeFlowDataType::ImageMono);
+        addInput("Image", ENodeFlowDataType::Image);
         addOutput("Output", ENodeFlowDataType::Image);
-        addProperty("Operation type", _op)
-            .setUiHints("item: Erode, item: Dilate, item: Open, item: Close,"
-                        "item: Gradient, item: Top Hat, item: Black Hat");
-        setDescription("Performs morphological operation on a given image.");
+        addProperty("Radius", _radius)
+            .setValidator(make_validator<InclRangePropertyValidator<int>>(1, 15))
+            .setUiHints("min:1, max:15");
+        setDescription("Kuwahara filter");
     }
 
     ExecutionStatus execute(NodeSocketReader& reader, NodeSocketWriter& writer) override
     {
-        // Read input sockets
+        // inputs
         const cv::Mat& src = reader.readSocket(0).getImage();
-        const cv::Mat& se = reader.readSocket(1).getImageMono();
-        // Acquire output sockets
+        // outputs
         cv::Mat& dst = writer.acquireSocket(0).getImage();
 
-        // Validate inputs
-        if (se.empty() || src.empty())
+        // validate inputs
+        if (src.empty())
             return ExecutionStatus(EStatus::Ok);
 
-        // Do stuff
-        cv::morphologyEx(src, dst, _op.cast<Enum>().data(), se);
-
+        cvu::KuwaharaFilter(src, dst, _radius);
         return ExecutionStatus(EStatus::Ok);
     }
 
-private:
-    TypedNodeProperty<EMorphologyOperation> _op;
+protected:
+    TypedNodeProperty<int> _radius;
 };
 
-void registerMorphologyOperator(NodeSystem& system)
+void registerKuwaharaFilter(NodeSystem& system)
 {
-    system.registerNodeType("Morphology/Operator",
-                            makeDefaultNodeFactory<MorphologyOperatorNodeType>());
+    system.registerNodeType("Filters/Kuwahara filter",
+                            makeDefaultNodeFactory<KuwaharaFilterNodeType>());
 }

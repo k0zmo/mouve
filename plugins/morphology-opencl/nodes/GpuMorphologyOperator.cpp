@@ -21,12 +21,8 @@
  *
  */
 
-#if defined(HAVE_OPENCL)
-
 #include "Logic/NodeSystem.h"
 #include "Logic/OpenCL/GpuNode.h"
-
-#include "Utils.h"
 
 #include <kl/hash.hpp>
 
@@ -252,6 +248,17 @@ private:
     KernelID _kidErode;
     KernelID _kidDilate;
 
+    enum class EMorphologyOperation
+    {
+        Erode,
+        Dilate,
+        Open,
+        Close,
+        Gradient,
+        TopHat,
+        BlackHat
+    };
+
     TypedNodeProperty<EMorphologyOperation> _op;
     uint32_t _sElemHash;
 };
@@ -261,9 +268,3 @@ void registerGpuMorphologyOperator(NodeSystem& system)
     system.registerNodeType("OpenCL/Morphology/Operator",
                             makeDefaultNodeFactory<GpuMorphologyOperatorNodeType>());
 }
-
-#else
-
-void registerGpuMorphologyOperator(class NodeSystem&) {}
-
-#endif

@@ -1,3 +1,5 @@
 mouve_add_plugin(template
-    TemplateNode.cpp
+    dllmain.cpp
+    nodes/Template.cpp
 )
+mouve_source_group(template)

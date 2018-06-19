@@ -24,48 +24,50 @@
 #include "Logic/NodeType.h"
 #include "Logic/NodeSystem.h"
 
-#include "impl/Utils.h"
+#include "impl/kuwahara.h"
 
-#include <opencv2/imgproc/imgproc.hpp>
-
-class MorphologyOperatorNodeType : public NodeType
+class AnisotropicKuwaharaFilterNodeType : public NodeType
 {
 public:
-    MorphologyOperatorNodeType() : _op(EMorphologyOperation::Erode)
+    AnisotropicKuwaharaFilterNodeType() : _radius(6), _N(8), _smoothing(0.3333f)
     {
-        addInput("Source", ENodeFlowDataType::Image);
-        addInput("Structuring element", ENodeFlowDataType::ImageMono);
+        addInput("Image", ENodeFlowDataType::Image);
         addOutput("Output", ENodeFlowDataType::Image);
-        addProperty("Operation type", _op)
-            .setUiHints("item: Erode, item: Dilate, item: Open, item: Close,"
-                        "item: Gradient, item: Top Hat, item: Black Hat");
-        setDescription("Performs morphological operation on a given image.");
+        addProperty("Radius", _radius)
+            .setValidator(make_validator<InclRangePropertyValidator<int>>(1, 20))
+            .setUiHints("min:1, max:20");
+        addProperty("N", _N)
+            .setValidator(make_validator<InclRangePropertyValidator<int>>(3, 8))
+            .setUiHints("min:3, max:8");
+        addProperty("Smoothing", _smoothing)
+            .setValidator(make_validator<InclRangePropertyValidator<double>>(0.0, 1.0))
+            .setUiHints("min:0.00, max:1.00");
+        setDescription("Anisotropic Kuwahara filter");
     }
 
     ExecutionStatus execute(NodeSocketReader& reader, NodeSocketWriter& writer) override
     {
-        // Read input sockets
+        // inputs
         const cv::Mat& src = reader.readSocket(0).getImage();
-        const cv::Mat& se = reader.readSocket(1).getImageMono();
-        // Acquire output sockets
+        // outputs
         cv::Mat& dst = writer.acquireSocket(0).getImage();
 
-        // Validate inputs
-        if (se.empty() || src.empty())
+        // validate inputs
+        if (src.empty())
             return ExecutionStatus(EStatus::Ok);
 
-        // Do stuff
-        cv::morphologyEx(src, dst, _op.cast<Enum>().data(), se);
-
+        cvu::anisotropicKuwaharaFilter(src, dst, _radius, _N, _smoothing);
         return ExecutionStatus(EStatus::Ok);
     }
 
-private:
-    TypedNodeProperty<EMorphologyOperation> _op;
+protected:
+    TypedNodeProperty<int> _radius;
+    TypedNodeProperty<int> _N;
+    TypedNodeProperty<float> _smoothing;
 };
 
-void registerMorphologyOperator(NodeSystem& system)
+void registerAnisotropicKuwaharaFilter(NodeSystem& system)
 {
-    system.registerNodeType("Morphology/Operator",
-                            makeDefaultNodeFactory<MorphologyOperatorNodeType>());
+    system.registerNodeType("Filters/Anisotropic Kuwahara filter",
+                            makeDefaultNodeFactory<AnisotropicKuwaharaFilterNodeType>());
 }
