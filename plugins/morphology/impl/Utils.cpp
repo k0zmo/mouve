@@ -21,8 +21,6 @@
  *
  */
 
-#pragma once
-
 #include "impl/Utils.h"
 
 #include <opencv2/imgproc/imgproc.hpp>
