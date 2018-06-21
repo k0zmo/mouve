@@ -1,6 +1,6 @@
 [submodule "vendor/clw"]
 	path = vendor/clw
-	url = git@github.com:k0zmo/clw.git
+	url = https://github.com/k0zmo/clw.git
 [submodule "vendor/fmt"]
 	path = vendor/fmt
 	url = https://github.com/fmtlib/fmt.git
