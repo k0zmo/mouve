@@ -1,4 +1,4 @@
-mouve_add_plugin(brisk
+mouve_add_plugin(features2d-brisk
     dllmain.cpp
     nodes/Brisk.cpp
     nodes/BriskDescriptorExtractor.cpp
@@ -22,12 +22,12 @@ mouve_add_plugin(brisk
     impl/agast/oast9_16.cc
     impl/agast/oast9_16.h
 )
-mouve_source_group(brisk)
-target_link_libraries(brisk PRIVATE opencv_features2d)
-target_include_directories(brisk PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+mouve_source_group(features2d-brisk)
+target_link_libraries(features2d-brisk PRIVATE opencv_features2d)
+target_include_directories(features2d-brisk PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 
 include(CheckCXXCompilerFlag)
 check_cxx_compiler_flag(-mssse3 ssse3_supported)
 if(ssse3_supported)
-    target_compile_options(brisk PRIVATE -mssse3)
+    target_compile_options(features2d-brisk PRIVATE -mssse3)
 endif()
