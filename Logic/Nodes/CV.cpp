@@ -53,40 +53,4 @@ int bayerCodeRgb(EBayerCode code)
     default: return CV_BayerBG2GRAY;
     }
 }
-
-cv::Mat predefinedConvolutionKernel(EPredefinedConvolutionType type)
-{
-    switch(type)
-    {
-    case EPredefinedConvolutionType::NoOperation:
-        return cv::Mat((cv::Mat_<double>(3,3) << 0,0,0, 0,1,0, 0,0,0));
-    case EPredefinedConvolutionType::Average:
-        return cv::Mat(3, 3, CV_64FC1, cv::Scalar(0.11111111));
-    case EPredefinedConvolutionType::Gauss:
-        return cv::Mat((cv::Mat_<double>(3,3) << 0.0625,0.125,0.0625, 0.125,0.25,0.125, 0.0625,0.125,0.0625));
-    case EPredefinedConvolutionType::MeanRemoval:
-        return cv::Mat((cv::Mat_<double>(3,3) << -1,-1,-1, -1,9,-1, -1,-1,-1));
-    case EPredefinedConvolutionType::RobertsCross45:
-        return cv::Mat((cv::Mat_<double>(3,3) << 0,0,0, 0,1,0, 0,0,-1));
-    case EPredefinedConvolutionType::RobertsCross135:
-        return cv::Mat((cv::Mat_<double>(3,3) << 0,0,0, 0,0,1, 0,-1,0));
-    case EPredefinedConvolutionType::Laplacian:
-        return cv::Mat((cv::Mat_<double>(3,3) << 0,-1,0, -1,4,-1, 0,-1,0));
-    case EPredefinedConvolutionType::PrewittHorizontal:
-        return cv::Mat((cv::Mat_<double>(3,3) << 1,1,1, 0,0,0, -1,-1,-1));
-    case EPredefinedConvolutionType::PrewittVertical:
-        return cv::Mat((cv::Mat_<double>(3,3) << -1,0,1, -1,0,1, -1,0,1));
-    case EPredefinedConvolutionType::SobelHorizontal:
-        return cv::Mat((cv::Mat_<double>(3,3) << -1,-2,-1, 0,0,0, 1,2,1));
-    case EPredefinedConvolutionType::SobelVertical:
-        return cv::Mat((cv::Mat_<double>(3,3) << -1,0,1, -2,0,2, -1,0,1));
-    case EPredefinedConvolutionType::ScharrHorizontal:
-        return cv::Mat((cv::Mat_<double>(3,3) << -3,-10,-3, 0,0,0, 3,10,3));
-    case EPredefinedConvolutionType::ScharrVertical:
-        return cv::Mat((cv::Mat_<double>(3,3) << -3,0,3, -10,0,10, -3,0,3));
-    default:
-        return cv::Mat(3,3,CV_64FC1,cv::Scalar(0));
-    }
-}
-
 }

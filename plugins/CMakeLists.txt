@@ -1,5 +1,6 @@
 add_subdirectory(features2d-brisk)
 add_subdirectory(features2d-shi-tomasi)
+add_subdirectory(filters-base)
 add_subdirectory(filters-kuwahara)
 add_subdirectory(filters-morphology)
 add_subdirectory(template)

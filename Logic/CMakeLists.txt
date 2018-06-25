@@ -35,7 +35,6 @@ target_sources(Mouve.Logic PRIVATE
     Nodes/DrawFeaturesNodes.cpp
     Nodes/FeatureDetectorsNodes.cpp
     Nodes/FeaturesNodes.cpp
-    Nodes/FiltersNodes.cpp
     Nodes/FreakNodes.cpp
     Nodes/HistogramNodes.cpp
     Nodes/HomographyNodes.cpp

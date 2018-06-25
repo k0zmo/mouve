@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2014 Kajetan Swierk <k0zmo@outlook.com>
+ * Copyright (c) 2013-2018 Kajetan Swierk <k0zmo@outlook.com>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,48 +21,17 @@
  *
  */
 
-#pragma once
+#include "Logic/NodePlugin.h"
 
-#include "../Prerequisites.h"
-
-#include <opencv2/core/core.hpp>
-
-namespace cvu  {
-
-enum class EBayerCode
+class FiltersBasePlugin : public NodePlugin
 {
-    BG,
-    GB,
-    RG,
-    GR
+    MOUVE_DECLARE_PLUGIN(1);
+
+public:
+    void registerPlugin(NodeSystem& system) override
+    {
+        system.registerAutoTypes(AutoRegisterNodeFactory::head());
+    }
 };
 
-int bayerCodeGray(EBayerCode code);
-int bayerCodeRgb(EBayerCode code);
-
-// Lambda-aware parallel loop invoker based on cv::parallel_for
-template<typename Body>
-struct ParallelLoopInvoker : public cv::ParallelLoopBody
-{
-    ParallelLoopInvoker(const Body& body)
-        : _body(body)
-    {
-    }
-
-    void operator()(const cv::Range& range) const override
-    {
-        _body(range);
-    }
-
-private:
-    Body _body;
-};
-
-template<typename Body>
-void parallel_for(const cv::Range& range, const Body& body)
-{
-    ParallelLoopInvoker<Body> loopInvoker(body);
-    cv::parallel_for_(range, loopInvoker);
-}
-
-}
+MOUVE_INSTANTIATE_PLUGIN(FiltersBasePlugin)
