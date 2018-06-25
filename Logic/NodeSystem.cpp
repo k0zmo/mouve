@@ -34,6 +34,8 @@
 #include <boost/dll/runtime_symbol_info.hpp>
 #include <boost/predef/os/windows.h>
 
+#include <cstdlib>
+
 static const std::string InvalidType("InvalidType");
 
 NodeSystem::NodeSystem()
@@ -246,20 +248,54 @@ size_t NodeSystem::loadPlugin(const std::string& pluginPath)
     return 0U;
 }
 
+namespace {
+
+void setupPluginEnvironment(const filesystem::path& pluginDir)
+{
+#if BOOST_OS_WINDOWS
+#pragma warning(suppress : 4996)
+    const char* pathEnv = std::getenv("PATH");
+    if (pathEnv)
+    {
+        const auto newPathEnv = fmt::format("{};{}", pathEnv, pluginDir.string());
+        _putenv_s("PATH", newPathEnv.c_str());
+    }
+    else
+    {
+        _putenv_s("PATH", pluginDir.string().c_str());
+    }
+#else
+    static constexpr auto pluginExtension = ".so";
+    const char* pathEnv = std::getenv("LD_LIBRARY_PATH");
+    if (pathEnv)
+    {
+        const auto newPathEnv = fmt::format("{}:{}", pathEnv, pluginDir.string());
+        setenv("LD_LIBRARY_PATH", newPathEnv.c_str(), true);
+    }
+    else
+    {
+        setenv("LD_LIBRARY_PATH", pluginDir.string().c_str(), true);
+    }
+#endif
+}
+
+#if BOOST_OS_WINDOWS
+constexpr auto pluginExtension = ".dll";
+#else
+constexpr auto pluginExtension = ".so";
+#endif
+} // namespace
+
 void NodeSystem::loadPlugins()
 {
     const auto lookUpDir = boost::dll::program_location().parent_path() / "plugins";
     if (!filesystem::exists(lookUpDir))
         return;
 
+    setupPluginEnvironment(lookUpDir);
+
     for (const filesystem::directory_entry& entry : filesystem::directory_iterator{lookUpDir})
     {
-#if BOOST_OS_WINDOWS
-        static constexpr auto pluginExtension = ".dll";
-#else
-        static constexpr auto pluginExtension = ".so";
-#endif
-
         if (entry.path().extension() != pluginExtension)
             continue;
 
