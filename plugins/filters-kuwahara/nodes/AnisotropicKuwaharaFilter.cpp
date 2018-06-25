@@ -22,7 +22,7 @@
  */
 
 #include "Logic/NodeType.h"
-#include "Logic/NodeSystem.h"
+#include "Logic/NodeFactory.h"
 
 #include "impl/kuwahara.h"
 
@@ -66,8 +66,4 @@ protected:
     TypedNodeProperty<float> _smoothing;
 };
 
-void registerAnisotropicKuwaharaFilter(NodeSystem& system)
-{
-    system.registerNodeType("Filters/Anisotropic Kuwahara filter",
-                            makeDefaultNodeFactory<AnisotropicKuwaharaFilterNodeType>());
-}
+REGISTER_NODE("Filters/Anisotropic Kuwahara filter", AnisotropicKuwaharaFilterNodeType);

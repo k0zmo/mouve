@@ -22,7 +22,7 @@
  */
 
 #include "Logic/NodeType.h"
-#include "Logic/NodeSystem.h"
+#include "Logic/NodeFactory.h"
 
 #include <opencv2/video/video.hpp>
 
@@ -77,8 +77,5 @@ private:
     cv::BackgroundSubtractorMOG2 _mog2;
 };
 
-void registerAdaptiveMOG(NodeSystem& system)
-{
-    system.registerNodeType("Video segmentation/Adaptive mixture of Gaussians",
-                            makeDefaultNodeFactory<AdaptiveMixtureOfGaussiansNodeType>());
-}
+REGISTER_NODE("Video segmentation/Adaptive mixture of Gaussians",
+              AdaptiveMixtureOfGaussiansNodeType);

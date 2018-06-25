@@ -23,8 +23,6 @@
 
 #include "Logic/NodePlugin.h"
 
-void registerGpuMOG(NodeSystem& system);
-
 class VideoSegmentationOpenCLPlugin : public NodePlugin
 {
     MOUVE_DECLARE_PLUGIN(1);
@@ -32,7 +30,7 @@ class VideoSegmentationOpenCLPlugin : public NodePlugin
 public:
     void registerPlugin(NodeSystem& system) override
     {
-        registerGpuMOG(system);
+        system.registerAutoTypes(AutoRegisterNodeFactory::head());
     }
 };
 

@@ -21,8 +21,8 @@
  *
  */
 
-#include "Logic/NodeSystem.h"
 #include "Logic/OpenCL/GpuNode.h"
+#include "Logic/NodeFactory.h"
 
 #include <fmt/core.h>
 
@@ -97,8 +97,4 @@ private:
     KernelID _kidKuwaharaRgb;
 };
 
-void registerGpuKuwaharaFilter(NodeSystem& system)
-{
-    system.registerNodeType("OpenCL/Filters/Kuwahara filter",
-                            makeDefaultNodeFactory<GpuKuwaharaFilterNodeType>());
-}
+REGISTER_NODE("OpenCL/Filters/Kuwahara filter", GpuKuwaharaFilterNodeType);

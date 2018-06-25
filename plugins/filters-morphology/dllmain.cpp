@@ -23,10 +23,6 @@
 
 #include "Logic/NodePlugin.h"
 
-void registerHitMissOperator(NodeSystem& system);
-void registerMorphologyOperator(NodeSystem& system);
-void registerStructuringElement(NodeSystem& system);
-
 class MorphologyPlugin : public NodePlugin
 {
     MOUVE_DECLARE_PLUGIN(1);
@@ -34,9 +30,7 @@ class MorphologyPlugin : public NodePlugin
 public:
     void registerPlugin(NodeSystem& system) override
     {
-        registerHitMissOperator(system);
-        registerMorphologyOperator(system);
-        registerStructuringElement(system);
+        system.registerAutoTypes(AutoRegisterNodeFactory::head());
     }
 };
 

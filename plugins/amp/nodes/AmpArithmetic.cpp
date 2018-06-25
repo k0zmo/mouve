@@ -21,8 +21,8 @@
  *
  */
 
-#include "Logic/NodePlugin.h"
 #include "Logic/NodeType.h"
+#include "Logic/NodeFactory.h"
 
 #include <amp.h>
 #include <amp_graphics.h>
@@ -98,7 +98,4 @@ private:
     TypedNodeProperty<double> _beta;
 };
 
-void registerAmpArithmetic(NodeSystem& system)
-{
-    system.registerNodeType("Arithmetic/Add AMP", makeDefaultNodeFactory<AmpAddNodeType>());
-}
+REGISTER_NODE("Arithmetic/Add AMP", AmpAddNodeType);

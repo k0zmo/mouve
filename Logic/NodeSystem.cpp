@@ -43,7 +43,7 @@ NodeSystem::NodeSystem()
     // Register InvalidNodeTypeID
     NodeTypeID invalidNodeTypeID = registerNodeType(InvalidType, nullptr);
     assert(invalidNodeTypeID == InvalidNodeTypeID);
-    registerAutoTypes();
+    registerAutoTypes(AutoRegisterNodeFactory::head());
 }
 
 NodeSystem::~NodeSystem()
@@ -52,6 +52,12 @@ NodeSystem::~NodeSystem()
     _typeNameToTypeID.clear();
     _registeredModules.clear();
     _plugins.clear();
+}
+
+void NodeSystem::registerAutoTypes(AutoRegisterNodeFactory* it)
+{
+    for (; it; it = it->next())
+        (void)registerNodeType(it->typeName(), it->factory());
 }
 
 NodeTypeID NodeSystem::registerNodeType(const std::string& nodeTypeName,
@@ -66,21 +72,17 @@ NodeTypeID NodeSystem::registerNodeType(const std::string& nodeTypeName,
         _typeNameToTypeID[nodeTypeName] = NodeTypeID(nodeTypeID);
 
         // Associate type name with proper factory
-        _registeredNodeTypes.emplace_back(NodeTypeInfo(nodeTypeName, std::move(nodeFactory)));
+        _registeredNodeTypes.emplace_back(nodeTypeName, std::move(nodeFactory));
 
         return NodeTypeID(nodeTypeID);
     }
     else
     {
         /// TODO: return invalid typeID or just override previous one - make it configurable with a return status
-        NodeTypeID nodeTypeID = iter->second;
+        const NodeTypeID nodeTypeID = iter->second;
 
         // Override previous factory with a new one
-        if(_registeredNodeTypes[nodeTypeID].automaticallyRegistered)
-            // Stops unique_ptr from deleting something that was allocated on a stack
-            (void) _registeredNodeTypes[nodeTypeID].nodeFactory.release();
         _registeredNodeTypes[nodeTypeID].nodeFactory = std::move(nodeFactory);
-        _registeredNodeTypes[nodeTypeID].automaticallyRegistered = false;
 
         return nodeTypeID;
     }
@@ -151,55 +153,12 @@ std::string NodeSystem::defaultNodeName(NodeTypeID nodeTypeID) const
     return defaultNodeTitle;
 }
 
-void NodeSystem::registerAutoTypes()
-{
-    AutoRegisterNodeBase* autoFactory = AutoRegisterNodeBase::head();
-    while(autoFactory)
-    {
-        auto nodeFactory = std::unique_ptr<NodeFactory>(autoFactory);
-        NodeTypeID nodeTypeID = registerNodeType(autoFactory->typeName, std::move(nodeFactory));
-        autoFactory = autoFactory->next();
-
-        // We need empty deleter as autoFactory
-        // are allocated on (global) stack.
-        // We could get rid of unique_ptr at all
-        // but that would lead to less friendly
-        // interface for manually registered node types.
-        // Unfortunately, we can't mixed unique_ptrs with 
-        // default deleters and overridden by us
-        _registeredNodeTypes[nodeTypeID].automaticallyRegistered = true;
-    }
-}
-
 int NodeSystem::numRegisteredNodeTypes() const
 {
     return static_cast<int>(_registeredNodeTypes.size());
 }
 
 // -----------------------------------------------------------------------------
-
-NodeSystem::NodeTypeInfo::~NodeTypeInfo()
-{
-    if(automaticallyRegistered)
-    {
-        // This should stop unique_ptr from calling deleter
-        (void) nodeFactory.release();
-    }
-}
-
-NodeSystem::NodeTypeInfo::NodeTypeInfo(NodeSystem::NodeTypeInfo&& rhs)
-{
-    operator=(std::forward<NodeSystem::NodeTypeInfo>(rhs));
-}
-
-NodeSystem::NodeTypeInfo& NodeSystem::NodeTypeInfo::operator=(NodeSystem::NodeTypeInfo&& rhs)
-{
-    nodeTypeName = std::move(rhs.nodeTypeName);
-    nodeFactory = std::move(rhs.nodeFactory);
-    automaticallyRegistered = rhs.automaticallyRegistered;
-
-    return *this;
-}
 
 bool NodeSystem::registerNodeModule(const std::shared_ptr<NodeModule>& module)
 {

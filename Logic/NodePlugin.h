@@ -62,6 +62,8 @@ private:                                                                        
  *     void registerPlugin(NodeSystem& system) override
  *     {
  *         system.registerNodeType("a/b/c", makeDefaultNodeFactory<YNodeType>());
+ *         // and/or
+ *         system.registerAutoTypes(AutoRegisterNodeFactory::head());
  *     }
  * };
  *

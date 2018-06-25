@@ -35,8 +35,10 @@ public:
     NodeSystem(NodeSystem const&) = delete;
     NodeSystem& operator=(NodeSystem const&) = delete;
 
+    void registerAutoTypes(AutoRegisterNodeFactory* head);
     NodeTypeID registerNodeType(const std::string& nodeTypeName,
                                 std::unique_ptr<NodeFactory> nodeFactory);
+
     std::unique_ptr<NodeType> createNode(NodeTypeID nodeTypeID) const;
 
     std::unique_ptr<NodeTree> createNodeTree();
@@ -59,25 +61,15 @@ public:
 
 private:
     // That is all that NodeSystem needs for handling registered node types
-    class NodeTypeInfo
+    struct NodeTypeInfo
     {
-    public:
-        NodeTypeInfo(const std::string& nodeTypeName,
-                     std::unique_ptr<NodeFactory> nodeFactory)
-            : nodeTypeName(nodeTypeName)
-            , nodeFactory(std::move(nodeFactory))
-            , automaticallyRegistered(false)
-        {}
-
-        ~NodeTypeInfo();
+        NodeTypeInfo(std::string nodeTypeName, std::unique_ptr<NodeFactory> nodeFactory)
+            : nodeTypeName{std::move(nodeTypeName)}, nodeFactory{std::move(nodeFactory)}
+        {
+        }
 
         std::string nodeTypeName;
         std::unique_ptr<NodeFactory> nodeFactory;
-        bool automaticallyRegistered;
-
-        // Mandatory when using unique_ptr
-        NodeTypeInfo(NodeTypeInfo&& rhs);
-        NodeTypeInfo& operator=(NodeTypeInfo&& rhs);
     };
 
     std::vector<NodeTypeInfo> _registeredNodeTypes;
@@ -87,9 +79,5 @@ private:
 
 private:
     class NodeTypeIteratorImpl;
-
-private:
-    // This makes it easy for nodes to be registered automatically
-    void registerAutoTypes();
 };
 

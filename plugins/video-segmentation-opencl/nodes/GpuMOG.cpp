@@ -21,8 +21,8 @@
  *
  */
 
-#include "Logic/NodeSystem.h"
 #include "Logic/OpenCL/GpuNode.h"
+#include "Logic/NodeFactory.h"
 
 #include <fmt/core.h>
 
@@ -240,8 +240,4 @@ private:
     float _minVariance;
 };
 
-void registerGpuMOG(NodeSystem& system)
-{
-    system.registerNodeType("OpenCL/Video segmentation/Mixture of Gaussians",
-                            makeDefaultNodeFactory<GpuMixtureOfGaussiansNodeType>());
-}
+REGISTER_NODE("OpenCL/Video segmentation/Mixture of Gaussians", GpuMixtureOfGaussiansNodeType);

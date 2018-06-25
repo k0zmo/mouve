@@ -23,10 +23,6 @@
 
 #include "Logic/NodePlugin.h"
 
-void registerAnisotropicKuwaharaFilter(NodeSystem& system);
-void registerGeneralizedKuwaharaFilter(NodeSystem& system);
-void registerKuwaharaFilter(NodeSystem& system);
-
 class KuwaharaPlugin : public NodePlugin
 {
     MOUVE_DECLARE_PLUGIN(1);
@@ -34,9 +30,7 @@ class KuwaharaPlugin : public NodePlugin
 public:
     void registerPlugin(NodeSystem& system) override
     {
-        registerAnisotropicKuwaharaFilter(system);
-        registerGeneralizedKuwaharaFilter(system);
-        registerKuwaharaFilter(system);
+        system.registerAutoTypes(AutoRegisterNodeFactory::head());
     }
 };
 

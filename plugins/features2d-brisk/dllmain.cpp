@@ -23,10 +23,6 @@
 
 #include "Logic/NodePlugin.h"
 
-void registerBrisk(NodeSystem& system);
-void registerBriskDescriptorExtractor(NodeSystem& system);
-void registerBriskFeatureDetector(NodeSystem& system);
-
 class BriskPlugin : public NodePlugin
 {
     MOUVE_DECLARE_PLUGIN(1);
@@ -34,9 +30,7 @@ class BriskPlugin : public NodePlugin
 public:
     void registerPlugin(NodeSystem& system) override
     {
-        registerBrisk(system);
-        registerBriskDescriptorExtractor(system);
-        registerBriskFeatureDetector(system);
+        system.registerAutoTypes(AutoRegisterNodeFactory::head());
     }
 };
 

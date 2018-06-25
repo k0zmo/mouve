@@ -22,7 +22,7 @@
  */
 
 #include "Logic/NodeType.h"
-#include "Logic/NodeSystem.h"
+#include "Logic/NodeFactory.h"
 
 #include "impl/Utils.h"
 
@@ -64,8 +64,4 @@ private:
     TypedNodeProperty<EMorphologyOperation> _op;
 };
 
-void registerMorphologyOperator(NodeSystem& system)
-{
-    system.registerNodeType("Morphology/Operator",
-                            makeDefaultNodeFactory<MorphologyOperatorNodeType>());
-}
+REGISTER_NODE("Morphology/Operator", MorphologyOperatorNodeType);

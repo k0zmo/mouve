@@ -21,8 +21,8 @@
  *
  */
 
-#include "Logic/NodeSystem.h"
 #include "Logic/OpenCL/GpuNode.h"
+#include "Logic/NodeFactory.h"
 
 #include "impl/kuwahara.h"
 
@@ -187,8 +187,4 @@ private:
     bool _recreateKernelImage;
 };
 
-void registerGpuAnisotropicKuwaharaFilter(NodeSystem& system)
-{
-    system.registerNodeType("OpenCL/Filters/Anisotropic Kuwahara filter",
-                            makeDefaultNodeFactory<GpuAnisotropicKuwaharaFilterNodeType>());
-}
+REGISTER_NODE("OpenCL/Filters/Anisotropic Kuwahara filter", GpuAnisotropicKuwaharaFilterNodeType);

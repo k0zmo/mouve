@@ -23,11 +23,6 @@
 
 #include "Logic/NodePlugin.h"
 
-void registerAdaptiveMOG(NodeSystem& system);
-void registerBackgroundSubtractor(NodeSystem& system);
-void registerGMG(NodeSystem& system);
-void registerMOG(NodeSystem& system);
-
 class VideoSegmentationPlugin : public NodePlugin
 {
     MOUVE_DECLARE_PLUGIN(1);
@@ -35,10 +30,7 @@ class VideoSegmentationPlugin : public NodePlugin
 public:
     void registerPlugin(NodeSystem& system) override
     {
-        registerAdaptiveMOG(system);
-        registerBackgroundSubtractor(system);
-        registerGMG(system);
-        registerMOG(system);
+        system.registerAutoTypes(AutoRegisterNodeFactory::head());
     }
 };
 

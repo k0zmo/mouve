@@ -22,7 +22,7 @@
  */
 
 #include "Logic/NodeType.h"
-#include "Logic/NodeSystem.h"
+#include "Logic/NodeFactory.h"
 
 #include <opencv2/video/video.hpp>
 
@@ -81,8 +81,4 @@ private:
     TypedNodeProperty<double> _learningRate;
 };
 
-void registerMOG(NodeSystem& system)
-{
-    system.registerNodeType("Video segmentation/Mixture of Gaussians",
-                            makeDefaultNodeFactory<MixtureOfGaussiansNodeType>());
-}
+REGISTER_NODE("Video segmentation/Mixture of Gaussians", MixtureOfGaussiansNodeType);

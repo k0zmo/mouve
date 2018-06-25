@@ -22,7 +22,7 @@
  */
 
 #include "Logic/NodeType.h"
-#include "Logic/NodeSystem.h"
+#include "Logic/NodeFactory.h"
 
 #include <opencv2/video/video.hpp>
 
@@ -68,8 +68,4 @@ private:
     cv::BackgroundSubtractorGMG _gmg;
 };
 
-void registerGMG(NodeSystem& system)
-{
-    system.registerNodeType("Video segmentation/GMG background subtractor",
-                            makeDefaultNodeFactory<BackgroundSubtractorGMGNodeType>());
-}
+REGISTER_NODE("Video segmentation/GMG background subtractor", BackgroundSubtractorGMGNodeType);

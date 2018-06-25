@@ -21,8 +21,8 @@
  *
  */
 
-#include "Logic/NodeSystem.h"
 #include "Logic/NodeType.h"
+#include "Logic/NodeFactory.h"
 
 #include "impl/brisk.h"
 
@@ -85,8 +85,4 @@ private:
     std::unique_ptr<cv::BriskDescriptorExtractor> _brisk;
 };
 
-void registerBriskDescriptorExtractor(NodeSystem& system)
-{
-    system.registerNodeType("Features/Descriptors/BRISK",
-                            makeDefaultNodeFactory<BriskDescriptorExtractorNodeType>());
-}
+REGISTER_NODE("Features/Descriptors/BRISK", BriskDescriptorExtractorNodeType);

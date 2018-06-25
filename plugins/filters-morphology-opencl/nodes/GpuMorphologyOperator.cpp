@@ -21,8 +21,8 @@
  *
  */
 
-#include "Logic/NodeSystem.h"
 #include "Logic/OpenCL/GpuNode.h"
+#include "Logic/NodeFactory.h"
 
 #include <kl/hash.hpp>
 
@@ -263,8 +263,4 @@ private:
     uint32_t _sElemHash;
 };
 
-void registerGpuMorphologyOperator(NodeSystem& system)
-{
-    system.registerNodeType("OpenCL/Morphology/Operator",
-                            makeDefaultNodeFactory<GpuMorphologyOperatorNodeType>());
-}
+REGISTER_NODE("OpenCL/Morphology/Operator", GpuMorphologyOperatorNodeType);

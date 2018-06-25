@@ -23,8 +23,6 @@
 
 #include "Logic/NodePlugin.h"
 
-void registerTemplate(NodeSystem& system);
-
 class TemplatePlugin : public NodePlugin
 {
     MOUVE_DECLARE_PLUGIN(1);
@@ -32,7 +30,7 @@ class TemplatePlugin : public NodePlugin
 public:
     void registerPlugin(NodeSystem& system) override
     {
-        registerTemplate(system);
+        system.registerAutoTypes(AutoRegisterNodeFactory::head());
     }
 };
 

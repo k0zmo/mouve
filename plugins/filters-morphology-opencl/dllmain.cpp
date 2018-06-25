@@ -23,8 +23,6 @@
 
 #include "Logic/NodePlugin.h"
 
-void registerGpuMorphologyOperator(NodeSystem& system);
-
 class MorphologyOpenCLPlugin : public NodePlugin
 {
     MOUVE_DECLARE_PLUGIN(1);
@@ -32,7 +30,7 @@ class MorphologyOpenCLPlugin : public NodePlugin
 public:
     void registerPlugin(NodeSystem& system) override
     {
-        registerGpuMorphologyOperator(system);
+        system.registerAutoTypes(AutoRegisterNodeFactory::head());
     }
 };
 

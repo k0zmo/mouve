@@ -22,7 +22,7 @@
  */
 
 #include "Logic/NodeType.h"
-#include "Logic/NodeSystem.h"
+#include "Logic/NodeFactory.h"
 
 #include "impl/kuwahara.h"
 
@@ -66,8 +66,4 @@ protected:
     TypedNodeProperty<float> _smoothing;
 };
 
-void registerGeneralizedKuwaharaFilter(NodeSystem& system)
-{
-    system.registerNodeType("Filters/Generalized Kuwahara filter",
-                            makeDefaultNodeFactory<GeneralizedKuwaharaFilterNodeType>());
-}
+REGISTER_NODE("Filters/Generalized Kuwahara filter", GeneralizedKuwaharaFilterNodeType);

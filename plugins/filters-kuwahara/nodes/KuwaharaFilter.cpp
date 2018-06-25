@@ -22,7 +22,7 @@
  */
 
 #include "Logic/NodeType.h"
-#include "Logic/NodeSystem.h"
+#include "Logic/NodeFactory.h"
 
 #include "impl/kuwahara.h"
 
@@ -58,8 +58,4 @@ protected:
     TypedNodeProperty<int> _radius;
 };
 
-void registerKuwaharaFilter(NodeSystem& system)
-{
-    system.registerNodeType("Filters/Kuwahara filter",
-                            makeDefaultNodeFactory<KuwaharaFilterNodeType>());
-}
+REGISTER_NODE("Filters/Kuwahara filter", KuwaharaFilterNodeType);

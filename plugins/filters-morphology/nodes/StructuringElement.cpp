@@ -22,7 +22,7 @@
  */
 
 #include "Logic/NodeType.h"
-#include "Logic/NodeSystem.h"
+#include "Logic/NodeFactory.h"
 
 #include "impl/Utils.h"
 
@@ -69,8 +69,4 @@ private:
     TypedNodeProperty<int> _rotation;
 };
 
-void registerStructuringElement(NodeSystem& system)
-{
-    system.registerNodeType("Morphology/Structuring element",
-                            makeDefaultNodeFactory<StructuringElementNodeType>());
-}
+REGISTER_NODE("Morphology/Structuring element", StructuringElementNodeType);

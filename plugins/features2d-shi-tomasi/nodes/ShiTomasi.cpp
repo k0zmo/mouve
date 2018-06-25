@@ -22,7 +22,7 @@
  */
 
 #include "Logic/NodeType.h"
-#include "Logic/NodeSystem.h"
+#include "Logic/NodeFactory.h"
 
 #include <fmt/core.h>
 #include <opencv2/imgproc/imgproc.hpp>
@@ -78,8 +78,4 @@ private:
     TypedNodeProperty<double> _minDistance;
 };
 
-void registerShiTomasi(NodeSystem& system)
-{
-    system.registerNodeType("Features/Shi-Tomasi corner detector",
-                            makeDefaultNodeFactory<ShiTomasiCornerDetectorNodeType>());
-}
+REGISTER_NODE("Features/Shi-Tomasi corner detector", ShiTomasiCornerDetectorNodeType);

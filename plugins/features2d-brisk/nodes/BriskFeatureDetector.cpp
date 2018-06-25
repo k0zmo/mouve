@@ -21,8 +21,8 @@
  *
  */
 
-#include "Logic/NodeSystem.h"
 #include "Logic/NodeType.h"
+#include "Logic/NodeFactory.h"
 
 #include "impl/brisk.h"
 
@@ -67,8 +67,4 @@ private:
     TypedNodeProperty<int> _nOctaves;
 };
 
-void registerBriskFeatureDetector(NodeSystem& system)
-{
-    system.registerNodeType("Features/Detectors/BRISK",
-                            makeDefaultNodeFactory<BriskFeatureDetectorNodeType>());
-}
+REGISTER_NODE("Features/Detectors/BRISK", BriskFeatureDetectorNodeType);

@@ -21,8 +21,8 @@
  *
  */
 
-#include "Logic/NodePlugin.h"
 #include "Logic/NodeType.h"
+#include "Logic/NodeFactory.h"
 
 #include <amp.h>
 #include <amp_graphics.h>
@@ -108,8 +108,4 @@ private:
     }
 };
 
-void registerAmpMorphology(NodeSystem& system)
-{
-    system.registerNodeType("Morphology/Operator AMP",
-                            makeDefaultNodeFactory<AmpMorphologyOperatorNodeType>());
-}
+REGISTER_NODE("Morphology/Operator AMP", AmpMorphologyOperatorNodeType);

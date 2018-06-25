@@ -23,9 +23,6 @@
 
 #include "Logic/NodePlugin.h"
 
-void registerAmpMorphology(NodeSystem& system);
-void registerAmpArithmetic(NodeSystem& system);
-
 class AMPPlugin : public NodePlugin
 {
     MOUVE_DECLARE_PLUGIN(1);
@@ -33,8 +30,7 @@ class AMPPlugin : public NodePlugin
 public:
     void registerPlugin(NodeSystem& system) override
     {
-        registerAmpArithmetic(system);
-        registerAmpMorphology(system);
+        system.registerAutoTypes(AutoRegisterNodeFactory::head());
     }
 };
 

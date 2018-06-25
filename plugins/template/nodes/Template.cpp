@@ -21,8 +21,8 @@
  *
  */
 
-#include "Logic/NodeSystem.h"
 #include "Logic/NodeType.h"
+#include "Logic/NodeFactory.h"
 
 #include <fmt/core.h>
 #include <opencv2/core/mat.hpp>
@@ -63,7 +63,4 @@ private:
     TypedNodeProperty<bool> _property;
 };
 
-void registerTemplate(NodeSystem& system)
-{
-    system.registerNodeType("Test/Template", makeDefaultNodeFactory<TemplateNodeType>());
-}
+REGISTER_NODE("Test/Template", TemplateNodeType);

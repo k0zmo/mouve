@@ -23,10 +23,6 @@
 
 #include "Logic/NodePlugin.h"
 
-void registerGpuKuwaharaFilter(NodeSystem& system);
-void registerGpuGeneralizedKuwaharaFilter(NodeSystem& system);
-void registerGpuAnisotropicKuwaharaFilter(NodeSystem& system);
-
 class KuwaharaOpenCLPlugin : public NodePlugin
 {
     MOUVE_DECLARE_PLUGIN(1);
@@ -34,9 +30,7 @@ class KuwaharaOpenCLPlugin : public NodePlugin
 public:
     void registerPlugin(NodeSystem& system) override
     {
-        registerGpuKuwaharaFilter(system);
-        registerGpuGeneralizedKuwaharaFilter(system);
-        registerGpuAnisotropicKuwaharaFilter(system);
+        system.registerAutoTypes(AutoRegisterNodeFactory::head());
     }
 };
 

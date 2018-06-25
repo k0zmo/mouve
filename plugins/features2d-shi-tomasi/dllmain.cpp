@@ -23,8 +23,6 @@
 
 #include "Logic/NodePlugin.h"
 
-void registerShiTomasi(NodeSystem& system);
-
 class ShiTomasiPlugin : public NodePlugin
 {
     MOUVE_DECLARE_PLUGIN(1);
@@ -32,7 +30,7 @@ class ShiTomasiPlugin : public NodePlugin
 public:
     void registerPlugin(NodeSystem& system) override
     {
-        registerShiTomasi(system);
+        system.registerAutoTypes(AutoRegisterNodeFactory::head());
     }
 };
 

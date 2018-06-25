@@ -39,10 +39,7 @@ template <class Type>
 class DefaultNodeFactory : public NodeFactory
 {
 public:
-    virtual std::unique_ptr<NodeType> create()
-    {
-        return std::make_unique<Type>();
-    }
+    std::unique_ptr<NodeType> create() override { return std::make_unique<Type>(); }
 };
 
 template <class Type>
@@ -75,33 +72,30 @@ template <class T>
 SList<T>* SList<T>::_head = nullptr;
 } // namespace detail
 
-class AutoRegisterNodeBase : public detail::SList<AutoRegisterNodeBase>,
-                             public NodeFactory
+class AutoRegisterNodeFactory : public detail::SList<AutoRegisterNodeFactory>
 {
 public:
-    AutoRegisterNodeBase(const std::string& typeName)
-        : typeName(typeName)
-    {
-    }
+    explicit AutoRegisterNodeFactory(const char* typeName) : _typeName{typeName} {}
 
-    std::string typeName;
+    const std::string& typeName() const { return _typeName; }
+    virtual std::unique_ptr<NodeFactory> factory() = 0;
+
+private:
+    std::string _typeName;
 };
 
-template <class Type>
-class AutoRegisterNode : public AutoRegisterNodeBase
+template <typename Node>
+class AutoRegisterNodeFactoryImpl : public AutoRegisterNodeFactory
 {
 public:
-    AutoRegisterNode(const std::string& typeName)
-        : AutoRegisterNodeBase{typeName}
+    explicit AutoRegisterNodeFactoryImpl(const char* typeName) : AutoRegisterNodeFactory{typeName}
     {
     }
 
-    virtual std::unique_ptr<NodeType> create()
-    {
-        return std::make_unique<Type>();
-    }
+private:
+    std::unique_ptr<NodeFactory> factory() override { return makeDefaultNodeFactory<Node>(); }
 };
 
 // Statically registers node type
-#define REGISTER_NODE(NodeTypeName, NodeClass) \
-    AutoRegisterNode<NodeClass> __auto_registered_##NodeClass(NodeTypeName);
+#define REGISTER_NODE(NodeTypeName, NodeClass)                                                     \
+    AutoRegisterNodeFactoryImpl<NodeClass> __auto_registered_##NodeClass(NodeTypeName);

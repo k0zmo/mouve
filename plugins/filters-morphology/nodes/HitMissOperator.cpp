@@ -22,7 +22,8 @@
  */
 
 #include "Logic/NodeType.h"
-#include "Logic/NodeSystem.h"
+#include "Logic/NodeFactory.h"
+
 #include "Logic/Nodes/CV.h" // cvu::parellel_for
 
 constexpr const int OBJ = 255;
@@ -503,8 +504,4 @@ private:
     TypedNodeProperty<EHitMissOperation> _op;
 };
 
-void registerHitMissOperator(NodeSystem& system)
-{
-    system.registerNodeType("Morphology/Hit-miss",
-                            makeDefaultNodeFactory<HitMissOperatorNodeType>());
-}
+REGISTER_NODE("Morphology/Hit-miss", HitMissOperatorNodeType);

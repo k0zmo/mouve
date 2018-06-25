@@ -22,7 +22,7 @@
  */
 
 #include "Logic/NodeType.h"
-#include "Logic/NodeSystem.h"
+#include "Logic/NodeFactory.h"
 
 #include "Logic/Nodes/CV.h" // cvu::parallel_for
 
@@ -131,8 +131,4 @@ private:
     TypedNodeProperty<float> _threshCoeff;
 };
 
-void registerBackgroundSubtractor(NodeSystem& system)
-{
-    system.registerNodeType("Video segmentation/Background subtractor",
-                            makeDefaultNodeFactory<BackgroundSubtractorNodeType>());
-}
+REGISTER_NODE("Video segmentation/Background subtractor", BackgroundSubtractorNodeType);
