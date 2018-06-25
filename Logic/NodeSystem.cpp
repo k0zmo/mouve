@@ -225,6 +225,8 @@ size_t NodeSystem::loadPlugin(const std::string& pluginPath)
         // but it uses std::shared_ptr instead of boost's one
         auto library = std::make_shared<boost::dll::shared_library>(
             pluginPath, boost::dll::load_mode::default_mode);
+        if (!library->has("plugin_instance"))
+            return 0U;
         auto plugin = std::shared_ptr<NodePlugin>{
             library, std::addressof(library->get<NodePlugin>("plugin_instance"))};
 
