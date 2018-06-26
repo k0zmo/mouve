@@ -142,6 +142,7 @@ if(TARGET clw::clw)
         OpenCL/kernels/bfmatcher_macros.cl
         OpenCL/kernels/color.cl
         OpenCL/kernels/hough.cl
+        OpenCL/kernels/fill_buffer.cl
     )
 else()
     message(STATUS "OpenCL support: NO")
