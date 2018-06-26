@@ -53,7 +53,7 @@ public:
 };
 
 // RAII styled performance marker for activity logger
-class GpuPerformanceMarker
+class MOUVE_EXPORT GpuPerformanceMarker
 {
 public:
     GpuPerformanceMarker(const GpuActivityLogger& logger,

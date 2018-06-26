@@ -1,4 +1,5 @@
 add_subdirectory(features2d-brisk)
+add_subdirectory(features2d-ksurf)
 add_subdirectory(features2d-shi-tomasi)
 add_subdirectory(filters-base)
 add_subdirectory(filters-kuwahara)
@@ -10,6 +11,7 @@ if(TARGET opencv_video)
 endif()
 
 if(TARGET clw::clw)
+    add_subdirectory(features2d-ksurf-opencl)
     add_subdirectory(filters-kuwahara-opencl)
     add_subdirectory(filters-morphology-opencl)
     add_subdirectory(video-segmentation-opencl)

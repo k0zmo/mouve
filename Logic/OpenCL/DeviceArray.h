@@ -41,7 +41,7 @@ enum class EDataType
     Double
 };
 
-class DeviceArray
+class MOUVE_EXPORT DeviceArray
 {
 public:
     DeviceArray();

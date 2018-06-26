@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2014 Kajetan Swierk <k0zmo@outlook.com>
+ * Copyright (c) 2013-2018 Kajetan Swierk <k0zmo@outlook.com>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,7 +23,10 @@
 
 #pragma once
 
+#include <opencv2/core/core.hpp>
 #include <opencv2/features2d/features2d.hpp>
+
+#include <vector>
 
 struct KeyPoint
 {
@@ -34,16 +37,15 @@ struct KeyPoint
     int laplacian;
 };
 
-std::vector<KeyPoint> fastHessianDetector(const cv::Mat& intImage, 
-                                          double hessianThreshold = 40.0,
-                                          int numOctaves = 4, 
-                                          int numScales = 4,
-                                          int initSampling = 1,
-                                          int nFeatures = 0);
+std::vector<KeyPoint> fastHessianDetector(const cv::Mat& intImage, double hessianThreshold = 40.0,
+                                          int numOctaves = 4, int numScales = 4,
+                                          int initSampling = 1, int nFeatures = 0);
 
 void surfOrientation(std::vector<KeyPoint>& kpoints, const cv::Mat& intImage);
-void surfDescriptors(const std::vector<KeyPoint>& kpoints, const cv::Mat& intImage, cv::Mat& descriptors);
-void msurfDescriptors(const std::vector<KeyPoint>& kpoints, const cv::Mat& intImage, cv::Mat& descriptors);
+void surfDescriptors(const std::vector<KeyPoint>& kpoints, const cv::Mat& intImage,
+                     cv::Mat& descriptors);
+void msurfDescriptors(const std::vector<KeyPoint>& kpoints, const cv::Mat& intImage,
+                      cv::Mat& descriptors);
 
 std::vector<cv::KeyPoint> transformKeyPoint(const std::vector<KeyPoint>& keypoints);
 std::vector<KeyPoint> transformKeyPoint(const std::vector<cv::KeyPoint>& keypoints);
@@ -52,27 +54,23 @@ class kSURF : public cv::Feature2D
 {
 public:
     kSURF();
-    kSURF(double hessianThreshold, 
-        int numOctaves = 4,
-        int numScales = 4,
-        int initSampling = 1,
-        bool mSurfDescriptor = true,
-        bool upright = false);
+    explicit kSURF(double hessianThreshold, int numOctaves = 4, int numScales = 4,
+                   int initSampling = 1, bool mSurfDescriptor = true, bool upright = false);
 
     int descriptorSize() const;
     int descriptorType() const;
 
     void operator()(cv::InputArray img, cv::InputArray mask,
-        std::vector<cv::KeyPoint>& keypoints) const;
+                    std::vector<cv::KeyPoint>& keypoints) const;
 
-    void operator()(cv::InputArray img, cv::InputArray mask,
-        std::vector<cv::KeyPoint>& keypoints,
-        cv::OutputArray descriptors, 
-        bool useProvidedKeypoints=false) const;
+    void operator()(cv::InputArray img, cv::InputArray mask, std::vector<cv::KeyPoint>& keypoints,
+                    cv::OutputArray descriptors, bool useProvidedKeypoints = false) const;
 
 protected:
-    void detectImpl(const cv::Mat& image, std::vector<cv::KeyPoint>& keypoints, const cv::Mat& mask=cv::Mat()) const;
-    void computeImpl(const cv::Mat& image, std::vector<cv::KeyPoint>& keypoints, cv::Mat& descriptors) const;
+    void detectImpl(const cv::Mat& image, std::vector<cv::KeyPoint>& keypoints,
+                    const cv::Mat& mask = cv::Mat()) const;
+    void computeImpl(const cv::Mat& image, std::vector<cv::KeyPoint>& keypoints,
+                     cv::Mat& descriptors) const;
 
 private:
     double _hessianThreshold;
@@ -82,4 +80,3 @@ private:
     bool _msurf;
     bool _upright;
 };
-

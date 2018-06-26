@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2014 Kajetan Swierk <k0zmo@outlook.com>
+ * Copyright (c) 2013-2018 Kajetan Swierk <k0zmo@outlook.com>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,30 +21,17 @@
  *
  */
 
-__kernel void fill_image_uint(__write_only image2d_t dst, uint value)
-{
-    int2 gid = { get_global_id(0), get_global_id(1) };
-    if(all(gid < get_image_dim(dst)))
-        write_imageui(dst, gid, (uint4)(value));
-}
+#include "Logic/NodePlugin.h"
 
-__kernel void fill_image_int(__write_only image2d_t dst, int value)
+class KSurfPlugin : public NodePlugin
 {
-    int2 gid = { get_global_id(0), get_global_id(1) };
-    if(all(gid < get_image_dim(dst)))
-        write_imagei(dst, gid, (int4)(value));
-}
+    MOUVE_DECLARE_PLUGIN(1);
 
-__kernel void fill_image_norm(__write_only image2d_t dst, float value)
-{
-    int2 gid = { get_global_id(0), get_global_id(1) };
-    if(all(gid < get_image_dim(dst)))
-        write_imagef(dst, gid, (float4)(value));
-}
+public:
+    void registerPlugin(NodeSystem& system) override
+    {
+        system.registerAutoTypes(AutoRegisterNodeFactory::head());
+    }
+};
 
-__kernel void fill_buffer_int(__global int* dst, int value, int n)
-{
-    int gid = get_global_id(0);
-    if(gid < n)
-        dst[gid] = value;
-}
+MOUVE_INSTANTIATE_PLUGIN(KSurfPlugin)

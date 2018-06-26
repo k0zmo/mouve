@@ -48,9 +48,6 @@ target_sources(Mouve.Logic PRIVATE
     Nodes/SourceNodes.cpp
     Nodes/SurfNodes.cpp
     Nodes/TransformationNodes.cpp
-    Nodes/kSurfNodes.cpp
-    Nodes/ksurf.cpp
-    Nodes/ksurf.h
 )
 
 target_sources(Mouve.Logic PRIVATE
@@ -72,7 +69,6 @@ target_sources(Mouve.Logic PRIVATE
     OpenCL/GpuNode.h
     OpenCL/GpuNodeModule.cpp
     OpenCL/GpuNodeModule.h
-    OpenCL/GpuSurfNode.cpp
     OpenCL/IGpuNodeModule.h
 )
 
@@ -145,10 +141,7 @@ if(TARGET clw::clw)
         OpenCL/kernels/bfmatcher.cl
         OpenCL/kernels/bfmatcher_macros.cl
         OpenCL/kernels/color.cl
-        OpenCL/kernels/fill.cl
         OpenCL/kernels/hough.cl
-        OpenCL/kernels/integral.cl
-        OpenCL/kernels/surf.cl
     )
 else()
     message(STATUS "OpenCL support: NO")
