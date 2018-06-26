@@ -1,6 +1,6 @@
 mouve_add_plugin(features2d-ksurf-opencl
     dllmain.cpp
-    nodes/GpuSurfNode.cpp
+    nodes/GpuSurf.cpp
 )
 mouve_source_group(features2d-ksurf-opencl)
 mouve_add_kernels(features2d-ksurf-opencl KERNELS
