@@ -131,6 +131,7 @@ target_link_libraries(Mouve.Logic
 set_target_properties(Mouve.Logic
     PROPERTIES
         RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
+        LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
 )
 
 if(TARGET TBB::tbb)
