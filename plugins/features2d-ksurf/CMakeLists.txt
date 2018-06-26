@@ -1,6 +1,6 @@
 mouve_add_plugin(features2d-ksurf
     dllmain.cpp
-    nodes/kSurf.cpp
+    nodes/kSURF.cpp
     impl/ksurf.cpp
     impl/ksurf.h
 )
