@@ -55,7 +55,6 @@ target_sources(Mouve.Logic PRIVATE
     OpenCL/DeviceArray.h
     OpenCL/GpuActivityLogger.cpp
     OpenCL/GpuActivityLogger.h
-    OpenCL/GpuApproxGaussianBlurNode.cpp
     OpenCL/GpuBasicNodes.cpp
     OpenCL/GpuBruteForceMacherNode.cpp
     OpenCL/GpuColorConversionNodes.cpp
@@ -134,7 +133,6 @@ if(TARGET clw::clw)
     target_compile_definitions(Mouve.Logic PUBLIC HAVE_OPENCL)
 
     mouve_add_kernels(Mouve.Logic KERNELS
-        OpenCL/kernels/approx_gaussian.cl
         OpenCL/kernels/bayer.cl
         OpenCL/kernels/bfmatcher.cl
         OpenCL/kernels/bfmatcher_macros.cl

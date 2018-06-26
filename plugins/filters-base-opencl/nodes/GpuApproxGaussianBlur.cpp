@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2014 Kajetan Swierk <k0zmo@outlook.com>
+ * Copyright (c) 2013-2018 Kajetan Swierk <k0zmo@outlook.com>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,10 +21,7 @@
  *
  */
 
-#if defined(HAVE_OPENCL)
-
-#include "GpuNode.h"
-#include "GpuException.h"
+#include "Logic/OpenCL/GpuNode.h"
 #include "Logic/NodeFactory.h"
 
 #include <fmt/format.h>
@@ -32,9 +29,7 @@
 class GpuApproxGaussianBlurNodeType : public GpuNodeType
 {
 public:
-    GpuApproxGaussianBlurNodeType()
-        : _sigma(1.2)
-        , _numPasses(3)
+    GpuApproxGaussianBlurNodeType() : _sigma(1.2), _numPasses(3)
     {
         addInput("Input", ENodeFlowDataType::DeviceImageMono);
         addOutput("Output", ENodeFlowDataType::DeviceImageMono);
@@ -49,13 +44,13 @@ public:
 
     bool postInit() override
     {
-        _kidApproxGaussianBlurHoriz = _gpuComputeModule->registerKernel("approxGaussian_horiz_image",
-            "approx_gaussian.cl", kernelBuildOptionsHoriz(512));
-        _kidApproxGaussianBlurVert = _gpuComputeModule->registerKernel("approxGaussian_vert_image",
-            "approx_gaussian.cl", kernelBuildOptionsVert(512));
+        _kidApproxGaussianBlurHoriz = _gpuComputeModule->registerKernel(
+            "approxGaussian_horiz_image", "approx_gaussian.cl", kernelBuildOptionsHoriz(512));
+        _kidApproxGaussianBlurVert = _gpuComputeModule->registerKernel(
+            "approxGaussian_vert_image", "approx_gaussian.cl", kernelBuildOptionsVert(512));
 
-        return _kidApproxGaussianBlurHoriz != InvalidKernelID
-            && _kidApproxGaussianBlurVert != InvalidKernelID;
+        return _kidApproxGaussianBlurHoriz != InvalidKernelID &&
+               _kidApproxGaussianBlurVert != InvalidKernelID;
     }
 
     ExecutionStatus execute(NodeSocketReader& reader, NodeSocketWriter& writer) override
@@ -70,35 +65,36 @@ public:
             return ExecutionStatus(EStatus::Ok);
 
         // Ensure temporary image size is enough
-        if (_tempImage_cl.isNull() || 
-            _tempImage_cl.width() != imageWidth ||
+        if (_tempImage_cl.isNull() || _tempImage_cl.width() != imageWidth ||
             _tempImage_cl.height() != imageHeight)
         {
             _tempImage_cl = _gpuComputeModule->context().createImage2D(
                 clw::EAccess::ReadWrite, clw::EMemoryLocation::Device,
-                clw::ImageFormat(clw::EChannelOrder::R, clw::EChannelType::Float),
-                imageWidth, imageHeight);
+                clw::ImageFormat(clw::EChannelOrder::R, clw::EChannelType::Float), imageWidth,
+                imageHeight);
 
             // _tempImage's size is kept in sync with defines for both of kernels
-            _kidApproxGaussianBlurHoriz = _gpuComputeModule->registerKernel("approxGaussian_horiz_image",
-                "approx_gaussian.cl", kernelBuildOptionsHoriz(imageWidth));
-            _kidApproxGaussianBlurVert = _gpuComputeModule->registerKernel("approxGaussian_vert_image",
-                "approx_gaussian.cl", kernelBuildOptionsVert(imageHeight));
+            _kidApproxGaussianBlurHoriz = _gpuComputeModule->registerKernel(
+                "approxGaussian_horiz_image", "approx_gaussian.cl",
+                kernelBuildOptionsHoriz(imageWidth));
+            _kidApproxGaussianBlurVert =
+                _gpuComputeModule->registerKernel("approxGaussian_vert_image", "approx_gaussian.cl",
+                                                  kernelBuildOptionsVert(imageHeight));
         }
 
         // Ensure output image size is enough
-        if (output.isNull() || 
-            output.width() != imageWidth || 
-            output.height() != imageHeight)
+        if (output.isNull() || output.width() != imageWidth || output.height() != imageHeight)
         {
             output = _gpuComputeModule->context().createImage2D(
-                clw::EAccess::ReadWrite, clw::EMemoryLocation::Device, 
-                clw::ImageFormat(clw::EChannelOrder::R, clw::EChannelType::Normalized_UInt8), 
+                clw::EAccess::ReadWrite, clw::EMemoryLocation::Device,
+                clw::ImageFormat(clw::EChannelOrder::R, clw::EChannelType::Normalized_UInt8),
                 imageWidth, imageHeight);
         }
 
-        clw::Kernel kernelApproxGaussianBlurHoriz = _gpuComputeModule->acquireKernel(_kidApproxGaussianBlurHoriz);
-        clw::Kernel kernelApproxGaussianBlurVert = _gpuComputeModule->acquireKernel(_kidApproxGaussianBlurVert);
+        clw::Kernel kernelApproxGaussianBlurHoriz =
+            _gpuComputeModule->acquireKernel(_kidApproxGaussianBlurHoriz);
+        clw::Kernel kernelApproxGaussianBlurVert =
+            _gpuComputeModule->acquireKernel(_kidApproxGaussianBlurVert);
 
         cl_uint numApproxPasses = _numPasses - 1;
         cl_float boxWidth = calculateBoxFilterWidth(static_cast<float>(_sigma), _numPasses);
@@ -111,9 +107,10 @@ public:
         kernelApproxGaussianBlurHoriz.setGlobalWorkSize(threadsPerGroup, imageHeight);
         kernelApproxGaussianBlurHoriz.setArg(0, input);
         kernelApproxGaussianBlurHoriz.setArg(1, _tempImage_cl);
-        // We need at least threadsPerGroup * 2 shared memory: in warp scan phase (scanWarpInclusive function) 
-        // each thread in a warp/wavefront addresses two shared memory cells.
-        kernelApproxGaussianBlurHoriz.setArg(2, clw::TypedLocalMemorySize<float>((std::max)(imageWidth, threadsPerGroup * 2)));
+        // We need at least threadsPerGroup * 2 shared memory: in warp scan phase (scanWarpInclusive
+        // function) each thread in a warp/wavefront addresses two shared memory cells.
+        kernelApproxGaussianBlurHoriz.setArg(
+            2, clw::TypedLocalMemorySize<float>((std::max)(imageWidth, threadsPerGroup * 2)));
         kernelApproxGaussianBlurHoriz.setArg(3, numApproxPasses);
         kernelApproxGaussianBlurHoriz.setArg(4, halfBoxWidth);
         kernelApproxGaussianBlurHoriz.setArg(5, fracHalfBoxWidth);
@@ -125,7 +122,8 @@ public:
         kernelApproxGaussianBlurVert.setGlobalWorkSize(threadsPerGroup, imageWidth);
         kernelApproxGaussianBlurVert.setArg(0, _tempImage_cl);
         kernelApproxGaussianBlurVert.setArg(1, output);
-        kernelApproxGaussianBlurVert.setArg(2, clw::TypedLocalMemorySize<float>((std::max)(imageHeight, threadsPerGroup * 2)));
+        kernelApproxGaussianBlurVert.setArg(
+            2, clw::TypedLocalMemorySize<float>((std::max)(imageHeight, threadsPerGroup * 2)));
         kernelApproxGaussianBlurVert.setArg(3, numApproxPasses);
         kernelApproxGaussianBlurVert.setArg(4, halfBoxWidth);
         kernelApproxGaussianBlurVert.setArg(5, fracHalfBoxWidth);
@@ -182,5 +180,3 @@ private:
 };
 
 REGISTER_NODE("OpenCL/Filters/Approx. Gaussian blur", GpuApproxGaussianBlurNodeType)
-
-#endif

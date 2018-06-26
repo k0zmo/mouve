@@ -16,6 +16,7 @@ endif()
 
 if(TARGET clw::clw)
     add_subdirectory(features2d-ksurf-opencl)
+    add_subdirectory(filters-base-opencl)
     add_subdirectory(filters-kuwahara-opencl)
     add_subdirectory(filters-morphology-opencl)
     add_subdirectory(video-segmentation-opencl)
