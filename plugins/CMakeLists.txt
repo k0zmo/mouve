@@ -10,6 +10,10 @@ if(TARGET opencv_video)
     add_subdirectory(video-segmentation)
 endif()
 
+if(TARGET opencv_nonfree)
+    add_subdirectory(features2d-patented)
+endif()
+
 if(TARGET clw::clw)
     add_subdirectory(features2d-ksurf-opencl)
     add_subdirectory(filters-kuwahara-opencl)

@@ -41,8 +41,6 @@ cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo ..
 cmake --build .
 ```
 
-OpenCV installed via system package manager (i.e. aptitude) won't probably work since it doesn't come with nonfree module which currently is unconditionally used.
-
 ### Windows
 
 ```

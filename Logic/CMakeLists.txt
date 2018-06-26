@@ -43,10 +43,8 @@ target_sources(Mouve.Logic PRIVATE
     Nodes/MosaicingNodes.cpp
     Nodes/OrbNodes.cpp
     Nodes/SegmentationNodes.cpp
-    Nodes/SiftNodes.cpp
     Nodes/SinkNodes.cpp
     Nodes/SourceNodes.cpp
-    Nodes/SurfNodes.cpp
     Nodes/TransformationNodes.cpp
 )
 

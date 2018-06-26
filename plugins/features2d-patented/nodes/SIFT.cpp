@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2014 Kajetan Swierk <k0zmo@outlook.com>
+ * Copyright (c) 2013-2018 Kajetan Swierk <k0zmo@outlook.com>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,18 +24,18 @@
 #include "Logic/NodeType.h"
 #include "Logic/NodeFactory.h"
 
-#include <fmt/core.h>
 #include <opencv2/nonfree/features2d.hpp>
+#include <fmt/core.h>
 
 class SiftFeatureDetectorNodeType : public NodeType
 {
 public:
     SiftFeatureDetectorNodeType()
-        : _nFeatures(0)
-        , _nOctaveLayers(3)
-        , _contrastThreshold(0.04)
-        , _edgeThreshold(10)
-        , _sigma(1.6)
+        : _nFeatures(0),
+          _nOctaveLayers(3),
+          _contrastThreshold(0.04),
+          _edgeThreshold(10),
+          _sigma(1.6)
     {
         addInput("Image", ENodeFlowDataType::ImageMono);
         addOutput("Keypoints", ENodeFlowDataType::Keypoints);
@@ -59,12 +59,12 @@ public:
         KeyPoints& kp = writer.acquireSocket(0).getKeypoints();
 
         // Validate inputs
-        if(src.empty())
+        if (src.empty())
             return ExecutionStatus(EStatus::Ok);
 
         // Do stuff
-        cv::SiftFeatureDetector detector(_nFeatures, _nOctaveLayers,
-            _contrastThreshold, _edgeThreshold, _sigma);
+        cv::SiftFeatureDetector detector(_nFeatures, _nOctaveLayers, _contrastThreshold,
+                                         _edgeThreshold, _sigma);
         detector.detect(src, kp.kpoints);
         kp.image = src;
 
@@ -88,7 +88,8 @@ public:
         addInput("Keypoints", ENodeFlowDataType::Keypoints);
         addOutput("Keypoints", ENodeFlowDataType::Keypoints);
         addOutput("Descriptors", ENodeFlowDataType::Array);
-        setDescription("Computes descriptors using the Scale Invariant Feature Transform (SIFT) algorithm.");
+        setDescription(
+            "Computes descriptors using the Scale Invariant Feature Transform (SIFT) algorithm.");
     }
 
     ExecutionStatus execute(NodeSocketReader& reader, NodeSocketWriter& writer) override
@@ -97,7 +98,7 @@ public:
         const KeyPoints& kp = reader.readSocket(0).getKeypoints();
 
         // Validate inputs
-        if(kp.kpoints.empty() || kp.image.empty())
+        if (kp.kpoints.empty() || kp.image.empty())
             return ExecutionStatus(EStatus::Ok);
 
         // Acquire output sockets
@@ -116,15 +117,14 @@ public:
 class SiftNodeType : public SiftFeatureDetectorNodeType
 {
 public:
-    SiftNodeType()
-        : SiftFeatureDetectorNodeType()
+    SiftNodeType() : SiftFeatureDetectorNodeType()
     {
         // Just add one more output socket
         clearOutputs();
         addOutput("Keypoints", ENodeFlowDataType::Keypoints);
         addOutput("Descriptors", ENodeFlowDataType::Array);
         setDescription("Extracts keypoints and computes descriptors using "
-            "the Scale Invariant Feature Transform (SIFT) algorithm.");
+                       "the Scale Invariant Feature Transform (SIFT) algorithm.");
     }
 
     ExecutionStatus execute(NodeSocketReader& reader, NodeSocketWriter& writer) override
@@ -136,12 +136,11 @@ public:
         cv::Mat& descriptors = writer.acquireSocket(1).getArray();
 
         // Validate inputs
-        if(src.empty())
+        if (src.empty())
             return ExecutionStatus(EStatus::Ok);
 
         // Do stuff
-        cv::SIFT sift(_nFeatures, _nOctaveLayers,
-            _contrastThreshold, _edgeThreshold, _sigma);
+        cv::SIFT sift(_nFeatures, _nOctaveLayers, _contrastThreshold, _edgeThreshold, _sigma);
         sift(src, cv::noArray(), kp.kpoints, descriptors);
         kp.image = src;
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2014 Kajetan Swierk <k0zmo@outlook.com>
+ * Copyright (c) 2013-2018 Kajetan Swierk <k0zmo@outlook.com>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,16 +24,13 @@
 #include "Logic/NodeType.h"
 #include "Logic/NodeFactory.h"
 
-#include <fmt/core.h>
 #include <opencv2/nonfree/features2d.hpp>
+#include <fmt/core.h>
 
 class SurfFeatureDetectorNodeType : public NodeType
 {
 public:
-    SurfFeatureDetectorNodeType()
-        : _hessianThreshold(400.0)
-        , _nOctaves(4)
-        , _nOctaveLayers(2)
+    SurfFeatureDetectorNodeType() : _hessianThreshold(400.0), _nOctaves(4), _nOctaveLayers(2)
     {
         addInput("Image", ENodeFlowDataType::ImageMono);
         addOutput("Keypoints", ENodeFlowDataType::Keypoints);
@@ -55,7 +52,7 @@ public:
         KeyPoints& kp = writer.acquireSocket(0).getKeypoints();
 
         // Validate inputs
-        if(src.empty())
+        if (src.empty())
             return ExecutionStatus(EStatus::Ok);
 
         // Do stuff
@@ -76,9 +73,7 @@ private:
 class SurfDescriptorExtractorNodeType : public NodeType
 {
 public:
-    SurfDescriptorExtractorNodeType()
-        : _extended(false)
-        , _upright(false)
+    SurfDescriptorExtractorNodeType() : _extended(false), _upright(false)
     {
         addInput("Keypoints", ENodeFlowDataType::Keypoints);
         addOutput("Keypoints", ENodeFlowDataType::Keypoints);
@@ -94,7 +89,7 @@ public:
         const KeyPoints& kp = reader.readSocket(0).getKeypoints();
 
         // Validate inputs
-        if(kp.kpoints.empty() || kp.image.empty())
+        if (kp.kpoints.empty() || kp.image.empty())
             return ExecutionStatus(EStatus::Ok);
 
         // Acquire output sockets
@@ -118,11 +113,11 @@ class SurfNodeType : public NodeType
 {
 public:
     SurfNodeType()
-        : _hessianThreshold(400.0)
-        , _nOctaves(4)
-        , _nOctaveLayers(2)
-        , _extended(false)
-        , _upright(false)
+        : _hessianThreshold(400.0),
+          _nOctaves(4),
+          _nOctaveLayers(2),
+          _extended(false),
+          _upright(false)
     {
         addInput("Image", ENodeFlowDataType::ImageMono);
         addOutput("Keypoints", ENodeFlowDataType::Keypoints);
@@ -136,7 +131,8 @@ public:
             .setUiHints("min:1");
         addProperty("Extended", _extended);
         addProperty("Upright", _upright);
-        setDescription("Extracts Speeded Up Robust Features and computes their descriptors from an image.");
+        setDescription(
+            "Extracts Speeded Up Robust Features and computes their descriptors from an image.");
     }
 
     ExecutionStatus execute(NodeSocketReader& reader, NodeSocketWriter& writer) override
@@ -148,12 +144,11 @@ public:
         cv::Mat& descriptors = writer.acquireSocket(1).getArray();
 
         // Validate inputs
-        if(src.empty())
+        if (src.empty())
             return ExecutionStatus(EStatus::Ok);
 
         // Do stuff
-        cv::SURF surf(_hessianThreshold, _nOctaves,
-            _nOctaveLayers, _extended, _upright);
+        cv::SURF surf(_hessianThreshold, _nOctaves, _nOctaveLayers, _extended, _upright);
         surf(src, cv::noArray(), kp.kpoints, descriptors);
         kp.image = src;
 
