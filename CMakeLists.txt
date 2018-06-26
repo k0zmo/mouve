@@ -64,6 +64,7 @@ foreach(vendor clw;fmt;kl)
     add_subdirectory(vendor/${vendor} EXCLUDE_FROM_ALL)
     set_target_properties(${vendor} PROPERTIES FOLDER vendor)
 endforeach()
+set_target_properties(json11 PROPERTIES FOLDER vendor)
 
 add_subdirectory(Logic)
 add_subdirectory(Console)

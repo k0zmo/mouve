@@ -58,7 +58,7 @@ target_link_libraries(Mouve.UI PUBLIC
     OpenGL::GL
     Threads::Threads
 )
-set_target_properties(Mouve.UI 
+set_target_properties(Mouve.UI
     PROPERTIES
         AUTOMOC ON
         AUTOUIC ON
@@ -75,7 +75,7 @@ else()
 endif()
 
 if(MOUVE_USE_PRECOMPILED_HEADERS)
-    set_target_properties(Mouve.UI 
+    set_target_properties(Mouve.UI
         PROPERTIES
             COTIRE_CXX_PREFIX_HEADER_INIT Precomp.h)
     set_directory_properties(PROPERTIES COTIRE_ADD_UNITY_BUILD FALSE)
@@ -86,7 +86,7 @@ if(WIN32)
     target_sources(Mouve.UI PRIVATE Mouve.UI.rc)
 endif()
 
-install(TARGETS Mouve.UI 
+install(TARGETS Mouve.UI
     RUNTIME DESTINATION bin
     LIBRARY DESTINATION lib
     ARCHIVE DESTINATION lib

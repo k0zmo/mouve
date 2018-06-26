@@ -7,7 +7,7 @@ target_include_directories(Mouve.Console PRIVATE ${mouve_SOURCE_DIR})
 
 set_target_properties(Mouve.Console
     PROPERTIES
-        RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin    
+        RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
 )
 
 install(TARGETS Mouve.Console

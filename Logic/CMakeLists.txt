@@ -89,14 +89,14 @@ if(MSVC)
     target_compile_options(Mouve.Logic PUBLIC /wd4251 /wd4275)
 endif()
 
-target_include_directories(Mouve.Logic 
-    PRIVATE ${mouve_SOURCE_DIR} 
+target_include_directories(Mouve.Logic
+    PRIVATE ${mouve_SOURCE_DIR}
     PUBLIC ${CMAKE_CURRENT_BINARY_DIR}
 )
 target_link_libraries(Mouve.Logic PRIVATE ${CMAKE_DL_LIBS})
 target_compile_features(Mouve.Logic PUBLIC cxx_std_14)
 
-target_link_libraries(Mouve.Logic 
+target_link_libraries(Mouve.Logic
     PUBLIC
         Boost::boost
         opencv_core

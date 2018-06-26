@@ -2,7 +2,7 @@ mouve_add_plugin(filters-base
     dllmain.cpp
     nodes/Custom.cpp
     nodes/HighPass.cpp
-    nodes/LowPass.cpp   
+    nodes/LowPass.cpp 
     impl/Predefined.h
     impl/Predefined.cpp
 )
