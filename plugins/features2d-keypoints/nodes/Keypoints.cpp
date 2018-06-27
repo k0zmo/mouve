@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2014 Kajetan Swierk <k0zmo@outlook.com>
+ * Copyright (c) 2013-2018 Kajetan Swierk <k0zmo@outlook.com>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,15 +29,15 @@
 class RetainBestFeaturesNodeType : public NodeType
 {
 public:
-    RetainBestFeaturesNodeType()
-        : _n(1000)
+    RetainBestFeaturesNodeType() : _n(1000)
     {
         addInput("Keypoints", ENodeFlowDataType::Keypoints);
         addOutput("Best", ENodeFlowDataType::Keypoints);
         addProperty("Best keypoints to retain", _n)
             .setValidator(make_validator<MinPropertyValidator<int>>(1))
             .setUiHints("min:1");
-        setDescription("Retains the specified number of the best keypoints (according to the response).");
+        setDescription(
+            "Retains the specified number of the best keypoints (according to the response).");
     }
 
     ExecutionStatus execute(NodeSocketReader& reader, NodeSocketWriter& writer) override
@@ -48,7 +48,7 @@ public:
         KeyPoints& dst = writer.acquireSocket(0).getKeypoints();
 
         // Validate inputs
-        if(src.kpoints.empty())
+        if (src.kpoints.empty())
             return ExecutionStatus(EStatus::Ok);
 
         // Prepare output structure
