@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2014 Kajetan Swierk <k0zmo@outlook.com>
+ * Copyright (c) 2013-2018 Kajetan Swierk <k0zmo@outlook.com>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,52 +25,12 @@
 #include "Logic/NodeFactory.h"
 
 #include <fmt/core.h>
-#include <opencv2/core/core.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
-
-class CannyEdgeDetectorNodeType : public NodeType
-{
-public:
-    CannyEdgeDetectorNodeType()
-        : _threshold(10)
-        , _ratio(3)
-    {
-        addInput("Input", ENodeFlowDataType::Image);
-        addOutput("Output", ENodeFlowDataType::ImageMono);
-        addProperty("Threshold", _threshold)
-            .setValidator(make_validator<InclRangePropertyValidator<double>>(0.0, 100.0))
-            .setUiHints("min:0.0, max:100.0, decimals:3");
-        addProperty("Ratio", _ratio)
-            .setValidator(make_validator<MinPropertyValidator<double>>(0.0))
-            .setUiHints("min:0.0, decimals:3");
-        setDescription("Detects edges in input image using Canny detector");
-    }
-
-    ExecutionStatus execute(NodeSocketReader& reader, NodeSocketWriter& writer) override
-    {
-        const cv::Mat& input = reader.readSocket(0).getImage();
-        cv::Mat& output = writer.acquireSocket(0).getImageMono();
-
-        if(input.rows == 0 || input.cols == 0)
-            return ExecutionStatus(EStatus::Ok);;
-
-        cv::Canny(input, output, _threshold, _threshold*_ratio, 3);
-
-        return ExecutionStatus(EStatus::Ok);
-    }
-
-private:
-    TypedNodeProperty<double> _threshold;
-    TypedNodeProperty<double> _ratio;
-};
 
 class HoughLinesNodeType : public NodeType
 {
 public:
-    HoughLinesNodeType()
-        : _threshold(100)
-        , _rhoResolution(1.0f)
-        , _thetaResolution(1.0f)
+    HoughLinesNodeType() : _threshold(100), _rhoResolution(1.0f), _thetaResolution(1.0f)
     {
         addInput("Image", ENodeFlowDataType::ImageMono);
         addOutput("Lines", ENodeFlowDataType::Array);
@@ -92,16 +52,17 @@ public:
         cv::Mat& lines = writer.acquireSocket(0).getArray();
 
         // Validate inputs
-        if(src.empty())
+        if (src.empty())
             return ExecutionStatus(EStatus::Ok);
 
         // Do stuff
         std::vector<cv::Vec2f> linesVector;
-        cv::HoughLines(src, linesVector, _rhoResolution, CV_PI/180 * _thetaResolution, _threshold);
+        cv::HoughLines(src, linesVector, _rhoResolution, CV_PI / 180 * _thetaResolution,
+                       _threshold);
         lines.create(static_cast<int>(linesVector.size()), 2, CV_32F);
 
         float* linesPtr = lines.ptr<float>();
-        for(const auto& line : linesVector)
+        for (const auto& line : linesVector)
         {
             linesPtr[0] = line[0];
             linesPtr[1] = line[1];
@@ -121,11 +82,7 @@ class HoughCirclesNodeType : public NodeType
 {
 public:
     HoughCirclesNodeType()
-        : _dp(2.0)
-        , _cannyThreshold(200.0)
-        , _accThreshold(100.0)
-        , _minRadius(0)
-        , _maxRadius(0)
+        : _dp(2.0), _cannyThreshold(200.0), _accThreshold(100.0), _minRadius(0), _maxRadius(0)
     {
         addInput("Image", ENodeFlowDataType::ImageMono);
         addOutput("Circles", ENodeFlowDataType::Array);
@@ -155,12 +112,12 @@ public:
         cv::Mat& circles = writer.acquireSocket(0).getArray();
 
         // Validate inputs
-        if(src.empty())
+        if (src.empty())
             return ExecutionStatus(EStatus::Ok);
 
         // Do stuff
-        cv::HoughCircles(src, circles, CV_HOUGH_GRADIENT, _dp, 
-            src.rows/8, _cannyThreshold, _accThreshold, _minRadius, _maxRadius);
+        cv::HoughCircles(src, circles, CV_HOUGH_GRADIENT, _dp, src.rows / 8, _cannyThreshold,
+                         _accThreshold, _minRadius, _maxRadius);
 
         return ExecutionStatus(EStatus::Ok, fmt::format("Circles detected: {}", circles.cols));
     }
@@ -175,4 +132,3 @@ private:
 
 REGISTER_NODE("Features/Hough Circles", HoughCirclesNodeType)
 REGISTER_NODE("Features/Hough Lines", HoughLinesNodeType)
-REGISTER_NODE("Features/Canny edge detector", CannyEdgeDetectorNodeType)

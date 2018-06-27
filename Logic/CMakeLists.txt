@@ -32,9 +32,7 @@ target_sources(Mouve.Logic PRIVATE
     Nodes/CV.cpp
     Nodes/CV.h
     Nodes/ColorConversionNodes.cpp
-    Nodes/DrawFeaturesNodes.cpp
     Nodes/FeatureDetectorsNodes.cpp
-    Nodes/FeaturesNodes.cpp
     Nodes/FreakNodes.cpp
     Nodes/HistogramNodes.cpp
     Nodes/HomographyNodes.cpp

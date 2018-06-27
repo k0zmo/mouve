@@ -1,4 +1,5 @@
 add_subdirectory(features2d-brisk)
+add_subdirectory(features2d-base)
 add_subdirectory(features2d-ksurf)
 add_subdirectory(features2d-shi-tomasi)
 add_subdirectory(filters-base)
@@ -22,7 +23,7 @@ if(TARGET clw::clw)
     add_subdirectory(video-segmentation-opencl)
 endif()
 
-if(MSVC) 
+if(MSVC)
     # AMP only supported with Visual C++
     add_subdirectory(amp)
 endif()
