@@ -24,8 +24,8 @@
 #include "Logic/NodeType.h"
 #include "Logic/NodeFactory.h"
 
-#include <fmt/core.h>
 #include <opencv2/imgproc/imgproc.hpp>
+#include <fmt/core.h>
 
 class ShiTomasiCornerDetectorNodeType : public NodeType
 {

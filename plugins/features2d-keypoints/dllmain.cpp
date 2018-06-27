@@ -23,7 +23,7 @@
 
 #include "Logic/NodePlugin.h"
 
-class ShiTomasiPlugin : public NodePlugin
+class Features2DKeypointsPlugin : public NodePlugin
 {
     MOUVE_DECLARE_PLUGIN(1);
 
@@ -34,4 +34,4 @@ public:
     }
 };
 
-MOUVE_INSTANTIATE_PLUGIN(ShiTomasiPlugin)
+MOUVE_INSTANTIATE_PLUGIN(Features2DKeypointsPlugin)
