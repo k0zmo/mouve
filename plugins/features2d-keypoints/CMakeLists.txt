@@ -1,6 +1,6 @@
 mouve_add_plugin(features2d-keypoints
     dllmain.cpp
-    nodes/ShiTomasi.cpp
+    nodes/Detectors.cpp
     nodes/FREAK.cpp
     nodes/ORB.cpp
     nodes/Keypoints.cpp
