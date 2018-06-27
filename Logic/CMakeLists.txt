@@ -28,7 +28,6 @@ add_library(Mouve.Logic SHARED # TEMPORARY
 
 target_sources(Mouve.Logic PRIVATE
     Nodes/ArithmeticNodes.cpp
-    Nodes/BriskNodes.cpp
     Nodes/CV.cpp
     Nodes/CV.h
     Nodes/ColorConversionNodes.cpp

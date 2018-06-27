@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2014 Kajetan Swierk <k0zmo@outlook.com>
+ * Copyright (c) 2013-2018 Kajetan Swierk <k0zmo@outlook.com>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,23 +21,17 @@
  *
  */
 
-// OpenCV BRISK uses different agast score - worse results
-#if 0
 #include "Logic/NodeType.h"
 #include "Logic/NodeFactory.h"
 
-#include <fmt/core.h>
 #include <opencv2/features2d/features2d.hpp>
-using std::unique_ptr;
+#include <fmt/core.h>
 
 class BriskFeatureDetectorNodeType : public NodeType
 {
 public:
     BriskFeatureDetectorNodeType()
-        : _thresh(30)
-        , _nOctaves(3)
-        , _patternScale(1.0f)
-        , _brisk(new cv::BRISK())
+        : _thresh(30), _nOctaves(3), _patternScale(1.0f), _brisk(std::make_unique<cv::BRISK>())
     {
         addInput("Image", ENodeFlowDataType::ImageMono);
         addOutput("Keypoints", ENodeFlowDataType::Keypoints);
@@ -45,15 +39,18 @@ public:
             .setValidator(make_validator<MinPropertyValidator<int>>(1))
             // That's a bit cheating here - creating BRISK object takes time (approx. 200ms for PAL)
             // which if done per frame makes it slowish (more than SIFT actually)
-            .setObserver(make_observer<FuncObserver>([this](const NodeProperty&) { recreateBrisk(); }))
+            .setObserver(
+                make_observer<FuncObserver>([this](const NodeProperty&) { recreateBrisk(); }))
             .setUiHints("min:1");
         addProperty("Number of octaves", _nOctaves)
             .setValidator(make_validator<MinPropertyValidator<int>>(0))
-            .setObserver(make_observer<FuncObserver>([this](const NodeProperty&) { recreateBrisk(); }))
+            .setObserver(
+                make_observer<FuncObserver>([this](const NodeProperty&) { recreateBrisk(); }))
             .setUiHints("min:0");
         addProperty("Pattern scale", _patternScale)
             .setValidator(make_validator<MinPropertyValidator<double>>(0.0))
-            .setObserver(make_observer<FuncObserver>([this](const NodeProperty&) { recreateBrisk(); }))
+            .setObserver(
+                make_observer<FuncObserver>([this](const NodeProperty&) { recreateBrisk(); }))
             .setUiHints("min:0.0");
     }
 
@@ -65,21 +62,20 @@ public:
         KeyPoints& kp = writer.acquireSocket(0).getKeypoints();
 
         // Validate inputs
-        if(src.empty())
+        if (src.empty())
             return ExecutionStatus(EStatus::Ok);
 
         _brisk->detect(src, kp.kpoints);
         kp.image = src;
 
         return ExecutionStatus(EStatus::Ok,
-            fmt::format("Keypoints detected: {}", kp.kpoints.size()));
+                               fmt::format("Keypoints detected: {}", kp.kpoints.size()));
     }
 
 protected:
     void recreateBrisk()
     {
-        _brisk = unique_ptr<cv::BRISK>(
-            new cv::BRISK(_thresh, _nOctaves, _patternScale));
+        _brisk = std::make_unique<cv::BRISK>(_thresh, _nOctaves, _patternScale);
     }
 
 protected:
@@ -87,14 +83,13 @@ protected:
     TypedNodeProperty<int> _nOctaves;
     TypedNodeProperty<float> _patternScale;
     // Must be pointer since BRISK doesn't implement copy/move operator (they should have)
-    unique_ptr<cv::BRISK> _brisk;
+    std::unique_ptr<cv::BRISK> _brisk;
 };
 
 class BriskDescriptorExtractorNodeType : public NodeType
 {
 public:
-    BriskDescriptorExtractorNodeType()
-        : _brisk(new cv::BRISK())
+    BriskDescriptorExtractorNodeType() : _brisk(std::make_unique<cv::BRISK>())
     {
         addInput("Keypoints", ENodeFlowDataType::Keypoints);
         addOutput("Keypoints", ENodeFlowDataType::Keypoints);
@@ -107,7 +102,7 @@ public:
         const KeyPoints& kp = reader.readSocket(0).getKeypoints();
 
         // Validate inputs
-        if(kp.kpoints.empty() || kp.image.empty())
+        if (kp.kpoints.empty() || kp.image.empty())
             return ExecutionStatus(EStatus::Ok);
 
         // Acquire output sockets
@@ -122,7 +117,7 @@ public:
 
 private:
     // Must be pointer since BRISK doesn't implement copy/move operator (they should have)
-    unique_ptr<cv::BRISK> _brisk;
+    std::unique_ptr<cv::BRISK> _brisk;
 };
 
 class BriskNodeType : public BriskFeatureDetectorNodeType
@@ -144,19 +139,17 @@ public:
         cv::Mat& descriptors = writer.acquireSocket(1).getArray();
 
         // Validate inputs
-        if(src.empty())
+        if (src.empty())
             return ExecutionStatus(EStatus::Ok);
 
         (*_brisk)(src, cv::noArray(), kp.kpoints, descriptors);
         kp.image = src;
 
-        return ExecutionStatus(
-            EStatus::Ok,
-            fmt::format("Keypoints detected: {}", kp.kpoints.size()));
+        return ExecutionStatus(EStatus::Ok,
+                               fmt::format("Keypoints detected: {}", kp.kpoints.size()));
     }
 };
 
 REGISTER_NODE("Features/Descriptors/BRISK", BriskDescriptorExtractorNodeType)
 REGISTER_NODE("Features/Detectors/BRISK", BriskFeatureDetectorNodeType)
 REGISTER_NODE("Features/BRISK", BriskNodeType)
-#endif
