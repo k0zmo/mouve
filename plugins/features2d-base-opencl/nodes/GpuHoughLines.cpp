@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2014 Kajetan Swierk <k0zmo@outlook.com>
+ * Copyright (c) 2013-2018 Kajetan Swierk <k0zmo@outlook.com>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,9 +21,7 @@
  *
  */
 
-#if defined(HAVE_OPENCL)
-
-#include "GpuNode.h"
+#include "Logic/OpenCL/GpuNode.h"
 #include "Logic/NodeFactory.h"
 
 #include <fmt/core.h>
@@ -32,11 +30,11 @@ class GpuHoughLinesNodeType : public GpuNodeType
 {
 public:
     GpuHoughLinesNodeType()
-        : _threshold(80)
-        , _showHoughSpace(false)
-        , _rhoResolution(1.0f)
-        , _thetaResolution(1.0f)
-        , _houghSpaceScale(100.0f)
+        : _threshold(80),
+          _showHoughSpace(false),
+          _rhoResolution(1.0f),
+          _thetaResolution(1.0f),
+          _houghSpaceScale(100.0f)
     {
         addInput("Binary image", ENodeFlowDataType::DeviceImageMono);
         addOutput("Lines", ENodeFlowDataType::DeviceArray);
@@ -55,19 +53,17 @@ public:
 
     bool postInit() override
     {
-        _kidBuildPointsList = _gpuComputeModule->registerKernel("buildPointsList_basic", "hough.cl");
+        _kidBuildPointsList =
+            _gpuComputeModule->registerKernel("buildPointsList_basic", "hough.cl");
         _kidAccumLines = _gpuComputeModule->registerKernel("accumLines", "hough.cl");
         _kidAccumLinesShared = _gpuComputeModule->registerKernel("accumLines_shared", "hough.cl");
         _kidGetLines = _gpuComputeModule->registerKernel("getLines", "hough.cl");
         _kidAccumToImage = _gpuComputeModule->registerKernel("accumToImage", "hough.cl");
         _kidFillAccumSpace = _gpuComputeModule->registerKernel("fill_buffer_int", "fill_buffer.cl");
 
-        return _kidBuildPointsList != InvalidKernelID
-            && _kidAccumLines != InvalidKernelID
-            && _kidAccumLinesShared != InvalidKernelID
-            && _kidGetLines != InvalidKernelID
-            && _kidAccumToImage != InvalidKernelID
-            && _kidFillAccumSpace != InvalidKernelID;
+        return _kidBuildPointsList != InvalidKernelID && _kidAccumLines != InvalidKernelID &&
+               _kidAccumLinesShared != InvalidKernelID && _kidGetLines != InvalidKernelID &&
+               _kidAccumToImage != InvalidKernelID && _kidFillAccumSpace != InvalidKernelID;
     }
 
     ExecutionStatus execute(NodeSocketReader& reader, NodeSocketWriter& writer) override
@@ -79,7 +75,7 @@ public:
         int srcWidth = deviceImage.width();
         int srcHeight = deviceImage.height();
 
-        if(srcWidth == 0 || srcHeight == 0)
+        if (srcWidth == 0 || srcHeight == 0)
             return ExecutionStatus(EStatus::Ok);
 
         GpuPerformanceMarker marker(_gpuComputeModule->activityLogger(), "Hough");
@@ -96,28 +92,28 @@ public:
 
         // W akumulatorze plotowac bedziemy krzywe z rodziny
         // rho(theta) = x0*cos(theta) + y0*sin(theta)
-        // Zbior wartosci funkcji okreslic mozna poprzez szukanie 
+        // Zbior wartosci funkcji okreslic mozna poprzez szukanie
         // ekstremow powyzszej funkcji przy ustalonym x0 i y0:
         // drho/dtheta = 0 co daje: theta_max = atan2(y0,x0)
         // OpenCV szacuje numRho troche nadwyrost: numRho = 2*(src.cols+src.rows)+1
         double thetaMax = atan2(srcHeight, srcWidth);
-        double rhoMax = srcWidth*cos(thetaMax) + srcHeight*sin(thetaMax);
+        double rhoMax = srcWidth * cos(thetaMax) + srcHeight * sin(thetaMax);
         int numRho = cvRound((2 * int(rhoMax + 0.5) + 1) / _rhoResolution);
         int numAngle = cvRound(180 / _thetaResolution);
 
-        if(numAngle <= 0 || numRho <= 0)
+        if (numAngle <= 0 || numRho <= 0)
             return ExecutionStatus(EStatus::Error, "Wrong rho or theta resolution");
 
         constructHoughSpace(numRho, numAngle);
 
         // Srednio 20% bialych pikseli (obrazu po detekcji krawedzi) i minimum 2 na linie
-        cl_int maxLines = (cl_int) (srcWidth * srcHeight * 0.2 * 0.5);
+        cl_int maxLines = (cl_int)(srcWidth * srcHeight * 0.2 * 0.5);
 
         int linesCount = extractLines(deviceLines, maxLines, numRho, numAngle);
 
-        if(_showHoughSpace)
+        if (_showHoughSpace)
             extractHoughSpace(deviceAccumImage, numAngle, numRho);
-        else if(!deviceAccumImage.isNull())
+        else if (!deviceAccumImage.isNull())
             deviceAccumImage = clw::Image2D();
 
         return ExecutionStatus(EStatus::Ok,
@@ -125,7 +121,7 @@ public:
     }
 
 private:
-    clw::Event buildPointList(const clw::Image2D& deviceImage, int width, int height) 
+    clw::Event buildPointList(const clw::Image2D& deviceImage, int width, int height)
     {
         clw::Kernel kernelBuildPointsList = _gpuComputeModule->acquireKernel(_kidBuildPointsList);
 
@@ -133,22 +129,23 @@ private:
         ensureSizeIsEnough(_devicePointsList, sizeof(cl_uint) * width * height);
         int pxPerThread = 1; /// TODO: parametrized it
         kernelBuildPointsList.setLocalWorkSize(clw::Grid(32, 4));
-        kernelBuildPointsList.setRoundedGlobalWorkSize(clw::Grid((width + pxPerThread - 1)/pxPerThread, height));
+        kernelBuildPointsList.setRoundedGlobalWorkSize(
+            clw::Grid((width + pxPerThread - 1) / pxPerThread, height));
         kernelBuildPointsList.setArg(0, deviceImage);
         kernelBuildPointsList.setArg(1, _devicePointsList);
         kernelBuildPointsList.setArg(2, _deviceCounterPoints);
         return _gpuComputeModule->queue().asyncRunKernel(kernelBuildPointsList);
     }
 
-    void constructHoughSpace(int numRho, int numAngle) 
+    void constructHoughSpace(int numRho, int numAngle)
     {
         ensureSizeIsEnough(_deviceAccum, numAngle * numRho * sizeof(cl_int));
 
         size_t requiredSharedSize = numRho * sizeof(cl_int);
         float invRho = 1.0f / _rhoResolution;
-        float theta = CL_M_PI_F/180.0f * _thetaResolution;
+        float theta = CL_M_PI_F / 180.0f * _thetaResolution;
 
-        if(!_gpuComputeModule->isLocalMemorySufficient(requiredSharedSize))
+        if (!_gpuComputeModule->isLocalMemorySufficient(requiredSharedSize))
         {
             clw::Kernel kernelAccumLines = _gpuComputeModule->acquireKernel(_kidAccumLines);
             clw::Kernel kernelFillAccumSpace = _gpuComputeModule->acquireKernel(_kidFillAccumSpace);
@@ -187,18 +184,18 @@ private:
         }
     }
 
-    int extractLines(DeviceArray &deviceLines, int maxLines, int numRho, int numAngle) 
+    int extractLines(DeviceArray& deviceLines, int maxLines, int numRho, int numAngle)
     {
         clw::Kernel kernelGetLines = _gpuComputeModule->acquireKernel(_kidGetLines);
 
-        if(deviceLines.isNull()
-        || deviceLines.size() !=  maxLines * sizeof(cl_float2))
+        if (deviceLines.isNull() || deviceLines.size() != maxLines * sizeof(cl_float2))
         {
-            deviceLines = DeviceArray::create(_gpuComputeModule->context(), clw::EAccess::ReadWrite,
-                clw::EMemoryLocation::Device, 2, maxLines, EDataType::Float);
+            deviceLines =
+                DeviceArray::create(_gpuComputeModule->context(), clw::EAccess::ReadWrite,
+                                    clw::EMemoryLocation::Device, 2, maxLines, EDataType::Float);
         }
 
-        float theta = CL_M_PI_F/180.0f * _thetaResolution;
+        float theta = CL_M_PI_F / 180.0f * _thetaResolution;
 
         kernelGetLines.setLocalWorkSize(clw::Grid(32, 8));
         kernelGetLines.setRoundedGlobalWorkSize(clw::Grid(numRho, numAngle));
@@ -209,13 +206,14 @@ private:
         kernelGetLines.setArg(4, maxLines);
         kernelGetLines.setArg(5, numRho);
         kernelGetLines.setArg(6, numAngle);
-        kernelGetLines.setArg(7, (float) _rhoResolution);
+        kernelGetLines.setArg(7, (float)_rhoResolution);
         kernelGetLines.setArg(8, theta);
         _gpuComputeModule->queue().asyncRunKernel(kernelGetLines);
 
         // Read results
         cl_uint linesCount;
-        cl_uint* linesCountPtr = (cl_uint*) _gpuComputeModule->queue().mapBuffer(_deviceCounterLines, clw::EMapAccess::Read);
+        cl_uint* linesCountPtr = (cl_uint*)_gpuComputeModule->queue().mapBuffer(
+            _deviceCounterLines, clw::EMapAccess::Read);
         linesCount = *linesCountPtr;
         _gpuComputeModule->queue().asyncUnmap(_deviceCounterLines, linesCountPtr);
 
@@ -224,7 +222,7 @@ private:
         return linesCount;
     }
 
-    void extractHoughSpace(clw::Image2D& deviceAccumImage, int numAngle, int numRho) 
+    void extractHoughSpace(clw::Image2D& deviceAccumImage, int numAngle, int numRho)
     {
         ensureSizeIsEnough(deviceAccumImage, numAngle, numRho);
 
@@ -241,23 +239,21 @@ private:
     void ensureSizeIsEnough(clw::Buffer& buffer, size_t size)
     {
         /// TODO: Or buffer.size() < size
-        if(buffer.isNull() || buffer.size() != size)
+        if (buffer.isNull() || buffer.size() != size)
         {
-            buffer = _gpuComputeModule->context().createBuffer(
-                clw::EAccess::ReadWrite, clw::EMemoryLocation::Device, size);
+            buffer = _gpuComputeModule->context().createBuffer(clw::EAccess::ReadWrite,
+                                                               clw::EMemoryLocation::Device, size);
         }
     }
 
     void ensureSizeIsEnough(clw::Image2D& image, int width, int height)
     {
-        if(image.isNull()
-            || image.width() != width
-            || image.height() != height)
+        if (image.isNull() || image.width() != width || image.height() != height)
         {
             image = _gpuComputeModule->context().createImage2D(
                 clw::EAccess::ReadWrite, clw::EMemoryLocation::Device,
-                clw::ImageFormat(clw::EChannelOrder::R, clw::EChannelType::Normalized_UInt8),
-                width, height);
+                clw::ImageFormat(clw::EChannelOrder::R, clw::EChannelType::Normalized_UInt8), width,
+                height);
         }
     }
 
@@ -282,5 +278,3 @@ private:
 };
 
 REGISTER_NODE("OpenCL/Features/Hough Lines", GpuHoughLinesNodeType)
-
-#endif

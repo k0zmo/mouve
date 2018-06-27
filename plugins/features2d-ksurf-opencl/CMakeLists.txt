@@ -11,5 +11,4 @@ mouve_add_kernels(features2d-ksurf-opencl KERNELS
 target_link_libraries(features2d-ksurf-opencl PRIVATE
     opencv_imgproc
     opencv_features2d
-    clw::clw
 )

@@ -16,6 +16,7 @@ if(TARGET opencv_nonfree)
 endif()
 
 if(TARGET clw::clw)
+    add_subdirectory(features2d-base-opencl)
     add_subdirectory(features2d-ksurf-opencl)
     add_subdirectory(filters-base-opencl)
     add_subdirectory(filters-kuwahara-opencl)

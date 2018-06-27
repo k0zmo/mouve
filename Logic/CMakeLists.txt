@@ -58,7 +58,6 @@ target_sources(Mouve.Logic PRIVATE
     OpenCL/GpuColorConversionNodes.cpp
     OpenCL/GpuException.cpp
     OpenCL/GpuException.h
-    OpenCL/GpuHoughLinesNode.cpp
     OpenCL/GpuKernelLibrary.cpp
     OpenCL/GpuKernelLibrary.h
     OpenCL/GpuNode.h
@@ -135,8 +134,6 @@ if(TARGET clw::clw)
         OpenCL/kernels/bfmatcher.cl
         OpenCL/kernels/bfmatcher_macros.cl
         OpenCL/kernels/color.cl
-        OpenCL/kernels/hough.cl
-        OpenCL/kernels/fill_buffer.cl
     )
 else()
     message(STATUS "OpenCL support: NO")
