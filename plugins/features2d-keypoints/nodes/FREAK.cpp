@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2014 Kajetan Swierk <k0zmo@outlook.com>
+ * Copyright (c) 2013-2018 Kajetan Swierk <k0zmo@outlook.com>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -30,10 +30,7 @@ class FreakDescriptorExtractorNodeType : public NodeType
 {
 public:
     FreakDescriptorExtractorNodeType()
-        : _orientationNormalized(true)
-        , _scaleNormalized(true)
-        , _patternScale(22.0f)
-        , _nOctaves(4)
+        : _orientationNormalized(true), _scaleNormalized(true), _patternScale(22.0f), _nOctaves(4)
     {
         addInput("Keypoints", ENodeFlowDataType::Keypoints);
         addOutput("Keypoints", ENodeFlowDataType::Keypoints);
@@ -55,7 +52,7 @@ public:
         const KeyPoints& kp = reader.readSocket(0).getKeypoints();
 
         // Validate inputs
-        if(kp.kpoints.empty() || kp.image.empty())
+        if (kp.kpoints.empty() || kp.image.empty())
             return ExecutionStatus(EStatus::Ok);
 
         // Acquire output sockets

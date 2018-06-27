@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2014 Kajetan Swierk <k0zmo@outlook.com>
+ * Copyright (c) 2013-2018 Kajetan Swierk <k0zmo@outlook.com>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,17 +24,14 @@
 #include "Logic/NodeType.h"
 #include "Logic/NodeFactory.h"
 
-#include <fmt/core.h>
 #include <opencv2/features2d/features2d.hpp>
+#include <fmt/core.h>
 
 class OrbFeatureDetectorNodeType : public NodeType
 {
 public:
     OrbFeatureDetectorNodeType()
-        : _nfeatures(1000)
-        , _scaleFactor(1.2f)
-        , _nlevels(8)
-        , _edgeThreshold(31)
+        : _nfeatures(1000), _scaleFactor(1.2f), _nlevels(8), _edgeThreshold(31)
     {
         addInput("Image", ENodeFlowDataType::ImageMono);
         addOutput("Keypoints", ENodeFlowDataType::Keypoints);
@@ -61,7 +58,7 @@ public:
         KeyPoints& kp = writer.acquireSocket(0).getKeypoints();
 
         // Validate inputs
-        if(src.empty())
+        if (src.empty())
             return ExecutionStatus(EStatus::Ok);
 
         // Do stuff
@@ -97,7 +94,7 @@ public:
         const KeyPoints& kp = reader.readSocket(0).getKeypoints();
 
         // Validate inputs
-        if(kp.kpoints.empty() || kp.image.empty())
+        if (kp.kpoints.empty() || kp.image.empty())
             return ExecutionStatus(EStatus::Ok);
 
         // Acquire output sockets
@@ -116,14 +113,13 @@ public:
 class OrbNodeType : public OrbFeatureDetectorNodeType
 {
 public:
-    OrbNodeType()
-        : OrbFeatureDetectorNodeType()
+    OrbNodeType() : OrbFeatureDetectorNodeType()
     {
         clearOutputs();
         addOutput("Keypoints", ENodeFlowDataType::Keypoints);
         addOutput("Descriptors", ENodeFlowDataType::Array);
         setDescription("Detects keypoints and computes descriptors "
-            "using oriented and rotated BRIEF (ORB).");
+                       "using oriented and rotated BRIEF (ORB).");
     }
 
     ExecutionStatus execute(NodeSocketReader& reader, NodeSocketWriter& writer) override
@@ -135,7 +131,7 @@ public:
         cv::Mat& descriptors = writer.acquireSocket(1).getArray();
 
         // Validate inputs
-        if(src.empty())
+        if (src.empty())
             return ExecutionStatus(EStatus::Ok);
 
         // Do stuff
@@ -143,8 +139,8 @@ public:
         orb(src, cv::noArray(), kp.kpoints, descriptors);
         kp.image = src;
 
-        return ExecutionStatus(EStatus::Ok, 
-            fmt::format("Keypoints detected: {}", kp.kpoints.size()));
+        return ExecutionStatus(EStatus::Ok,
+                               fmt::format("Keypoints detected: {}", kp.kpoints.size()));
     }
 };
 

@@ -1,6 +1,8 @@
 mouve_add_plugin(features2d-keypoints
     dllmain.cpp
     nodes/ShiTomasi.cpp
+    nodes/FREAK.cpp
+    nodes/ORB.cpp
 )
 # Prioritize BRISK implementation from the features2d-brisk plug-in over the
 # OpenCV built-in BRISK as it uses different agast score which gives worse results
