@@ -7,7 +7,7 @@ if(JAI_DYNAMIC)
 
     include(FindPackageHandleStandardArgs)
     find_package_handle_standard_args(JAI
-        REQUIRED_VARS 
+        REQUIRED_VARS
             JAI_INCLUDE_DIR
     )
 
@@ -31,7 +31,7 @@ else()
         string(APPEND jai_sdk_lib_env "_64")
     endif()
 
-    find_library(JAI_LIBRARY 
+    find_library(JAI_LIBRARY
         Jai_Factory
         PATHS
             ENV ${jai_sdk_lib_env}
@@ -40,7 +40,7 @@ else()
 
     include(FindPackageHandleStandardArgs)
     find_package_handle_standard_args(JAI
-        REQUIRED_VARS 
+        REQUIRED_VARS
             JAI_INCLUDE_DIR
             JAI_LIBRARY
     )

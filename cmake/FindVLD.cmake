@@ -32,8 +32,8 @@ find_library(VLD_LIBRARY
 mark_as_advanced(VLD_LIBRARY)
 
 include(FindPackageHandleStandardArgs)
-find_package_handle_standard_args(VLD 
-    REQUIRED_VARS 
+find_package_handle_standard_args(VLD
+    REQUIRED_VARS
         VLD_INCLUDE_DIR
         VLD_LIBRARY
 )

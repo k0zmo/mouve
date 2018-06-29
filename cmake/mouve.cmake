@@ -19,7 +19,7 @@ function(mouve_add_kernels _target)
     foreach(file ${options_KERNELS})
         get_filename_component(fileabs ${file} ABSOLUTE)
         get_filename_component(filename ${file} NAME)
-        list(APPEND cmd 
+        list(APPEND cmd
             COMMAND ${CMAKE_COMMAND} -E copy_if_different
                 ${fileabs}
                 $<TARGET_FILE_DIR:Mouve.Logic>/${outdir}/${filename}
@@ -40,7 +40,7 @@ function(mouve_add_plugin _name)
     if(MSVC) # We should really check for multi-config generator
         foreach(config ${CMAKE_CONFIGURATION_TYPES})
             string(TOUPPER ${config} configUpper)
-            set_target_properties(${_name} PROPERTIES 
+            set_target_properties(${_name} PROPERTIES
                 LIBRARY_OUTPUT_DIRECTORY_${configUpper} ${CMAKE_BINARY_DIR}/bin/${config}/plugins
             )
         endforeach()
