@@ -16,7 +16,7 @@ find_path(AMDTActivityLogger_INCLUDE_DIR
 mark_as_advanced(AMDTActivityLogger_INCLUDE_DIR)
 
 include(FindPackageHandleStandardArgs)
-find_package_handle_standard_args(AMDTActivityLogger 
+find_package_handle_standard_args(AMDTActivityLogger
     REQUIRED_VARS
         AMDTActivityLogger_ROOT
         AMDTActivityLogger_INCLUDE_DIR

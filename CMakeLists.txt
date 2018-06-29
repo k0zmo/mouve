@@ -19,7 +19,7 @@ if(NOT BUILD_SHARED_LIBS)
     set(Boost_USE_STATIC_LIBS ON)
 endif()
 
-find_package(Boost 1.61.0 REQUIRED 
+find_package(Boost 1.61.0 REQUIRED
     COMPONENTS
         filesystem
         system
