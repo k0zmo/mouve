@@ -1,3 +1,4 @@
+mouve_check_dependencies(opencv_nonfree)
 mouve_add_plugin(features2d-patented
     dllmain.cpp
     nodes/SIFT.cpp

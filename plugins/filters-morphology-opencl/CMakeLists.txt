@@ -1,3 +1,4 @@
+mouve_check_dependencies(clw::clw)
 mouve_add_plugin(filters-morphology-opencl
     dllmain.cpp
     nodes/GpuMorphologyOperator.cpp

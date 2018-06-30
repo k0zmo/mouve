@@ -1,3 +1,4 @@
+mouve_check_dependencies(opencv_features2d)
 mouve_add_plugin(features2d-brisk
     dllmain.cpp
     nodes/Brisk.cpp

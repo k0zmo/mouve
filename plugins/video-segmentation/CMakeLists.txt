@@ -1,3 +1,4 @@
+mouve_check_dependencies(opencv_video)
 mouve_add_plugin(video-segmentation
     dllmain.cpp
     nodes/AdaptiveMOG.cpp

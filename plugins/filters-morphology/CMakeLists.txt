@@ -1,3 +1,4 @@
+mouve_check_dependencies(opencv_imgproc)
 mouve_add_plugin(filters-morphology
     dllmain.cpp
     nodes/HitMissOperator.cpp

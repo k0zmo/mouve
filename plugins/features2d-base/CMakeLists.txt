@@ -1,3 +1,4 @@
+mouve_check_dependencies(opencv_imgproc)
 mouve_add_plugin(features2d-base
     dllmain.cpp
     nodes/DrawFeatures.cpp

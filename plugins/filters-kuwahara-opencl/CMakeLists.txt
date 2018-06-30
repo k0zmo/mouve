@@ -1,3 +1,4 @@
+mouve_check_dependencies(clw::clw opencv_imgproc)
 mouve_add_plugin(filters-kuwahara-opencl
     dllmain.cpp
     nodes/GpuKuwaharaFilter.cpp

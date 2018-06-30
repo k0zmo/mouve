@@ -1,3 +1,4 @@
+mouve_check_dependencies(clw::clw)
 mouve_add_plugin(features2d-base-opencl
     dllmain.cpp
     nodes/GpuHoughLines.cpp

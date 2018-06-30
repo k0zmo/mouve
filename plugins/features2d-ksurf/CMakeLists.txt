@@ -1,3 +1,4 @@
+mouve_check_dependencies(opencv_imgproc opencv_features2d)
 mouve_add_plugin(features2d-ksurf
     dllmain.cpp
     nodes/kSURF.cpp

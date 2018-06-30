@@ -1,3 +1,4 @@
+mouve_check_dependencies(clw::clw)
 mouve_add_plugin(filters-base-opencl
     dllmain.cpp
     nodes/GpuApproxGaussianBlur.cpp
