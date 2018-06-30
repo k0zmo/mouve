@@ -5,6 +5,9 @@ mouve_add_plugin(features2d-keypoints
     nodes/FREAK.cpp
     nodes/ORB.cpp
     nodes/Keypoints.cpp
+    nodes/DrawKeypoints.cpp
+    impl/Drawing.h
+    impl/Drawing.cpp
 )
 # Prioritize BRISK implementation from the features2d-brisk plug-in over the
 # OpenCV built-in BRISK as it uses different agast score which gives worse results
@@ -18,3 +21,4 @@ target_link_libraries(features2d-keypoints PRIVATE
     opencv_imgproc
     opencv_features2d
 )
+target_include_directories(features2d-keypoints PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
