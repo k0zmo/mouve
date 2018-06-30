@@ -61,16 +61,29 @@ int popcount(int i)
 #endif
 
 #if defined(cl_ext_atomic_counters_32)
-#  pragma OPENCL EXTENSION cl_ext_atomic_counters_32 : enable
-#  define counter_type counter32_t
+#pragma OPENCL EXTENSION cl_ext_atomic_counters_32 : enable
+#define counter_type counter32_t
 #else
-#  define counter_type volatile __global int*
+#define counter_type volatile __global int*
 #endif
 
-__attribute__((always_inline)) float hammingDistIter(int x1, int x2) { return (float) popcount(x1 ^ x2); }
-__attribute__((always_inline)) float hammingDistFinish(float dist) { return dist; }
-__attribute__((always_inline)) float l2DistIter(float x1, float x2) { float q = x1 - x2; return q * q; }
-__attribute__((always_inline)) float l2DistFinish(float dist) { return native_sqrt(dist); }
+__attribute__((always_inline)) float hammingDistIter(int x1, int x2)
+{
+    return (float)popcount(x1 ^ x2);
+}
+__attribute__((always_inline)) float hammingDistFinish(float dist)
+{
+    return dist;
+}
+__attribute__((always_inline)) float l2DistIter(float x1, float x2)
+{
+    float q = x1 - x2;
+    return q * q;
+}
+__attribute__((always_inline)) float l2DistFinish(float dist)
+{
+    return native_sqrt(dist);
+}
 
 typedef struct DMatch
 {
@@ -79,106 +92,100 @@ typedef struct DMatch
     float dist;
 } DMatch_t;
 
-__kernel void
-KERNEL_NAME(__global QUERY_TYPE* query,
-            __global QUERY_TYPE* train,
-            __global DMatch_t* matches,
-            counter_type matchesCount,
-            __local int* smem,
-            int queryRows,
-            int trainRows,
-            float distanceRatio)
+__kernel void KERNEL_NAME(__global QUERY_TYPE* query, __global QUERY_TYPE* train,
+                          __global DMatch_t* matches, counter_type matchesCount, __local int* smem,
+                          int queryRows, int trainRows, float distanceRatio)
 {
     const int lx = get_local_id(0);
     const int ly = get_local_id(1);
     const int groupId = get_group_id(0);
 
-    const int queryIdx = groupId*BLOCK_SIZE + ly;
-    __local DIST_TYPE* s_query = (__local DIST_TYPE*) smem;
-    __local DIST_TYPE* s_train = (__local DIST_TYPE*) smem + BLOCK_SIZE*DESC_LEN;
-    
-    #pragma unroll
-    for(int i = 0; i < DESC_LEN / BLOCK_SIZE; ++i)
+    const int queryIdx = groupId * BLOCK_SIZE + ly;
+    __local DIST_TYPE* s_query = (__local DIST_TYPE*)smem;
+    __local DIST_TYPE* s_train = (__local DIST_TYPE*)smem + BLOCK_SIZE * DESC_LEN;
+
+#pragma unroll
+    for (int i = 0; i < DESC_LEN / BLOCK_SIZE; ++i)
     {
-        const int loadX = i*BLOCK_SIZE + lx;
-        s_query[ly*DESC_LEN + loadX] = loadX < DESC_LEN
-            ? query[min(queryIdx, queryRows-1)*DESC_LEN + loadX]
-            : 0;
+        const int loadX = i * BLOCK_SIZE + lx;
+        s_query[ly * DESC_LEN + loadX] =
+            loadX < DESC_LEN ? query[min(queryIdx, queryRows - 1) * DESC_LEN + loadX] : 0;
     }
 
     float myBestDistance1 = MAXFLOAT;
     float myBestDistance2 = MAXFLOAT;
     int myBestTrainIdx1 = -1;
 
-    for(int t = 0, endt = (trainRows + BLOCK_SIZE - 1) / BLOCK_SIZE; t < endt; ++t)
+    for (int t = 0, endt = (trainRows + BLOCK_SIZE - 1) / BLOCK_SIZE; t < endt; ++t)
     {
         float dist = 0.0;
 
         //#pragma unroll
-        for(int i = 0; i < DESC_LEN / BLOCK_SIZE; ++i)
+        for (int i = 0; i < DESC_LEN / BLOCK_SIZE; ++i)
         {
-            const int loadX = i*BLOCK_SIZE + lx;
+            const int loadX = i * BLOCK_SIZE + lx;
 
-            s_train[lx*BLOCK_SIZE + ly] = loadX < DESC_LEN 
-                ? train[min(t*BLOCK_SIZE + ly, trainRows-1) * DESC_LEN + loadX]
-                : 0;
+            s_train[lx * BLOCK_SIZE + ly] =
+                loadX < DESC_LEN ? train[min(t * BLOCK_SIZE + ly, trainRows - 1) * DESC_LEN + loadX]
+                                 : 0;
 
             barrier(CLK_LOCAL_MEM_FENCE);
 
-            for (int j = 0 ; j < BLOCK_SIZE ; j++)
-                dist += DIST_FUNCTION(s_query[ly*DESC_LEN + i*BLOCK_SIZE + j], s_train[j*BLOCK_SIZE + lx]);
+            for (int j = 0; j < BLOCK_SIZE; j++)
+                dist += DIST_FUNCTION(s_query[ly * DESC_LEN + i * BLOCK_SIZE + j],
+                                      s_train[j * BLOCK_SIZE + lx]);
 
             barrier(CLK_LOCAL_MEM_FENCE);
         }
 
         dist = DIST_FINISH(dist);
-        const int trainIdx = t*BLOCK_SIZE + lx;
+        const int trainIdx = t * BLOCK_SIZE + lx;
 
-        if(queryIdx < queryRows && trainIdx < trainRows)
+        if (queryIdx < queryRows && trainIdx < trainRows)
         {
-            if(dist < myBestDistance1)
+            if (dist < myBestDistance1)
             {
                 myBestDistance2 = myBestDistance1;
                 myBestDistance1 = dist;
                 myBestTrainIdx1 = trainIdx;
             }
-            else if(dist < myBestDistance2)
+            else if (dist < myBestDistance2)
             {
                 myBestDistance2 = dist;
             }
         }
     }
 
-    __local float* s_distance = (__local float*) smem;
-    __local int* s_trainIdx = (__local int*) smem + BLOCK_SIZE*BLOCK_SIZE;
+    __local float* s_distance = (__local float*)smem;
+    __local int* s_trainIdx = (__local int*)smem + BLOCK_SIZE * BLOCK_SIZE;
 
     float _myBestDistance1 = MAXFLOAT;
     float _myBestDistance2 = MAXFLOAT;
     int _myBestTrainIdx1 = -1;
 
-    s_distance += ly*BLOCK_SIZE;
-    s_trainIdx += ly*BLOCK_SIZE;
+    s_distance += ly * BLOCK_SIZE;
+    s_trainIdx += ly * BLOCK_SIZE;
 
     s_distance[lx] = myBestDistance1;
     s_trainIdx[lx] = myBestTrainIdx1;
 
     barrier(CLK_LOCAL_MEM_FENCE);
 
-    if(lx == 0)
+    if (lx == 0)
     {
-        #pragma unroll
-        for(int i = 0; i < BLOCK_SIZE; ++i)
+#pragma unroll
+        for (int i = 0; i < BLOCK_SIZE; ++i)
         {
             float val = s_distance[i];
 
-            if(val < _myBestDistance1)
+            if (val < _myBestDistance1)
             {
                 _myBestDistance2 = _myBestDistance1;
 
                 _myBestDistance1 = val;
                 _myBestTrainIdx1 = s_trainIdx[i];
             }
-            else if(val < _myBestDistance2)
+            else if (val < _myBestDistance2)
             {
                 _myBestDistance2 = val;
             }
@@ -191,23 +198,23 @@ KERNEL_NAME(__global QUERY_TYPE* query,
 
     barrier(CLK_LOCAL_MEM_FENCE);
 
-    if(lx == 0)
+    if (lx == 0)
     {
-        #pragma unroll
-        for(int i = 0; i < BLOCK_SIZE; ++i)
+#pragma unroll
+        for (int i = 0; i < BLOCK_SIZE; ++i)
         {
             float val = s_distance[i];
 
-            if(val < _myBestDistance2)
+            if (val < _myBestDistance2)
             {
                 _myBestDistance2 = val;
             }
         }
     }
 
-    if(queryIdx < queryRows && lx == 0)
+    if (queryIdx < queryRows && lx == 0)
     {
-        if(_myBestDistance1 <= distanceRatio * _myBestDistance2)
+        if (_myBestDistance1 <= distanceRatio * _myBestDistance2)
         {
             int idx = atomic_inc(matchesCount);
             // NOTE: We know for sure matches can't be more than queryRows

@@ -49,7 +49,6 @@ target_sources(Mouve.Logic PRIVATE
     OpenCL/GpuActivityLogger.cpp
     OpenCL/GpuActivityLogger.h
     OpenCL/GpuBasicNodes.cpp
-    OpenCL/GpuBruteForceMacherNode.cpp
     OpenCL/GpuColorConversionNodes.cpp
     OpenCL/GpuException.cpp
     OpenCL/GpuException.h
@@ -126,8 +125,6 @@ if(TARGET clw::clw)
 
     mouve_add_kernels(Mouve.Logic KERNELS
         OpenCL/kernels/bayer.cl
-        OpenCL/kernels/bfmatcher.cl
-        OpenCL/kernels/bfmatcher_macros.cl
         OpenCL/kernels/color.cl
     )
 else()
