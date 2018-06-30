@@ -29,17 +29,11 @@
 class DrawKeypointsNodeType : public NodeType
 {
 public:
-    DrawKeypointsNodeType()
-        : _ecolor(EColor::AllRandom),
-          _richKeypoints(true),
-          _color(getColor(_ecolor.cast<Enum>().cast<EColor>()))
+    DrawKeypointsNodeType() : _ecolor(EColor::AllRandom), _richKeypoints(true)
     {
         addInput("Keypoints", ENodeFlowDataType::Keypoints);
         addOutput("Output", ENodeFlowDataType::ImageRgb);
         addProperty("Keypoints color", _ecolor)
-            .setObserver(make_observer<FuncObserver>([this](const NodeProperty& np) {
-                _color = getColor(np.cast<Enum>().cast<EColor>());
-            }))
             .setUiHints("item: Random, item: Red, item: Green, item: Blue");
         addProperty("Rich keypoints", _richKeypoints);
         setDescription("Draws keypoints.");
@@ -56,14 +50,14 @@ public:
         if (kp.image.empty())
             return ExecutionStatus(EStatus::Ok);
 
-        drawKeypoints(kp.image, kp.kpoints, imageDst, _color, _richKeypoints);
+        drawKeypoints(kp.image, kp.kpoints, imageDst, _ecolor.cast<Enum>().cast<EColor>(),
+                      _richKeypoints);
         return ExecutionStatus(EStatus::Ok);
     }
 
 private:
     TypedNodeProperty<EColor> _ecolor;
     TypedNodeProperty<bool> _richKeypoints;
-    cv::Scalar _color;
 };
 
 REGISTER_NODE("Draw features/Draw keypoints", DrawKeypointsNodeType)

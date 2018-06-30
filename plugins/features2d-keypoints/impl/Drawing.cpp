@@ -25,31 +25,33 @@
 
 #include <opencv2/imgproc/imgproc.hpp>
 
+namespace {
+
 cv::Scalar getColor(EColor color)
 {
     switch (color)
     {
-    // Order is BGR
-    case EColor::AllRandom:
-        return cv::Scalar::all(-1);
     case EColor::Red:
-        return cv::Scalar(36, 28, 237);
+        return {36, 28, 237};
     case EColor::Green:
-        return cv::Scalar(76, 177, 34);
+        return {76, 177, 34};
     case EColor::Blue:
-        return cv::Scalar(244, 63, 72);
+        return {244, 63, 72};
     }
     return cv::Scalar::all(-1);
 }
 
-namespace {
-
-constexpr auto thickness = 1;
-constexpr auto lineType = CV_AA;
+cv::Scalar getRandomColor(cv::RNG& rng)
+{
+    return cv::Scalar(rng(256), rng(256), rng(256));
+}
 
 void drawKeypoint(cv::Mat& img, const cv::KeyPoint& p, const cv::Scalar& color, bool richKeypoint)
 {
     CV_Assert(!img.empty());
+
+    constexpr auto thickness = 1;
+    constexpr auto lineType = CV_AA;
 
     if (richKeypoint)
     {
@@ -97,22 +99,22 @@ void drawKeypoint(cv::Mat& img, const cv::KeyPoint& p, const cv::Scalar& color, 
 } // namespace
 
 void drawKeypoints(const cv::Mat& srcImage, const std::vector<cv::KeyPoint>& keypoints,
-                   cv::Mat& dst, const cv::Scalar& color, bool richKeypoint)
+                   cv::Mat& dst, EColor colorName, bool richKeypoint)
 {
 #if 0
     const auto drawFlags =
         richKeypoint ? cv::DrawMatchesFlags::DRAW_RICH_KEYPOINTS : cv::DrawMatchesFlags::DEFAULT;
-    cv::drawKeypoints(srcImage, keypoints, dst, color, drawFlags);
+    cv::drawKeypoints(srcImage, keypoints, dst, getColor(colorName), drawFlags);
 #else
     cvtColor(srcImage, dst, CV_GRAY2BGR);
 
     cv::RNG& rng = cv::theRNG();
-    const bool isRandColor = color == cv::Scalar::all(-1);
 
     for (const auto& it : keypoints)
     {
-        cv::Scalar kpColor = isRandColor ? cv::Scalar(rng(256), rng(256), rng(256)) : color;
-        drawKeypoint(dst, it, kpColor, richKeypoint);
+        drawKeypoint(dst, it,
+                     colorName == EColor::AllRandom ? getRandomColor(rng) : getColor(colorName),
+                     richKeypoint);
     }
 #endif
 }

@@ -36,7 +36,5 @@ enum class EColor
     Blue
 };
 
-cv::Scalar getColor(EColor color);
-
 void drawKeypoints(const cv::Mat& srcImage, const std::vector<cv::KeyPoint>& keypoints,
-                   cv::Mat& dst, const cv::Scalar& color, bool richKeypoint);
+                   cv::Mat& dst, EColor color, bool richKeypoint);

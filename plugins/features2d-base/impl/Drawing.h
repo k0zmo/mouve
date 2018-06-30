@@ -38,17 +38,19 @@ inline cv::Scalar getColor(EColor color)
 {
     switch (color)
     {
-    // Order is BGR
-    case EColor::AllRandom:
-        return cv::Scalar::all(-1);
     case EColor::Red:
-        return cv::Scalar(36, 28, 237);
+        return cv::Scalar{36, 28, 237};
     case EColor::Green:
-        return cv::Scalar(76, 177, 34);
+        return cv::Scalar{76, 177, 34};
     case EColor::Blue:
-        return cv::Scalar(244, 63, 72);
+        return cv::Scalar{244, 63, 72};
     }
     return cv::Scalar::all(-1);
+}
+
+inline cv::Scalar getRandomColor(cv::RNG& rng)
+{
+    return cv::Scalar(rng(256), rng(256), rng(256));
 }
 
 enum class ELineType

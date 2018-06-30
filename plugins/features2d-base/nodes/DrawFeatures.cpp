@@ -32,28 +32,17 @@ template <typename Impl>
 class DrawNodeType : public NodeType
 {
 public:
-    DrawNodeType()
-        : _ecolor(EColor::Blue),
-          _thickness(2),
-          _type(ELineType::Line_AA),
-          _color(getColor(_ecolor.cast<Enum>().cast<EColor>())),
-          _intLineType(CV_AA)
+    DrawNodeType() : _ecolor(EColor::Blue), _thickness(2), _type(ELineType::Line_AA)
     {
         addInput("Image", ENodeFlowDataType::Image);
         addInput("Shapes", ENodeFlowDataType::Array);
         addOutput("Output", ENodeFlowDataType::ImageRgb);
         addProperty("Line color", _ecolor)
-            .setObserver(make_observer<FuncObserver>([this](const NodeProperty& np) {
-                _color = getColor(np.cast<Enum>().cast<EColor>());
-            }))
             .setUiHints("item: Random, item: Red, item: Green, item: Blue");
         addProperty("Line thickness", _thickness)
             .setValidator(make_validator<InclRangePropertyValidator<int>>(1, 5))
             .setUiHints("step:1, min:1, max:5");
         addProperty("Line type", _type)
-            .setObserver(make_observer<FuncObserver>([this](const NodeProperty& np) {
-                _intLineType = static_cast<int>(np.cast<Enum>().cast<ELineType>());
-            }))
             .setUiHints("item: 4-connected, item: 8-connected, item: AA");
         setDescription("Draws simple geometric shapes.");
     }
@@ -83,9 +72,6 @@ protected:
     TypedNodeProperty<EColor> _ecolor;
     TypedNodeProperty<int> _thickness;
     TypedNodeProperty<ELineType> _type;
-
-    cv::Scalar _color;
-    int _intLineType;
 };
 
 class DrawLinesNodeType : public DrawNodeType<DrawLinesNodeType>
@@ -96,7 +82,8 @@ private:
     ExecutionStatus executeImpl(const cv::Mat& objects, const cv::Mat& imageSrc, cv::Mat& imageDest)
     {
         cv::RNG& rng = cv::theRNG();
-        bool isRandColor = _color == cv::Scalar::all(-1);
+        const EColor colorName = _ecolor.cast<Enum>().cast<EColor>();
+        const int lineType = static_cast<int>(_type.cast<Enum>().cast<ELineType>());
 
         for (int lineIdx = 0; lineIdx < objects.rows; ++lineIdx)
         {
@@ -108,10 +95,11 @@ private:
             double y0 = rho * sin_t;
             double alpha = sqrt(imageSrc.cols * imageSrc.cols + imageSrc.rows * imageSrc.rows);
 
-            cv::Scalar color = isRandColor ? cv::Scalar(rng(256), rng(256), rng(256)) : _color;
+            const cv::Scalar color =
+                colorName == EColor::AllRandom ? getRandomColor(rng) : getColor(colorName);
             cv::Point pt1(cvRound(x0 + alpha * (-sin_t)), cvRound(y0 + alpha * cos_t));
             cv::Point pt2(cvRound(x0 - alpha * (-sin_t)), cvRound(y0 - alpha * cos_t));
-            cv::line(imageDest, pt1, pt2, color, _thickness, _intLineType);
+            cv::line(imageDest, pt1, pt2, color, _thickness, lineType);
         }
 
         return ExecutionStatus(EStatus::Ok);
@@ -127,18 +115,20 @@ private:
                                 cv::Mat& imageDest)
     {
         cv::RNG& rng = cv::theRNG();
-        bool isRandColor = _color == cv::Scalar::all(-1);
+        const EColor colorName = _ecolor.cast<Enum>().cast<EColor>();
+        const int lineType = static_cast<int>(_type.cast<Enum>().cast<ELineType>());
 
         for (int circleIdx = 0; circleIdx < objects.cols; ++circleIdx)
         {
             cv::Vec3f circle = objects.at<cv::Vec3f>(circleIdx);
             cv::Point center(cvRound(circle[0]), cvRound(circle[1]));
             int radius = cvRound(circle[2]);
-            cv::Scalar color = isRandColor ? cv::Scalar(rng(256), rng(256), rng(256)) : _color;
+            const cv::Scalar color =
+                colorName == EColor::AllRandom ? getRandomColor(rng) : getColor(colorName);
             // draw the circle center
-            cv::circle(imageDest, center, 3, color, _thickness, _intLineType);
+            cv::circle(imageDest, center, 3, color, _thickness, lineType);
             // draw the circle outline
-            cv::circle(imageDest, center, radius, color, _thickness, _intLineType);
+            cv::circle(imageDest, center, radius, color, _thickness, lineType);
         }
 
         return ExecutionStatus(EStatus::Ok);
