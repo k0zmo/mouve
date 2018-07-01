@@ -26,6 +26,8 @@
 
 #include <fmt/core.h>
 
+namespace {
+
 struct DMatch
 {
     int queryIdx;
@@ -33,10 +35,10 @@ struct DMatch
     float dist;
 };
 
-static vector<DMatch> symmetryTest(const vector<DMatch>& matches1to2,
-                                   const vector<DMatch>& matches2to1)
+std::vector<DMatch> symmetryTest(const std::vector<DMatch>& matches1to2,
+                                 const std::vector<DMatch>& matches2to1)
 {
-    vector<DMatch> bothMatches;
+    std::vector<DMatch> bothMatches;
 
     for (const auto& match1to2 : matches1to2)
     {
@@ -53,6 +55,24 @@ static vector<DMatch> symmetryTest(const vector<DMatch>& matches1to2,
 
     return bothMatches;
 }
+
+void convertToMatches(const KeyPoints& queryKeypoints, const KeyPoints& trainKeypoints,
+                      const std::vector<DMatch>& matches, Matches& out)
+{
+    // Convert to 'Matches' data type
+    out.queryPoints.clear();
+    out.trainPoints.clear();
+
+    out.queryImage = queryKeypoints.image;
+    out.trainImage = trainKeypoints.image;
+
+    for (const auto& match : matches)
+    {
+        out.queryPoints.push_back(queryKeypoints.kpoints[match.queryIdx].pt);
+        out.trainPoints.push_back(trainKeypoints.kpoints[match.trainIdx].pt);
+    }
+}
+} // namespace
 
 /// TOOD: symmetry test on GPU (killer of performance)
 class GpuBruteForceMatcherNodeType : public GpuNodeType
@@ -136,11 +156,11 @@ public:
             return ExecutionStatus(EStatus::Error,
                                    "Query and train descriptors are different types");
 
-        vector<DMatch> matches;
+        std::vector<DMatch> matches;
 
         if (_symmetryTest)
         {
-            vector<DMatch> matches1to2, matches2to1;
+            std::vector<DMatch> matches1to2, matches2to1;
 
             auto status = nndrMatch_caller(query_dev, train_dev, matches1to2);
             if (status.status != EStatus::Ok)
@@ -159,18 +179,7 @@ public:
                 return status;
         }
 
-        // Convert to 'Matches' data type
-        mt.queryPoints.clear();
-        mt.trainPoints.clear();
-
-        for (const auto& match : matches)
-        {
-            mt.queryPoints.push_back(queryKp.kpoints[match.queryIdx].pt);
-            mt.trainPoints.push_back(trainKp.kpoints[match.trainIdx].pt);
-        }
-
-        mt.queryImage = queryKp.image;
-        mt.trainImage = trainKp.image;
+        convertToMatches(queryKp, trainKp, matches, mt);
 
         return ExecutionStatus(EStatus::Ok,
                                fmt::format("Matches found: {}", mt.queryPoints.size()));
@@ -178,7 +187,7 @@ public:
 
 private:
     ExecutionStatus nndrMatch_caller(const DeviceArray& query_dev, const DeviceArray& train_dev,
-                                     vector<DMatch>& matches)
+                                     std::vector<DMatch>& matches)
     {
         if (query_dev.dataType() == EDataType::Float)
         {
@@ -215,8 +224,8 @@ private:
     }
 
     template <int BLOCK_SIZE, int DESCRIPTOR_LEN>
-    vector<DMatch> nndrMatch(const DeviceArray& query_dev, const DeviceArray& train_dev,
-                             KernelID kidBruteForceMatch)
+    std::vector<DMatch> nndrMatch(const DeviceArray& query_dev, const DeviceArray& train_dev,
+                                  KernelID kidBruteForceMatch)
     {
         // Ensure internal buffers are enough
         if (_matches_cl.isNull() || _matches_cl.size() < sizeof(DMatch) * query_dev.height())
@@ -257,7 +266,7 @@ private:
         if (matchesCount > 0)
         {
             // and allocate required size
-            vector<DMatch> matches(matchesCount);
+            std::vector<DMatch> matches(matchesCount);
 
             // Read matches
             _gpuComputeModule->queue().readBuffer(_matches_cl, matches.data(), 0,
@@ -267,7 +276,7 @@ private:
         }
         else
         {
-            return vector<DMatch>();
+            return std::vector<DMatch>();
         }
     }
 
