@@ -21,41 +21,17 @@
  *
  */
 
-#pragma once
+#include "Logic/NodePlugin.h"
 
-#include <opencv2/core/core.hpp>
-#include <opencv2/core/core_c.h>
-
-enum class EColor
+class Features2DMatchersPlugin : public NodePlugin
 {
-    AllRandom,
-    Red,
-    Green,
-    Blue
-};
+    MOUVE_DECLARE_PLUGIN(1);
 
-inline cv::Scalar getColor(EColor color)
-{
-    switch (color)
+public:
+    void registerPlugin(NodeSystem& system) override
     {
-    case EColor::Red:
-        return {36, 28, 237};
-    case EColor::Green:
-        return {76, 177, 34};
-    case EColor::Blue:
-        return {244, 63, 72};
+        system.registerAutoTypes(AutoRegisterNodeFactory::head());
     }
-    return cv::Scalar::all(-1);
-}
-
-inline cv::Scalar getRandomColor(cv::RNG& rng)
-{
-    return cv::Scalar(rng(256), rng(256), rng(256));
-}
-
-enum class ELineType
-{
-    Line_4Connected = 4,
-    Line_8Connected = 8,
-    Line_AA = CV_AA
 };
+
+MOUVE_INSTANTIATE_PLUGIN(Features2DMatchersPlugin)

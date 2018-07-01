@@ -23,39 +23,8 @@
 
 #pragma once
 
-#include <opencv2/core/core.hpp>
-#include <opencv2/core/core_c.h>
+#include <opencv2/features2d/features2d.hpp>
+#include <vector>
 
-enum class EColor
-{
-    AllRandom,
-    Red,
-    Green,
-    Blue
-};
-
-inline cv::Scalar getColor(EColor color)
-{
-    switch (color)
-    {
-    case EColor::Red:
-        return {36, 28, 237};
-    case EColor::Green:
-        return {76, 177, 34};
-    case EColor::Blue:
-        return {244, 63, 72};
-    }
-    return cv::Scalar::all(-1);
-}
-
-inline cv::Scalar getRandomColor(cv::RNG& rng)
-{
-    return cv::Scalar(rng(256), rng(256), rng(256));
-}
-
-enum class ELineType
-{
-    Line_4Connected = 4,
-    Line_8Connected = 8,
-    Line_AA = CV_AA
-};
+std::vector<cv::DMatch> bruteForceMatch(const cv::Mat& queryDescriptors, const cv::Mat& trainDescriptors, float distanceRatio = 0.8f, bool testSymmetry = false);
+std::vector<cv::DMatch> flannMatch(const cv::Mat& queryDescriptors, const cv::Mat& trainDescriptors, float distanceRatio = 0.8f, bool testSymmetry = false);

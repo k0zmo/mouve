@@ -33,7 +33,6 @@ target_sources(Mouve.Logic PRIVATE
     Nodes/ColorConversionNodes.cpp
     Nodes/HistogramNodes.cpp
     Nodes/HomographyNodes.cpp
-    Nodes/MatcherNodes.cpp
     Nodes/MosaicingNodes.cpp
     Nodes/SegmentationNodes.cpp
     Nodes/SinkNodes.cpp
