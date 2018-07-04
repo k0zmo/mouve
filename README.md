@@ -5,7 +5,7 @@ Mouve is a node-based prototyping tool allowing you to rapidly create simple and
 Nodes database consist of:
 
 - input/output nodes for reading source image/video files and writing back the results,
-- camera input nodes for JAI (should work with any GigE Vision compatible cameras) and USB Video Class (UVC) camera, 
+- camera input nodes for JAI (should work with any GigE Vision compatible cameras) and USB Video Class (UVC) camera,
 - image filters, segmentation nodes and simple geometrical transformators,
 - visualizing non-image data nodes,
 - image features detectors and descriptors, as well as matchers,
@@ -23,10 +23,10 @@ Mouve depends on:
 
 - CMake 3.9+
 - OpenCV 2.4.x,
-- Boost 1.55+,
-- Qt5 (mainly for UI part),
+- Boost 1.61+,
+- Qt5 (Required for GUI editor),
 - Intel Threading Building Blocks (Optional),
-- JAI SDK (Optional for JAI's GigE cameras support)
+- JAI SDK (Required for JAI's GigE cameras support)
 
 ## Building
 
