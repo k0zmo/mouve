@@ -31,9 +31,9 @@ find_package(OpenCV 2.4 REQUIRED
         opencv_imgproc
         opencv_highgui
         opencv_features2d
+    OPTIONAL_COMPONENTS
         opencv_flann
         opencv_calib3d
-    OPTIONAL_COMPONENTS
         opencv_video
         opencv_nonfree
 )

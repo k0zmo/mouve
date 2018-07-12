@@ -97,9 +97,6 @@ target_link_libraries(Mouve.Logic
         opencv_imgproc
         opencv_highgui
         opencv_features2d
-        opencv_nonfree
-        opencv_flann
-        opencv_calib3d
 )
 
 set_target_properties(Mouve.Logic
