@@ -24,31 +24,10 @@
 #pragma once
 
 #include "Logic/NodeFlowData.h"
+#include "Logic/Nodes/CV.h"
 
 #include <opencv2/core/core.hpp>
-#include <opencv2/features2d/features2d.hpp>
 
-enum class EColor
-{
-    AllRandom,
-    Red,
-    Green,
-    Blue,
-    Yellow
-};
-
-inline EColor getPairedColor(EColor color)
-{
-    switch (color)
-    {
-    case EColor::AllRandom: return EColor::AllRandom;
-    case EColor::Red: return EColor::Green;
-    case EColor::Green: return EColor::Red;
-    case EColor::Blue: return EColor::Yellow;
-    case EColor::Yellow: return EColor::Blue;
-    }
-
-    return color;
-}
+using cvu::EColor;
 
 cv::Mat drawMatches(const Matches& mt, EColor color, EColor kpColor);

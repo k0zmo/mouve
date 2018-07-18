@@ -23,35 +23,11 @@
 
 #pragma once
 
-#include <opencv2/core/core.hpp>
 #include <opencv2/core/core_c.h>
 
-enum class EColor
-{
-    AllRandom,
-    Red,
-    Green,
-    Blue
-};
+#include "Logic/Nodes/CV.h"
 
-inline cv::Scalar getColor(EColor color)
-{
-    switch (color)
-    {
-    case EColor::Red:
-        return {36, 28, 237};
-    case EColor::Green:
-        return {76, 177, 34};
-    case EColor::Blue:
-        return {244, 63, 72};
-    }
-    return cv::Scalar::all(-1);
-}
-
-inline cv::Scalar getRandomColor(cv::RNG& rng)
-{
-    return cv::Scalar(rng(256), rng(256), rng(256));
-}
+using cvu::EColor;
 
 enum class ELineType
 {

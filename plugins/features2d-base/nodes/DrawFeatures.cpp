@@ -38,7 +38,7 @@ public:
         addInput("Shapes", ENodeFlowDataType::Array);
         addOutput("Output", ENodeFlowDataType::ImageRgb);
         addProperty("Line color", _ecolor)
-            .setUiHints("item: Random, item: Red, item: Green, item: Blue");
+            .setUiHints("item: Random, item: Red, item: Green, item: Blue, item: Yellow");
         addProperty("Line thickness", _thickness)
             .setValidator(make_validator<InclRangePropertyValidator<int>>(1, 5))
             .setUiHints("step:1, min:1, max:5");
@@ -81,7 +81,6 @@ class DrawLinesNodeType : public DrawNodeType<DrawLinesNodeType>
 private:
     ExecutionStatus executeImpl(const cv::Mat& objects, const cv::Mat& imageSrc, cv::Mat& imageDest)
     {
-        cv::RNG& rng = cv::theRNG();
         const EColor colorName = _ecolor.cast<Enum>().cast<EColor>();
         const int lineType = static_cast<int>(_type.cast<Enum>().cast<ELineType>());
 
@@ -95,8 +94,7 @@ private:
             double y0 = rho * sin_t;
             double alpha = sqrt(imageSrc.cols * imageSrc.cols + imageSrc.rows * imageSrc.rows);
 
-            const cv::Scalar color =
-                colorName == EColor::AllRandom ? getRandomColor(rng) : getColor(colorName);
+            const auto color = getColor(colorName);
             cv::Point pt1(cvRound(x0 + alpha * (-sin_t)), cvRound(y0 + alpha * cos_t));
             cv::Point pt2(cvRound(x0 - alpha * (-sin_t)), cvRound(y0 - alpha * cos_t));
             cv::line(imageDest, pt1, pt2, color, _thickness, lineType);
@@ -114,7 +112,6 @@ private:
     ExecutionStatus executeImpl(const cv::Mat& objects, const cv::Mat& /*imageSrc*/,
                                 cv::Mat& imageDest)
     {
-        cv::RNG& rng = cv::theRNG();
         const EColor colorName = _ecolor.cast<Enum>().cast<EColor>();
         const int lineType = static_cast<int>(_type.cast<Enum>().cast<ELineType>());
 
@@ -123,8 +120,7 @@ private:
             cv::Vec3f circle = objects.at<cv::Vec3f>(circleIdx);
             cv::Point center(cvRound(circle[0]), cvRound(circle[1]));
             int radius = cvRound(circle[2]);
-            const cv::Scalar color =
-                colorName == EColor::AllRandom ? getRandomColor(rng) : getColor(colorName);
+            const cv::Scalar color = getColor(colorName);
             // draw the circle center
             cv::circle(imageDest, center, 3, color, _thickness, lineType);
             // draw the circle outline

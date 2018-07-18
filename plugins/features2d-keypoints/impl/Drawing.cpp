@@ -27,25 +27,6 @@
 
 namespace {
 
-cv::Scalar getColor(EColor color)
-{
-    switch (color)
-    {
-    case EColor::Red:
-        return {36, 28, 237};
-    case EColor::Green:
-        return {76, 177, 34};
-    case EColor::Blue:
-        return {244, 63, 72};
-    }
-    return cv::Scalar::all(-1);
-}
-
-cv::Scalar getRandomColor(cv::RNG& rng)
-{
-    return cv::Scalar(rng(256), rng(256), rng(256));
-}
-
 void drawKeypoint(cv::Mat& img, const cv::KeyPoint& p, const cv::Scalar& color, bool richKeypoint)
 {
     CV_Assert(!img.empty());
@@ -108,13 +89,7 @@ void drawKeypoints(const cv::Mat& srcImage, const std::vector<cv::KeyPoint>& key
 #else
     cvtColor(srcImage, dst, CV_GRAY2BGR);
 
-    cv::RNG& rng = cv::theRNG();
-
     for (const auto& it : keypoints)
-    {
-        drawKeypoint(dst, it,
-                     colorName == EColor::AllRandom ? getRandomColor(rng) : getColor(colorName),
-                     richKeypoint);
-    }
+        drawKeypoint(dst, it, getColor(colorName), richKeypoint);
 #endif
 }

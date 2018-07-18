@@ -23,18 +23,12 @@
 
 #pragma once
 
-#include "Logic/NodeFlowData.h"
+#include "Logic/Nodes/CV.h"
 
 #include <opencv2/core/core.hpp>
 #include <opencv2/features2d/features2d.hpp>
 
-enum class EColor
-{
-    AllRandom,
-    Red,
-    Green,
-    Blue
-};
+using cvu::EColor;
 
 void drawKeypoints(const cv::Mat& srcImage, const std::vector<cv::KeyPoint>& keypoints,
                    cv::Mat& dst, EColor color, bool richKeypoint);

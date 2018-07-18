@@ -25,32 +25,6 @@
 
 #include <opencv2/imgproc/imgproc.hpp>
 
-
-namespace {
-
-cv::Scalar getColor(EColor color)
-{
-    switch (color)
-    {
-    // Order is BGR
-    case EColor::Red:
-        return {36, 28, 237};
-    case EColor::Green:
-        return {76, 177, 34};
-    case EColor::Blue:
-        return {244, 63, 72};
-    case EColor::Yellow:
-        return {0, 255, 242};
-    }
-    return cv::Scalar::all(-1);
-}
-
-cv::Scalar getRandomColor(cv::RNG& rng)
-{
-    return cv::Scalar(rng(256), rng(256), rng(256));
-}
-} // namespace
-
 cv::Mat drawMatches(const Matches& mt, EColor colorName, EColor kpColorName)
 {
     constexpr auto thickness = 1;
@@ -79,10 +53,8 @@ cv::Mat drawMatches(const Matches& mt, EColor colorName, EColor kpColorName)
         const auto& kp1 = mt.queryPoints[i];
         const auto& kp2 = mt.trainPoints[i];
 
-        const cv::Scalar lineColor =
-            colorName == EColor::AllRandom ? getRandomColor(rng) : getColor(colorName);
-        const cv::Scalar pointColor =
-            colorName == EColor::AllRandom ? lineColor : getColor(kpColorName);
+        const cv::Scalar lineColor = getColor(colorName);
+        const cv::Scalar pointColor = getColor(kpColorName);
 
         constexpr auto radius = 10;
 

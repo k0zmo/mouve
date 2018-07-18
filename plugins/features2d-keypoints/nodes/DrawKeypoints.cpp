@@ -29,12 +29,12 @@
 class DrawKeypointsNodeType : public NodeType
 {
 public:
-    DrawKeypointsNodeType() : _ecolor(EColor::AllRandom), _richKeypoints(true)
+    DrawKeypointsNodeType() : _ecolor(EColor::Random), _richKeypoints(true)
     {
         addInput("Keypoints", ENodeFlowDataType::Keypoints);
         addOutput("Output", ENodeFlowDataType::ImageRgb);
         addProperty("Keypoints color", _ecolor)
-            .setUiHints("item: Random, item: Red, item: Green, item: Blue");
+            .setUiHints("item: Random, item: Red, item: Green, item: Blue, item: Yellow");
         addProperty("Rich keypoints", _richKeypoints);
         setDescription("Draws keypoints.");
     }

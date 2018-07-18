@@ -40,6 +40,56 @@ enum class EBayerCode
 int bayerCodeGray(EBayerCode code);
 int bayerCodeRgb(EBayerCode code);
 
+// Temporary here
+enum class EColor
+{
+    Random,
+    Red,
+    Green,
+    Blue,
+    Yellow
+};
+
+inline EColor getPairedColor(EColor color)
+{
+    switch (color)
+    {
+    case EColor::Random:
+        return EColor::Random;
+    case EColor::Red:
+        return EColor::Green;
+    case EColor::Green:
+        return EColor::Red;
+    case EColor::Blue:
+        return EColor::Yellow;
+    case EColor::Yellow:
+        return EColor::Blue;
+    }
+
+    return color;
+}
+
+template <typename T = cv::Scalar>
+T getColor(EColor color)
+{
+    switch (color)
+    {
+    case EColor::Red:
+        return {36, 28, 237};
+    case EColor::Green:
+        return {76, 177, 34};
+    case EColor::Blue:
+        return {244, 63, 72};
+    case EColor::Yellow:
+        return {0, 255, 242};
+    }
+
+    cv::RNG& rng = cv::theRNG();
+    return T(cv::saturate_cast<typename T::value_type>(rng(256)),
+             cv::saturate_cast<typename T::value_type>(rng(256)),
+             cv::saturate_cast<typename T::value_type>(rng(256)));
+}
+
 // Lambda-aware parallel loop invoker based on cv::parallel_for
 template<typename Body>
 struct ParallelLoopInvoker : public cv::ParallelLoopBody
@@ -64,5 +114,4 @@ void parallel_for(const cv::Range& range, const Body& body)
     ParallelLoopInvoker<Body> loopInvoker(body);
     cv::parallel_for_(range, loopInvoker);
 }
-
 }

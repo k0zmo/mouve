@@ -29,12 +29,12 @@
 class DrawMatchesNodeType : public NodeType
 {
 public:
-    DrawMatchesNodeType() : _ecolor(EColor::AllRandom)
+    DrawMatchesNodeType() : _ecolor(EColor::Random)
     {
         addInput("Matches", ENodeFlowDataType::Matches);
         addOutput("Image", ENodeFlowDataType::ImageRgb);
-        addProperty("Keypoints color", _ecolor)
-            .setUiHints("item: Random, item: Red, item: Green, item: Blue");
+        addProperty("Matches color", _ecolor)
+            .setUiHints("item: Random, item: Red, item: Green, item: Blue, item: Yellow");
         setDescription("Draws matches.");
     }
 
