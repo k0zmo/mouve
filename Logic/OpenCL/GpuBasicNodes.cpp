@@ -67,7 +67,7 @@ public:
                 ? clw::EChannelOrder::R 
                 : clw::EChannelOrder::RGBA;
             deviceImage = _gpuComputeModule->context().createImage2D(
-                clw::EAccess::ReadOnly, clw::EMemoryLocation::Device,
+                clw::EAccess::ReadWrite, clw::EMemoryLocation::Device,
                 clw::ImageFormat(channelOrder, clw::EChannelType::Normalized_UInt8),
                 hostImage.cols, hostImage.rows);
         }

@@ -570,7 +570,7 @@ protected:
             // Allocate only if buffer is too small
             _descriptors_cl.size() < sizeof(float)*64*keypointsCount)
         {
-            _descriptors_cl = _gpuComputeModule->context().createBuffer(clw::EAccess::WriteOnly, 
+            _descriptors_cl = _gpuComputeModule->context().createBuffer(clw::EAccess::ReadWrite, 
                 clw::EMemoryLocation::Device, sizeof(float)*64*keypointsCount);
             _pinnedDescriptors_cl = _gpuComputeModule->context().createBuffer(clw::EAccess::WriteOnly, 
                 clw::EMemoryLocation::AllocHostMemory, sizeof(float)*64*keypointsCount);
