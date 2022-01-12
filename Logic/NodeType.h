@@ -125,11 +125,12 @@ private:
 // Interface for property value validator
 struct PropertyValidator
 {
+    virtual ~PropertyValidator() = default;
     virtual bool validate(const NodeProperty& value) = 0;
 };
 
 // Helper method to construct property validator
-template <class T, class... Args, 
+template <class T, class... Args,
     class = typename std::enable_if<std::is_base_of<PropertyValidator, T>::value>::type>
 std::unique_ptr<PropertyValidator> make_validator(Args&&... args)
 {
@@ -139,6 +140,7 @@ std::unique_ptr<PropertyValidator> make_validator(Args&&... args)
 // Interface for property value observer
 struct PropertyObserver
 {
+    virtual ~PropertyObserver() = default;
     virtual void notifyChanged(const NodeProperty& value) = 0;
 };
 
@@ -302,7 +304,7 @@ private:
 class MOUVE_EXPORT PropertyConfig
 {
 public:
-    explicit PropertyConfig(PropertyID propertyID, 
+    explicit PropertyConfig(PropertyID propertyID,
         std::string name, NodeProperty& nodeProperty)
         : _propertyID(propertyID)
         , _nodeProperty(nodeProperty)
@@ -463,7 +465,7 @@ private:
     NodeConfigFlags _flags;
 };
 
-// Node execution status 
+// Node execution status
 enum class EStatus : int
 {
     // Everything was ok
@@ -485,7 +487,7 @@ struct ExecutionStatus
     {
     }
 
-    ExecutionStatus(EStatus status, 
+    ExecutionStatus(EStatus status,
         const std::string& message = std::string())
         : timeElapsed(0)
         , status(status)
