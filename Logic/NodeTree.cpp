@@ -110,7 +110,7 @@ void NodeTree::setNodeEnable(NodeID nodeID, bool enable)
 
 bool NodeTree::isNodeExecutable(NodeID nodeID) const
 {
-    return validateNode(nodeID) 
+    return validateNode(nodeID)
         && !_nodes[nodeID].flag(ENodeFlags::Disabled)
         && allRequiredInputSocketConnected(nodeID);
 }
@@ -162,7 +162,7 @@ void NodeTree::handleException(NodeID nodeID, const NodeSocketTracer& tracer)
     }
     catch(cv::Exception& ex)
     {
-        throw ExecutionError(nodeName(nodeID), nodeTypeName(nodeID), 
+        throw ExecutionError(nodeName(nodeID), nodeTypeName(nodeID),
             std::string("OpenCV exception - ") + ex.what());
     }
     catch(std::exception& ex)
@@ -180,7 +180,7 @@ void NodeTree::execute(bool withInit)
     NodeSocketReader reader(this, tracer);
     NodeSocketWriter writer(tracer);
 
-    // Traverse through just-built exec list and process each node 
+    // Traverse through just-built exec list and process each node
     for(NodeID nodeID : _executeList)
     {
         Node& node = _nodes[nodeID];
@@ -195,7 +195,7 @@ void NodeTree::execute(bool withInit)
                 // Try to restart node internal state if any
                 if(!node.restart())
                 {
-                    throw ExecutionError{node.nodeName(), nodeTypeName(nodeID), 
+                    throw ExecutionError{node.nodeName(), nodeTypeName(nodeID),
                         "Error during node state restart"};
                 }
             }
@@ -212,11 +212,12 @@ void NodeTree::execute(bool withInit)
             case EStatus::Error:
                 // If node reported an error
                 tagNode(nodeID);
-                throw ExecutionError{node.nodeName(), nodeTypeName(nodeID), 
+                throw ExecutionError{node.nodeName(), nodeTypeName(nodeID),
                     ret.message};
                 break;
 
             case EStatus::Ok:
+                untagNode(nodeID);
             default:
                 break;
             }
@@ -390,7 +391,7 @@ ELinkNodesResult NodeTree::linkNodes(SocketAddress from, SocketAddress to)
         return ELinkNodesResult::InvalidAddress;
 
     // Check if we are not trying to link input socket with more than one output
-    bool alreadyExisingConnection = std::any_of(std::begin(_links), std::end(_links), 
+    bool alreadyExisingConnection = std::any_of(std::begin(_links), std::end(_links),
         [&](const NodeLink& link) {
             return link.toNode == to.node && link.toSocket == to.socket;
         });
@@ -408,7 +409,7 @@ ELinkNodesResult NodeTree::linkNodes(SocketAddress from, SocketAddress to)
     {
         // Look for given node link
         NodeLink nodeLinkToFind(from, to);
-        auto iter = std::lower_bound(std::begin(_links), 
+        auto iter = std::lower_bound(std::begin(_links),
             std::end(_links), nodeLinkToFind);
 
         assert(iter != std::end(_links));
@@ -437,7 +438,7 @@ bool NodeTree::unlinkNodes(SocketAddress from, SocketAddress to)
 
     // Look for given node link
     NodeLink nodeLinkToFind(from, to);
-    auto iter = std::lower_bound(std::begin(_links), 
+    auto iter = std::lower_bound(std::begin(_links),
         std::end(_links), nodeLinkToFind);
 
     if(iter != std::end(_links))
@@ -689,7 +690,7 @@ NodeID NodeTree::allocateNodeID()
         // Need to create new one
         id = NodeID(_nodes.size());
         // Expand node array - createNode relies on it
-        _nodes.resize(_nodes.size() + 1); 
+        _nodes.resize(_nodes.size() + 1);
     }
     else
     {
@@ -736,7 +737,7 @@ size_t NodeTree::firstOutputLink(NodeID fromNode,
 
 std::tuple<size_t, size_t> NodeTree::outLinks(NodeID fromNode) const
 {
-    auto start = std::find_if(std::begin(_links), std::end(_links), 
+    auto start = std::find_if(std::begin(_links), std::end(_links),
         [=](const NodeLink& link) {
             return link.fromNode == fromNode;
     });
@@ -745,13 +746,13 @@ std::tuple<size_t, size_t> NodeTree::outLinks(NodeID fromNode) const
     if(start != std::end(_links))
     {
         // Now, get last+1 output link index
-        auto end = std::find_if(start + 1, std::end(_links), 
+        auto end = std::find_if(start + 1, std::end(_links),
             [=](const NodeLink& link) {
                 return link.fromNode != fromNode;
         });
 
         return std::make_tuple(
-            size_t(start - std::begin(_links)), 
+            size_t(start - std::begin(_links)),
             size_t(end - std::begin(_links)));
     }
     else
@@ -800,7 +801,7 @@ void NodeTree::prepareListImpl()
 
         if(!depthFirstSearch(nodeID, colorMap))
             return;
-    }	
+    }
 
     // For each tagged and valid nodes that haven't been visited yet do ..
     for(NodeID nodeID = 0; nodeID < NodeID(_nodes.size()); ++nodeID)
@@ -825,8 +826,8 @@ void NodeTree::prepareListImpl()
     std::reverse(std::begin(_executeList), std::end(_executeList));
 }
 
-bool NodeTree::depthFirstSearch(NodeID nodeID, 
-                                std::vector<ENodeColor>& colorMap, 
+bool NodeTree::depthFirstSearch(NodeID nodeID,
+                                std::vector<ENodeColor>& colorMap,
                                 std::vector<NodeID>* execList)
 {
     colorMap[nodeID] = ENodeColor::Gray;
@@ -868,7 +869,7 @@ bool NodeTree::depthFirstSearch(NodeID nodeID,
             // We've been here - go to next node
             else// if(color == EVertexColor == Black)
             {
-                ++link; 
+                ++link;
             }
         }
 
@@ -888,7 +889,7 @@ bool NodeTree::validateLink(SocketAddress& from, SocketAddress& to)
     if(!from.isOutput)
         std::swap(from, to);
 
-    if(!validateNode(from.node) || 
+    if(!validateNode(from.node) ||
         !_nodes[from.node].validateSocket(from.socket, from.isOutput))
         return false;
 
@@ -1035,7 +1036,7 @@ public:
             case EStatus::Error:
                 // If node reported an error
                 tagNode(nodeID);
-                throw ExecutionError{node.nodeName(), nodeTypeName(nodeID), 
+                throw ExecutionError{node.nodeName(), nodeTypeName(nodeID),
                     ret.message};
                 break;
 
