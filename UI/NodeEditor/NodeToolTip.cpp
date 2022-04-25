@@ -70,7 +70,7 @@ void NodeToolTip::setText(const QString& text)
     QRect textRect = QRect(0, 0, 250, 1500);
     int flags = Qt::AlignTop | Qt::AlignLeft | Qt::TextWordWrap;
     _boundingRect = metrics.boundingRect(textRect, flags, text)
-        .adjusted(-10, -10, 10, 10);
+        .adjusted(-50, -50, 10, 10);
 
     update();
 }
