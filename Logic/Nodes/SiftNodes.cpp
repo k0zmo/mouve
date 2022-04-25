@@ -45,7 +45,8 @@ public:
         addProperty("Number of layers in each octave", _nOctaveLayers)
             .setValidator(make_validator<MinPropertyValidator<int>>(2))
             .setUiHints("min:2");
-        addProperty("Contrast threshold", _contrastThreshold);
+        addProperty("Contrast threshold", _contrastThreshold)
+            .setUiHints("decimals: 3");
         addProperty("Edge threshold", _edgeThreshold);
         addProperty("Input image sigma", _sigma);
         setDescription("Extracts keypoints using difference of gaussians (DoG) algorithm.");

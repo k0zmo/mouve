@@ -44,8 +44,8 @@ public:
             .setValidator(make_validator<MinPropertyValidator<int>>(1))
             .setUiHints("min:1");
         addProperty("Number of scale levels", _nScales)
-            .setValidator(make_validator<MinPropertyValidator<int>>(1))
-            .setUiHints("min:1");
+            .setValidator(make_validator<MinPropertyValidator<int>>(3))
+            .setUiHints("min:3");
         addProperty("Initial sampling rate", _initSampling)
             .setValidator(make_validator<MinPropertyValidator<int>>(1))
             .setUiHints("min:1");
@@ -139,8 +139,8 @@ public:
             .setValidator(make_validator<MinPropertyValidator<int>>(1))
             .setUiHints("min:1");
         addProperty("Number of scale levels", _nScales)
-            .setValidator(make_validator<MinPropertyValidator<int>>(1))
-            .setUiHints("min:1");
+            .setValidator(make_validator<MinPropertyValidator<int>>(3))
+            .setUiHints("min:3");
         addProperty("Initial sampling rate", _initSampling)
             .setValidator(make_validator<MinPropertyValidator<int>>(1))
             .setUiHints("min:1");
