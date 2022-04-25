@@ -36,6 +36,7 @@ class EstimateHomographyNodeType : public NodeType
 public:
     EstimateHomographyNodeType()
         : _reprojThreshold(3.0)
+        , _refine(false)
     {
         addInput("Matches", ENodeFlowDataType::Matches);
         addOutput("Homography", ENodeFlowDataType::Array);
@@ -43,6 +44,7 @@ public:
         addProperty("Reprojection error threshold", _reprojThreshold)
             .setValidator(make_validator<InclRangePropertyValidator<double>>(1.0, 50.0))
             .setUiHints("min:1.0, max:50.0");
+        addProperty("Refine homography", _refine);
         setDescription("Finds a perspective transformation between two planes.");
     }
 
@@ -83,51 +85,71 @@ public:
         if(inliersCount < 4)
             return ExecutionStatus(EStatus::Ok);
 
-        vector<cv::Point2f> queryPoints(inliersCount), trainPoints(inliersCount);
-
-        // Create vector of inliers only
-        for(size_t inlier = 0, idx = 0; inlier < kpSize; ++inlier)
+        if(!_refine)
         {
-            if(inliersMask[inlier] == 0)
-                continue;
+            outMt.queryPoints.reserve(inliersCount);
+            outMt.trainPoints.reserve(inliersCount);
 
-            queryPoints[idx] = mt.queryPoints[inlier];
-            trainPoints[idx] = mt.trainPoints[inlier];
-            ++idx;
-        }
-
-        // Use only good points to find refined homography
-        H = cv::findHomography(queryPoints, trainPoints, 0);
-
-        // Reproject again
-        vector<cv::Point2f> srcReprojected;
-        cv::perspectiveTransform(trainPoints, srcReprojected, H.inv());
-        kpSize = queryPoints.size();
-
-        for (size_t i = 0; i < kpSize; i++)
-        {
-            cv::Point2f actual = queryPoints[i];
-            cv::Point2f expect = srcReprojected[i];
-            cv::Point2f v = actual - expect;
-            float distanceSquared = v.dot(v);
-
-            if (distanceSquared <= _reprojThreshold * _reprojThreshold)
+            for(size_t inlier = 0; inlier < kpSize; ++inlier)
             {
-                outMt.queryPoints.emplace_back(queryPoints[i]);
-                outMt.trainPoints.emplace_back(trainPoints[i]);
+                if (inliersMask[inlier] == 0)
+                    continue;
+                outMt.queryPoints.emplace_back(mt.queryPoints[inlier]);
+                outMt.trainPoints.emplace_back(mt.trainPoints[inlier]);
+            }
+
+            H = homography;
+        }
+        else
+        {
+            vector<cv::Point2f> queryPoints(inliersCount), trainPoints(inliersCount);
+
+            // Create vector of inliers only
+            for(size_t inlier = 0, idx = 0; inlier < kpSize; ++inlier)
+            {
+                if(inliersMask[inlier] == 0)
+                    continue;
+
+                queryPoints[idx] = mt.queryPoints[inlier];
+                trainPoints[idx] = mt.trainPoints[inlier];
+                ++idx;
+            }
+
+            // Use only good points to find refined homography
+            H = cv::findHomography(queryPoints, trainPoints, 0);
+
+            // Reproject again
+            vector<cv::Point2f> srcReprojected;
+            cv::perspectiveTransform(trainPoints, srcReprojected, H.inv());
+            kpSize = queryPoints.size();
+
+            for(size_t i = 0; i < kpSize; i++)
+            {
+                cv::Point2f actual = queryPoints[i];
+                cv::Point2f expect = srcReprojected[i];
+                cv::Point2f v = actual - expect;
+                float distanceSquared = v.dot(v);
+
+                if(distanceSquared <= _reprojThreshold * _reprojThreshold)
+                {
+                    outMt.queryPoints.emplace_back(queryPoints[i]);
+                    outMt.trainPoints.emplace_back(trainPoints[i]);
+                }
             }
         }
 
+        const auto numInliners = outMt.queryPoints.size();
+        const auto numOutliers = mt.queryPoints.size() - numInliners;
+        const auto ratio = static_cast<double>(numInliners) / mt.queryPoints.size() * 100.0;
+
         return ExecutionStatus(
-            EStatus::Ok,
-            fmt::format("Inliers: {}\nOutliers: {}\nPercent of correct matches: {}%",
-                        outMt.queryPoints.size(), mt.queryPoints.size() - outMt.queryPoints.size(),
-                        static_cast<double>(outMt.queryPoints.size()) / mt.queryPoints.size() *
-                            100.0));
+            EStatus::Ok, fmt::format("Inliers: {}\nOutliers: {}\nPercent of correct matches: {}%",
+                                     numInliners, numOutliers, ratio));
     }
 
 private:
     TypedNodeProperty<double> _reprojThreshold;
+    TypedNodeProperty<bool> _refine;
 };
 
 class KnownHomographyInliersNodeType : public NodeType
