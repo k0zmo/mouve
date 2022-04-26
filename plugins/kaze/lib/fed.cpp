@@ -1,11 +1,13 @@
 //=============================================================================
 //
 // fed.cpp
-// Authors: Pablo F. Alcantarilla
-// Date: 11/12/2014
+// Authors: Pablo F. Alcantarilla (1), Jesus Nuevo (2)
+// Institutions: Toshiba Research Europe Ltd (1)
+//               TrueVision Solutions (2)
+// Date: 07/10/2014
 // Email: pablofdezalc@gmail.com
 //
-// KAZE Features Copyright 2014, Pablo F. Alcantarilla
+// AKAZE Features Copyright 2014, Pablo F. Alcantarilla, Jesus Nuevo
 // All Rights Reserved
 // See LICENSE for the license information
 //=============================================================================
@@ -87,15 +89,16 @@ int fed_tau_internal(const int n, const float scale, const float tau_max,
       tau[k] = d / (h * h);
   }
 
-  if (reordering == true) {
-    // Permute list of time steps according to chosen reordering function
+  // Permute list of time steps according to chosen reordering function
+  int kappa = 0, prime = 0;
 
+  if (reordering == true) {
     // Choose kappa cycle with k = n/2
     // This is a heuristic. We can use Leja ordering instead!!
-    int kappa = n / 2;
+    kappa = n / 2;
 
     // Get modulus for permutation
-    int prime = n + 1;
+    prime = n + 1;
 
     while (!fed_is_prime_internal(prime)) {
       prime++;

@@ -1,28 +1,29 @@
 //=============================================================================
 //
 // utils.cpp
-// Authors: Pablo F. Alcantarilla
-// Date: 11/12/2014
+// Authors: Pablo F. Alcantarilla, Jesus Nuevo (2)
+// Institutions: TrueVision Solutions (2)
+//
+// Date: 07/10/2014
 // Email: pablofdezalc@gmail.com
 //
-// KAZE Features Copyright 2014, Pablo F. Alcantarilla
+// AKAZE Features Copyright 2014, Pablo F. Alcantarilla, Jesus Nuevo
 // All Rights Reserved
 // See LICENSE for the license information
 //=============================================================================
 
 /**
  * @file utils.cpp
- * @brief Some useful functions
- * @date Dec 11, 2014
- * @author Pablo F. Alcantarilla
+ * @brief Some utilities functions
+ * @date Oct 07, 2014
+ * @author Pablo F. Alcantarilla, Jesus Nuevo
  */
 
 #include "utils.h"
 
 // OpenCV
-#include <opencv2/opencv.hpp>
-#include <opencv2/features2d/features2d.hpp>
-#include <opencv2/imgproc/imgproc.hpp>
+#include <opencv2/calib3d.hpp>
+#include <opencv2/imgproc.hpp>
 
 // System
 #include <fstream>
@@ -30,34 +31,28 @@
 using namespace std;
 
 /* ************************************************************************* */
-void compute_min_32F(const cv::Mat& src, float& value) {
+void compute_min_32F(const cv::Mat &src, float& value) {
 
   float aux = 1000.0;
-
   for (int i = 0; i < src.rows; i++) {
-    for(int j = 0; j < src.cols; j++) {
-      if (src.at<float>(i,j) < aux) {
+    for (int j = 0; j < src.cols; j++) {
+      if (src.at<float>(i,j) < aux)
         aux = src.at<float>(i,j);
-      }
     }
   }
-
   value = aux;
 }
 
 /* ************************************************************************* */
-void compute_max_32F(const cv::Mat& src, float& value) {
+void compute_max_32F(const cv::Mat &src, float& value) {
 
   float aux = 0.0;
-
   for (int i = 0; i < src.rows; i++) {
     for (int j = 0; j < src.cols; j++) {
-      if (src.at<float>(i,j) > aux) {
+      if (src.at<float>(i,j) > aux)
         aux = src.at<float>(i,j);
-      }
     }
   }
-
   value = aux;
 }
 
@@ -72,7 +67,7 @@ void convert_scale(cv::Mat& src) {
 }
 
 /* ************************************************************************* */
-void copy_and_convert_scale(const cv::Mat& src, cv::Mat& dst) {
+void copy_and_convert_scale(const cv::Mat &src, cv::Mat dst) {
 
   float min_val = 0, max_val = 0;
   src.copyTo(dst);
@@ -98,40 +93,34 @@ void draw_keypoints(cv::Mat& img, const std::vector<cv::KeyPoint>& kpts) {
 }
 
 /* ************************************************************************* */
-int save_keypoints(std::string& keypointsFile, const std::vector<cv::KeyPoint>& kpts,
-                   const cv::Mat& desc, bool bVerbose) {
+int save_keypoints(const string& outFile, const std::vector<cv::KeyPoint>& kpts,
+                   const cv::Mat& desc, bool save_desc) {
 
-  int length = 0, count = 0;
+  int nkpts = 0, dsize = 0;
   float sc = 0.0;
 
-  ofstream ipfile(keypointsFile.c_str());
+  nkpts = (int)(kpts.size());
+  dsize = (int)(desc.cols);
+
+  ofstream ipfile(outFile.c_str());
 
   if (!ipfile) {
-    cerr << "ERROR in save_keypoints: "
-         << "Couldn't open file '" << keypointsFile << "'!" << endl;
+    cerr << "Couldn't open file '" << outFile << "'!" << endl;
     return -1;
   }
 
-  length = desc.cols;
-  count = desc.rows;
+  if (!save_desc) {
+    ipfile << 1 << endl << nkpts << endl;
+  }
+  else {
+    ipfile << dsize << endl << nkpts << endl;
+  }
 
-  // Write the file header
-  ipfile << length << endl << count << endl;
-
-  // In order to just save the interest points without descriptor, comment
-  // the above and uncomment the following command.
-  // ipfile << 1.0 << endl << count << endl;
   // Save interest point with descriptor in the format of Krystian Mikolajczyk
-  // for reasons of comparison with other descriptors. As our interest points
-  // are circular in any case, we use the second component of the ellipse to
-  // provide some information about the strength of the interest point. This is
-  // important for 3D reconstruction as only the strongest interest points are
-  // considered. Replace the strength with 0.0 in order to perform Krystian's
-  // comparisons.
-  for (int i = 0; i < count; i++) {
-
-    // circular regions with diameter 2*scale x 2*scale
-    sc = kpts[i].size/2.0;
+  // for reasons of comparison with other descriptors
+  for (int i = 0; i < nkpts; i++) {
+    // Radius of the keypoint
+    sc = (kpts[i].size);
     sc*=sc;
 
     ipfile  << kpts[i].pt.x /* x-location of the interest point */
@@ -141,27 +130,30 @@ int save_keypoints(std::string& keypointsFile, const std::vector<cv::KeyPoint>& 
             << " " << 1.0/sc; /* 1/r^2 */
 
     // Here comes the descriptor
-    for (int j = 0; j < length; j++) {
-      ipfile << " " << desc.at<float>(i,j);
+    for( int j = 0; j < dsize; j++) {
+      if (desc.type() == 0) {
+        ipfile << " " << (int)(desc.at<unsigned char>(i,j));
+      }
+      else {
+        ipfile << " " << (desc.at<float>(i,j));
+      }
     }
 
     ipfile << endl;
   }
 
+
+  // Close the txt file
   ipfile.close();
 
-  // Write message to terminal.
-  if (bVerbose == true) {
-    cout << count << " interest points found" << endl;
-  }
-
-  return 1;
+  return 0;
 }
 
 /* ************************************************************************* */
-void matches2points_nndr(const std::vector<cv::KeyPoint>& train, const std::vector<cv::KeyPoint>& query,
+void matches2points_nndr(const std::vector<cv::KeyPoint>& train,
+                         const std::vector<cv::KeyPoint>& query,
                          const std::vector<std::vector<cv::DMatch> >& matches,
-                         std::vector<cv::Point2f>& pmatches, const float nndr) {
+                         std::vector<cv::Point2f>& pmatches, float nndr) {
 
   float dist1 = 0.0, dist2 = 0.0;
   for (size_t i = 0; i < matches.size(); i++) {
@@ -177,35 +169,39 @@ void matches2points_nndr(const std::vector<cv::KeyPoint>& train, const std::vect
 }
 
 /* ************************************************************************* */
-void compute_inliers_ransac(const std::vector<cv::Point2f> &matches, std::vector<cv::Point2f> &inliers,
-                            const float error, const bool use_fund) {
+void compute_inliers_ransac(const std::vector<cv::Point2f>& matches,
+                            std::vector<cv::Point2f>& inliers,
+                            float error, bool use_fund) {
 
   vector<cv::Point2f> points1, points2;
-  cv::Mat H = cv::Mat::zeros(3, 3, CV_32F);
+  cv::Mat H = cv::Mat::zeros(3,3,CV_32F);
   int npoints = matches.size()/2;
-  cv::Mat status = cv::Mat::zeros(npoints, 1, CV_8UC1);
+  cv::Mat status = cv::Mat::zeros(npoints,1,CV_8UC1);
 
   for (size_t i = 0; i < matches.size(); i+=2) {
     points1.push_back(matches[i]);
     points2.push_back(matches[i+1]);
   }
 
-  if (use_fund == true)
-    H = cv::findFundamentalMat(points1, points2, cv::FM_RANSAC, error, 0.99, status);
-  else
-    H = cv::findHomography(points1, points2, cv::RANSAC, error, status);
+  if (npoints > 8) {
+    if (use_fund == true)
+      H = cv::findFundamentalMat(points1,points2,cv::FM_RANSAC,error,0.99,status);
+    else
+      H = cv::findHomography(points1,points2,cv::RANSAC,error,status);
 
-  for (int i = 0; i < npoints; i++) {
-    if (status.at<unsigned char>(i) == 1) {
-      inliers.push_back(points1[i]);
-      inliers.push_back(points2[i]);
+    for (int i = 0; i < npoints; i++) {
+      if (status.at<unsigned char>(i) == 1) {
+        inliers.push_back(points1[i]);
+        inliers.push_back(points2[i]);
+      }
     }
   }
 }
 
 /* ************************************************************************* */
 void compute_inliers_homography(const std::vector<cv::Point2f>& matches,
-                                std::vector<cv::Point2f>& inliers, const cv::Mat& H, const float min_error) {
+                                std::vector<cv::Point2f>& inliers, const cv::Mat& H,
+                                float min_error) {
 
   float h11 = 0.0, h12 = 0.0, h13 = 0.0;
   float h21 = 0.0, h22 = 0.0, h23 = 0.0;
@@ -262,8 +258,8 @@ void draw_inliers(const cv::Mat& img1, const cv::Mat& img2, cv::Mat& img_com,
   vfactor = (float)(rows1)/(float)(rows2);
 
   // This is in case the input images don't have the same resolution
-  cv::Mat img_aux = cv::Mat(cv::Size(img1.cols,img1.rows), CV_8UC3);
-  cv::resize(img2, img_aux, cv::Size(img1.cols,img1.rows), 0, 0, cv::INTER_LINEAR);
+  cv::Mat img_aux = cv::Mat(cv::Size(img1.cols, img1.rows), CV_8UC3);
+  cv::resize(img2, img_aux, cv::Size(img1.cols, img1.rows), 0, 0, cv::INTER_LINEAR);
 
   for (int i = 0; i < img_com.rows; i++) {
     for (int j = 0; j < img_com.cols; j++) {
@@ -285,7 +281,7 @@ void draw_inliers(const cv::Mat& img1, const cv::Mat& img2, cv::Mat& img_com,
     y1 = (int)(ptpairs[i].y+.5);
     x2 = (int)(ptpairs[i+1].x*ufactor+img1.cols+.5);
     y2 = (int)(ptpairs[i+1].y*vfactor+.5);
-    cv::line(img_com, cv::Point(x1,y1), cv::Point(x2,y2), cv::Scalar(255,0,0),2);
+    cv::line(img_com, cv::Point(x1,y1), cv::Point(x2,y2), cv::Scalar(255,0,0), 2);
   }
 }
 
@@ -306,12 +302,12 @@ void draw_inliers(const cv::Mat& img1, const cv::Mat& img2, cv::Mat& img_com,
   vfactor = (float)(rows1)/(float)(rows2);
 
   // This is in case the input images don't have the same resolution
-  cv::Mat img_aux = cv::Mat(cv::Size(img1.cols,img1.rows), CV_8UC3);
-  cv::resize(img2, img_aux, cv::Size(img1.cols,img1.rows), 0, 0, cv::INTER_LINEAR);
+  cv::Mat img_aux = cv::Mat(cv::Size(img1.cols, img1.rows), CV_8UC3);
+  cv::resize(img2, img_aux, cv::Size(img1.cols, img1.rows), 0, 0, cv::INTER_LINEAR);
 
   for (int i = 0; i < img_com.rows; i++) {
     for (int j = 0; j < img_com.cols; j++) {
-      if ( j < img1.cols ) {
+      if (j < img1.cols) {
         *(img_com.ptr<unsigned char>(i)+3*j) = *(img1.ptr<unsigned char>(i)+3*j);
         *(img_com.ptr<unsigned char>(i)+3*j+1) = *(img1.ptr<unsigned char>(i)+3*j+1);
         *(img_com.ptr<unsigned char>(i)+3*j+2) = *(img1.ptr<unsigned char>(i)+3*j+2);
@@ -335,7 +331,7 @@ void draw_inliers(const cv::Mat& img1, const cv::Mat& img2, cv::Mat& img_com,
     else if (color == 1)
       cv::line(img_com, cv::Point(x1,y1), cv::Point(x2,y2), cv::Scalar(255,0,0), 2);
     else if (color == 2)
-      cv::line(img_com, cv::Point(x1,y1), cv::Point(x2,y2), cv::Scalar(0,255,0), 2);
+      cv::line(img_com, cv::Point(x1,y1), cv::Point(x2,y2), cv::Scalar(0,0,255), 2);
   }
 }
 
@@ -385,75 +381,89 @@ bool read_homography(const string& hFile, cv::Mat& H1toN) {
 }
 
 /* ************************************************************************* */
-void show_input_options_help(int example) {
-
-  fflush(stdout);
-
-  cout << endl;
-  cout << endl;
-  cout << "KAZE Features" << endl;
-  cout << "***********************************************************" << endl;
-  cout << "For running the program you need to type in the command line the following arguments: " << endl;
-
-  if (example == 0) {
-    cout << "./kaze_features img.jpg [options]" << endl;
-  }
-  else if (example == 1) {
-    cout << "./kaze_match img1.jpg img2.pgm homography.txt [options]" << endl;
-  }
-  else if (example == 2) {
-    cout << "./kaze_compare img1.jpg img2.pgm homography.txt [options]" << endl;
-  }
-
-  cout << endl;
-  cout << "The options are not mandatory. In case you do not specify additional options, default arguments will be used" << endl << endl;
-  cout << "Here is a description of the additional options: " << endl;
-  cout << "--verbose " << "\t\t if verbosity is required" << endl;
-  cout << "--help" << "\t\t for showing the command line options" << endl;
-  cout << "--soffset" << "\t\t the base scale offset (sigma units)" << endl;
-  cout << "--omax" << "\t\t maximum octave evolution of the image 2^sigma (coarsest scale)" << endl;
-  cout << "--nsublevels" << "\t\t number of sublevels per octave" << endl;
-  cout << "--dthreshold" << "\t\t Feature detector threshold response for accepting points (0.001 can be a good value)" << endl;
-  cout << "--descriptor" << "\t\t Descriptor Type 0 -> SURF, 1 -> M-SURF, 2 -> G-SURF" << endl;
-  cout << "--use_fed" "\t\t 1 -> Use FED, 0 -> Use AOS for the nonlinear diffusion filtering" << endl;
-  cout << "--upright" << "\t\t 0 -> Rotation Invariant, 1 -> No Rotation Invariant" << endl;
-  cout << "--extended" << "\t\t 0 -> Normal Descriptor (64), 1 -> Extended Descriptor (128)" << endl;
-  cout << "--output keypoints.txt" << "\t\t For saving the detected keypoints into a .txt file" << endl;
-  cout << "--save_scale_space" << "\t\t 1 in case we want to save the nonlinear scale space images. 0 otherwise" << endl;
-  cout << "--show_results" << "\t\t 1 in case we want to show detection results. 0 otherwise" << endl;
-  cout << endl;
+const size_t length = string("--descriptor_channels").size() + 2;
+static inline std::ostream& cout_help() {
+  cout << setw(length);
+  return cout;
 }
 
 /* ************************************************************************* */
-void display_text(cv::Mat& img_rgb, int npoints1, int npoints2, int nmatches,
-                  int ninliers, float ratio, float dratio, int index) {
+static inline std::string toUpper(std::string s) {
+  std::transform(s.begin(), s.end(), s.begin(), ::toupper);
+  return s;
+}
 
-  char text[400];
+/* ************************************************************************* */
+void show_input_options_help(int example) {
 
-  sprintf(text,"NNDR Matching %.2f",dratio);
+  fflush(stdout);
+  cout << "A-KAZE Features" << endl;
+  cout << "Usage: ";
 
-  if (index == 0)
-    putText(img_rgb,text, cv::Point(20,30), cv::FONT_HERSHEY_DUPLEX, .75, cv::Scalar(255,255,0),2,8,false);
-  else if (index == 1)
-    putText(img_rgb,text, cv::Point(20,30), cv::FONT_HERSHEY_DUPLEX, .75, cv::Scalar(255,0,0),2,8,false);
-  else if (index == 2)
-    putText(img_rgb,text, cv::Point(20,30), cv::FONT_HERSHEY_DUPLEX, .75, cv::Scalar(0,255,0),2,8,false);
+  if (example == 0) {
+    cout << "./akaze_features img.jpg [options]" << endl;
+  }
+  else if (example == 1) {
+    cout << "./akaze_match img1.jpg img2.pgm [homography.txt] [options]" << endl;
+  }
+  else if (example == 2) {
+    cout << "./akaze_compare img1.jpg img2.pgm [homography.txt] [options]" << endl;
+  }
+  
+  cout << endl;
+  cout_help() << "homography.txt is optional. If the txt file is not provided a planar homography will be estimated using RANSAC" << endl;
 
-  sprintf(text,"# Points Image 1: %d, # Points Image 2: %d",npoints1,npoints2);
+  cout << endl;
+  cout_help() << "Options below are not mandatory. Unless specified, default arguments are used." << endl << endl;  
 
-  if (index == 0)
-    putText(img_rgb,text, cv::Point(20,img_rgb.rows-70), cv::FONT_HERSHEY_DUPLEX, .75, cv::Scalar(255,255,0),2,8,false);
-  else if (index == 1)
-    putText(img_rgb,text, cv::Point(20,img_rgb.rows-70), cv::FONT_HERSHEY_DUPLEX, .75, cv::Scalar(255,0,0),2,8,false);
-  else if (index == 2)
-    putText(img_rgb,text, cv::Point(20,img_rgb.rows-70), cv::FONT_HERSHEY_DUPLEX, .75, cv::Scalar(0,255,0),2,8,false);
+  // Justify on the left
+  cout << left;
 
-  sprintf(text,"# Matches: %d, # Inliers: %d, Ratio %.2f",nmatches,ninliers,ratio);
+  // Generalities
+  cout_help() << "--help" << "Show the command line options" << endl;
+  cout_help() << "--verbose " << "Verbosity is required" << endl;
+  cout_help() << endl;
 
-  if (index == 0)
-    putText(img_rgb,text, cv::Point(20,img_rgb.rows-30), cv::FONT_HERSHEY_DUPLEX, .75, cv::Scalar(255,255,0),2,8,false);
-  else if (index == 1)
-    putText(img_rgb,text, cv::Point(20,img_rgb.rows-30), cv::FONT_HERSHEY_DUPLEX, .75, cv::Scalar(255,0,0),2,8,false);
-  else if (index == 2)
-    putText(img_rgb,text, cv::Point(20,img_rgb.rows-30), cv::FONT_HERSHEY_DUPLEX, .75, cv::Scalar(0,255,0),2,8,false);
+  // Scale-space parameters
+  cout_help() << "--soffset" << "Base scale offset (sigma units)" << endl;
+  cout_help() << "--omax" << "Maximum octave of image evolution" << endl;
+  cout_help() << "--nsublevels" << "Number of sublevels per octave" << endl;
+  cout_help() << "--diffusivity" << "Diffusivity function. Possible values:" << endl;
+  cout_help() << " " << "0 -> Perona-Malik, g1 = exp(-|dL|^2/k^2)" << endl;
+  cout_help() << " " << "1 -> Perona-Malik, g2 = 1 / (1 + dL^2 / k^2)" << endl;
+  cout_help() << " " << "2 -> Weickert diffusivity" << endl;
+  cout_help() << " " << "3 -> Charbonnier diffusivity" << endl;
+  cout_help() << endl;
+
+  // Feature detection parameters.
+  cout_help() << "--dthreshold" << "Feature detector threshold response for keypoints" << endl;
+  cout_help() << " " << "(0.001 can be a good value)" << endl;
+  cout_help() << endl;
+  cout_help() << endl;
+
+  // Descriptor parameters.
+  cout_help() << "--descriptor" << "Descriptor Type. Possible values:" << endl;
+  cout_help() << " " << "0 -> SURF_UPRIGHT" << endl;
+  cout_help() << " " << "1 -> SURF" << endl;
+  cout_help() << " " << "2 -> M-SURF_UPRIGHT," << endl;
+  cout_help() << " " << "3 -> M-SURF" << endl;
+  cout_help() << " " << "4 -> M-LDB_UPRIGHT" << endl;
+  cout_help() << " " << "5 -> M-LDB" << endl;
+  cout_help() << endl;
+
+  cout_help() << "--descriptor_channels " << "Descriptor Channels for M-LDB. Valid values: " << endl;
+  cout_help() << " " << "1 -> intensity" << endl;
+  cout_help() << " " << "2 -> intensity + gradient magnitude" << endl;
+  cout_help() << " " << "3 -> intensity + X and Y gradients" <<endl;
+  cout_help() << endl;
+
+  cout_help() << "--descriptor_size" << "Descriptor size for M-LDB in bits." << endl;
+  cout_help() << " " << "0: means the full length descriptor (486)!!" << endl;
+  cout_help() << endl;
+
+  // Save results?
+  cout_help() << "--show_results" << "Possible values below:" << endl;
+  cout_help() << " " << "1 -> show detection results." << endl;
+  cout_help() << " " << "0 -> don't show detection results" << endl;
+  cout_help() << endl;
 }

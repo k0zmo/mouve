@@ -1,17 +1,14 @@
 /**
  * @file nldiffusion_functions.h
- * @brief Functions for non-linear diffusion applications:
- * 2D Gaussian Derivatives
- * Perona and Malik conductivity equations
- * Perona and Malik evolution
- * @date Dec 11, 2014
- * @author Pablo F. Alcantarilla
+ * @brief Functions for nonlinear diffusion filtering applications
+ * @date Oct 07, 2014
+ * @author Pablo F. Alcantarilla, Jesus Nuevo
  */
 
 #pragma once
 
 /* ************************************************************************* */
-#include "KAZEConfig.h"
+#include <AKAZEConfig.h>
 
 /* ************************************************************************* */
 /// Convolve an image with a 2D Gaussian kernel
@@ -121,4 +118,3 @@ void compute_derivative_kernels(cv::OutputArray kx_, cv::OutputArray ky_,
 /// @return 1->is maximum, 0->otherwise
 bool check_maximum_neighbourhood(const cv::Mat& img, int dsize, float value,
                                  int row, int col, bool same_img);
-

@@ -1,28 +1,25 @@
 //=============================================================================
 //
 // nldiffusion_functions.cpp
-// Author: Pablo F. Alcantarilla
-// Date: 11/12/2011
+// Authors: Pablo F. Alcantarilla (1), Jesus Nuevo (2)
+// Institutions: Toshiba Research Europe Ltd (1)
+//               TrueVision Solutions (2)
+// Date: 07/10/2014
 // Email: pablofdezalc@gmail.com
 //
-// KAZE Features Copyright 2014, Pablo F. Alcantarilla
+// AKAZE Features Copyright 2014, Pablo F. Alcantarilla, Jesus Nuevo
 // All Rights Reserved
 // See LICENSE for the license information
 //=============================================================================
 
 /**
  * @file nldiffusion_functions.cpp
- * @brief Functions for non-linear diffusion applications:
- * 2D Gaussian Derivatives
- * Perona and Malik conductivity equations
- * Perona and Malik evolution
- * @date Dec 11, 2014
- * @author Pablo F. Alcantarilla
+ * @brief Functions for nonlinear diffusion filtering applications
+ * @date Oct 07, 2014
+ * @author Pablo F. Alcantarilla, Jesus Nuevo
  */
 
 #include "nldiffusion_functions.h"
-
-// OpenCV
 #include <opencv2/imgproc/imgproc.hpp>
 
 using namespace std;
@@ -210,50 +207,6 @@ void compute_scharr_derivatives(const cv::Mat& src, cv::Mat& dst, const size_t x
 }
 
 /* ************************************************************************* */
-void compute_derivative_kernels(cv::OutputArray kx_, cv::OutputArray ky_,
-                                const size_t dx, const size_t dy, const size_t scale) {
-
-  const int ksize = 3 + 2*(scale-1);
-
-  // The usual Scharr kernel
-  if (scale == 1) {
-    cv::getDerivKernels(kx_, ky_, dx, dy, 0, true, CV_32F);
-    return;
-  }
-
-  kx_.create(ksize,1,CV_32F,-1,true);
-  ky_.create(ksize,1,CV_32F,-1,true);
-  cv::Mat kx = kx_.getMat();
-  cv::Mat ky = ky_.getMat();
-
-  float w = 10.0/3.0;
-  float norm = 1.0/(2.0*scale*(w+2.0));
-
-  for (int k = 0; k < 2; k++) {
-    cv::Mat* kernel = k == 0 ? &kx : &ky;
-    int order = k == 0 ? dx : dy;
-    float kerI[1000];
-
-    for (int t = 0; t<ksize; t++)
-      kerI[t] = 0;
-
-    if (order == 0) {
-      kerI[0] = norm;
-      kerI[ksize/2] = w*norm;
-      kerI[ksize-1] = norm;
-    }
-    else if (order == 1) {
-      kerI[0] = -1;
-      kerI[ksize/2] = 0;
-      kerI[ksize-1] = 1;
-    }
-
-    cv::Mat temp(kernel->rows, kernel->cols, CV_32F, &kerI[0]);
-    temp.copyTo(*kernel);
-  }
-}
-
-/* ************************************************************************* */
 void nld_step_scalar(cv::Mat& Ld, const cv::Mat& c, cv::Mat& Lstep, const float stepsize) {
 
   Lstep = cv::Scalar(0);
@@ -357,6 +310,57 @@ void nld_step_scalar(cv::Mat& Ld, const cv::Mat& c, cv::Mat& Lstep, const float 
     for (int x = 0; x < Lstep.cols; x++) {
       Ld_row[x] = Ld_row[x] + Lstep_row[x];
     }
+  }
+}
+
+/* ************************************************************************* */
+void halfsample_image(const cv::Mat& src, cv::Mat& dst) {
+
+  // Make sure the destination image is of the right size
+  cv::resize(src, dst, dst.size(), 0, 0, cv::INTER_AREA);
+}
+
+/* ************************************************************************* */
+void compute_derivative_kernels(cv::OutputArray kx_, cv::OutputArray ky_,
+                                const size_t dx, const size_t dy, const size_t scale) {
+
+  const int ksize = 3 + 2*(scale-1);
+
+  // The usual Scharr kernel
+  if (scale == 1) {
+    cv::getDerivKernels(kx_, ky_, dx, dy, 0, true, CV_32F);
+    return;
+  }
+
+  kx_.create(ksize,1,CV_32F,-1,true);
+  ky_.create(ksize,1,CV_32F,-1,true);
+  cv::Mat kx = kx_.getMat();
+  cv::Mat ky = ky_.getMat();
+
+  float w = 10.0/3.0;
+  float norm = 1.0/(2.0*scale*(w+2.0));
+
+  for (int k = 0; k < 2; k++) {
+    cv::Mat* kernel = k == 0 ? &kx : &ky;
+    int order = k == 0 ? dx : dy;
+    float kerI[1000];
+
+    for (int t = 0; t<ksize; t++)
+      kerI[t] = 0;
+
+    if (order == 0) {
+      kerI[0] = norm;
+      kerI[ksize/2] = w*norm;
+      kerI[ksize-1] = norm;
+    }
+    else if (order == 1) {
+      kerI[0] = -1;
+      kerI[ksize/2] = 0;
+      kerI[ksize-1] = 1;
+    }
+
+    cv::Mat temp(kernel->rows, kernel->cols, CV_32F, &kerI[0]);
+    temp.copyTo(*kernel);
   }
 }
 

@@ -17,6 +17,8 @@
 #define OMP_MAX_THREADS 16
 #endif
 
+namespace libKAZE {
+
 /* ************************************************************************* */
 /// KAZE Descriptor Type
 enum DESCRIPTOR_TYPE {
@@ -105,3 +107,4 @@ struct TEvolution {
   int sigma_size;           ///< Integer esigma. For computing the feature detector responses
 };
 
+}
