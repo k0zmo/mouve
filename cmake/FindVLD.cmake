@@ -1,4 +1,4 @@
-find_path(VLD_ROOT
+find_path(pkg_root
     NAMES
         include/vld.h
     PATHS
@@ -10,7 +10,7 @@ find_path(VLD_ROOT
 
 find_path(VLD_INCLUDE_DIR
     vld.h
-    HINTS ${VLD_ROOT}
+    HINTS ${pkg_root}
     PATH_SUFFIXES include
     DOC "Visual Leak Detector include directory"
 )
@@ -25,7 +25,7 @@ endif()
 
 find_library(VLD_LIBRARY
     NAMES vld
-    HINTS ${VLD_ROOT}
+    HINTS ${pkg_root}
     PATH_SUFFIXES ${possible_suffixes}
     DOC "Visual Leak Detector library"
 )

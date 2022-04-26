@@ -1,4 +1,4 @@
-find_path(AMDTActivityLogger_ROOT
+find_path(pkg_root
     NAMES
         include/CXLActivityLogger.h
     PATHS
@@ -9,7 +9,7 @@ find_path(AMDTActivityLogger_ROOT
 
 find_path(AMDTActivityLogger_INCLUDE_DIR
     NAMES CXLActivityLogger.h
-    HINTS ${AMDTActivityLogger_ROOT}
+    HINTS ${pkg_root}
     PATH_SUFFIXES include
     DOC "AMD Developer Tools Activity Logger include directory"
 )
@@ -18,7 +18,6 @@ mark_as_advanced(AMDTActivityLogger_INCLUDE_DIR)
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(AMDTActivityLogger 
     REQUIRED_VARS
-        AMDTActivityLogger_ROOT
         AMDTActivityLogger_INCLUDE_DIR
 )
 
